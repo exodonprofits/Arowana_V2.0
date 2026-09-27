@@ -1,0 +1,1326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Admin — Arowana Profits</title>
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#063f73;--bg:#f0f4f8;--panel:#fff;
+  --text:#0f172a;--muted:#64748b;--border:#e2e8f0;
+  --green:#16a34a;--red:#dc2626;--amber:#f59e0b;--blue:#0b4f8a;
+  --radius:12px;--shadow:0 4px 20px rgba(0,0,0,.07);
+  --page-width:min(1100px,96vw);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+a{color:var(--brand);text-decoration:none}
+button{cursor:pointer;font-family:inherit}
+
+/* ── Auth gate ── */
+#authGate{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--bg)}
+.auth-box{background:var(--panel);border-radius:var(--radius);padding:2.5rem;max-width:380px;width:100%;box-shadow:var(--shadow);text-align:center}
+.auth-box h1{font-size:1.4rem;font-weight:800;margin-bottom:.35rem}
+.auth-box p{color:var(--muted);font-size:.9rem;margin-bottom:1.5rem}
+.auth-denied{color:var(--red);font-size:.88rem;margin-top:1rem;display:none}
+
+/* ── Shell ── */
+#adminShell{display:none}
+.top-bar{background:var(--brand-dark);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100}
+.top-bar .brand{font-weight:800;font-size:1rem;letter-spacing:-.01em}
+.top-bar .scope{font-size:.78rem;background:rgba(255,255,255,.15);padding:3px 10px;border-radius:999px}
+.top-bar .spacer{flex:1}
+.top-bar .user-pill{font-size:.8rem;opacity:.85}
+.top-bar .logout-btn{font-size:.8rem;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.2);color:#fff;padding:5px 12px;border-radius:7px}
+.top-bar .logout-btn:hover{background:rgba(255,255,255,.22)}
+
+/* ── Tab nav ── */
+.tab-nav{background:var(--panel);border-bottom:1px solid var(--border);padding:0 var(--page-width);display:flex;gap:0;overflow-x:auto}
+.tab-nav{padding:0;justify-content:center}
+.tab-nav-inner{display:flex;gap:0;max-width:var(--page-width);width:100%}
+.tab-btn{padding:14px 22px;font-size:.88rem;font-weight:600;color:var(--muted);background:none;border:none;border-bottom:3px solid transparent;white-space:nowrap;transition:all .15s}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--brand);border-bottom-color:var(--brand)}
+
+/* ── Page content ── */
+.page-wrap{max-width:var(--page-width);margin:0 auto;padding:28px 16px 60px}
+
+/* ── Cards ── */
+.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px 24px;margin-bottom:18px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.card-hd h2{font-size:1rem;font-weight:700}
+.card-hd .sub{font-size:.82rem;color:var(--muted);margin-top:2px}
+
+/* ── Buttons ── */
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;font-size:.85rem;font-weight:600;border:1px solid transparent;transition:all .15s}
+.btn.blue{background:var(--brand);color:#fff;border-color:var(--brand)}
+.btn.blue:hover{background:var(--brand-dark)}
+.btn.green{background:var(--green);color:#fff}
+.btn.green:hover{opacity:.9}
+.btn.red{background:var(--red);color:#fff}
+.btn.red:hover{opacity:.9}
+.btn.ghost{background:#fff;color:var(--text);border-color:var(--border)}
+.btn.ghost:hover{background:var(--bg)}
+.btn.sm{padding:5px 10px;font-size:.78rem}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ── Inputs ── */
+.input{width:100%;padding:.55rem .75rem;border:1px solid var(--border);border-radius:8px;font-size:.88rem;font-family:inherit;background:#fff;color:var(--text)}
+.input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,79,138,.12)}
+.input.mono{font-family:'Fira Code','Consolas',monospace;font-size:.8rem}
+.field-label{font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:5px;display:block}
+
+/* ── Webhook rows ── */
+.wh-section-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);padding:6px 0 8px;margin-top:8px;border-top:1px solid var(--border)}
+.wh-section-label:first-child{border-top:none;margin-top:0}
+.wh-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:start;margin-bottom:12px}
+.wh-row .wh-label{font-size:.84rem;font-weight:600;margin-bottom:4px}
+.wh-row .wh-meta{font-size:.75rem;color:var(--muted);margin-top:3px;display:flex;align-items:center;gap:8px}
+.wh-input-wrap{grid-column:1}
+.wh-actions{display:flex;gap:6px;align-items:center;padding-top:22px}
+.status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.status-dot.live{background:var(--green)}
+.status-dot.off{background:#cbd5e1}
+.status-dot.unknown{background:var(--amber)}
+
+/* ── Toggle switch ── */
+.toggle-wrap{display:flex;align-items:center;gap:8px;font-size:.82rem}
+.toggle{position:relative;width:38px;height:22px;flex-shrink:0}
+.toggle input{opacity:0;width:0;height:0;position:absolute}
+.toggle-track{position:absolute;inset:0;background:#cbd5e1;border-radius:999px;transition:background .2s;cursor:pointer}
+.toggle input:checked + .toggle-track{background:var(--green)}
+.toggle-thumb{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:transform .2s;pointer-events:none}
+.toggle input:checked ~ .toggle-thumb{transform:translateX(16px)}
+
+/* ── Tools grid ── */
+.tools-table{width:100%;border-collapse:collapse}
+.tools-table th{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--border);text-align:left}
+.tools-table td{padding:10px;border-bottom:1px solid var(--border);font-size:.87rem;vertical-align:middle}
+.tools-table tr:last-child td{border-bottom:none}
+.tools-table tr:hover td{background:#fafafa}
+.category-pill{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700}
+.cat-short{background:#dbeafe;color:#1e40af}
+.cat-long{background:#dcfce7;color:#166534}
+.cat-options{background:#fef3c7;color:#92400e}
+.cat-risk{background:#fce7f3;color:#9d174d}
+
+/* ── Users table ── */
+.users-table{width:100%;border-collapse:collapse}
+.users-table th{font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 12px;border-bottom:2px solid var(--border);text-align:left}
+.users-table td{padding:10px 12px;border-bottom:1px solid var(--border);font-size:.85rem;vertical-align:middle}
+.users-table tr:hover td{background:#fafafa}
+.role-badge{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700}
+.role-gs_admin{background:#fef3c7;color:#92400e}
+.role-arowana_admin{background:#dbeafe;color:#1e40af}
+.role-user{background:#f1f5f9;color:#475569}
+.plan-badge{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:.72rem;font-weight:700}
+.plan-pro{background:#dcfce7;color:#166534}
+.plan-free{background:#f1f5f9;color:#475569}
+
+/* ── Stats row ── */
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:18px}
+.stat-box{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px 18px}
+.stat-box .stat-label{font-size:.75rem;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.stat-box .stat-val{font-size:1.6rem;font-weight:800;color:var(--text)}
+.stat-box .stat-sub{font-size:.75rem;color:var(--muted);margin-top:2px}
+
+/* ── Site settings ── */
+.site-field{margin-bottom:14px}
+.site-field label{font-size:.82rem;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
+
+/* ── Modal ── */
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:flex;align-items:center;justify-content:center;padding:16px}
+.modal-box{background:#fff;border-radius:14px;padding:24px;width:100%;max-width:520px;box-shadow:0 20px 60px rgba(0,0,0,.2);position:relative}
+.modal-box h3{font-size:1.05rem;font-weight:700;margin-bottom:16px}
+.modal-close{position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.2rem;cursor:pointer;color:var(--muted);line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-footer{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+.form-row{margin-bottom:13px}
+.form-row label{font-size:.8rem;font-weight:600;color:var(--muted);display:block;margin-bottom:5px}
+.form-row .input{width:100%}
+.form-row .hint{font-size:.73rem;color:var(--muted);margin-top:3px}
+
+/* ── Danger confirm ── */
+.danger-btn{color:var(--red);background:#fff;border:1px solid #fecaca}
+.danger-btn:hover{background:#fef2f2}
+
+/* ── Toast ── */
+#adminToast{position:fixed;bottom:20px;right:20px;z-index:9999;display:flex;flex-direction:column;gap:8px}
+.toast-pill{padding:10px 16px;border-radius:9px;font-size:.85rem;font-weight:600;color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.2);animation:slideIn .2s ease}
+.toast-ok{background:#16a34a}
+.toast-err{background:#dc2626}
+.toast-warn{background:#d97706}
+@keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Misc ── */
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted);font-size:.88rem}
+.loading{color:var(--muted);font-size:.85rem;padding:20px}
+.section-sep{height:1px;background:var(--border);margin:20px 0}
+.tab-pane{display:none}
+.tab-pane.active{display:block}
+@media(max-width:640px){
+  .wh-row{grid-template-columns:1fr}
+  .wh-actions{padding-top:0}
+}
+</style>
+</head>
+<body>
+
+<!-- ── Auth Gate ── -->
+<div id="authGate">
+  <div class="auth-box">
+    <div style="font-size:2rem;margin-bottom:.5rem">🔐</div>
+    <h1>Admin Panel</h1>
+    <p>Sign in with your admin account to continue.</p>
+    <div id="authStatus" style="font-size:.85rem;color:var(--muted);margin-bottom:12px">Loading…</div>
+    <div id="authDenied" class="auth-denied">⛔ Access denied. Your account does not have admin permissions.</div>
+  </div>
+</div>
+
+<!-- ── Admin Shell (shown after auth check) ── -->
+<div id="adminShell">
+
+  <div class="top-bar">
+    <span class="brand">⚙️ GenieSphere Admin</span>
+    <span class="scope">Arowana Profits</span>
+    <span class="spacer"></span>
+    <span class="user-pill" id="adminUserEmail"></span>
+    <button class="logout-btn" id="logoutBtn">Sign out</button>
+  </div>
+
+  <div class="tab-nav">
+    <div class="tab-nav-inner">
+      <button class="tab-btn active" data-tab="overview">📊 Overview</button>
+      <button class="tab-btn" data-tab="webhooks">🔗 Webhooks</button>
+      <button class="tab-btn" data-tab="tools">🔧 Tools</button>
+      <button class="tab-btn" data-tab="users">👥 Users</button>
+      <button class="tab-btn" data-tab="site">🌐 Site Settings</button>
+    </div>
+  </div>
+
+  <div class="page-wrap">
+
+    <!-- ══ Overview ══════════════════════════════════════════════ -->
+    <div class="tab-pane active" id="tab-overview">
+
+      <div class="stats-row" id="statsRow">
+        <div class="stat-box"><div class="stat-label">Total Users</div><div class="stat-val" id="statUsers">—</div><div class="stat-sub">registered accounts</div></div>
+        <div class="stat-box"><div class="stat-label">Pro Users</div><div class="stat-val" id="statPro">—</div><div class="stat-sub">arowana_plan = pro</div></div>
+        <div class="stat-box"><div class="stat-label">Live Webhooks</div><div class="stat-val" id="statWebhooks">—</div><div class="stat-sub">of 9 configured</div></div>
+        <div class="stat-box"><div class="stat-label">Live Tools</div><div class="stat-val" id="statTools">—</div><div class="stat-sub">of 22 in registry</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div><h2>🔗 Webhook Health</h2><div class="sub">All 9 workflows — live status from database</div></div>
+          <button class="btn ghost sm" id="refreshOverview">↻ Refresh</button>
+        </div>
+        <div id="webhookHealthList" class="loading">Loading…</div>
+      </div>
+
+      <div class="card">
+        <div class="card-hd">
+          <div><h2>📋 Quick Actions</h2></div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn blue" id="goWebhooks">🔗 Manage Webhooks</button>
+          <button class="btn ghost" id="goTools">🔧 Toggle Tools</button>
+          <button class="btn ghost" id="goUsers">👥 View Users</button>
+          <a class="btn ghost" href="short-term-dashboard.html">⚡ Short-Term Dashboard →</a>
+          <a class="btn ghost" href="long-term-dashboard.html">🏦 Long-Term Dashboard →</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Webhooks ═══════════════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-webhooks">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h2>🔗 n8n Webhook URLs</h2>
+            <div class="sub">Manage all AI workflow URLs. Toggle Live to activate — tools auto-fall to demo mode when off.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn blue" id="addWebhookBtn">＋ Add Webhook</button>
+            <button class="btn green" id="saveAllWebhooks">💾 Save All</button>
+            <button class="btn ghost sm" id="testAllWebhooks">🧪 Test All</button>
+          </div>
+        </div>
+        <div id="webhookFields">
+          <div class="loading">Loading webhooks from database…</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Tools ══════════════════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-tools">
+      <div class="card">
+        <div class="card-hd">
+          <div>
+            <h2>🔧 Tool Registry</h2>
+            <div class="sub">Add, edit, delete and toggle tools live/coming-soon. Changes take effect immediately for all users.</div>
+          </div>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button class="btn blue" id="addToolBtn">＋ Add Tool</button>
+            <button class="btn green" id="saveAllTools">💾 Save All Toggles</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="tools-table">
+            <thead>
+              <tr>
+                <th>Tool</th>
+                <th>Category</th>
+                <th>Page (href)</th>
+                <th style="text-align:center">Live</th>
+                <th style="text-align:center">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="toolsTableBody">
+              <tr><td colspan="5" class="loading">Loading tools…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ Users ══════════════════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-users">
+      <div class="card">
+        <div class="card-hd">
+          <div><h2>👥 Users</h2><div class="sub">All registered Arowana Profits users</div></div>
+          <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+            <input class="input" id="userSearch" placeholder="Search by email…" style="width:200px;padding:.4rem .7rem;font-size:.82rem"/>
+            <select class="input" id="userRoleFilter" style="width:130px;padding:.4rem .7rem;font-size:.82rem">
+              <option value="">All roles</option>
+              <option value="gs_admin">gs_admin</option>
+              <option value="arowana_admin">arowana_admin</option>
+              <option value="user">user</option>
+            </select>
+            <select class="input" id="userPlanFilter" style="width:110px;padding:.4rem .7rem;font-size:.82rem">
+              <option value="">All plans</option>
+              <option value="pro">pro</option>
+              <option value="free">free</option>
+            </select>
+            <button class="btn ghost sm" id="refreshUsers">↻ Refresh</button>
+            <button class="btn blue sm" id="exportUsersBtn">⬇ Export CSV</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto">
+          <table class="users-table">
+            <thead>
+              <tr>
+                <th>Email</th>
+                <th>Name</th>
+                <th>Role</th>
+                <th>Plan</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="usersTableBody">
+              <tr><td colspan="6" class="loading">Loading users…</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div id="usersPager" style="display:flex;gap:8px;justify-content:flex-end;margin-top:12px;font-size:.82rem;color:var(--muted)"></div>
+      </div>
+    </div>
+
+    <!-- ══ Site Settings ═══════════════════════════════════════════ -->
+    <div class="tab-pane" id="tab-site">
+      <div class="card">
+        <div class="card-hd">
+          <div><h2>🌐 Site Settings</h2><div class="sub">Global settings for Arowana Profits — stored in public.app_config</div></div>
+          <button class="btn green" id="saveSiteSettings">💾 Save Settings</button>
+        </div>
+
+        <div class="site-field">
+          <label>📣 Announcement Banner</label>
+          <input class="input" id="siteAnnouncement" placeholder="Leave blank to hide. Example: 'New feature: AI Trade Coach is live!'" />
+          <div style="font-size:.75rem;color:var(--muted);margin-top:4px">Shown at the top of all Arowana pages when set.</div>
+        </div>
+
+        <div class="section-sep"></div>
+
+        <div class="site-field" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div>
+            <label style="margin-bottom:0">🚧 Maintenance Mode</label>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Shows a maintenance notice on all Arowana pages.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="siteMaintenance"/>
+            <span class="toggle-track"></span>
+            <span class="toggle-thumb"></span>
+          </label>
+        </div>
+
+        <div class="section-sep"></div>
+
+        <div class="site-field" style="display:flex;align-items:center;justify-content:space-between;gap:16px">
+          <div>
+            <label style="margin-bottom:0">🆕 New User Free Trial</label>
+            <div style="font-size:.75rem;color:var(--muted);margin-top:2px">Auto-assign pro plan to new signups for trial period.</div>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="siteFreeTrial"/>
+            <span class="toggle-track"></span>
+            <span class="toggle-thumb"></span>
+          </label>
+        </div>
+
+        <div class="section-sep"></div>
+
+        <div class="site-field">
+          <label>📝 Admin Notes (private)</label>
+          <textarea class="input" id="siteNotes" rows="3" placeholder="Internal notes — not shown to users…" style="resize:vertical"></textarea>
+        </div>
+      </div>
+
+      <!-- Raw config viewer -->
+      <div class="card">
+        <div class="card-hd">
+          <div><h2>🗄 Raw app_config (arowana scope)</h2><div class="sub">Read-only view of all arowana rows in public.app_config</div></div>
+          <button class="btn ghost sm" id="refreshRawConfig">↻ Refresh</button>
+        </div>
+        <pre id="rawConfigDisplay" style="font-size:.75rem;background:#f8fafc;border:1px solid var(--border);border-radius:8px;padding:14px;overflow-x:auto;max-height:320px;white-space:pre-wrap">Loading…</pre>
+      </div>
+    </div>
+
+  </div><!-- /page-wrap -->
+</div><!-- /adminShell -->
+
+<!-- ══ WEBHOOK MODAL ══ -->
+<div class="modal-backdrop" id="webhookModal" style="display:none">
+  <div class="modal-box">
+    <button class="modal-close" id="webhookModalClose">✕</button>
+    <h3 id="webhookModalTitle">Add Webhook</h3>
+    <input type="hidden" id="wm_origKey"/>
+    <div class="form-row">
+      <label>Key <span style="color:var(--red)">*</span></label>
+      <input class="input mono" id="wm_key" placeholder="e.g. st_main" />
+      <div class="hint">Lowercase, underscores only. Used in code as WH.key</div>
+    </div>
+    <div class="form-row">
+      <label>Label <span style="color:var(--red)">*</span></label>
+      <input class="input" id="wm_label" placeholder="e.g. ⚡ Short-Term AI" />
+    </div>
+    <div class="form-row">
+      <label>Webhook URL</label>
+      <input class="input mono" id="wm_url" type="url" placeholder="https://your-n8n.cloud/webhook/..." />
+    </div>
+    <div class="form-row">
+      <label>Group</label>
+      <select class="input" id="wm_group">
+        <option value="short">⚡ Short-Term</option>
+        <option value="long">🏦 Long-Term</option>
+      </select>
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:10px">
+      <label style="margin-bottom:0">Live</label>
+      <label class="toggle">
+        <input type="checkbox" id="wm_live"/>
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </label>
+      <span style="font-size:.78rem;color:var(--muted)">Toggle on to activate this workflow</span>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" id="webhookModalCancel">Cancel</button>
+      <button class="btn green" id="webhookModalSave">💾 Save Webhook</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ TOOL MODAL ══ -->
+<div class="modal-backdrop" id="toolModal" style="display:none">
+  <div class="modal-box">
+    <button class="modal-close" id="toolModalClose">✕</button>
+    <h3 id="toolModalTitle">Add Tool</h3>
+    <input type="hidden" id="tm_origSlug"/>
+    <div class="form-row">
+      <label>Slug <span style="color:var(--red)">*</span></label>
+      <input class="input mono" id="tm_slug" placeholder="e.g. orb_scanner" />
+      <div class="hint">Lowercase, underscores only. Must be unique.</div>
+    </div>
+    <div class="form-row">
+      <label>Label <span style="color:var(--red)">*</span></label>
+      <input class="input" id="tm_label" placeholder="e.g. Opening Range Breakout" />
+    </div>
+    <div class="form-row" style="display:grid;grid-template-columns:80px 1fr;gap:10px">
+      <div>
+        <label>Emoji</label>
+        <input class="input" id="tm_emoji" placeholder="⚡" maxlength="4" style="text-align:center;font-size:1.2rem"/>
+      </div>
+      <div>
+        <label>Page (href)</label>
+        <input class="input mono" id="tm_href" placeholder="orb-scanner.html" />
+      </div>
+    </div>
+    <div class="form-row" style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+      <div>
+        <label>Category</label>
+        <select class="input" id="tm_category">
+          <option value="short">short</option>
+          <option value="long">long</option>
+          <option value="options">options</option>
+          <option value="risk">risk</option>
+        </select>
+      </div>
+      <div>
+        <label>Sort Order</label>
+        <input class="input" id="tm_sort" type="number" placeholder="0" />
+      </div>
+    </div>
+    <div class="form-row" style="display:flex;align-items:center;gap:10px">
+      <label style="margin-bottom:0">Live</label>
+      <label class="toggle">
+        <input type="checkbox" id="tm_live"/>
+        <span class="toggle-track"></span>
+        <span class="toggle-thumb"></span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn ghost" id="toolModalCancel">Cancel</button>
+      <button class="btn green" id="toolModalSave">💾 Save Tool</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ USER DETAIL MODAL ══ -->
+<div class="modal-backdrop" id="userModal" style="display:none">
+  <div class="modal-box">
+    <button class="modal-close" id="userModalClose">✕</button>
+    <h3>👤 Edit User</h3>
+    <input type="hidden" id="um_id"/>
+    <div class="form-row">
+      <label>Email</label>
+      <input class="input" id="um_email" readonly style="background:#f8fafc;color:var(--muted)"/>
+    </div>
+    <div class="form-row">
+      <label>Full Name</label>
+      <input class="input" id="um_name" placeholder="Full name"/>
+    </div>
+    <div class="form-row">
+      <label>Role</label>
+      <select class="input" id="um_role">
+        <option value="user">user</option>
+        <option value="arowana_admin">arowana_admin</option>
+        <option value="gs_admin">gs_admin</option>
+      </select>
+      <div class="hint">gs_admin has full platform access. arowana_admin has Arowana tools access only.</div>
+    </div>
+    <div class="form-row">
+      <label>Arowana Plan</label>
+      <select class="input" id="um_plan">
+        <option value="free">free</option>
+        <option value="pro">pro</option>
+      </select>
+    </div>
+    <div class="modal-footer" style="justify-content:space-between">
+      <button class="btn danger-btn" id="um_delete">🗑 Delete User</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn ghost" id="userModalCancel">Cancel</button>
+        <button class="btn green" id="userModalSave">💾 Save Changes</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ CONFIRM DELETE MODAL ══ -->
+<div class="modal-backdrop" id="confirmModal" style="display:none">
+  <div class="modal-box" style="max-width:380px;text-align:center">
+    <div style="font-size:2rem;margin-bottom:8px" id="confirmIcon">⚠️</div>
+    <h3 id="confirmTitle">Are you sure?</h3>
+    <p id="confirmMsg" style="font-size:.88rem;color:var(--muted);margin:8px 0 20px"></p>
+    <div style="display:flex;gap:10px;justify-content:center">
+      <button class="btn ghost" id="confirmCancel">Cancel</button>
+      <button class="btn red" id="confirmOk">Delete</button>
+    </div>
+  </div>
+</div>
+
+<div id="adminToast"></div>
+
+<!-- Load Supabase: try local first, fall back to CDN -->
+<script>
+(function(){
+  function loadScript(src, onload, onerror){
+    const s = document.createElement('script');
+    s.src = src; s.onload = onload; s.onerror = onerror;
+    document.head.appendChild(s);
+  }
+  // Try local /js/supabase.min.js first
+  loadScript('/js/supabase.min.js',
+    function(){ window.__sb_loaded = true; },
+    function(){
+      // Local failed — load from CDN
+      loadScript('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js',
+        function(){ window.__sb_loaded = true; },
+        function(){ console.error('Could not load Supabase from CDN either'); }
+      );
+    }
+  );
+})();
+</script>
+<script>
+/* ── Admin Panel Logic ─────────────────────────────────────────────────── */
+(function(){
+  const SUPABASE_URL  = 'https://pbojacnagutipfhcxltj.supabase.co';
+  const SUPABASE_KEY  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBib2phY25hZ3V0aXBmaGN4bHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDkwODAsImV4cCI6MjA2MzU4NTA4MH0.ZLCcAzTYljoZycpBGwMtthP5VyAJ4schuIvt4HibGc0';
+  const ADMIN_ROLES   = ['gs_admin', 'arowana_admin'];
+
+  let sb, currentUser, currentProfile;
+  let webhooksData = [];
+  let toolsData    = [];
+  let usersCache   = [];
+  let usersPage    = 0;
+  const PAGE_SIZE  = 20;
+
+  // ── Toast ────────────────────────────────────────────────────────────────
+  function toast(msg, type='ok'){
+    const el = document.createElement('div');
+    el.className = `toast-pill toast-${type}`;
+    el.textContent = msg;
+    document.getElementById('adminToast').appendChild(el);
+    setTimeout(() => el.remove(), 3500);
+  }
+
+  // ── Init Supabase (waits for script to be ready) ─────────────────────────
+  function initSb(){
+    if(window.supabase && typeof window.supabase.createClient === 'function'){
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+      return true;
+    }
+    return false;
+  }
+
+  function waitForSbThenAuth(attempts){
+    if(attempts <= 0){
+      document.getElementById('authStatus').textContent = 'Error: could not load Supabase library. Check your internet connection.';
+      return;
+    }
+    if(initSb()){
+      checkAuth();
+    } else {
+      setTimeout(() => waitForSbThenAuth(attempts - 1), 200);
+    }
+  }
+
+  // ── Auth check ────────────────────────────────────────────────────────────
+  async function checkAuth(){
+    const statusEl = document.getElementById('authStatus');
+    const deniedEl = document.getElementById('authDenied');
+
+    if(!sb){ statusEl.textContent = 'Error: Supabase client failed to load.'; return; }
+
+    statusEl.textContent = 'Checking session…';
+    const { data: { user } } = await sb.auth.getUser();
+
+    if(!user){
+      statusEl.textContent = 'Not signed in.';
+      // Redirect to login
+      setTimeout(() => { window.location.href = 'login.html?redirect=admin.html'; }, 1200);
+      return;
+    }
+
+    currentUser = user;
+    statusEl.textContent = 'Checking permissions…';
+
+    // Fetch profile
+    const { data: profile } = await sb
+      .from('profiles')
+      .select('id, email, full_name, gs_role, arowana_plan')
+      .eq('id', user.id)
+      .single();
+
+    currentProfile = profile;
+
+    if(!profile || !ADMIN_ROLES.includes(profile.gs_role)){
+      statusEl.textContent = '';
+      deniedEl.style.display = 'block';
+      return;
+    }
+
+    // Authorised — show shell
+    document.getElementById('authGate').style.display  = 'none';
+    document.getElementById('adminShell').style.display = 'block';
+    document.getElementById('adminUserEmail').textContent = profile.email || user.email;
+    bootAdmin();
+  }
+
+  // ── Boot admin UI ──────────────────────────────────────────────────────────
+  async function bootAdmin(){
+    initTabs();
+    await Promise.all([
+      loadWebhooks(),
+      loadTools(),
+      loadStats(),
+      loadSiteSettings(),
+    ]);
+    renderOverview();
+  }
+
+  // ── Tabs ────────────────────────────────────────────────────────────────────
+  function initTabs(){
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+        btn.classList.add('active');
+        document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        // Lazy-load users on first open
+        if(btn.dataset.tab === 'users') loadUsers();
+      });
+    });
+    // Quick action buttons
+    document.getElementById('goWebhooks').onclick = () => switchTab('webhooks');
+    document.getElementById('goTools').onclick    = () => switchTab('tools');
+    document.getElementById('goUsers').onclick    = () => switchTab('users');
+    document.getElementById('refreshOverview').onclick = () => { loadStats(); renderOverview(); loadWebhooks(); };
+    document.getElementById('logoutBtn').onclick  = async () => {
+      await sb.auth.signOut();
+      window.location.href = 'login.html';
+    };
+  }
+
+  function switchTab(name){
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === 'tab-' + name));
+    if(name === 'users') loadUsers();
+  }
+
+  // ── Load webhooks ──────────────────────────────────────────────────────────
+  async function loadWebhooks(){
+    const { data, error } = await sb
+      .from('arowana_webhooks')
+      .select('*')
+      .order('group_name')
+      .order('key');
+    if(error){ toast('Failed to load webhooks: ' + error.message, 'err'); return; }
+    webhooksData = data || [];
+    renderWebhookFields();
+    renderOverview();
+  }
+
+  function renderWebhookFields(){
+    const container = document.getElementById('webhookFields');
+    if(!webhooksData.length){ container.innerHTML = '<div class="empty-state">No webhooks found.</div>'; return; }
+
+    const short = webhooksData.filter(w => w.group_name === 'short');
+    const long  = webhooksData.filter(w => w.group_name === 'long');
+
+    function renderGroup(label, items){
+      return `
+        <div class="wh-section-label">${label}</div>
+        ${items.map(w => `
+          <div class="wh-row" data-key="${w.key}">
+            <div class="wh-input-wrap">
+              <div class="wh-label">${w.label}</div>
+              <input class="input mono" id="wh_url_${w.key}" type="url"
+                value="${esc(w.url || '')}"
+                placeholder="https://your-n8n.cloud/webhook/${w.key.replace('_','-')}"
+                data-orig="${esc(w.url || '')}"/>
+              <div class="wh-meta">
+                <span class="status-dot ${w.is_live ? 'live' : 'off'}"></span>
+                <span>${w.is_live ? 'Live' : 'Off'} &nbsp;·&nbsp; Updated ${fmtDate(w.updated_at)}</span>
+              </div>
+            </div>
+            <div class="wh-actions">
+              <label class="toggle-wrap">
+                <label class="toggle">
+                  <input type="checkbox" id="wh_live_${w.key}" ${w.is_live ? 'checked' : ''}
+                    onchange="toggleWebhookLive('${w.key}', this.checked)"/>
+                  <span class="toggle-track"></span>
+                  <span class="toggle-thumb"></span>
+                </label>
+                <span style="font-size:.78rem;color:var(--muted)">Live</span>
+              </label>
+            </div>
+            <div class="wh-actions">
+              <button class="btn ghost sm" onclick="testWebhook('${w.key}')">Test</button>
+            </div>
+            <div class="wh-actions">
+              <button class="btn ghost sm" onclick="openEditWebhook('${w.key}')">✏️</button>
+              <button class="btn sm danger-btn" onclick="deleteWebhook('${w.key}')">🗑</button>
+            </div>
+          </div>`).join('')}`;
+    }
+
+    container.innerHTML =
+      renderGroup('⚡ Short-Term Tools', short) +
+      renderGroup('🏦 Long-Term Tools', long);
+  }
+
+  window.toggleWebhookLive = async function(key, isLive){
+    const { error } = await sb
+      .from('arowana_webhooks')
+      .update({ is_live: isLive, updated_by: currentUser.id, updated_at: new Date().toISOString() })
+      .eq('key', key);
+    if(error){ toast('Failed: ' + error.message, 'err'); return; }
+    toast(`${key}: ${isLive ? 'Live ✓' : 'Off'}`, isLive ? 'ok' : 'warn');
+    await loadWebhooks();
+  };
+
+  document.getElementById('saveAllWebhooks').onclick = async () => {
+    const btn = document.getElementById('saveAllWebhooks');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    let saved = 0, failed = 0;
+    for(const w of webhooksData){
+      const urlEl  = document.getElementById('wh_url_' + w.key);
+      const liveEl = document.getElementById('wh_live_' + w.key);
+      if(!urlEl) continue;
+      const newUrl  = urlEl.value.trim();
+      const newLive = liveEl ? liveEl.checked : w.is_live;
+      const { error } = await sb
+        .from('arowana_webhooks')
+        .update({ url: newUrl, is_live: newLive, updated_by: currentUser.id, updated_at: new Date().toISOString() })
+        .eq('key', w.key);
+      error ? failed++ : saved++;
+    }
+    btn.disabled = false; btn.textContent = '💾 Save All';
+    toast(failed ? `Saved ${saved}, failed ${failed}` : `All ${saved} webhooks saved ✓`, failed ? 'err' : 'ok');
+    await loadWebhooks();
+  };
+
+  window.testWebhook = async function(key){
+    const urlEl = document.getElementById('wh_url_' + key);
+    const url = (urlEl ? urlEl.value.trim() : '') || webhooksData.find(w => w.key === key)?.url || '';
+    if(!url){ toast('No URL set for ' + key, 'warn'); return; }
+    toast(`Testing ${key}…`, 'warn');
+    try{
+      // Use no-cors so n8n's missing CORS headers don't block the request.
+      // We can't read the response status in no-cors mode, so we treat
+      // a resolved promise as "request sent ✓" and a network error as failure.
+      await fetch(url, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ kind: 'ping', source: 'admin_test', key }),
+        signal: AbortSignal.timeout(8000)
+      });
+      toast(`${key}: Ping sent ✓ (enable CORS on n8n to see HTTP status)`, 'ok');
+    } catch(e){
+      toast(`${key}: ${e.message}`, 'err');
+    }
+  };
+
+  document.getElementById('testAllWebhooks').onclick = async () => {
+    for(const w of webhooksData){
+      if(w.url) await testWebhook(w.key);
+    }
+  };
+
+  // ── Tools ─────────────────────────────────────────────────────────────────
+  async function loadTools(){
+    const { data, error } = await sb
+      .from('arowana_tools')
+      .select('*')
+      .order('sort_order');
+    if(error){ toast('Failed to load tools: ' + error.message, 'err'); return; }
+    toolsData = data || [];
+    renderToolsTable();
+  }
+
+  function renderToolsTable(){
+    const tbody = document.getElementById('toolsTableBody');
+    if(!toolsData.length){ tbody.innerHTML = '<tr><td colspan="5" class="empty-state">No tools found.</td></tr>'; return; }
+    tbody.innerHTML = toolsData.map(t => `
+      <tr data-slug="${t.slug}">
+        <td>
+          <span style="font-size:1rem;margin-right:6px">${t.emoji}</span>
+          <strong>${esc(t.label)}</strong>
+        </td>
+        <td><span class="category-pill cat-${t.category}">${t.category}</span></td>
+        <td style="font-size:.78rem;color:var(--muted)">${esc(t.href)}</td>
+        <td style="text-align:center">
+          <label class="toggle">
+            <input type="checkbox" data-slug="${t.slug}" ${t.is_live ? 'checked' : ''}/>
+            <span class="toggle-track"></span>
+            <span class="toggle-thumb"></span>
+          </label>
+        </td>
+        <td style="text-align:center">
+          <div style="display:flex;gap:4px;justify-content:center">
+            <button class="btn ghost sm" onclick="openEditTool('${t.slug}')">✏️ Edit</button>
+            <button class="btn sm danger-btn" onclick="deleteTool('${t.slug}')">🗑</button>
+          </div>
+        </td>
+      </tr>`).join('');
+  }
+
+  document.getElementById('saveAllTools').onclick = async () => {
+    const btn = document.getElementById('saveAllTools');
+    btn.disabled = true; btn.textContent = 'Saving…';
+    let saved = 0, failed = 0;
+    for(const t of toolsData){
+      const toggle = document.querySelector(`input[data-slug="${t.slug}"]`);
+      if(!toggle) continue;
+      const { error } = await sb
+        .from('arowana_tools')
+        .update({ is_live: toggle.checked, updated_at: new Date().toISOString() })
+        .eq('slug', t.slug);
+      error ? failed++ : saved++;
+    }
+    btn.disabled = false; btn.textContent = '💾 Save Changes';
+    toast(failed ? `Saved ${saved}, failed ${failed}` : `${saved} tools updated ✓`, failed ? 'err' : 'ok');
+    await loadTools();
+  };
+
+  // ── Users ─────────────────────────────────────────────────────────────────
+  async function loadUsers(search=''){
+    const tbody = document.getElementById('usersTableBody');
+    tbody.innerHTML = '<tr><td colspan="6" class="loading">Loading…</td></tr>';
+
+    const roleFilter = document.getElementById('userRoleFilter')?.value || '';
+    const planFilter = document.getElementById('userPlanFilter')?.value || '';
+
+    let query = sb
+      .from('profiles')
+      .select('id, email, full_name, gs_role, arowana_plan, created_at', { count: 'exact' })
+      .order('created_at', { ascending: false })
+      .range(usersPage * PAGE_SIZE, (usersPage + 1) * PAGE_SIZE - 1);
+
+    if(search)     query = query.ilike('email', `%${search}%`);
+    if(roleFilter) query = query.eq('gs_role', roleFilter);
+    if(planFilter) query = query.eq('arowana_plan', planFilter);
+
+    const { data, error, count } = await query;
+    if(error){ toast('Failed to load users: ' + error.message, 'err'); return; }
+
+    if(!data || !data.length){
+      tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No users found.</td></tr>';
+      return;
+    }
+
+    usersCache = data;
+    tbody.innerHTML = data.map(u => `
+      <tr>
+        <td>${esc(u.email || '—')}</td>
+        <td>${esc(u.full_name || '—')}</td>
+        <td><span class="role-badge role-${u.gs_role || 'user'}">${u.gs_role || 'user'}</span></td>
+        <td><span class="plan-badge plan-${u.arowana_plan || 'free'}">${u.arowana_plan || 'free'}</span></td>
+        <td style="font-size:.78rem;color:var(--muted)">${fmtDate(u.created_at)}</td>
+        <td>
+          <button class="btn ghost sm" onclick="openEditUser('${u.id}')">✏️ Edit</button>
+        </td>
+      </tr>`).join('');
+
+    // Pager
+    const total = count || 0;
+    const pages = Math.ceil(total / PAGE_SIZE);
+    document.getElementById('usersPager').innerHTML =
+      `${usersPage * PAGE_SIZE + 1}–${Math.min((usersPage+1)*PAGE_SIZE, total)} of ${total} users` +
+      (usersPage > 0 ? ` <button class="btn ghost sm" onclick="usersPage--;loadUsers()">← Prev</button>` : '') +
+      ((usersPage + 1) < pages ? ` <button class="btn ghost sm" onclick="usersPage++;loadUsers()">Next →</button>` : '');
+  }
+
+  // Expose for inline onclick
+  window.usersPage = 0;
+  window.loadUsers = loadUsers;
+
+  window.upgradeUser = async function(userId, currentPlan){
+    const newPlan = currentPlan === 'pro' ? 'free' : 'pro';
+    const { error } = await sb.from('profiles').update({ arowana_plan: newPlan }).eq('id', userId);
+    if(error){ toast('Failed: ' + error.message, 'err'); return; }
+    toast(`Plan updated to ${newPlan} ✓`);
+    loadUsers(document.getElementById('userSearch').value);
+  };
+
+  window.changeRole = async function(userId, currentRole){
+    const newRole = currentRole === 'arowana_admin' ? 'user' : 'arowana_admin';
+    const { error } = await sb.from('profiles').update({ gs_role: newRole }).eq('id', userId);
+    if(error){ toast('Failed: ' + error.message, 'err'); return; }
+    toast(`Role updated to ${newRole} ✓`);
+    loadUsers(document.getElementById('userSearch').value);
+  };
+
+  document.getElementById('refreshUsers').onclick = () => loadUsers(document.getElementById('userSearch').value);
+  document.getElementById('userSearch').oninput = (e) => {
+    usersPage = 0;
+    clearTimeout(window._userSearchTimer);
+    window._userSearchTimer = setTimeout(() => loadUsers(e.target.value), 350);
+  };
+
+  // ── Stats ─────────────────────────────────────────────────────────────────
+  async function loadStats(){
+    const [{ count: totalUsers }, { count: proUsers }] = await Promise.all([
+      sb.from('profiles').select('*', { count: 'exact', head: true }),
+      sb.from('profiles').select('*', { count: 'exact', head: true }).eq('arowana_plan', 'pro'),
+    ]);
+    document.getElementById('statUsers').textContent    = totalUsers ?? '—';
+    document.getElementById('statPro').textContent      = proUsers   ?? '—';
+    document.getElementById('statWebhooks').textContent = (webhooksData.filter(w => w.is_live).length) + '/' + webhooksData.length;
+    document.getElementById('statTools').textContent    = (toolsData.filter(t => t.is_live).length) + '/' + toolsData.length;
+  }
+
+  function renderOverview(){
+    const list = document.getElementById('webhookHealthList');
+    if(!list) return;
+    if(!webhooksData.length){ list.innerHTML = '<div class="loading">Loading…</div>'; return; }
+    list.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px">
+        ${webhooksData.map(w => `
+          <div style="display:flex;align-items:center;gap:10px;padding:10px 12px;background:${w.is_live?'#f0fdf4':'#f8fafc'};border-radius:8px;border:1px solid ${w.is_live?'#bbf7d0':'var(--border)'}">
+            <span class="status-dot ${w.url && w.is_live ? 'live' : w.url ? 'unknown' : 'off'}"></span>
+            <div>
+              <div style="font-size:.84rem;font-weight:600">${esc(w.label)}</div>
+              <div style="font-size:.72rem;color:var(--muted)">${w.is_live ? (w.url ? 'Live' : 'Live (no URL)') : 'Off — demo mode'}</div>
+            </div>
+          </div>`).join('')}
+      </div>`;
+    // Update stat badges after render
+    document.getElementById('statWebhooks').textContent = webhooksData.filter(w => w.is_live && w.url).length + '/' + webhooksData.length;
+    document.getElementById('statTools').textContent    = toolsData.filter(t => t.is_live).length + '/' + toolsData.length;
+  }
+
+  // ── Site Settings ──────────────────────────────────────────────────────────
+  async function loadSiteSettings(){
+    const { data } = await sb
+      .from('app_config')
+      .select('key, value')
+      .eq('scope', 'arowana');
+
+    const cfg = {};
+    (data || []).forEach(row => { cfg[row.key] = row.value; });
+
+    document.getElementById('siteAnnouncement').value = cfg.announcement?.text || '';
+    document.getElementById('siteMaintenance').checked = cfg.site?.maintenance === true;
+    document.getElementById('siteFreeTrial').checked   = cfg.site?.free_trial  === true;
+    document.getElementById('siteNotes').value         = cfg.site?.notes || '';
+
+    // Raw display
+    document.getElementById('rawConfigDisplay').textContent =
+      data?.length ? JSON.stringify(data, null, 2) : '(empty — no arowana config rows yet)';
+  }
+
+  document.getElementById('saveSiteSettings').onclick = async () => {
+    const btn = document.getElementById('saveSiteSettings');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    const announcement = document.getElementById('siteAnnouncement').value.trim();
+    const maintenance  = document.getElementById('siteMaintenance').checked;
+    const freeTrial    = document.getElementById('siteFreeTrial').checked;
+    const notes        = document.getElementById('siteNotes').value.trim();
+
+    const rows = [
+      { scope: 'arowana', key: 'announcement', value: { text: announcement, updated_at: new Date().toISOString() } },
+      { scope: 'arowana', key: 'site',         value: { maintenance, free_trial: freeTrial, notes, updated_at: new Date().toISOString() } },
+    ];
+
+    let ok = true;
+    for(const row of rows){
+      const { error } = await sb
+        .from('app_config')
+        .upsert(row, { onConflict: 'scope,key' });
+      if(error){ toast('Failed to save ' + row.key + ': ' + error.message, 'err'); ok = false; }
+    }
+
+    btn.disabled = false; btn.textContent = '💾 Save Settings';
+    if(ok){ toast('Site settings saved ✓'); loadSiteSettings(); }
+  };
+
+  document.getElementById('refreshRawConfig').onclick = loadSiteSettings;
+
+  // ── Helpers ────────────────────────────────────────────────────────────────
+  function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+  function fmtDate(d){ try{ return d ? new Date(d).toLocaleDateString([],{year:'numeric',month:'short',day:'2-digit'}) : '—'; }catch{ return '—'; } }
+
+  // ── Confirm dialog helper ──────────────────────────────────────────────────
+  function confirm(title, msg, icon='⚠️'){
+    return new Promise(resolve => {
+      const modal = document.getElementById('confirmModal');
+      document.getElementById('confirmTitle').textContent = title;
+      document.getElementById('confirmMsg').textContent   = msg;
+      document.getElementById('confirmIcon').textContent  = icon;
+      modal.style.display = 'flex';
+      const ok  = document.getElementById('confirmOk');
+      const can = document.getElementById('confirmCancel');
+      const close = document.getElementById('confirmModal');
+      function cleanup(result){ modal.style.display='none'; ok.onclick=null; can.onclick=null; resolve(result); }
+      ok.onclick  = () => cleanup(true);
+      can.onclick = () => cleanup(false);
+    });
+  }
+
+  // ── Modal helpers ─────────────────────────────────────────────────────────
+  function showModal(id){  document.getElementById(id).style.display='flex'; }
+  function hideModal(id){  document.getElementById(id).style.display='none'; }
+
+  // ══ WEBHOOK CRUD ══════════════════════════════════════════════════════════
+
+  function openAddWebhook(){
+    document.getElementById('webhookModalTitle').textContent = 'Add Webhook';
+    document.getElementById('wm_origKey').value = '';
+    document.getElementById('wm_key').value     = '';
+    document.getElementById('wm_key').readOnly  = false;
+    document.getElementById('wm_label').value   = '';
+    document.getElementById('wm_url').value     = '';
+    document.getElementById('wm_group').value   = 'short';
+    document.getElementById('wm_live').checked  = false;
+    showModal('webhookModal');
+  }
+
+  function openEditWebhook(key){
+    const w = webhooksData.find(x => x.key === key);
+    if(!w) return;
+    document.getElementById('webhookModalTitle').textContent = 'Edit Webhook';
+    document.getElementById('wm_origKey').value = w.key;
+    document.getElementById('wm_key').value     = w.key;
+    document.getElementById('wm_key').readOnly  = false;
+    document.getElementById('wm_label').value   = w.label || '';
+    document.getElementById('wm_url').value     = w.url   || '';
+    document.getElementById('wm_group').value   = w.group_name || 'short';
+    document.getElementById('wm_live').checked  = !!w.is_live;
+    showModal('webhookModal');
+  }
+
+  async function saveWebhookModal(){
+    const origKey  = document.getElementById('wm_origKey').value.trim();
+    const key      = document.getElementById('wm_key').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'_');
+    const label    = document.getElementById('wm_label').value.trim();
+    const url      = document.getElementById('wm_url').value.trim();
+    const group    = document.getElementById('wm_group').value;
+    const is_live  = document.getElementById('wm_live').checked;
+
+    if(!key || !label){ toast('Key and Label are required.', 'warn'); return; }
+
+    const btn = document.getElementById('webhookModalSave');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    if(origKey){
+      if(key !== origKey){
+        // Key changed — delete old row, insert new one
+        const { error: delErr } = await sb.from('arowana_webhooks').delete().eq('key', origKey);
+        if(delErr){ toast('Rename failed (delete): ' + delErr.message, 'err'); btn.disabled=false; btn.textContent='💾 Save Webhook'; return; }
+        const { error: insErr } = await sb.from('arowana_webhooks')
+          .insert({ key, label, url, group_name: group, is_live, updated_by: currentUser.id });
+        if(insErr){ toast('Rename failed (insert): ' + insErr.message, 'err'); btn.disabled=false; btn.textContent='💾 Save Webhook'; return; }
+      } else {
+        const { error } = await sb.from('arowana_webhooks')
+          .update({ label, url, group_name: group, is_live, updated_by: currentUser.id, updated_at: new Date().toISOString() })
+          .eq('key', origKey);
+        if(error){ toast('Update failed: ' + error.message, 'err'); btn.disabled=false; btn.textContent='💾 Save Webhook'; return; }
+      }
+      toast('Webhook updated ✓');
+    } else {
+      // INSERT
+      const { error } = await sb.from('arowana_webhooks')
+        .insert({ key, label, url, group_name: group, is_live, updated_by: currentUser.id });
+      if(error){ toast('Insert failed: ' + error.message, 'err'); btn.disabled=false; btn.textContent='💾 Save Webhook'; return; }
+      toast('Webhook added ✓');
+    }
+
+    btn.disabled=false; btn.textContent='💾 Save Webhook';
+    hideModal('webhookModal');
+    await loadWebhooks();
+    renderOverview();
+  }
+
+  async function deleteWebhook(key){
+    const ok = await confirm('Delete webhook?', `This will permanently delete "${key}". Tools using this webhook will fall to demo mode.`, '🗑');
+    if(!ok) return;
+    const { error } = await sb.from('arowana_webhooks').delete().eq('key', key);
+    if(error){ toast('Delete failed: ' + error.message, 'err'); return; }
+    toast(`${key} deleted`);
+    await loadWebhooks();
+    renderOverview();
+  }
+
+  // Expose for inline onclick
+  window.openEditWebhook  = openEditWebhook;
+  window.deleteWebhook    = deleteWebhook;
+
+  // ══ TOOL CRUD ══════════════════════════════════════════════════════════════
+
+  function openAddTool(){
+    document.getElementById('toolModalTitle').textContent = 'Add Tool';
+    document.getElementById('tm_origSlug').value = '';
+    document.getElementById('tm_slug').value     = '';
+    document.getElementById('tm_slug').readOnly  = false;
+    document.getElementById('tm_label').value    = '';
+    document.getElementById('tm_emoji').value    = '🔧';
+    document.getElementById('tm_href').value     = '';
+    document.getElementById('tm_category').value = 'short';
+    document.getElementById('tm_sort').value     = '0';
+    document.getElementById('tm_live').checked   = false;
+    showModal('toolModal');
+  }
+
+  function openEditTool(slug){
+    const t = toolsData.find(x => x.slug === slug);
+    if(!t) return;
+    document.getElementById('toolModalTitle').textContent = 'Edit Tool';
+    document.getElementById('tm_origSlug').value = t.slug;
+    document.getElementById('tm_slug').value     = t.slug;
+    document.getElementById('tm_slug').readOnly  = true;
+    document.getElementById('tm_label').value    = t.label    || '';
+    document.getElementById('tm_emoji').value    = t.emoji    || '🔧';
+    document.getElementById('tm_href').value     = t.href     || '';
+    document.getElementById('tm_category').value = t.category || 'short';
+    document.getElementById('tm_sort').value     = t.sort_order ?? 0;
+    document.getElementById('tm_live').checked   = !!t.is_live;
+    showModal('toolModal');
+  }
+
+  async function saveToolModal(){
+    const origSlug = document.getElementById('tm_origSlug').value.trim();
+    const slug     = document.getElementById('tm_slug').value.trim().toLowerCase().replace(/[^a-z0-9_]/g,'_');
+    const label    = document.getElementById('tm_label').value.trim();
+    const emoji    = document.getElementById('tm_emoji').value.trim() || '🔧';
+    const href     = document.getElementById('tm_href').value.trim();
+    const category = document.getElementById('tm_category').value;
+    const sort     = parseInt(document.getElementById('tm_sort').value) || 0;
+    const is_live  = document.getElementById('tm_live').checked;
+
+    if(!slug || !label || !href){ toast('Slug, Label and Href are required.', 'warn'); return; }
+
+    const btn = document.getElementById('toolModalSave');
+    btn.disabled = true; btn.textContent = 'Saving…';
+
+    if(origSlug){
+      const { error } = await sb.from('arowana_tools')
+        .update({ label, emoji, href, category, sort_order: sort, is_live, updated_at: new Date().toISOString() })
+        .eq('slug', origSlug);
+      if(error){ toast('Update failed: ' + error.message, 'err'); btn.disabled=false; btn.textContent='💾 Save Tool'; return; }
+      toast('Tool updated ✓');
+    } else {
+      const { error } = await sb.from('arowana_tools')
+        .insert({ slug, label, emoji, href, category, sort_order: sort, is_live });
+      if(error){ toast('Insert failed: ' + error.message, 'err'); btn.disabled=false; btn.textContent='💾 Save Tool'; return; }
+      toast('Tool added ✓');
+    }
+
+    btn.disabled=false; btn.textContent='💾 Save Tool';
+    hideModal('toolModal');
+    await loadTools();
+  }
+
+  async function deleteTool(slug){
+    const t = toolsData.find(x => x.slug === slug);
+    const ok = await confirm('Delete tool?', `Remove "${t?.label || slug}" from the registry?`, '🗑');
+    if(!ok) return;
+    const { error } = await sb.from('arowana_tools').delete().eq('slug', slug);
+    if(error){ toast('Delete failed: ' + error.message, 'err'); return; }
+    toast(`${slug} deleted`);
+    await loadTools();
+  }
+
+  window.openEditTool = openEditTool;
+  window.deleteTool   = deleteTool;
+
+  // ══ USER EDIT MODAL ═══════════════════════════════════════════════════════
+
+  function openEditUser(userId){
+    const u = usersCache.find(x => x.id === userId);
+    if(!u) return;
+    document.getElementById('um_id').value    = u.id;
+    document.getElementById('um_email').value = u.email || '';
+    document.getElementById('um_name').value  = u.full_name || '';
+    document.getElementById('um_role').value  = u.gs_role || 'user';
+    document.getElementById('um_plan').value  = u.arowana_plan || 'free';
+    showModal('userModal');
+  }
+
+  async function saveUserModal(){
+    const userId = document.getElementById('um_id').value;
+    const name   = document.getElementById('um_name').value.trim();
+    const role   = document.getElementById('um_role').value;
+    const plan   = document.getElementById('um_plan').value;
+    const btn    = document.getElementById('userModalSave');
+
+    // Protect: can't demote the last gs_admin
+    if(role !== 'gs_admin'){
+      const u = usersCache.find(x => x.id === userId);
+      if(u?.gs_role === 'gs_admin'){
+        const adminCount = usersCache.filter(x => x.gs_role === 'gs_admin').length;
+        if(adminCount <= 1){ toast('Cannot demote the last gs_admin.', 'err'); return; }
+      }
+    }
+
+    btn.disabled = true; btn.textContent = 'Saving…';
+    const { error } = await sb.from('profiles')
+      .update({ full_name: name, gs_role: role, arowana_plan: plan })
+      .eq('id', userId);
+    btn.disabled = false; btn.textContent = '💾 Save Changes';
+
+    if(error){ toast('Update failed: ' + error.message, 'err'); return; }
+    toast('User updated ✓');
+    hideModal('userModal');
+    loadUsers(document.getElementById('userSearch').value);
+  }
+
+  async function deleteUser(userId){
+    const u = usersCache.find(x => x.id === userId);
+    if(u?.gs_role === 'gs_admin'){ toast('Cannot delete a gs_admin account.', 'err'); hideModal('userModal'); return; }
+    const ok = await confirm('Delete user?', `Permanently delete ${u?.email}? This cannot be undone.`, '⚠️');
+    if(!ok) return;
+    const { error } = await sb.from('profiles').delete().eq('id', userId);
+    if(error){ toast('Delete failed: ' + error.message, 'err'); return; }
+    toast('User deleted');
+    hideModal('userModal');
+    loadUsers(document.getElementById('userSearch').value);
+  }
+
+  window.openEditUser = openEditUser;
+
+  // ── Boot ───────────────────────────────────────────────────────────────────
+  document.addEventListener('DOMContentLoaded', () => {
+    // Wait up to 3 seconds for Supabase to load (handles CDN fallback delay)
+    waitForSbThenAuth(15);
+
+    // ── Webhook modal wiring ──
+    document.getElementById('addWebhookBtn')?.addEventListener('click', openAddWebhook);
+    document.getElementById('webhookModalClose')?.addEventListener('click',  () => hideModal('webhookModal'));
+    document.getElementById('webhookModalCancel')?.addEventListener('click', () => hideModal('webhookModal'));
+    document.getElementById('webhookModalSave')?.addEventListener('click',   saveWebhookModal);
+
+    // ── Tool modal wiring ──
+    document.getElementById('addToolBtn')?.addEventListener('click', openAddTool);
+    document.getElementById('toolModalClose')?.addEventListener('click',  () => hideModal('toolModal'));
+    document.getElementById('toolModalCancel')?.addEventListener('click', () => hideModal('toolModal'));
+    document.getElementById('toolModalSave')?.addEventListener('click',   saveToolModal);
+
+    // ── User modal wiring ──
+    document.getElementById('userModalClose')?.addEventListener('click',  () => hideModal('userModal'));
+    document.getElementById('userModalCancel')?.addEventListener('click', () => hideModal('userModal'));
+    document.getElementById('userModalSave')?.addEventListener('click',   saveUserModal);
+    document.getElementById('um_delete')?.addEventListener('click', () => {
+      deleteUser(document.getElementById('um_id').value);
+    });
+
+    // ── Confirm modal: close on backdrop click ──
+    document.getElementById('webhookModal')?.addEventListener('click', e => { if(e.target.id==='webhookModal') hideModal('webhookModal'); });
+    document.getElementById('toolModal')?.addEventListener('click',    e => { if(e.target.id==='toolModal')    hideModal('toolModal'); });
+    document.getElementById('userModal')?.addEventListener('click',    e => { if(e.target.id==='userModal')    hideModal('userModal'); });
+
+    // ── Export CSV ──
+    document.getElementById('exportUsersBtn')?.addEventListener('click', () => {
+      if(!usersCache.length){ toast('No users loaded yet.', 'warn'); return; }
+      const rows = [['Email','Name','Role','Plan','Joined']];
+      usersCache.forEach(u => rows.push([
+        u.email||'', u.full_name||'', u.gs_role||'user',
+        u.arowana_plan||'free', fmtDate(u.created_at), '—'
+      ]));
+      const csv = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+      a.download = 'arowana-users-' + new Date().toISOString().slice(0,10) + '.csv';
+      a.click();
+      toast('CSV exported ✓');
+    });
+
+    // ── Role + Plan filter ──
+    document.getElementById('userRoleFilter')?.addEventListener('change', () => {
+      usersPage = 0; loadUsers(document.getElementById('userSearch').value);
+    });
+    document.getElementById('userPlanFilter')?.addEventListener('change', () => {
+      usersPage = 0; loadUsers(document.getElementById('userSearch').value);
+    });
+  });
+
+})();
+</script>
+
+</body>
+</html>

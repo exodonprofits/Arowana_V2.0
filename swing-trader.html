@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>📊</text></svg>">
+<title>Swing Trader — Arowana Profits</title>
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dk:#083d6e;--brand-lt:#e8f2fb;
+  --bg:#f6f8fb;--panel:#fff;--text:#111827;--muted:#64748b;
+  --border:#e5e7eb;--shadow:0 4px 24px rgba(11,79,138,.08);--radius:14px;
+  --ring:rgba(11,79,138,.22);--green:#16a34a;--red:#dc2626;--amber:#d97706;
+  --blue:#3b9eff;--cyan:#00d4ff;
+  --page-width:min(1200px,92vw)
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+/* ─ NAV ─ */
+.nav-shell{background:var(--brand);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;font-size:1.2rem;white-space:nowrap}
+.nav-logo{width:34px;height:34px;border-radius:8px;object-fit:contain;background:rgba(255,255,255,.15);padding:2px}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{color:rgba(255,255,255,.75);padding:7px 11px;border-radius:8px;font-size:.875rem;font-weight:600;transition:.15s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nav-btn{color:rgba(255,255,255,.8);padding:6px 12px;border-radius:8px;font-size:.85rem;font-weight:600;transition:.15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.nav-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-btn.cta{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.nav-btn.cta:hover{background:rgba(255,255,255,.28)}
+
+/* ─ PAGE HERO ─ */
+.page-hero{background:linear-gradient(135deg,#0b4f8a 0%,#1565a8 60%,#0d7bc4 100%);color:#fff;padding:28px 0 24px}
+.page-hero h1{margin:0 0 4px;font-size:1.7rem;font-weight:800}
+.page-hero p{margin:0;opacity:.8;font-size:.9rem}
+
+/* ─ CARDS ─ */
+.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:1rem;font-weight:700;margin:0}
+
+/* ─ BUTTONS ─ */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.875rem;font-family:inherit;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dk)}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:#f8fafc}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b91c1c}
+.btn-amber{background:var(--amber);color:#fff}.btn-amber:hover{background:#b45309}
+.btn-sm{padding:5px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─ INPUTS ─ */
+input[type=text],input[type=number],select,textarea{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:var(--text);background:#fff;width:100%;transition:.15s}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px var(--ring);border-color:var(--brand)}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.hint{font-size:.75rem;color:var(--muted);margin-top:3px}
+
+/* ─ LAYOUT ─ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.three-col{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.three-col{grid-template-columns:1fr}}
+
+/* ─ TABS ─ */
+.tab-nav{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-nav button{background:none;border:none;padding:10px 16px;font-size:.9rem;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px 8px 0 0;transition:.15s;font-family:inherit}
+.tab-nav button.active{color:var(--brand);background:var(--panel);border-bottom:2px solid var(--brand)}
+.tab-nav button:hover:not(.active){background:rgba(0,0,0,.04)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ─ TICKER INPUT ─ */
+.ticker-row{display:flex;gap:8px;align-items:end;margin-bottom:20px}
+.ticker-input{flex:1}
+.ticker-input input{text-transform:uppercase;font-family:monospace;font-weight:600}
+
+/* ─ SPINNER ─ */
+.spinner{display:none;text-align:center;padding:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-icon{width:22px;height:22px;border:3px solid #e5e7eb;border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+
+/* ─ ALERTS ─ */
+.alert{border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:.9rem}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-warning{background:#fffbeb;border:1px solid #fed7aa;color:#92400e}
+.alert-danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+
+/* ─ SIGNAL GAUGE ─ */
+.gauge-wrap{position:relative;text-align:center;margin:16px 0}
+.gauge-wrap svg{display:block;margin:0 auto}
+.signal-display{font-size:1.2rem;font-weight:800;margin-top:8px}
+.signal-buy{color:var(--green)}
+.signal-sell{color:var(--red)}
+.signal-hold{color:var(--amber)}
+
+/* ─ KPI GRID ─ */
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:12px 0}
+.kpi{background:#f8fafc;border:1px solid var(--border);border-radius:9px;padding:10px 12px;text-align:center}
+.kpi-val{font-size:1rem;font-weight:800;color:var(--text);display:block;margin-top:2px}
+.kpi-lbl{font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);display:block}
+
+/* ─ SETUP CARDS ─ */
+.setup-card{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:12px;background:#fff}
+.setup-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.setup-type{font-size:.75rem;background:var(--brand-lt);color:var(--brand);padding:3px 8px;border-radius:5px;font-weight:600;text-transform:uppercase}
+.setup-title{font-weight:700;margin:4px 0 6px}
+.setup-desc{font-size:.85rem;color:var(--muted);margin-bottom:12px}
+.setup-levels{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;font-size:.8rem}
+.setup-level{background:#f9fafb;padding:6px 8px;border-radius:6px;text-align:center}
+.setup-level strong{display:block;color:var(--text)}
+
+/* ─ TRADE JOURNAL INTEGRATION ─ */
+.journal-card{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:12px;padding:16px;margin-top:16px}
+.journal-card h4{color:#0c4a6e;margin:0 0 8px}
+.journal-card p{color:#075985;font-size:.85rem;margin:0 0 12px}
+
+/* ─ FOOTER ─ */
+footer{background:var(--brand);color:#cfe0f5;padding:28px 0;margin-top:auto}
+.f-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:720px){.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.f-grid{grid-template-columns:1fr}}
+.f-col h4{color:#fff;font-size:.875rem;font-weight:700;margin:0 0 8px}
+.f-col a{display:block;color:#94bad8;font-size:.8rem;margin-bottom:4px}
+.f-col a:hover{color:#fff}
+.f-col p{font-size:.78rem;margin:0;line-height:1.6}
+.f-bottom{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);text-align:center;font-size:.73rem;color:#6b94b8}
+
+/* ─ TOAST NOTIFICATIONS ─ */
+.toast-container{position:fixed;top:70px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px}
+.toast{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;min-width:300px;animation:slideIn .3s ease}
+.toast.success{border-left:4px solid var(--green)}
+.toast.error{border-left:4px solid var(--red)}
+.toast.info{border-left:4px solid var(--blue)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ─ MOBILE RESPONSIVE ─ */
+@media(max-width:600px){
+  .container{padding:0 12px}
+  .page-hero h1{font-size:1.4rem}
+  .nav-inner{padding:0 12px}
+  .nav-brand{font-size:1rem}
+  .card{padding:16px}
+  .ticker-row{flex-direction:column;gap:12px}
+  .ticker-input{width:100%}
+}
+</style>
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="nav-shell">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <img src="https://arowanaprofits.com/images/logo-icon.png" alt="" class="nav-logo">
+      Arowana Profits
+    </a>
+    <div class="nav-links">
+      <a href="arowana-trader.html" class="nav-link">📊 Trader</a>
+      <a href="portfolio-advisor.html" class="nav-link">💼 Portfolio</a>
+      <a href="features.html" class="nav-link">🛠️ Tools</a>
+      <a href="swing-trader.html" class="nav-link active">📈 Swing Trader</a>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="location.href='login.html'">Sign In</button>
+      <button class="nav-btn cta" onclick="location.href='pricing.html'">Start Free</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="container">
+    <h1>🎯 Swing Trader</h1>
+    <p>AI-powered swing trading analysis with defined entry/exit rules and risk management for any ticker.</p>
+  </div>
+</section>
+
+<!-- Main Content -->
+<main style="padding:24px 0">
+  <div class="container">
+    
+    <!-- Ticker Input -->
+    <div class="card">
+      <div class="card-hd">
+        <h2 class="card-title">📊 Analyze Any Ticker</h2>
+        <div style="display:flex;gap:8px">
+          <button id="demoBtn" class="btn btn-ghost btn-sm">🧪 Demo Mode</button>
+          <button id="resetBtn" class="btn btn-ghost btn-sm">🔄 Reset</button>
+        </div>
+      </div>
+      
+      <div class="ticker-row">
+        <div class="ticker-input">
+          <label for="tickerSymbol">Stock Symbol</label>
+          <input type="text" id="tickerSymbol" placeholder="Enter ticker (e.g., AAPL, TSLA, GEV)" maxlength="10">
+          <div class="hint">Enter any US-listed stock symbol for swing trading analysis</div>
+        </div>
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span id="analyzeText">🔍 Analyze</span>
+          <div id="analyzeSpinner" class="spinner" style="display:none">
+            <div class="spin-icon"></div>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Demo Mode Notice -->
+      <div id="demoNotice" class="alert alert-warning" style="display:none">
+        🧪 <strong>Demo Mode Active:</strong> Analysis uses simulated data for demonstration. Real market data requires webhook configuration.
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" style="display:none">
+      
+      <!-- Signal Overview -->
+      <div class="card">
+        <div class="card-hd">
+          <h2 class="card-title">📈 Swing Signal for <span id="resultTicker"></span></h2>
+          <div style="display:flex;gap:8px">
+            <span id="signalStrength" class="badge"></span>
+            <span id="timeframe" class="badge" style="background:#f3f4f6;color:#6b7280">Daily/Weekly</span>
+          </div>
+        </div>
+        
+        <!-- Gauge Display -->
+        <div class="gauge-wrap">
+          <svg width="260" height="140" viewBox="0 0 260 140">
+            <!-- Background arc -->
+            <path d="M 30 120 A 100 100 0 0 1 230 120" stroke="#e5e7eb" stroke-width="12" fill="none"/>
+            <!-- Colored segments -->
+            <path d="M 30 120 A 100 100 0 0 0 80 45" stroke="#dc2626" stroke-width="12" fill="none"/>
+            <path d="M 80 45 A 100 100 0 0 0 130 30" stroke="#f59e0b" stroke-width="12" fill="none"/>
+            <path d="M 130 30 A 100 100 0 0 0 180 45" stroke="#16a34a" stroke-width="12" fill="none"/>
+            <path d="M 180 45 A 100 100 0 0 0 230 120" stroke="#dc2626" stroke-width="12" fill="none"/>
+            <!-- Needle -->
+            <line id="signalNeedle" x1="130" y1="120" x2="130" y2="40" stroke="#374151" stroke-width="3" stroke-linecap="round" transform="rotate(0 130 120)" style="transition:transform 0.5s ease"/>
+            <!-- Center dot -->
+            <circle cx="130" cy="120" r="6" fill="#374151"/>
+          </svg>
+          <div class="signal-display">
+            <div id="signalText" style="color:#6b7280">Awaiting Analysis</div>
+          </div>
+        </div>
+        
+        <!-- Key Metrics -->
+        <div class="kpi-grid">
+          <div class="kpi">
+            <span class="kpi-lbl">Current Price</span>
+            <span id="currentPrice" class="kpi-val">—</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-lbl">Risk/Reward</span>
+            <span id="riskReward" class="kpi-val">—</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-lbl">Confidence</span>
+            <span id="confidence" class="kpi-val">—</span>
+          </div>
+          <div class="kpi">
+            <span class="kpi-lbl">Time Horizon</span>
+            <span id="timeHorizon" class="kpi-val">3-10 days</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Swing Setup Tabs -->
+      <div class="card">
+        <div class="tab-nav">
+          <button id="tab-setups" class="active" onclick="switchTab('setups')">🎯 Setup Analysis</button>
+          <button id="tab-rules" onclick="switchTab('rules')">📋 Trading Rules</button>
+          <button id="tab-journal" onclick="switchTab('journal')">📝 Journal Entry</button>
+        </div>
+
+        <!-- Tab Content: Setups -->
+        <div id="content-setups" class="tab-content active">
+          <div id="setupsContainer">
+            <!-- Setup cards will be generated here -->
+          </div>
+        </div>
+
+        <!-- Tab Content: Rules -->
+        <div id="content-rules" class="tab-content">
+          <div class="two-col">
+            <div>
+              <h4>📈 Entry Rules</h4>
+              <div id="entryRules" style="background:#f9fafb;padding:16px;border-radius:8px;margin-bottom:16px">
+                <p style="color:#6b7280;font-style:italic">Run analysis to see specific entry criteria for this ticker.</p>
+              </div>
+              
+              <h4>⚠️ Risk Management</h4>
+              <div id="riskRules" style="background:#f9fafb;padding:16px;border-radius:8px">
+                <p style="color:#6b7280;font-style:italic">Position sizing and stop-loss rules will appear here.</p>
+              </div>
+            </div>
+            
+            <div>
+              <h4>🚪 Exit Rules</h4>
+              <div id="exitRules" style="background:#f9fafb;padding:16px;border-radius:8px;margin-bottom:16px">
+                <p style="color:#6b7280;font-style:italic">Exit strategies and profit-taking rules will be shown here.</p>
+              </div>
+              
+              <h4>🔄 Monitoring</h4>
+              <div id="monitoringRules" style="background:#f9fafb;padding:16px;border-radius:8px">
+                <p style="color:#6b7280;font-style:italic">Daily monitoring checklist will appear here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab Content: Journal -->
+        <div id="content-journal" class="tab-content">
+          <div class="journal-card">
+            <h4>📝 Pre-fill Trade Journal Entry</h4>
+            <p>Based on this analysis, we can automatically populate your trade journal with the setup details.</p>
+            <div style="display:flex;gap:12px;flex-wrap:wrap">
+              <button id="journalStockBtn" class="btn btn-green btn-sm" onclick="openTradeJournal('stock')">📈 Log as Stock Trade</button>
+              <button id="journalOptionsBtn" class="btn btn-amber btn-sm" onclick="openTradeJournal('options')">⚡ Log as Options Trade</button>
+              <button class="btn btn-ghost btn-sm" onclick="copyAnalysis()">📋 Copy Analysis</button>
+            </div>
+            <div class="hint" style="margin-top:8px">
+              Journal integration requires authentication. <a href="login.html" style="color:#0c4a6e;font-weight:600">Sign in</a> to use this feature.
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="f-grid">
+      <div class="f-col">
+        <h4>Arowana Profits</h4>
+        <p>Risk-first education and AI-assisted planning for retail traders.</p>
+      </div>
+      <div class="f-col">
+        <h4>Explore</h4>
+        <a href="arowana-trader.html">Arowana Trader</a>
+        <a href="portfolio-advisor.html">Portfolio Advisor</a>
+        <a href="features.html">Features</a>
+        <a href="pricing.html">Plans</a>
+      </div>
+      <div class="f-col">
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="security.html">Security</a>
+        <a href="blog.html">Blog</a>
+      </div>
+      <div class="f-col">
+        <h4>Legal</h4>
+        <a href="disclosures.html">Disclosures</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="f-bottom">
+      &copy; <span id="footYear"></span> Arowana Profits. All rights reserved. Educational purposes only. Not financial advice.
+    </div>
+  </div>
+</footer>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+(function(){
+'use strict';
+
+// ─ CONSTANTS ─
+const DEMO_MODE_KEY = 'swing_trader_demo_mode';
+const RESULTS_CACHE_KEY = 'swing_trader_last_result';
+
+// ─ STATE ─
+let isDemoMode = false;
+let lastAnalysis = null;
+let currentTicker = '';
+
+// ─ DOM REFERENCES ─
+const $ = id => document.getElementById(id);
+
+// ─ INITIALIZATION ─
+function init() {
+  // Set footer year
+  const fy = $('footYear');
+  if (fy) fy.textContent = new Date().getFullYear();
+  
+  // Load demo mode preference
+  isDemoMode = localStorage.getItem(DEMO_MODE_KEY) === 'true';
+  updateDemoMode();
+  
+  // Bind events
+  $('demoBtn').addEventListener('click', toggleDemoMode);
+  $('resetBtn').addEventListener('click', resetAll);
+  $('analyzeBtn').addEventListener('click', runAnalysis);
+  $('tickerSymbol').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runAnalysis();
+  });
+  
+  // Load cached result if available
+  loadCachedResult();
+  
+  // Listen for app config ready
+  document.addEventListener('ap:config:ready', () => {
+    // Webhook configuration available
+  });
+}
+
+// ─ DEMO MODE ─
+function toggleDemoMode() {
+  isDemoMode = !isDemoMode;
+  localStorage.setItem(DEMO_MODE_KEY, isDemoMode.toString());
+  updateDemoMode();
+  showToast(isDemoMode ? '🧪 Demo mode enabled' : '🌐 Live mode enabled', 'info');
+}
+
+function updateDemoMode() {
+  const btn = $('demoBtn');
+  const notice = $('demoNotice');
+  
+  if (isDemoMode) {
+    btn.textContent = '🌐 Live Mode';
+    btn.className = 'btn btn-amber btn-sm';
+    notice.style.display = 'block';
+  } else {
+    btn.textContent = '🧪 Demo Mode';
+    btn.className = 'btn btn-ghost btn-sm';
+    notice.style.display = 'none';
+  }
+}
+
+// ─ MAIN ANALYSIS FUNCTION ─
+async function runAnalysis() {
+  const ticker = $('tickerSymbol').value.trim().toUpperCase();
+  if (!ticker) {
+    showToast('Please enter a ticker symbol', 'error');
+    return;
+  }
+  
+  currentTicker = ticker;
+  setBusyState(true);
+  
+  try {
+    let analysisData;
+    
+    if (isDemoMode) {
+      // Demo mode - simulated data
+      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate API delay
+      analysisData = generateDemoData(ticker);
+    } else {
+      // Live mode - would call actual API
+      analysisData = await callSwingAnalysisAPI(ticker);
+    }
+    
+    lastAnalysis = analysisData;
+    currentTicker = ticker;
+    
+    // Cache the result
+    localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify({
+      ticker,
+      data: analysisData,
+      timestamp: Date.now()
+    }));
+    
+    displayResults(analysisData);
+    showToast(`✅ Analysis complete for ${ticker}`, 'success');
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    showToast(`❌ Analysis failed: ${error.message}`, 'error');
+  } finally {
+    setBusyState(false);
+  }
+}
+
+// ─ DEMO DATA GENERATOR ─
+function generateDemoData(ticker) {
+  const signals = ['Buy', 'Hold', 'Sell'];
+  const signal = signals[Math.floor(Math.random() * signals.length)];
+  const basePrice = 100 + Math.random() * 400; // $100-500 range
+  
+  const setups = [];
+  
+  if (signal === 'Buy') {
+    setups.push({
+      type: 'Breakout Entry',
+      title: 'Momentum Breakout Setup',
+      description: 'Price breaking above key resistance with volume confirmation',
+      entry: (basePrice * 1.02).toFixed(2),
+      stop: (basePrice * 0.95).toFixed(2),
+      target1: (basePrice * 1.08).toFixed(2),
+      target2: (basePrice * 1.15).toFixed(2),
+      riskReward: '1:2.1',
+      probability: '65%',
+      criteria: [
+        'Close above $' + (basePrice * 1.01).toFixed(2) + ' with volume >150% avg',
+        'RSI daily <75 (not overbought)',
+        'MACD histogram expanding positive',
+        'Post-earnings confirmation preferred'
+      ]
+    });
+    
+    setups.push({
+      type: 'Pullback Entry',
+      title: 'Value Zone Retracement',
+      description: 'Healthy pullback to support levels for better risk/reward',
+      entry: (basePrice * 0.96).toFixed(2),
+      stop: (basePrice * 0.91).toFixed(2),
+      target1: (basePrice * 1.02).toFixed(2),
+      target2: (basePrice * 1.08).toFixed(2),
+      riskReward: '1:2.4',
+      probability: '70%',
+      criteria: [
+        'Price pulls back to $' + (basePrice * 0.95).toFixed(2) + '-$' + (basePrice * 0.97).toFixed(2),
+        'Support holding at key levels',
+        'RSI daily <50 (oversold bounce setup)',
+        'Volume declining on pullback (healthy retracement)'
+      ]
+    });
+  } else if (signal === 'Hold') {
+    setups.push({
+      type: 'Monitor Only',
+      title: 'Sideways Consolidation',
+      description: 'Price in neutral range - wait for breakout direction',
+      entry: 'Wait for breakout',
+      stop: 'Below $' + (basePrice * 0.92).toFixed(2),
+      target1: '$' + (basePrice * 1.06).toFixed(2) + ' if bullish break',
+      target2: '$' + (basePrice * 0.88).toFixed(2) + ' if bearish break',
+      riskReward: 'TBD',
+      probability: '50%',
+      criteria: [
+        'Trading in $' + (basePrice * 0.94).toFixed(2) + '-$' + (basePrice * 1.04).toFixed(2) + ' range',
+        'Wait for volume breakout above/below range',
+        'Monitor sector rotation and broader market',
+        'No position until clear direction'
+      ]
+    });
+  } else {
+    setups.push({
+      type: 'Short Setup',
+      title: 'Breakdown Below Support',
+      description: 'Price failing key support with bearish momentum',
+      entry: (basePrice * 0.98).toFixed(2),
+      stop: (basePrice * 1.03).toFixed(2),
+      target1: (basePrice * 0.92).toFixed(2),
+      target2: (basePrice * 0.85).toFixed(2),
+      riskReward: '1:2.6',
+      probability: '60%',
+      criteria: [
+        'Break below $' + (basePrice * 0.99).toFixed(2) + ' support with volume',
+        'RSI showing bearish divergence',
+        'MACD turning negative',
+        'Broader market weakness supporting short bias'
+      ]
+    });
+  }
+  
+  return {
+    ticker,
+    signal,
+    currentPrice: basePrice.toFixed(2),
+    confidence: 65 + Math.floor(Math.random() * 25), // 65-89%
+    riskReward: setups[0].riskReward,
+    trend: signal === 'Buy' ? 'Uptrend' : signal === 'Sell' ? 'Downtrend' : 'Sideways',
+    setups,
+    technicals: {
+      rsi: 45 + Math.random() * 30,
+      macd: signal === 'Buy' ? 'Bullish' : signal === 'Sell' ? 'Bearish' : 'Neutral',
+      ma50: signal === 'Buy' ? 'Above' : 'Below',
+      volume: 'Average',
+      support: (basePrice * 0.92).toFixed(2),
+      resistance: (basePrice * 1.07).toFixed(2)
+    },
+    isDemo: true
+  };
+}
+
+// ─ LIVE API CALL (PLACEHOLDER) ─
+async function callSwingAnalysisAPI(ticker) {
+  // This would integrate with your n8n webhook or Claude API
+  // For now, return demo data as fallback
+  throw new Error('Live API not configured. Enable demo mode to test.');
+  
+  /* Example implementation:
+  const webhookUrl = getWebhookUrl(); // from app-config.js pattern
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'swing_analysis',
+      ticker: ticker,
+      timeframe: 'daily_weekly',
+      analysis_type: 'comprehensive'
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return await response.json();
+  */
+}
+
+// ─ DISPLAY RESULTS ─
+function displayResults(data) {
+  $('resultsSection').style.display = 'block';
+  $('resultTicker').textContent = data.ticker;
+  
+  // Update signal gauge
+  updateSignalGauge(data.signal);
+  
+  // Update KPIs
+  $('currentPrice').textContent = '$' + data.currentPrice;
+  $('riskReward').textContent = data.riskReward;
+  $('confidence').textContent = data.confidence + '%';
+  
+  // Update signal strength badge
+  const strengthBadge = $('signalStrength');
+  const confidence = parseInt(data.confidence);
+  if (confidence >= 80) {
+    strengthBadge.textContent = 'Strong ' + data.signal;
+    strengthBadge.style.background = data.signal === 'Buy' ? '#16a34a' : data.signal === 'Sell' ? '#dc2626' : '#f59e0b';
+  } else if (confidence >= 65) {
+    strengthBadge.textContent = 'Moderate ' + data.signal;
+    strengthBadge.style.background = '#f59e0b';
+  } else {
+    strengthBadge.textContent = 'Weak ' + data.signal;
+    strengthBadge.style.background = '#6b7280';
+  }
+  strengthBadge.style.color = '#fff';
+  strengthBadge.style.padding = '4px 8px';
+  strengthBadge.style.borderRadius = '6px';
+  strengthBadge.style.fontSize = '.75rem';
+  strengthBadge.style.fontWeight = '600';
+  
+  // Generate setup cards
+  displaySetupCards(data.setups, data);
+  
+  // Generate trading rules
+  displayTradingRules(data);
+  
+  // Scroll to results on mobile
+  if (window.innerWidth < 800) {
+    $('resultsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// ─ UPDATE SIGNAL GAUGE ─
+function updateSignalGauge(signal) {
+  const needle = $('signalNeedle');
+  const signalText = $('signalText');
+  
+  let rotation = 0;
+  let color = '#6b7280';
+  let text = 'Neutral';
+  
+  switch (signal) {
+    case 'Buy':
+      rotation = -45; // Point to green section
+      color = '#16a34a';
+      text = 'Buy Signal';
+      break;
+    case 'Sell':
+      rotation = 45; // Point to red section
+      color = '#dc2626';
+      text = 'Sell Signal';
+      break;
+    case 'Hold':
+      rotation = 0; // Point to center (yellow)
+      color = '#f59e0b';
+      text = 'Hold / Monitor';
+      break;
+  }
+  
+  needle.style.transform = `rotate(${rotation}deg)`;
+  signalText.textContent = text;
+  signalText.style.color = color;
+  signalText.className = `signal-display signal-${signal.toLowerCase()}`;
+}
+
+// ─ DISPLAY SETUP CARDS ─
+function displaySetupCards(setups, data) {
+  const container = $('setupsContainer');
+  container.innerHTML = '';
+  
+  setups.forEach((setup, index) => {
+    const card = document.createElement('div');
+    card.className = 'setup-card';
+    card.innerHTML = `
+      <div class="setup-header">
+        <div class="setup-type">${setup.type}</div>
+        <div style="font-size:.8rem;color:var(--muted)">${setup.probability} probability</div>
+      </div>
+      <h3 class="setup-title">${setup.title}</h3>
+      <p class="setup-desc">${setup.description}</p>
+      
+      <div class="setup-levels">
+        <div class="setup-level">
+          <strong>Entry</strong>
+          $${setup.entry}
+        </div>
+        <div class="setup-level">
+          <strong>Stop</strong>
+          $${setup.stop}
+        </div>
+        <div class="setup-level">
+          <strong>Target 1</strong>
+          $${setup.target1}
+        </div>
+        <div class="setup-level">
+          <strong>Target 2</strong>
+          $${setup.target2}
+        </div>
+        <div class="setup-level">
+          <strong>R:R</strong>
+          ${setup.riskReward}
+        </div>
+      </div>
+      
+      <div style="margin-top:12px">
+        <h4 style="font-size:.8rem;color:var(--muted);margin-bottom:6px">Entry Criteria:</h4>
+        <ul style="font-size:.8rem;color:var(--text);margin:0;padding-left:16px">
+          ${setup.criteria.map(criterion => `<li>${criterion}</li>`).join('')}
+        </ul>
+      </div>
+      
+      ${data.isDemo ? '<div style="margin-top:8px;padding:6px 8px;background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;font-size:.75rem;color:#92400e">🧪 Demo data - not real market levels</div>' : ''}
+    `;
+    
+    container.appendChild(card);
+  });
+}
+
+// ─ DISPLAY TRADING RULES ─
+function displayTradingRules(data) {
+  const signal = data.signal;
+  const setup = data.setups[0]; // Use primary setup
+  
+  // Entry Rules
+  $('entryRules').innerHTML = `
+    <h5 style="margin:0 0 8px;color:var(--text)">📈 ${signal} Setup for ${data.ticker}</h5>
+    <ul style="margin:0;padding-left:16px;font-size:.9rem;line-height:1.6">
+      ${setup.criteria.map(criterion => `<li>${criterion}</li>`).join('')}
+    </ul>
+    <div style="margin-top:8px;font-size:.85rem;color:var(--muted)">
+      <strong>Position Size:</strong> Risk 1-2% of account per trade
+    </div>
+  `;
+  
+  // Exit Rules
+  const exitContent = signal === 'Buy' ? `
+    <ul style="margin:0;padding-left:16px;font-size:.9rem;line-height:1.6">
+      <li><strong>Stop Loss:</strong> $${setup.stop} (MA breakdown or structure break)</li>
+      <li><strong>Target 1:</strong> $${setup.target1} (take 50% profits)</li>
+      <li><strong>Target 2:</strong> $${setup.target2} (final exit or trail stop)</li>
+      <li><strong>Time Stop:</strong> Exit if no progress after 10 trading days</li>
+      <li><strong>Trail Stop:</strong> Once up 2R, trail to previous day's low</li>
+    </ul>
+  ` : signal === 'Sell' ? `
+    <ul style="margin:0;padding-left:16px;font-size:.9rem;line-height:1.6">
+      <li><strong>Stop Loss:</strong> $${setup.stop} (break above resistance)</li>
+      <li><strong>Target 1:</strong> $${setup.target1} (cover 50% of short)</li>
+      <li><strong>Target 2:</strong> $${setup.target2} (final cover)</li>
+      <li><strong>Time Stop:</strong> Cover if consolidating for 5+ days</li>
+      <li><strong>Sector Risk:</strong> Cover on sector rotation or market rally</li>
+    </ul>
+  ` : `
+    <ul style="margin:0;padding-left:16px;font-size:.9rem;line-height:1.6">
+      <li><strong>No Position:</strong> Wait for clear breakout direction</li>
+      <li><strong>Breakout Up:</strong> Consider buy above $${(parseFloat(data.currentPrice) * 1.03).toFixed(2)}</li>
+      <li><strong>Breakdown:</strong> Consider short below $${(parseFloat(data.currentPrice) * 0.97).toFixed(2)}</li>
+      <li><strong>Review Daily:</strong> Monitor for volume and momentum changes</li>
+    </ul>
+  `;
+  
+  $('exitRules').innerHTML = exitContent;
+  
+  // Risk Management
+  $('riskRules').innerHTML = `
+    <ul style="margin:0;padding-left:16px;font-size:.9rem;line-height:1.6">
+      <li><strong>Position Size:</strong> Risk ${setup.type.includes('Breakout') ? '1.5%' : '1.0%'} of account</li>
+      <li><strong>Max Loss:</strong> Never risk more than $${setup.stop} stop level</li>
+      <li><strong>Correlation Risk:</strong> Limit to 3 positions in same sector</li>
+      <li><strong>Market Risk:</strong> Reduce size if VIX >30</li>
+      <li><strong>Time Risk:</strong> Close before major earnings if holding >5 days</li>
+    </ul>
+  `;
+  
+  // Monitoring
+  $('monitoringRules').innerHTML = `
+    <ul style="margin:0;padding-left:16px;font-size:.9rem;line-height:1.6">
+      <li>🔍 Check price vs MA levels daily (pre-market)</li>
+      <li>📊 Monitor RSI and MACD for divergences</li>
+      <li>📈 Watch volume vs 20-day average</li>
+      <li>🗞️ Scan for sector/company news</li>
+      <li>⚖️ Review risk if position moves >50% of expected range</li>
+      <li>📅 Mark calendar for earnings/events within trade window</li>
+    </ul>
+  `;
+}
+
+// ─ TAB SWITCHING ─
+function switchTab(tabName) {
+  // Update tab buttons
+  document.querySelectorAll('.tab-nav button').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  $(`tab-${tabName}`).classList.add('active');
+  
+  // Update content
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  $(`content-${tabName}`).classList.add('active');
+}
+
+// ─ TRADE JOURNAL INTEGRATION ─
+function openTradeJournal(type) {
+  if (!lastAnalysis) {
+    showToast('No analysis data to log', 'error');
+    return;
+  }
+  
+  // Check authentication (simplified check)
+  const authData = localStorage.getItem('gs_auth_user_v1');
+  if (!authData) {
+    showToast('Please sign in to access trade journal', 'error');
+    setTimeout(() => {
+      window.location.href = 'login.html';
+    }, 1500);
+    return;
+  }
+  
+  // Prepare journal data
+  const setup = lastAnalysis.setups[0];
+  const journalData = {
+    ticker: currentTicker,
+    action: lastAnalysis.signal.toLowerCase(),
+    analysis_source: 'swing_trader',
+    entry_price: setup.entry,
+    stop_loss: setup.stop,
+    target_price: setup.target1,
+    setup_type: setup.type,
+    risk_reward: setup.riskReward,
+    confidence: lastAnalysis.confidence,
+    notes: `${setup.title}: ${setup.description}`,
+    timestamp: new Date().toISOString()
+  };
+  
+  // Store for journal page
+  localStorage.setItem('journal_prefill_data', JSON.stringify(journalData));
+  
+  // Redirect to appropriate journal page
+  const journalUrl = type === 'options' ? 'trade-journal-pro.html#options' : 'trade-journal-pro.html#stocks';
+  window.location.href = journalUrl;
+}
+
+// ─ COPY ANALYSIS ─
+function copyAnalysis() {
+  if (!lastAnalysis) {
+    showToast('No analysis to copy', 'error');
+    return;
+  }
+  
+  const setup = lastAnalysis.setups[0];
+  const text = `
+Swing Analysis for ${currentTicker}
+Signal: ${lastAnalysis.signal}
+Confidence: ${lastAnalysis.confidence}%
+
+Setup: ${setup.title}
+Entry: $${setup.entry}
+Stop: $${setup.stop}
+Target: $${setup.target1} / $${setup.target2}
+Risk/Reward: ${setup.riskReward}
+
+Generated by Arowana Profits Swing Trader
+${new Date().toLocaleDateString()}
+  `.trim();
+  
+  navigator.clipboard.writeText(text).then(() => {
+    showToast('📋 Analysis copied to clipboard', 'success');
+  }).catch(() => {
+    showToast('Failed to copy analysis', 'error');
+  });
+}
+
+// ─ UTILITY FUNCTIONS ─
+function setBusyState(busy) {
+  const btn = $('analyzeBtn');
+  const text = $('analyzeText');
+  const spinner = $('analyzeSpinner');
+  const input = $('tickerSymbol');
+  
+  if (busy) {
+    btn.disabled = true;
+    text.style.display = 'none';
+    spinner.style.display = 'block';
+    input.disabled = true;
+  } else {
+    btn.disabled = false;
+    text.style.display = 'block';
+    spinner.style.display = 'none';
+    input.disabled = false;
+  }
+}
+
+function resetAll() {
+  $('tickerSymbol').value = '';
+  $('resultsSection').style.display = 'none';
+  localStorage.removeItem(RESULTS_CACHE_KEY);
+  lastAnalysis = null;
+  currentTicker = '';
+  switchTab('setups');
+  showToast('🔄 Reset complete', 'info');
+}
+
+function loadCachedResult() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(RESULTS_CACHE_KEY) || 'null');
+    if (cached && cached.timestamp && (Date.now() - cached.timestamp) < 3600000) { // 1 hour cache
+      $('tickerSymbol').value = cached.ticker;
+      currentTicker = cached.ticker;
+      lastAnalysis = cached.data;
+      displayResults(cached.data);
+    }
+  } catch (e) {
+    // Ignore cache errors
+  }
+}
+
+function showToast(message, type = 'info') {
+  const container = $('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'info' ? 'ℹ️' : '⚠️';
+  
+  toast.innerHTML = `
+    <span>${icon}</span>
+    <span>${message}</span>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 4000);
+}
+
+// Make switchTab globally available
+window.switchTab = switchTab;
+window.openTradeJournal = openTradeJournal;
+window.copyAnalysis = copyAnalysis;
+
+// Initialize when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+
+<!-- App Config Integration -->
+<script src="app-config.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Master Journal — Arowana Profits</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+
+  <style>
+  :root{
+    --brand:#1a3c5e;
+    --muted:#667085;
+    --bg:#f9fafb;
+    --panel:#ffffff;
+    --ring:rgba(26,60,94,0.22);
+    --page-width:min(1200px,92vw);
+    --card:#fff;
+    --text:#111827;
+    --shadow:0 4px 12px rgba(0,0,0,0.08);
+    --border:#e5e7eb;
+
+    --blue:#2563eb;
+    --blue-700:#1d4ed8;
+    --green:#16a34a;
+    --green-700:#15803d;
+    --red:#dc2626;
+
+    --radius:7px; /* GenieSphere standard */
+  }
+  *{box-sizing:border-box}
+  html,body{
+    margin:0;padding:0;
+    font-family:Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+  }
+  a{color:inherit;text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+    outline:none; box-shadow:0 0 0 4px var(--ring);
+  }
+  .container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+  .muted{color:var(--muted)}
+  .card{background:var(--card);box-shadow:var(--shadow);border:1px solid var(--border);border-radius:14px;padding:16px}
+  .pill{display:inline-flex;align-items:center;gap:.5rem;border-radius:9999px;padding:.35rem .75rem;font-size:.85rem;background:#eef2ff;color:#1e3a8a;border:1px dashed #c7d2fe}
+  .btn{display:inline-flex;align-items:center;gap:.55rem;border:none;border-radius:9999px;padding:.6rem 1rem;font-weight:700;cursor:pointer}
+  .btn.blue{background:var(--blue);color:#fff}
+  .btn.blue:hover{background:var(--blue-700)}
+  .btn.green{background:var(--green);color:#fff}
+  .btn.green:hover{background:var(--green-700)}
+  .btn.ghost{background:#fff;border:1px solid var(--border);color:#1f2937}
+  .btn.sm{padding:.35rem .7rem;font-size:.85rem}
+  .link-btn{background:transparent;border:none;color:var(--blue);padding:0;font-size:.92rem;cursor:pointer;font-weight:700}
+  .link-btn.danger{color:var(--red)}
+  .row{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+
+
+  /* Header / Nav (match short-term-dashboard) */
+  .header-bar{width:100%;background:var(--brand);color:#fff;position:relative;z-index:40}
+  .ap-header{position:sticky;top:0;z-index:40;color:#fff;background:linear-gradient(90deg,#60a5fa,#4f46e5);box-shadow:0 2px 12px rgba(0,0,0,.08)}
+  .ap-nav{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .ap-left{display:flex;align-items:center;gap:18px;min-width:0}
+  .ap-right{display:flex;align-items:center;gap:18px}
+  .ap-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;white-space:nowrap}
+  .ap-logo{width:50px;height:50px;border-radius:999px;object-fit:contain;background:rgba(255,255,255,.2)}
+  .ap-title{font-weight:800;font-size:1.35rem;letter-spacing:.2px}
+  .ap-nav-main{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .ap-tab{position:relative;display:inline-flex;align-items:center;gap:10px;color:#fff;text-decoration:none;padding:10px;border-radius:7px;background:rgba(255,255,255,.10);transition:background .2s ease,opacity .2s ease;opacity:.95}
+  .ap-tab::before{content:attr(data-icon);font-size:1rem;line-height:1}
+  .ap-tab:hover{background:rgba(255,255,255,.16);opacity:1}
+  .ap-tab.is-active{background:rgba(255,255,255,.22);box-shadow:0 0 0 2px rgba(255,255,255,.22) inset,0 6px 16px rgba(0,0,0,.18)}
+  .ap-nav-top{display:flex;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+  .ap-emoji{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.16);font-size:14px;line-height:1;padding:2px}
+
+  .dropdown{position:relative;display:inline-block}
+  .ap-tab.dropdown-toggle{cursor:pointer;padding-right:18px}
+  .ap-tab.dropdown-toggle::after{content:'▼';font-size:8px;margin-left:6px;position:absolute;right:6px;top:50%;transform:translateY(-50%);opacity:.8}
+  .dropdown-content{display:none;position:absolute;min-width:300px;z-index:100;top:100%;left:0;margin-top:0;background:#063f73;border:1px solid rgba(255,255,255,0.1);border-radius:7px;padding:8px 0;box-shadow:0 8px 16px rgba(0,0,0,0.3);max-height:85vh;overflow-y:auto;overflow-x:hidden}
+  .dropdown-content a{color:#eaf1f9;padding:10px 16px;text-decoration:none;display:block;white-space:nowrap;font-weight:400;line-height:1.25}
+  .dropdown-content a:hover{background-color:rgba(255,255,255,0.1)}
+  .dropdown.show .dropdown-content{display:block}
+  .dropdown-header{color:#ffffff;font-size:.75rem;font-weight:700;padding:10px 16px 5px 16px;text-transform:uppercase;pointer-events:none}
+  .dropdown-separator{height:1px;background-color:rgba(255,255,255,0.1);margin:5px 0}
+  @media (hover:hover) and (pointer:fine){.dropdown:hover>.dropdown-content,.dropdown:focus-within>.dropdown-content{display:block}}
+
+  .user-menu{position:relative}
+  .user-menu-toggle{display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;padding:7px 10px;border-radius:7px;cursor:pointer;font-weight:700;line-height:1}
+  .user-menu-toggle:hover{background:rgba(255,255,255,.16)}
+  .user-menu-toggle:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring)}
+  .user-menu-toggle::after{content:'▼';font-size:8px;margin-left:6px;opacity:.85}
+  .user-menu-dropdown{position:absolute;right:0;top:calc(100% + 10px);min-width:220px;background:#063f73;color:#eaf1f9;border:1px solid rgba(255,255,255,0.10);border-radius:7px;box-shadow:0 18px 40px rgba(0,0,0,.35);padding:8px;display:none;z-index:2000}
+  .user-menu-dropdown button{width:100%;display:flex;align-items:center;justify-content:flex-start;gap:10px;padding:10px 10px;background:transparent;border:0;color:#eaf1f9;cursor:pointer;font-weight:700;border-radius:7px;text-align:left}
+  .user-menu-dropdown button:hover{background:rgba(255,255,255,0.10)}
+  .user-menu-dropdown button::before{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.08);flex:0 0 34px}
+  #user-auth-action::before{content:"👤"}
+  #user-signout-btn::before{content:"🚪"}
+  .user-menu-dropdown .user-sep{height:1px;background:rgba(255,255,255,0.12);margin:6px 0}
+
+  .ap-burger{display:none;border:none;background:rgba(255,255,255,0.08);color:#f9fafb;border-radius:7px;padding:6px 10px;font-size:1.1rem;cursor:pointer}
+  #mobileMenu{display:none;position:fixed;top:64px;left:0;right:0;z-index:35;background:#063f73;border:1px solid rgba(255,255,255,0.10);border-left:none;border-right:none;box-shadow:0 18px 40px rgba(0,0,0,.35);color:#eaf1f9}
+  #mobileMenu[data-open="true"]{display:block}
+  .mobile-menu-panel{max-width:1200px;margin:0 auto;padding:8px 12px 10px;display:flex;flex-direction:column;gap:8px}
+  .mobile-main-links{display:flex;flex-direction:column;gap:0}
+  .mobile-main-links a{display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:0;background:transparent;color:#eaf1f9;text-decoration:none;font-size:.95rem;font-weight:600;white-space:nowrap}
+  .mobile-main-links a:hover,.mobile-main-links a:focus{background:rgba(255,255,255,0.10);color:#eaf1f9}
+  .mobile-divider{height:1px;background:rgba(255,255,255,0.12);margin:6px 0;width:100%}
+  #mobileMenu .grid{display:flex;flex-direction:column;gap:0;margin-top:0}
+  .mobile-auth-link{width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;border-radius:0;background:transparent;text-decoration:none;color:#eaf1f9;font-size:.95rem;font-weight:700;border:0}
+  .mobile-auth-link:hover,.mobile-auth-link:focus{background:rgba(255,255,255,0.10);color:#eaf1f9}
+  .mobile-auth-link .ap-emoji{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.08);flex:0 0 34px}
+
+  /* Tabs */
+  .tabs{display:flex;gap:8px;flex-wrap:wrap}
+  .tabbtn{
+    border:1px solid var(--border);
+    background:#fff;
+    color:#0f172a;
+    padding:.5rem .85rem;
+    border-radius:9999px;
+    cursor:pointer;
+    font-weight:800;
+    display:inline-flex;
+    align-items:center;
+    gap:.45rem;
+  }
+  .tabbtn.active{
+    background:var(--blue);
+    border-color:var(--blue);
+    color:#fff;
+  }
+
+  /* Filters */
+  .filters{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+  label{display:block;font-weight:700;color:#0f172a;margin:0 0 6px}
+  input[type="text"], input[type="date"], select{
+    width:100%;
+    min-height:42px;
+    padding:10px 14px;
+    font-size:16px;
+    line-height:1.2;
+    color:#111827;
+    background:#fff;
+    border:1px solid var(--border);
+    border-radius:12px;
+    box-shadow:inset 0 1px 0 rgba(0,0,0,0.02);
+    appearance:none;
+  }
+  .f1{min-width:220px}
+  .f2{min-width:170px}
+  .f3{min-width:150px}
+
+  /* Tables */
+  .table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);background:#fff}
+  table{width:100%;border-collapse:separate;border-spacing:0;min-width:980px}
+  thead{background:#f3f4ff}
+  th,td{padding:10px 12px;font-size:.92rem;border-bottom:1px solid #e5e7eb;white-space:nowrap;text-align:left}
+  th{font-weight:900;color:#111827}
+  tbody tr:hover{background:#f9fafb}
+  .pnl-pos{color:var(--green);font-weight:800}
+  .pnl-neg{color:var(--red);font-weight:800}
+  .badge{
+    display:inline-flex;align-items:center;gap:.35rem;
+    padding:.25rem .6rem;border-radius:9999px;border:1px solid var(--border);
+    font-weight:800;font-size:.78rem;background:#fff;
+    text-transform:capitalize;
+  }
+  .badge.open{background:#eff6ff;border-color:#bfdbfe;color:#1d4ed8}
+  .badge.closed{background:#ecfdf5;border-color:#bbf7d0;color:#15803d}
+
+  /* Empty / status */
+  .note{background:#ecfeff;border-left:4px solid var(--blue);padding:.85rem .95rem;border-radius:12px}
+  .error{background:#fee2e2;border-left:4px solid #ef4444;padding:.85rem .95rem;border-radius:12px;color:#991b1b;display:none}
+  .success{background:#ecfdf5;border-left:4px solid #22c55e;padding:.85rem .95rem;border-radius:12px;color:#065f46;display:none}
+  .skeleton{opacity:.6}
+  .mini{font-size:.9rem}
+
+  /* Footer */
+  footer{background:var(--brand);color:#d7dae0;padding:20px 0;margin-top:auto}
+  footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  footer h4{margin:0 0 6px}
+  footer a{color:#b6c3d6}
+  footer ul{margin:0;padding-left:18px}
+  .foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+
+  @media (max-width:720px){
+    .ap-nav{flex-direction:column;align-items:flex-start}
+    footer .cols{grid-template-columns:1fr}
+    table{min-width:860px}
+  }
+  </style>
+</head>
+
+<body>
+  <header class="header-bar ap-header">
+    <div class="ap-nav">
+      <div class="ap-left">
+        <a class="ap-brand" href="index.html" aria-label="Arowana Profits Home">
+          <img src="images/arowanalogo.png" alt="Arowana Profits" class="ap-logo">
+          <span class="ap-title">Arowana Profits</span>
+        </a>
+
+        <nav class="ap-nav-main" id="navMain" aria-label="Primary">
+          <div class="dropdown">
+            <a href="short-term-dashboard.html" class="ap-tab dropdown-toggle" data-icon="⚡">Short-Term</a>
+            <div class="dropdown-content">
+              <div class="dropdown-header">Intraday Momentum & Reversal</div>
+              <a href="orb-scanner.html">⚡ Opening Range Breakout</a>
+              <a href="rvol-scanner.html">📈 Relative Volume Surge</a>
+              <a href="hod-scanner.html">⏫ HOD Continuation</a>
+              <a href="vwap-pullback.html">📉 VWAP Pullback</a>
+              <a href="gap-fade-scanner.html">🕳️ Gap Fade</a>
+              <a href="rsi-reversal-scanner.html">🔁 RSI Reversal</a>
+              <a href="bb-snapback.html">🎯 BB Snapback</a>
+              <a href="money-flow-alert.html">🔁 Money Flow Alert</a>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-header">Short-Term Signals & Specialty</div>
+              <a href="buy-sell-signal.html">🧭 Buy/Sell Signal</a>
+              <a href="rsi-screener.html">📉 RSI Screener</a>
+              <a href="intrinsic-value.html">🧮 Intrinsic Value Calculator</a>
+              <a href="short-entry-screener.html">📉 Short Entry Screener</a>
+              <a href="short-squeeze-scanner.html">🔥 Short Squeeze Scanner</a>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-header">Swing / Multi-Day</div>
+              <a href="swing-breakout-pb.html">🧱 Breakout Pullback</a>
+              <a href="sma-cross-scanner.html">📐 50/200 SMA Cross</a>
+              <a href="pattern-scanner.html">🚩 Flag / Asc. Triangle</a>
+              <a href="post-earnings-drift.html">📊 Post-Earnings Drift</a>
+              <div class="dropdown-separator"></div>
+              <div class="dropdown-header">Options & Risk Tools</div>
+              <a href="options-analyzer.html">📊 Options Analyzer</a>
+              <a href="credit-spread-planner.html">🧮 Credit-Spread Planner</a>
+              <a href="option-roll-tracker.html">🔁 Option Roll Tracker</a>
+              <a href="position-sizer.html">🧮 Position Sizer</a>
+              <a href="kelly-calculator.html">🧠 Kelly Calculator</a>
+              <a href="atr-stop-planner.html">📏 ATR Stop Planner</a>
+              <a href="trade-journal.html">📓 Trade Journal</a>
+              <a href="options-journal.html">🧩 Option Journal</a>
+              <a href="wheel-strategy.html">🎡 Wheel Strategy</a>
+            </div>
+          </div>
+
+          <div class="dropdown">
+            <a href="long-term-dashboard.html" class="ap-tab dropdown-toggle" data-icon="💰">Long-Term</a>
+            <div class="dropdown-content">
+              <a href="intrinsic-value.html">🧮 Intrinsic Value Calc</a>
+              <a href="strategy-backtester.html">📊 Strategy Backtester</a>
+              <a href="kelly-sizer.html">➗ Kelly Criterion Sizer</a>
+              <a href="economic-calendar.html">📅 Economic Calendar</a>
+            </div>
+          </div>
+
+          <a href="learn-investing.html" class="ap-tab" data-icon="📚">Learn</a>
+          <a href="master-journal.html" class="ap-tab is-active" data-icon="📒">Journal</a>
+        </nav>
+      </div>
+
+      <div class="ap-right">
+        <nav class="ap-nav-top" id="navTop" aria-label="Account actions">
+          <div class="user-menu">
+            <button id="user-menu-toggle" class="user-menu-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+              <span class="ap-emoji">🪪</span>
+              <span id="user-name-label">Log in</span>
+            </button>
+            <div id="user-menu-dropdown" class="user-menu-dropdown" role="menu" aria-hidden="true">
+              <button id="user-auth-action" type="button">Log in / Sign up</button>
+              <div class="user-sep"></div>
+              <button id="user-signout-btn" type="button" style="display:none;">Sign out</button>
+            </div>
+          </div>
+        </nav>
+        <button class="ap-burger" id="apBurger" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobileMenu" data-open="false" aria-hidden="true">
+    <div class="mobile-menu-panel">
+      <div class="mobile-main-links">
+        <a href="short-term-dashboard.html" class="ap-ix"><span class="ap-emoji" aria-hidden="true">⚡</span><span>Short-Term</span></a>
+        <a href="long-term-dashboard.html" class="ap-ix"><span class="ap-emoji" aria-hidden="true">📈</span><span>Long-Term</span></a>
+        <a href="learn-investing.html" class="ap-ix"><span class="ap-emoji" aria-hidden="true">📚</span><span>Learn</span></a>
+        <a href="master-journal.html" class="ap-ix"><span class="ap-emoji" aria-hidden="true">📒</span><span>Journal</span></a>
+      </div>
+      <div class="mobile-divider"></div>
+      <div class="grid mobile-auth-grid" id="mobileAuthGrid"></div>
+    </div>
+  </div>
+
+<main class="container" style="margin-top:18px">
+    <div class="row">
+      <div>
+        <h1 style="margin:.25rem 0">📒 Master Journal</h1>
+        <p class="muted" style="margin:.25rem 0 0">Retail-grade journal synced to your account. Track stocks and options in one place.</p>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Journal tabs">
+        <button class="tabbtn active" data-tab="all" type="button">📒 All</button>
+        <button class="tabbtn" data-tab="stocks" type="button">📈 Stocks</button>
+        <button class="tabbtn" data-tab="options" type="button">🧩 Options</button>
+        <button class="tabbtn" data-tab="summary" type="button">📊 Summary</button>
+      </div>
+    </div>
+
+    <div class="note mini" style="margin-top:12px">
+      <strong>How it works:</strong>
+      Options chains live in <span class="pill">option_chains</span>. When you “Push to Master” inside Options Journal, it writes a simple summary row into <span class="pill">journal_trades</span>.
+    </div>
+
+    <div id="msgErr" class="error" style="margin-top:12px"></div>
+    <div id="msgOk" class="success" style="margin-top:12px"></div>
+
+    <section class="card" style="margin-top:12px">
+      <div class="filters" aria-label="Filters">
+        <div class="f1">
+          <label for="q">🔎 Search</label>
+          <input id="q" type="text" placeholder="Ticker, strategy, notes (e.g., GEV, covered call)"/>
+        </div>
+
+        <div class="f3">
+          <label for="asset">🧾 Type</label>
+          <select id="asset">
+            <option value="">All</option>
+            <option value="stock">Stocks</option>
+            <option value="option">Options</option>
+          </select>
+        </div>
+
+        <div class="f3">
+          <label for="status">✅ Status</label>
+          <select id="status">
+            <option value="">All</option>
+            <option value="open">Open</option>
+            <option value="closed">Closed</option>
+          </select>
+        </div>
+
+        <div class="f2">
+          <label for="acct">🏦 Account</label>
+          <select id="acct">
+            <option value="">All accounts</option>
+          </select>
+        </div>
+
+        <div class="f2">
+          <label for="from">📅 From</label>
+          <input id="from" type="date"/>
+        </div>
+
+        <div class="f2">
+          <label for="to">📅 To</label>
+          <input id="to" type="date"/>
+        </div>
+
+        <div>
+          <button class="btn ghost" id="clearFilters" type="button"><i class="fas fa-eraser"></i> Clear</button>
+        </div>
+        <div>
+          <button class="btn blue" id="refresh" type="button"><i class="fas fa-sync"></i> Refresh</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ALL / STOCKS TABLE (journal_trades) -->
+    <section class="card" id="panelTrades" style="margin-top:12px">
+      <div class="row" style="margin-bottom:10px">
+        <div class="pill" id="countTrades">0 trades</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn ghost" href="trade-journal.html"><i class="fas fa-external-link-alt"></i> Open Stocks Journal</a>
+          <a class="btn ghost" href="options-journal.html"><i class="fas fa-external-link-alt"></i> Open Options Journal</a>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table aria-label="Trades table">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Ticker</th>
+              <th>Type</th>
+              <th>Strategy</th>
+              <th>Status</th>
+              <th>Account</th>
+              <th>Qty</th>
+              <th>Entry</th>
+              <th>Exit</th>
+              <th>Fees</th>
+              <th>P&amp;L</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody id="tradeBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- OPTIONS TABLE (option_chains) -->
+    <section class="card" id="panelOptions" style="margin-top:12px; display:none">
+      <div class="row" style="margin-bottom:10px">
+        <div class="pill" id="countChains">0 chains</div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn ghost" href="options-journal.html"><i class="fas fa-external-link-alt"></i> Manage Chains</a>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table aria-label="Options chains table">
+          <thead>
+            <tr>
+              <th>Updated</th>
+              <th>Ticker</th>
+              <th>Strategy</th>
+              <th>Status</th>
+              <th>Account</th>
+              <th>Start</th>
+              <th>End</th>
+              <th>Expiry</th>
+              <th>Fees</th>
+              <th>Net P&amp;L</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="chainBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- SUMMARY -->
+    <section class="card" id="panelSummary" style="margin-top:12px; display:none">
+      <div class="row" style="margin-bottom:10px">
+        <div class="pill">Quick totals</div>
+        <button class="btn blue" id="recalc" type="button"><i class="fas fa-calculator"></i> Recalculate</button>
+      </div>
+
+      <div class="row" style="gap:10px;align-items:stretch">
+        <div class="card" style="flex:1;box-shadow:none;border:1px solid var(--border)">
+          <div class="muted mini">All Trades P&amp;L</div>
+          <div style="font-weight:900;font-size:1.35rem;margin-top:4px" id="sumAll">$0.00</div>
+        </div>
+        <div class="card" style="flex:1;box-shadow:none;border:1px solid var(--border)">
+          <div class="muted mini">Stocks P&amp;L</div>
+          <div style="font-weight:900;font-size:1.35rem;margin-top:4px" id="sumStocks">$0.00</div>
+        </div>
+        <div class="card" style="flex:1;box-shadow:none;border:1px solid var(--border)">
+          <div class="muted mini">Options P&amp;L</div>
+          <div style="font-weight:900;font-size:1.35rem;margin-top:4px" id="sumOptions">$0.00</div>
+        </div>
+        <div class="card" style="flex:1;box-shadow:none;border:1px solid var(--border)">
+          <div class="muted mini">Win Rate (closed)</div>
+          <div style="font-weight:900;font-size:1.35rem;margin-top:4px" id="winRate">—</div>
+        </div>
+      </div>
+
+      <div class="note mini" style="margin-top:12px">
+        Retail-grade summary uses <strong>closed</strong> trades only for win rate. P&amp;L totals include both open and closed (whatever you logged).
+      </div>
+    </section>
+
+    <div class="muted" style="text-align:center;margin:12px 0 24px">
+      <small>Educational use only. Not financial advice.</small>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div>
+          <h4>Arowana Profits</h4>
+          <p>AI-powered tools and education for traders and investors.</p>
+        </div>
+        <div>
+          <h4>Solutions</h4>
+          <ul>
+            <li><a href="short-term-dashboard.html">Short-Term</a></li>
+            <li><a href="long-term-dashboard.html">Long-Term</a></li>
+            <li><a href="learn-investing.html">Learn</a></li>
+            <li><a href="master-journal.html">Journal</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="careers.html">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <p><strong>Disclaimer:</strong> We do not provide investment advice. Investing involves risk, including loss of principal.</p>
+        </div>
+      </div>
+      <div class="foot-bottom">© <span id="year"></span> Arowana Profit LLC. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <!-- Header auth + mobile menu (match short-term-dashboard behavior) -->
+  <script type="module">
+    import { supabase as sbClient } from "./js/supabase-init.js";
+
+    const userNameLabel = document.getElementById("user-name-label");
+    const userAuthAction = document.getElementById("user-auth-action");
+    const userSignoutBtn = document.getElementById("user-signout-btn");
+    const userMenuToggle = document.getElementById("user-menu-toggle");
+    const userMenuDropdown = document.getElementById("user-menu-dropdown");
+    const mobileAuthGrid = document.getElementById("mobileAuthGrid");
+    const apBurger = document.getElementById("apBurger");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const nextParam = encodeURIComponent(location.pathname + location.search);
+
+    async function getSafeUser(){
+      try {
+        const { data: sessData, error: sessErr } = await sbClient.auth.getSession();
+        if (sessErr || !sessData?.session) return null;
+        const { data: userData, error: userErr } = await sbClient.auth.getUser();
+        if (userErr) return null;
+        return userData?.user || null;
+      } catch (_) {
+        return null;
+      }
+    }
+
+    function closeUserMenu(){
+      if (!userMenuDropdown || !userMenuToggle) return;
+      userMenuDropdown.style.display = "none";
+      userMenuDropdown.setAttribute("aria-hidden", "true");
+      userMenuToggle.setAttribute("aria-expanded", "false");
+    }
+    function openUserMenu(){
+      if (!userMenuDropdown || !userMenuToggle) return;
+      userMenuDropdown.style.display = "block";
+      userMenuDropdown.setAttribute("aria-hidden", "false");
+      userMenuToggle.setAttribute("aria-expanded", "true");
+    }
+    function setMobileOpen(open){
+      if (!mobileMenu || !apBurger) return;
+      mobileMenu.setAttribute("data-open", open ? "true" : "false");
+      mobileMenu.setAttribute("aria-hidden", open ? "false" : "true");
+      apBurger.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+    function renderMobileAuth(user){
+      if (!mobileAuthGrid) return;
+      mobileAuthGrid.innerHTML = "";
+      if (user) {
+        const account = document.createElement("a");
+        account.href = "account.html";
+        account.className = "mobile-auth-link";
+        account.innerHTML = `<span class="ap-emoji" aria-hidden="true">🧑‍💼</span><span>Account</span>`;
+
+        const logout = document.createElement("a");
+        logout.href = "#";
+        logout.className = "mobile-auth-link";
+        logout.innerHTML = `<span class="ap-emoji" aria-hidden="true">🚪</span><span>Sign out</span>`;
+        logout.addEventListener("click", async (e) => {
+          e.preventDefault();
+          try { await sbClient.auth.signOut(); }
+          finally { location.reload(); }
+        });
+
+        mobileAuthGrid.append(account, logout);
+      } else {
+        const login = document.createElement("a");
+        login.href = `login.html?next=${nextParam}`;
+        login.className = "mobile-auth-link";
+        login.innerHTML = `<span class="ap-emoji" aria-hidden="true">🔐</span><span>Log in</span>`;
+
+        const signup = document.createElement("a");
+        signup.href = `signup.html?next=${nextParam}`;
+        signup.className = "mobile-auth-link";
+        signup.innerHTML = `<span class="ap-emoji" aria-hidden="true">🆕</span><span>Sign up</span>`;
+
+        mobileAuthGrid.append(login, signup);
+      }
+    }
+
+    async function renderAuthLinks(){
+      const user = await getSafeUser();
+
+      if (user) {
+        const label = (user.email || "Account").split("@")[0];
+        if (userNameLabel) userNameLabel.textContent = label;
+        if (userAuthAction) {
+          userAuthAction.textContent = "Account";
+          userAuthAction.onclick = () => { location.href = "account.html"; };
+        }
+        if (userSignoutBtn) {
+          userSignoutBtn.style.display = "flex";
+          userSignoutBtn.onclick = async () => {
+            try { await sbClient.auth.signOut(); }
+            finally { location.reload(); }
+          };
+        }
+      } else {
+        if (userNameLabel) userNameLabel.textContent = "Log in";
+        if (userAuthAction) {
+          userAuthAction.textContent = "Log in / Sign up";
+          userAuthAction.onclick = () => { location.href = `login.html?next=${nextParam}`; };
+        }
+        if (userSignoutBtn) {
+          userSignoutBtn.style.display = "none";
+          userSignoutBtn.onclick = null;
+        }
+      }
+
+      renderMobileAuth(user);
+    }
+
+    if (userMenuToggle) {
+      userMenuToggle.addEventListener("click", (e) => {
+        e.stopPropagation();
+        const isOpen = userMenuDropdown && userMenuDropdown.style.display === "block";
+        if (isOpen) closeUserMenu(); else openUserMenu();
+      });
+    }
+
+    document.addEventListener("click", (e) => {
+      if (!userMenuDropdown || !userMenuToggle) return;
+      if (!userMenuDropdown.contains(e.target) && !userMenuToggle.contains(e.target)) closeUserMenu();
+    });
+
+    if (apBurger) {
+      apBurger.addEventListener("click", () => {
+        const isOpen = mobileMenu && mobileMenu.getAttribute("data-open") === "true";
+        setMobileOpen(!isOpen);
+      });
+    }
+
+    window.addEventListener("resize", () => {
+      if (window.innerWidth > 900) setMobileOpen(false);
+    });
+
+    window.sbClient = sbClient;
+    document.addEventListener("DOMContentLoaded", async () => {
+      await renderAuthLinks();
+      closeUserMenu();
+      setMobileOpen(false);
+    });
+  </script>
+
+  <!-- Master Journal logic -->
+  <script>
+    (function(){
+      const $ = (s, root=document) => root.querySelector(s);
+      const $$ = (s, root=document) => Array.from(root.querySelectorAll(s));
+
+      const msgErr = $("#msgErr");
+      const msgOk = $("#msgOk");
+
+      const tabButtons = $$(".tabbtn");
+      const panelTrades = $("#panelTrades");
+      const panelOptions = $("#panelOptions");
+      const panelSummary = $("#panelSummary");
+
+      const qEl = $("#q");
+      const assetEl = $("#asset");
+      const statusEl = $("#status");
+      const acctEl = $("#acct");
+      const fromEl = $("#from");
+      const toEl = $("#to");
+      const clearBtn = $("#clearFilters");
+      const refreshBtn = $("#refresh");
+      const recalcBtn = $("#recalc");
+
+      const tradeBody = $("#tradeBody");
+      const chainBody = $("#chainBody");
+      const countTrades = $("#countTrades");
+      const countChains = $("#countChains");
+
+      const sumAll = $("#sumAll");
+      const sumStocks = $("#sumStocks");
+      const sumOptions = $("#sumOptions");
+      const winRate = $("#winRate");
+
+      let activeTab = "all";
+      let trades = [];
+      let chains = [];
+      let userReady = false;
+
+      const money = (n) => {
+        const x = Number(n || 0);
+        const s = x.toLocaleString(undefined, { style:"currency", currency:"USD" });
+        return s;
+      };
+
+      function showErr(text){
+        msgErr.textContent = text;
+        msgErr.style.display = "block";
+        msgOk.style.display = "none";
+      }
+      function showOk(text){
+        msgOk.textContent = text;
+        msgOk.style.display = "block";
+        msgErr.style.display = "none";
+      }
+      function clearMsgs(){
+        msgErr.style.display = "none";
+        msgOk.style.display = "none";
+      }
+
+      function setTab(next){
+        activeTab = next;
+        tabButtons.forEach(b => b.classList.toggle("active", b.dataset.tab === next));
+
+        // Panels
+        panelTrades.style.display = (next === "all" || next === "stocks") ? "" : "none";
+        panelOptions.style.display = (next === "options") ? "" : "none";
+        panelSummary.style.display = (next === "summary") ? "" : "none";
+
+        // Asset filter sync (nice UX)
+        if (next === "stocks") assetEl.value = "stock";
+        else if (next === "options") assetEl.value = ""; // options tab shows chains, not trade summaries
+        else if (next === "all") assetEl.value = "";
+      }
+
+      function normalizeText(s){ return String(s || "").toLowerCase().trim(); }
+
+      function inDateRange(dStr){
+        if (!dStr) return true;
+        const d = new Date(dStr + "T00:00:00");
+        if (Number.isNaN(d.getTime())) return true;
+
+        const from = fromEl.value ? new Date(fromEl.value + "T00:00:00") : null;
+        const to = toEl.value ? new Date(toEl.value + "T23:59:59") : null;
+
+        if (from && d < from) return false;
+        if (to && d > to) return false;
+        return true;
+      }
+
+      function applyTradeFilters(list){
+        const q = normalizeText(qEl.value);
+        const asset = assetEl.value;
+        const status = statusEl.value;
+        const acct = acctEl.value;
+
+        return list.filter(t => {
+          if (asset && t.asset_type !== asset) return false;
+          if (status && (t.status || "") !== status) return false;
+          if (acct && (t.account || "") !== acct) return false;
+
+          const d = t.closed_at || t.opened_at || t.created_at?.slice(0,10);
+          if (!inDateRange(d)) return false;
+
+          if (q){
+            const hay = [
+              t.ticker, t.strategy, t.notes, t.account, t.asset_type, t.status
+            ].map(normalizeText).join(" | ");
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+      }
+
+      function renderAccounts(){
+        const acctSet = new Set();
+        trades.forEach(t => { if (t.account) acctSet.add(t.account); });
+        chains.forEach(c => { if (c.account) acctSet.add(c.account); });
+
+        const current = acctEl.value || "";
+        const items = Array.from(acctSet).sort((a,b)=>a.localeCompare(b));
+
+        acctEl.innerHTML = `<option value="">All accounts</option>` + items.map(a => `<option value="${escapeHtml(a)}">${escapeHtml(a)}</option>`).join("");
+        acctEl.value = items.includes(current) ? current : "";
+      }
+
+      function escapeHtml(str){
+        return String(str || "")
+          .replaceAll("&","&amp;")
+          .replaceAll("<","&lt;")
+          .replaceAll(">","&gt;")
+          .replaceAll('"',"&quot;")
+          .replaceAll("'","&#039;");
+      }
+
+      function badge(status){
+        const st = (status || "").toLowerCase();
+        const cls = st === "closed" ? "closed" : "open";
+        return `<span class="badge ${cls}">${escapeHtml(st || "open")}</span>`;
+      }
+
+      function pnlClass(n){
+        const x = Number(n || 0);
+        if (x > 0) return "pnl-pos";
+        if (x < 0) return "pnl-neg";
+        return "";
+      }
+
+      function renderTrades(){
+        const filtered = applyTradeFilters(trades);
+
+        // If in Stocks tab, enforce stock rows
+        const view = activeTab === "stocks"
+          ? filtered.filter(t => t.asset_type === "stock")
+          : filtered;
+
+        countTrades.textContent = `${view.length} trade${view.length === 1 ? "" : "s"}`;
+
+        tradeBody.innerHTML = "";
+        view.forEach(t => {
+          const date = (t.closed_at || t.opened_at || "").toString();
+          const pnl = Number(t.pnl || 0);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(date)}</td>
+            <td><strong>${escapeHtml(t.ticker)}</strong></td>
+            <td>${escapeHtml(t.asset_type || "")}</td>
+            <td>${escapeHtml(t.strategy || "")}</td>
+            <td>${badge(t.status)}</td>
+            <td>${escapeHtml(t.account || "")}</td>
+            <td>${t.qty ?? ""}</td>
+            <td>${t.entry_price ?? ""}</td>
+            <td>${t.exit_price ?? ""}</td>
+            <td>${t.fees ?? 0}</td>
+            <td class="${pnlClass(pnl)}">${money(pnl)}</td>
+            <td title="${escapeHtml(t.notes || "")}">${escapeHtml((t.notes || "").slice(0,60))}</td>
+          `;
+          tradeBody.appendChild(tr);
+        });
+      }
+
+      function renderChains(){
+        // Options tab uses chains; we still honor search/account/status/date filters for user convenience.
+        const q = normalizeText(qEl.value);
+        const status = statusEl.value;
+        const acct = acctEl.value;
+
+        const view = chains.filter(c => {
+          if (status && (c.status || "") !== status) return false;
+          if (acct && (c.account || "") !== acct) return false;
+
+          const d = c.end_date || c.start_date || c.updated_at?.slice(0,10);
+          if (!inDateRange(d)) return false;
+
+          if (q){
+            const hay = [c.ticker, c.strategy, c.account, c.status].map(normalizeText).join(" | ");
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        });
+
+        countChains.textContent = `${view.length} chain${view.length === 1 ? "" : "s"}`;
+
+        chainBody.innerHTML = "";
+        view.forEach(c => {
+          const net = Number((c.totals && (c.totals.pnl ?? c.totals.net ?? 0)) ?? 0);
+          const updated = (c.updated_at || "").slice(0,10);
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${escapeHtml(updated)}</td>
+            <td><strong>${escapeHtml(c.ticker)}</strong></td>
+            <td>${escapeHtml(c.strategy || "")}</td>
+            <td>${badge(c.status)}</td>
+            <td>${escapeHtml(c.account || "")}</td>
+            <td>${escapeHtml(c.start_date || "")}</td>
+            <td>${escapeHtml(c.end_date || "")}</td>
+            <td>${escapeHtml(c.expiry || "")}</td>
+            <td>${money(c.fees || 0)}</td>
+            <td class="${pnlClass(net)}">${money(net)}</td>
+            <td>
+              <button class="link-btn" data-open-chain="${escapeHtml(c.id)}" type="button">Open</button>
+            </td>
+          `;
+          chainBody.appendChild(tr);
+        });
+      }
+
+      function renderSummary(){
+        const filtered = applyTradeFilters(trades);
+        const allPnl = filtered.reduce((s,t)=>s+Number(t.pnl||0),0);
+        const stockPnl = filtered.filter(t=>t.asset_type==="stock").reduce((s,t)=>s+Number(t.pnl||0),0);
+        const optPnl = filtered.filter(t=>t.asset_type==="option").reduce((s,t)=>s+Number(t.pnl||0),0);
+
+        sumAll.textContent = money(allPnl);
+        sumAll.className = pnlClass(allPnl);
+
+        sumStocks.textContent = money(stockPnl);
+        sumStocks.className = pnlClass(stockPnl);
+
+        sumOptions.textContent = money(optPnl);
+        sumOptions.className = pnlClass(optPnl);
+
+        const closed = filtered.filter(t => (t.status || "") === "closed");
+        const wins = closed.filter(t => Number(t.pnl || 0) > 0).length;
+        const rate = closed.length ? Math.round((wins / closed.length) * 100) : null;
+        winRate.textContent = rate == null ? "—" : `${rate}% (${wins}/${closed.length})`;
+      }
+
+      function renderAll(){
+        renderAccounts();
+        if (activeTab === "options") renderChains();
+        else if (activeTab === "summary") renderSummary();
+        else renderTrades();
+      }
+
+      async function fetchData(){
+        clearMsgs();
+        tradeBody.innerHTML = `<tr class="skeleton"><td colspan="12">Loading…</td></tr>`;
+        chainBody.innerHTML = `<tr class="skeleton"><td colspan="11">Loading…</td></tr>`;
+
+        try{
+          const sb = window.sbClient;
+          if (!sb) throw new Error("Supabase client not ready.");
+
+          let user = null;
+          try {
+            const { data: sessData, error: sessErr } = await sb.auth.getSession();
+            if (!sessErr && sessData?.session) {
+              const userRes = await sb.auth.getUser();
+              if (!userRes.error) user = userRes.data?.user || null;
+            }
+          } catch (_) {
+            user = null;
+          }
+          if (!user){
+            userReady = false;
+            trades = [];
+            chains = [];
+            renderAll();
+            showErr("Please sign in to view your journal.");
+            return;
+          }
+          userReady = true;
+
+          // Trades
+          const tRes = await sb
+            .from("journal_trades")
+            .select("id,asset_type,ticker,strategy,direction,status,opened_at,closed_at,qty,entry_price,exit_price,fees,pnl,account,notes,source_id,created_at,updated_at")
+            .order("opened_at", { ascending:false, nullsFirst:false });
+
+          if (tRes.error) throw tRes.error;
+          trades = (tRes.data || []).map(r => ({
+            ...r,
+            ticker: (r.ticker || "").toUpperCase()
+          }));
+
+          // Chains
+          const cRes = await sb
+            .from("option_chains")
+            .select("id,ticker,strategy,status,start_date,end_date,expiry,account,fees,totals,updated_at")
+            .order("updated_at", { ascending:false });
+
+          if (cRes.error) throw cRes.error;
+          chains = (cRes.data || []).map(r => ({
+            ...r,
+            ticker: (r.ticker || "").toUpperCase()
+          }));
+
+          renderAll();
+          if (activeTab === "summary") renderSummary();
+          showOk("Synced.");
+          setTimeout(clearMsgs, 1200);
+        }catch(ex){
+          console.error(ex);
+          showErr(ex.message || String(ex));
+        }
+      }
+
+      // Events
+      tabButtons.forEach(b => b.addEventListener("click", () => { setTab(b.dataset.tab); renderAll(); }));
+
+      $("#panelOptions").addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-open-chain]");
+        if (!btn) return;
+        const id = btn.getAttribute("data-open-chain");
+        // Future: options-journal can load by id; for now we still pass it.
+        location.href = `options-journal.html?chain_id=${encodeURIComponent(id)}`;
+      });
+
+      ["input","change"].forEach(evt => {
+        qEl.addEventListener(evt, renderAll);
+        assetEl.addEventListener(evt, renderAll);
+        statusEl.addEventListener(evt, renderAll);
+        acctEl.addEventListener(evt, renderAll);
+        fromEl.addEventListener(evt, renderAll);
+        toEl.addEventListener(evt, renderAll);
+      });
+
+      clearBtn.addEventListener("click", () => {
+        qEl.value = "";
+        assetEl.value = "";
+        statusEl.value = "";
+        acctEl.value = "";
+        fromEl.value = "";
+        toEl.value = "";
+        renderAll();
+      });
+
+      refreshBtn.addEventListener("click", fetchData);
+      recalcBtn.addEventListener("click", () => { renderSummary(); showOk("Recalculated."); setTimeout(clearMsgs, 900); });
+
+      // Init
+      document.getElementById("year").textContent = new Date().getFullYear();
+      setTab("all");
+
+      // Wait a tick for module auth to set window.sbClient
+      const waitClient = async () => {
+        for (let i=0; i<30; i++){
+          if (window.sbClient) break;
+          await new Promise(r=>setTimeout(r, 80));
+        }
+        fetchData();
+      };
+      waitClient();
+    })();
+  </script>
+</body>
+</html>

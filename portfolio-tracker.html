@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>📈 Portfolio Tracker – Arowana Profits</title>
+
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      padding: 0;
+      background-color: #f9fafb;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 5%;
+      background-color: #ffffff;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      position: relative;
+    }
+
+    .logo {
+      font-size: 1.5rem;
+      font-weight: bold;
+      color: #2563eb;
+    }
+
+    .hamburger {
+      display: none;
+      font-size: 1.8rem;
+      cursor: pointer;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 1.5rem;
+      align-items: center;
+    }
+
+    .nav-links a {
+      text-decoration: none;
+      color: #0f172a;
+      font-weight: 500;
+    }
+
+    .cta-button {
+      background-color: #2563eb;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      transition: background 0.3s;
+    }
+
+    .cta-button:hover {
+      background-color: #1d4ed8;
+    }
+
+    .dropdown {
+      position: relative;
+    }
+
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #ffffff;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 0.5rem 0;
+      top: 100%;
+      left: 0;
+      z-index: 1000;
+    }
+
+    .dropdown-content a {
+      display: block;
+      padding: 0.5rem 1.25rem;
+      color: #0f172a;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .dropdown:hover .dropdown-content {
+      display: block;
+    }
+
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .hamburger {
+        display: block;
+      }
+
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        background-color: #ffffff;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        width: 100%;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        padding: 1rem 5%;
+        z-index: 999;
+      }
+
+      .nav-links.open {
+        display: flex;
+      }
+
+      .dropdown-content {
+        position: relative;
+        box-shadow: none;
+        padding: 0;
+      }
+
+      .dropdown:hover .dropdown-content {
+        display: block;
+      }
+
+      .dropdown-content a {
+        padding: 0.5rem 1rem;
+      }
+    }
+
+    .content {
+      padding: 2rem 5%;
+    }
+
+    .section-title {
+      font-size: 1.25rem;
+      font-weight: bold;
+      margin-bottom: 1rem;
+    }
+
+    .card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 1rem;
+      box-shadow: 0 1px 5px rgba(0,0,0,0.05);
+      margin-bottom: 1.5rem;
+    }
+
+    .footer {
+      text-align: center;
+      padding: 2rem;
+      font-size: 0.875rem;
+      color: #64748b;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ✅ Responsive Navigation -->
+  <nav class="navbar">
+    <div class="logo">Arowana Profits</div>
+    <div class="hamburger" onclick="toggleMenu()">☰</div>
+    <div class="nav-links" id="navLinks">
+      <a href="index.htm">Home</a>
+      <a href="#services">Services</a>
+      <div class="dropdown">
+        <a href="#tools">Investment Tools ▾</a>
+        <div class="dropdown-content">
+          <a href="stocks-screener.htm">Stock Screener</a>
+          <a href="portfolio-analyzer.htm">Portfolio Analyzer</a>
+          <a href="#risk-calculator">Risk Calculator</a>
+          <a href="#market-calendar">Market Calendar</a>
+        </div>
+      </div>
+      <a href="#about">About</a>
+      <a href="contact.htm">Contact</a>
+      <a href="#contact" class="cta-button">Get Started</a>
+    </div>
+  </nav>
+
+  <!-- 🔽 Page Content -->
+  <div class="content">
+    <div class="card">
+      <h2 class="section-title">📊 Portfolio Tracker</h2>
+      <p>Track your long-term investment performance with real-time updates, cost basis analysis, and historical growth trends. This tool helps you visualize your holdings and rebalance as needed.</p>
+    </div>
+    <div class="card">
+      <h2 class="section-title">📌 Coming Soon</h2>
+      <ul>
+        <li>💹 Import your brokerage account via Plaid</li>
+        <li>📈 Automatic dividend tracking</li>
+        <li>📊 Sector allocation heatmap</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">
+    © 2025 Arowana Profits. Built with ❤️ to simplify long-term investing.
+  </div>
+
+  <!-- ✅ Hamburger Toggle Logic -->
+  <script>
+    function toggleMenu() {
+      document.getElementById("navLinks").classList.toggle("open");
+    }
+  </script>
+
+</body>
+</html>

@@ -1,0 +1,1628 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Option Roll Tracker — Arowana Profits</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+
+  <style>
+  :root{
+    --brand:#1a3c5e; --ink:#222; --muted:#667085; --bg:#f9fafb; --panel:#ffffff; --ring:rgba(26,60,94,0.22);
+    --page-width: min(1200px, 92vw);
+    --card:#fff; --text:#111827; --shadow:0 4px 12px rgba(0,0,0,.08);
+    --blue:#2563eb; --blue-700:#1d4ed8; --green:#16a34a; --green-700:#15803d; --red:#dc2626; --border:#e5e7eb;
+    --radius-lg:1.25rem; --radius-sm:.625rem;
+  }
+  *{box-sizing:border-box}
+  html,body{
+    margin:0; padding:0; font-family: Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+    background:var(--bg); color:var(--text, var(--ink));
+    min-height:100vh; display:flex; flex-direction:column;
+  }
+  a{color:var(--brand); text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none; box-shadow:0 0 0 4px var(--ring)}
+  .container{width:100%; max-width:var(--page-width); margin:0 auto; padding:0 16px}
+
+  .header{width:100%; background:#1a3c5e; color:#fff; padding:20px 0; position:relative; margin-bottom: 20px;}
+  .header-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:clamp(18px, 4vw, 20px); white-space: nowrap}
+  .logo-img{width:50px;height:50px;border-radius:6px}
+  .brand-link{color:#fff}
+  .nav{display:flex;gap:12px;align-items:center}
+  .nav a{color:#eaf1f9;padding:8px 10px;border-radius:10px}
+  .nav a[aria-current="page"]{background:rgba(255,255,255,.22);color:#fff}
+  .hamburger{display:none;font-size:24px;cursor:pointer;color:#eaf1f9;padding:8px;border-radius:10px}
+  .mobile-menu{display:none; position:absolute; top: 100%; left: 0; right: 0; background:#0f2a44; padding:12px 16px 24px; z-index:60; box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .mobile-menu a{display:flex;align-items:center;gap:10px;color:#eaf1f9;padding:12px 8px;border-radius:12px}
+  .mobile-menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .mobile-menu .grid a{background:rgba(255,255,255,.06);justify-content:center}
+
+  footer{margin-top:auto;background:#1a3c5e;color:#d7dae0;padding:28px 0}
+  footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  footer h4{margin:0 0 6px}
+  footer a{color:#b6c3d6}
+  .foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+
+  main h1{margin:8px 0;font-size:clamp(22px,4.2vw,32px)}
+  .muted{color:#6b7280}
+  .card{background:var(--card);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow);margin:12px 0;border:1px solid var(--border)}
+  .card h2{margin:0 0 10px;font-size:1.2rem;color:var(--brand)}
+  .sub{font-size:.92rem;color:var(--muted);margin:4px 0 10px}
+  .section{margin-top:16px;padding-top:14px;border-top:1px dashed #e6e9f0}
+  .row{display:grid;gap:12px}
+  .row.two{grid-template-columns:1fr 1fr}
+  .form-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  label{display:block;font-size:.9rem;margin-bottom:4px;color:#1b3350}
+  input,select{width:100%;padding:10px;border-radius:10px;border:1px solid #d0d7e2;font-size:.95rem;min-height:42px;background:#fff;color:#111827}
+  input[type="date"]{color-scheme:light}
+  .btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:9999px;padding:.6rem 1rem;font-weight:600;cursor:pointer}
+  .btn.primary{background:var(--blue);color:#fff}
+  .btn.ghost{background:#fff;border:1px solid #dfe5ef;color:#1f2937}
+  .btn.green{background:var(--green);color:#fff}
+  .btn.red{background:var(--red);color:#fff}
+  .mini-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+  .mini{background:#f6f8fb;border:1px solid var(--border);padding:10px;border-radius:12px}
+  .mini .k{font-size:.78rem;color:#6b7280}
+  .mini .v{font-weight:800;font-variant-numeric:tabular-nums}
+  .status-note{background:#fff;padding:14px;border-radius:var(--radius-sm);margin:16px 0;border:1px solid var(--border);color:#b45309;display:none}
+  .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;min-width:980px}
+  th,td{padding:.6rem .7rem;text-align:left;border-bottom:1px solid #eef1f5; vertical-align: middle;}
+  th{position:sticky;top:0;background:#f6f8fb;color:#1a3550;font-weight:700;z-index:1}
+  td.num,th.num{text-align:right}
+  tr:hover td{background:#fbfdff}
+  .acts{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:.4rem;border:1px solid #d9e2ef; background:#fff; color:#0f172a;border-radius:9999px; padding:.35rem .6rem; font-size:.8rem; cursor:pointer}
+  .chip i{font-size:.85rem}
+  .chip.edit{border-color:#bcd0ff}
+  .chip.del{border-color:#ffd1d1}
+  .chip.del i{color:#b91c1c}
+  .chip:hover{box-shadow:0 1px 0 rgba(0,0,0,.06)}
+  .chip[disabled]{opacity:.5;cursor:not-allowed}
+  @media (max-width: 640px){.hamburger{display:block}.nav{display:none}footer .cols{grid-template-columns:1fr}}
+  </style>
+
+  <!-- Module import: load config + client + auth helpers; expose to window for legacy inline code -->
+  <!-- Module import: load config + client + auth helpers; expose to window for legacy inline code -->
+  <script type="module">
+    // Try likely locations for supabase-init.js
+    let mod;
+    try { mod = await import('./js/supabase-init.js'); }
+    catch (e1) {
+      try { mod = await import('../js/supabase-init.js'); }
+      catch (e2) {
+        mod = await import('/js/supabase-init.js'); // site root fallback
+      }
+    }
+
+    const {
+      SUPABASE_URL, SUPABASE_ANON_KEY, supabase,
+      signInWithOtp, signInWithOAuth, signOut,
+      getUser, getSession, requireAuth, onAuthChanged
+    } = mod;
+
+    // Expose for non-module code on the page
+    window.SUPABASE_URL = SUPABASE_URL;
+    window.SUPABASE_ANON_KEY = SUPABASE_ANON_KEY;
+    window.sb = supabase;
+    window.Auth = { signInWithOtp, signInWithOAuth, signOut, getUser, getSession, requireAuth, onAuthChanged };
+
+    // Guard now runs only after a successful import
+    if (!window.SUPABASE_URL || !window.SUPABASE_ANON_KEY) {
+      alert('Supabase config missing. Did you include supabase-init.js?');
+      throw new Error('Missing Supabase config');
+    }
+  </script>
+
+<style>
+
+/* === Imported header styles from short-term-dashboard === */
+
+/* * ===== Consolidated Stylesheet =====
+
+/* -------------------------------------------------------------------------- */
+/* 1. Tokens & Base Styles */
+/* -------------------------------------------------------------------------- */
+:root{
+  /* Shell */
+  --brand:#1a3c5e;
+  --ink:#222;
+  --muted:#667085;
+  --bg:#f9fafb;
+  --panel:#ffffff;
+  --ring:rgba(26,60,94,0.22);
+  --page-width: min(1200px, 92vw);
+  
+  /* Dashboard Components */
+  --card:#fff; 
+  --text:#111827; 
+  --shadow:0 4px 12px rgba(0,0,0,0.08);
+  --border:#e5e7eb;
+  
+  /* Colors */
+  --blue:#2563eb; 
+  --blue-700:#1d4ed8; 
+  --green:#16a34a; 
+  --green-700:#15803d;
+  --amber:#d97706; 
+  --red:#dc2626;
+  
+  /* Added from volatility-guardrails context, but keeping existing for safety */
+  --ok:#138a36; 
+  --warn:#b45309; 
+  --bad:#b00020;
+}
+
+/* Base */
+*{box-sizing:border-box}
+html,body{
+  margin:0; 
+  padding:0; 
+  font-family: Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif; 
+  background:var(--bg); 
+  color:var(--text, var(--ink));
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+a{color:var(--brand); text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:none; 
+  box-shadow:0 0 0 4px var(--ring)
+}
+.container{width:100%; max-width:var(--page-width); margin:0 auto; padding:0 16px}
+.muted{color:var(--muted)}
+
+/* -------------------------------------------------------------------------- */
+/* 2. Header & Navigation */
+/* -------------------------------------------------------------------------- */
+.header{
+  width:100%; 
+  background:#1a3c5e; 
+  color:#fff; 
+  padding:20px 0; 
+  position:relative;
+}
+.header0{
+  width:100%; 
+  background:#1a3c5e; 
+  color:#fff; 
+  padding:0px 0; 
+  position:relative;
+}
+.header-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.logo{
+  display:flex; 
+  align-items:center; 
+  gap:10px; 
+  font-weight:800; 
+  font-size:clamp(18px, 4vw, 28px); 
+  white-space:nowrap;
+}
+.logo-img{width:50px;height:50px;border-radius:6px}
+.brand-link{color:#fff; text-decoration:none}
+.nav{display:flex; gap:18px; align-items:center}
+.nav a{color:#eaf1f9; padding:8px 10px; border-radius:10px}
+.nav a[aria-current="page"]{background:rgba(255,255,255,0.22); color:#fff}
+.nav a:active{background:rgba(255,255,255,0.15)}
+.hamburger{display:none; font-size:24px; cursor:pointer; color:#eaf1f9; padding:8px; border-radius:8px}
+
+/* Mobile Menu */
+.mobile-menu{
+  display:none;
+  position:absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background:#0f2a44;
+  padding:12px 16px 24px;
+  z-index:60;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
+  border-top-left-radius:0;
+  border-top-right-radius:0;
+}
+.mobile-menu a{display:flex;align-items:center;gap:10px;color:#eaf1f9;padding:12px 8px;border-radius:8px}
+.mobile-menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+.mobile-menu .grid a{background:rgba(255,255,255,.06);justify-content:center}
+
+/* -------------------------------------------------------------------------- */
+/* 3. Footer */
+/* -------------------------------------------------------------------------- */
+footer{background:#1a3c5e; color:#d7dae0; padding:20px 0; margin-top:auto}
+footer .cols{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+footer h4{margin:0 0 6px}
+footer a{color:#b6c3d6}
+.foot-bottom{margin-top:14px; font-size:12px; text-align:center; color:#9aa6b6}
+
+/* -------------------------------------------------------------------------- */
+/* 4. Dashboard & General Components */
+/* -------------------------------------------------------------------------- */
+h1{font-size:2rem;margin:2.5rem 0 .5rem}
+p.lead{max-width:1000px;text-align:center;color:#333;margin:.25rem 0 1rem}
+
+/* Card */
+.card{
+  background:var(--card);
+  box-shadow:var(--shadow);
+  width:100%;
+  box-sizing:border-box;
+  border:1px solid #ccc; /* Border from later block wins */
+  border-radius:8px;
+  padding:15px;
+
+}
+.section{margin:1rem 0 1rem}
+
+/* Row Layout */
+.row{display:grid;gap:1rem}
+.row.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:980px){.row.two,.row.three{grid-template-columns:1fr}}
+
+/* Pill/Badge */
+.pill{
+  display:inline-flex;
+  align-items:center;
+  gap:.5rem;
+  border-radius:9999px;
+  padding:.35rem .8rem;
+  font-size:.85rem;
+  background:#eef2ff;
+  color:#1e3a8a;
+  border:1px dashed #c7d2fe
+}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:9999px;padding:.6rem 1rem;font-weight:600;cursor:pointer}
+.btn.blue{background:var(--blue);color:#fff}.btn.blue:hover{background:var(--blue-700)}
+.btn.green{background:var(--green);color:#fff}.btn.green:hover{background:var(--green-700)}
+.btn.ghost{background:#fff;border:1px solid var(--border);color:#1f2937}
+
+/* AI Components */
+.ai-bar{display:flex;gap:.5rem;align-items:center; margin-bottom:.5rem}
+.ai-bar input{flex:1;border:1px solid var(--border);border-radius:9999px;padding:.75rem 1rem;font-size:1rem}
+.ai-output{white-space:pre-wrap;min-height:70px;max-height:420px;overflow:auto;border:1px dashed var(--border);border-radius:1rem;padding:1rem;background:#fff;line-height:1.5}
+.results-wrap{margin-top:1rem;padding-top:.85rem;border-top:1px dashed var(--border)}
+
+/* Chips */
+.chips{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+.chip{background:#fff;border:1px solid var(--border);border-radius:9999px;padding:.35rem .7rem;font-size:.85rem;cursor:pointer}
+.chip:hover{background:#f3f4f6}
+
+/* Task tiles */
+.grid-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:1rem}
+.cat{background:#fff;border-radius:1rem;box-shadow:var(--shadow);padding:1rem}
+.tasks{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;margin-top:.5rem}
+.mini{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+  height:150px;
+  border-radius:1rem;
+  background:#fff;
+  box-shadow:var(--shadow);
+  padding:.75rem;
+  text-decoration:none;
+  color:inherit;
+  border:1px solid var(--border)
+}
+.mini .icon{font-size:1.75rem;margin-bottom:.35rem}
+.mini .title{font-weight:700}
+.mini .desc{font-size:.8rem;color:var(--muted)}
+.mini:hover{outline:2px solid #e5e7eb}
+
+/* Movers list */
+.list{display:grid;gap:.5rem}
+.row-item{display:grid;grid-template-columns:84px 1fr auto;gap:.75rem;align-items:center;background:#fff;border:1px solid var(--border);border-radius:1rem;padding:.6rem .75rem}
+.row-item .sym{font-weight:800}
+.badges{display:flex;gap:.4rem;flex-wrap:wrap}
+.badge{font-size:.78rem;border-radius:999px;padding:.2rem .55rem;border:1px solid var(--border);background:#f9fafb;color:#374151}
+.gain{color:#059669}.loss{color:#ef4444}
+
+/* Ticker */
+.ticker-container{background:#f0f2f6;overflow:hidden;white-space:nowrap;padding:8px 0;border-top:1px solid #dde2ea;border-bottom:1px solid #dde2ea}
+.ticker{display:inline-block;animation:ticker 22s linear infinite}
+.ticker span{margin-right:30px;font-size:14px;color:#334155}
+.ticker .up::after{content:"↑";color:#16a34a;margin-left:6px}
+.ticker .down::after{content:"↓";color:#dc2626;margin-left:6px}
+@keyframes ticker{0%{transform:translateX(100%)}100%{transform:translateX(-100%)}}
+@media (prefers-reduced-motion: reduce){.ticker{animation:none}}
+
+/* Tools grid */
+.tools-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:.75rem;margin-top:.75rem;grid-auto-rows:1fr;align-items:stretch}
+.tool-link{display:flex;align-items:flex-start;gap:.6rem;background:#fff;border-radius:.85rem;box-shadow:var(--shadow);padding:.75rem;text-decoration:none;color:inherit;border:1px solid var(--border);height:100%;min-height:110px}
+.tool-link:hover{outline:2px solid #e5e7eb}
+.tool-link .tl-emoji{font-size:1.15rem;line-height:1}
+.tool-link .tl-title{font-weight:700}
+.tool-link .tl-desc{font-size:.9rem;color:var(--muted);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+/* Quick Card Interaction Styles */
+.clickable-card { cursor: pointer; }
+.clickable-card:focus { outline: 3px solid rgba(26,60,94,.25); outline-offset: 2px; }
+
+/* Anchor Link Styles */
+a.mini-linkwrap { display:block; text-decoration:none; color:inherit; }
+a.mini-linkwrap:focus-visible { outline:3px solid rgba(26,60,94,.25); outline-offset:2px; border-radius:1rem; }
+.mini a.title-link { pointer-events:none; }
+
+/* Dashboard Panel Layout */
+.dashboard-panels {
+  display: flex;
+  flex-direction: column; 
+  gap: 1rem; 
+}
+@media (min-width: 768px) {
+  .dashboard-panels {
+    flex-direction: row; 
+    flex-wrap: nowrap; 
+  }
+  .card {
+    flex: 1 1 0; 
+  }
+}
+
+/* Quick Buy/Sell (two-panel layout) */
+.qg-grid{display:grid; gap:14px; align-items:start;}
+@media (min-width:900px){ .qg-grid{ grid-template-columns: 1.1fr .9fr; } }
+.qg-left .qg-row{display:flex; gap:.5rem; align-items:center; flex-wrap:wrap;}
+.input{padding:.65rem 1rem;border:1px solid var(--border);border-radius:9999px;font-size:1rem;min-width:220px}
+
+/* Needle gauge */
+.gauge-wrap{display:flex;flex-direction:column;align-items:center}
+.gauge{position:relative;width:320px;height:190px;margin:4px auto 0}
+.needle{position:absolute;bottom:30px;left:50%;width:6px;height:100px;background:#0284c7;border-radius:3px;transform-origin:bottom center;transform:rotate(0deg);box-shadow:0 2px 10px rgba(0,0,0,.15)}
+.labels{display:flex;justify-content:space-between;max-width:320px;margin:8px auto 0;font-size:.8rem;font-weight:700;color:#0f172a}
+
+/* Results cards */
+.stat{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.stat .k{font-size:.82rem;color:var(--muted)}
+.stat .v{font-size:1.05rem;font-weight:800;color:#0f172a}
+.note{background:#ecfeff;border-left:4px solid var(--blue);padding:.8rem .9rem;border-radius:.5rem}
+.error{background:#fee2e2;border-left:4px solid #ef4444;padding:.8rem .9rem;border-radius:.5rem;color:#991b1b}
+.success{background:#ecfdf5;border-left:4px solid #22c55e;padding:.8rem .9rem;border-radius:.5rem;color:#065f46}
+
+/* Alerts, Watchlist, Events */
+.ai-brief .ai-brief-row{display:flex;justify-content:space-between;gap:.75rem;align-items:flex-start;flex-wrap:wrap}
+.brief-chips{display:flex;flex-wrap:wrap;gap:.4rem}
+.alerts-card{margin-top:.75rem}
+.watchlist-card{margin-top:.75rem}
+.events-card{margin-top:.75rem}
+.alerts-head, .watchlist-head, .events-head{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap:.75rem;
+  margin-bottom: 10px;
+}
+.alerts-ctl{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.watchlist-ctl{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+.alerts-list{list-style:none;margin:0;padding:0;display:grid;gap:.5rem;max-height:220px;overflow:auto}
+.alert-item{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;border:1px solid var(--border);background:#fff;border-radius:12px;padding:.55rem .7rem}
+.alert-item .sym{font-weight:800}
+.alert-item .msg{color:#334155}
+.alert-badge{font-size:.75rem;border-radius:999px;padding:.15rem .5rem;border:1px solid var(--border)}
+.alert-lv1{background:#fef3c7;border-color:#fde68a;color:#92400e}
+.alert-lv2{background:#dcfce7;border-color:#bbf7d0;color:#065f46}
+.alert-lv3{background:#fee2e2;border-color:#fecaca;color:#991b1b}
+.alert-time{color:#64748b;font-size:.8rem}
+.events-row{display:flex;flex-wrap:wrap;gap:.5rem;margin-top: .35rem;}
+.events-row .chip{background:#eef2ff;border:1px dashed #c7d2fe;color:#1e3a8a}
+.toast-stack{position:fixed;right:16px;bottom:16px;display:grid;gap:.5rem;z-index:1000}
+.toast{background:#111827;color:#fff;padding:.6rem .8rem;border-radius:12px;box-shadow:0 8px 22px rgba(0,0,0,.25);display:flex;align-items:center;gap:.6rem;max-width:66vw}
+.toast .pill{font-size:.75rem;padding:.15rem .5rem;border-radius:999px;background:rgba(255,255,255,.12)}
+.toast .lv1{background:#92400e} .toast .lv2{background:#065f46} .toast .lv3{background:#991b1b}
+
+/* Page Links/Utility */
+.footer{margin:1.5rem 0 .25rem;text-align:center}
+.link{color:var(--blue);text-decoration:none;border-bottom:1px dashed rgba(37,99,235,.35);cursor:pointer}
+.link:hover{border-bottom-color:rgba(29,78,216,.6)}
+
+/* Dialog */
+dialog{border:none;border-radius:16px;padding:0;background:#fff;color:var(--text)}
+dialog .box{padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.35)}
+
+/* === Integrated Pills Row Styles === */
+.pills-row { 
+  display:flex; 
+  flex-wrap:wrap; 
+  gap:.5rem; 
+  margin-top:.5rem; 
+  margin-bottom:.25rem; 
+}
+.pills-row a{ 
+  display:inline-flex; 
+  align-items:center; 
+  gap:.35rem; 
+  text-decoration:none; 
+  font-weight:600; 
+  font-size:.9rem; 
+  line-height:1;
+  background:#eef2ff; 
+  color:#3730a3; 
+  border:1px solid #e5e7eb; 
+  border-radius:9999px; 
+  padding:.45rem .8rem; 
+  white-space:nowrap; 
+}
+.pills-row a:hover{ background:#e0e7ff }
+.cat .more-row{ margin-top:.35rem }
+
+/* -------------------------------------------------------------------------- */
+/* 5. Responsive Overrides */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 960px){
+  .hero{grid-template-columns:1fr}
+}
+@media (max-width: 820px){
+  .grid-3{grid-template-columns:1fr 1fr}
+  .pillgrid{grid-template-columns:1fr 1fr}
+  .quick-tools{grid-template-columns:1fr 1fr}
+  .headline .news{grid-template-columns:1fr}
+}
+@media (max-width: 640px){
+  .hamburger{display:block}
+  .nav{display:none}
+  .hero{padding:16px 0 0}
+  .cta-row{gap:8px}
+  .grid-3{grid-template-columns:1fr}
+  .pillgrid{grid-template-columns:1fr}
+  .quick-tools{grid-template-columns:1fr}
+  footer .cols{grid-template-columns:1fr}
+  .headline{padding:18px 0}
+  .section{padding:22px 0}
+  .card{min-height:unset}
+  .ticker{animation-duration:28s}
+}
+/* Safe Area Insets (Modern Mobile) */
+@supports (padding: max(0px)) {
+  @media (max-width: 640px) {
+    body {
+      padding-bottom: max(82px, env(safe-area-inset-bottom));
+    }
+  }
+}
+
+/* Tabs for Tools & Modules */
+.tool-tabs{display:flex;gap:.5rem;flex-wrap:wrap;margin:.35rem 0 .5rem;align-items:center}
+.tool-tab{border:1px solid var(--border, #e5e7eb);background:#fff;color:#1f2937;border-radius:9999px;padding:.45rem .95rem;font-weight:600;cursor:pointer}
+.tool-tab[aria-selected="true"]{background:var(--blue, #2563eb);color:#fff;border-color:var(--blue, #2563eb)}
+.tool-tabs .spacer{flex:1}
+@media (max-width:640px){ .tool-tabs{gap:.4rem} .tool-tab{padding:.4rem .75rem} }
+
+.ap-header{
+  display:grid;
+  grid-template-columns:auto 1fr;
+  grid-template-rows:auto auto;
+  align-items:center;
+  gap:8px 24px;
+  padding:16px 20px;
+  background:#173a57;          /* match your dark blue */
+  color:#fff;
+}
+
+/* Brand spans two rows */
+.ap-brand{
+  grid-row:1 / span 2;
+  display:flex;
+  align-items:center;
+  gap:12px;
+  text-decoration:none;
+  color:inherit;
+}
+.ap-logo{ width:44px; height:44px; border-radius:8px; object-fit:contain; }
+.ap-title{ font-size:1.35rem; font-weight:700; letter-spacing:.2px; }
+
+/* Row 1: account links */
+.ap-nav-top{
+  grid-column:2;
+  grid-row:1;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+.ap-nav-top a{
+  text-decoration:none;
+  color:#e8f2fb;
+  background:rgba(255,255,255,.08);
+  padding:7px 10px;
+  border-radius:10px;
+  font-size:.95rem;
+  transition:background .2s ease;
+}
+.ap-nav-top a:hover{ background:rgba(255,255,255,.16); }
+
+/* Row 2: main nav */
+.ap-nav-main{
+  grid-column:2;
+  grid-row:2;
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+.ap-tab{
+  position:relative;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  color:#fff;
+  text-decoration:none;
+  padding:7px 10px;
+  border-radius:10px;
+  background:transparent;
+  transition:background .2s ease, opacity .2s ease;
+  opacity:.95;
+}
+.ap-tab:hover{ background:rgba(255,255,255,.08); opacity:1; }
+.ap-tab::before{
+  content:attr(data-icon);
+  font-size:1rem;
+  line-height:1;
+}
+
+/* “active” tab helper (optional) */
+.ap-tab.is-active{ background:rgba(255,255,255,.18); }
+
+/* Responsive */
+@media (max-width: 780px){
+  .ap-header{
+    grid-template-columns:1fr;
+    grid-template-rows:auto auto auto;  /* brand, top, main */
+    gap:10px 0;
+  }
+  .ap-brand{ grid-row:auto; }
+  .ap-nav-top{ justify-content:flex-start; }
+  .ap-nav-main{ flex-wrap:wrap; gap:12px; }
+}
+
+/* push the main nav to the far right */
+.ap-nav-main { justify-self: end; }       /* grid self-alignment */
+
+.ap-nav-top a.ap-toplink{
+  text-decoration:none;
+  color:#e8f2fb;
+  background:rgba(255,255,255,.08);
+  padding:7px 10px;
+  border-radius:10px;
+  font-size:.95rem;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  transition:background .2s ease;
+}
+.ap-nav-top a.ap-toplink:hover{ background:rgba(255,255,255,.16); }
+
+/* Top-row auth links */
+.ap-nav-top a.ap-toplink{
+  text-decoration:none;
+  color:#e8f2fb;
+  background:rgba(255,255,255,.08);
+  padding:8px 14px;
+  border-radius:14px;
+  font-size:.95rem;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  transition:background .2s ease, opacity .2s ease;
+  opacity:.95;
+}
+.ap-nav-top a.ap-toplink:hover{ background:rgba(255,255,255,.16); opacity:1; }
+
+/* Emoji badge — same feel as your nav icons */
+.ap-emoji{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:22px; height:22px;
+  border-radius:6px;
+  background:rgba(255,255,255,.16);
+  font-size:14px;           /* size of the emoji inside */
+  line-height:1;
+  padding:2px;              /* gives that “inset” look like your tabs */
+}
+
+
+
+/* Dialog look + readable on white backgrounds */
+#gs-customize-btn{
+  position:fixed; right:1rem; bottom:1rem; z-index:9999;
+  background:#2563eb; color:#000; border:none; border-radius:999px;
+  padding:.65rem 1rem; font-weight:700; cursor:pointer;
+  box-shadow:0 6px 18px rgba(0,0,0,.35);
+}
+#gs-customize-panel{
+  position:fixed; inset:0; display:none; align-items:center; justify-content:center; z-index:10000;
+}
+  /* ===== Header (match trip-dashboard) ===== */
+.ap-header{
+  position:sticky; top:0; z-index:40;
+  color:#fff; background:linear-gradient(90deg,#60a5fa,#4f46e5);
+  box-shadow:0 2px 12px rgba(0,0,0,.08);
+}
+.ap-nav{
+  max-width:1200px; margin:0 auto; padding:12px 16px;
+  display:flex; align-items:center; justify-content:space-between; gap:16px;
+}
+.ap-left{display:flex; align-items:center; gap:18px; min-width:0;}
+.ap-brand{display:flex; align-items:center; gap:10px; color:#fff; text-decoration:none; white-space:nowrap;}
+.ap-brand img{width:50px; height:50px; border-radius:7px; object-fit:contain; background:rgba(255,255,255,.2);}
+.ap-title{font-weight:800; font-size:1.35rem; letter-spacing:.2px}
+.nav-link{ color:#fff; text-decoration:none; display:inline-flex; align-items:center; gap:8px; }
+.nav-link:hover{ text-decoration:underline; }
+.ap-right{display:flex; align-items:center; gap:18px;}
+</style>
+
+<script>
+  // ===== Real-time ticker using Twelve Data (or similar API) =====
+  const TICKER_SYMBOLS = ["AAPL","MSFT","GOOGL","AMZN","TSLA","NVDA","META"];
+  const TICKER_API_KEY = "__TWELVE_DATA_KEY_REMOVED__"; // TODO: replace
+  const TICKER_INTERVAL_MS = 60_000; // refresh every 60s
+
+  async function fetchTickerData() {
+      try {
+      const url = new URL("https://api.twelvedata.com/quote");
+      url.searchParams.set("symbol", TICKER_SYMBOLS.join(","));
+      url.searchParams.set("apikey", TICKER_API_KEY);
+
+      const res = await fetch(url.toString());
+      if (!res.ok) throw new Error("HTTP " + res.status);
+      const data = await res.json();
+
+      // TwelveData returns an object keyed by symbol OR an array (depending on plan)
+      const quotes = Array.isArray(data)
+          ? data
+          : TICKER_SYMBOLS.map(sym => ({ symbol: sym, ...(data[sym] || {}) }));
+
+      renderTicker(quotes);
+      } catch (err) {
+      console.error("Ticker error:", err);
+      // Fallback: leave existing content as-is if something fails
+      }
+  }
+
+  function renderTicker(quotes) {
+      const strip = document.getElementById("tickerStrip");
+      if (!strip) return;
+
+      strip.innerHTML = ""; // clear
+      quotes.forEach(q => {
+      if (!q || !q.symbol) return;
+
+      const price = Number(q.price || q.close || 0);
+      const change = Number(q.change || q.percent_change || 0);
+
+      const span = document.createElement("span");
+      span.textContent = `${q.symbol} $${price.toFixed(2)}`;
+
+      if (change > 0) span.classList.add("up");
+      else if (change < 0) span.classList.add("down");
+
+      strip.appendChild(span);
+      });
+  }
+
+  // Initial load + auto-refresh
+  document.addEventListener("DOMContentLoaded", () => {
+      fetchTickerData();
+      setInterval(fetchTickerData, TICKER_INTERVAL_MS);
+  });
+</script>
+
+</head>
+<body>
+  <header class="header0">
+
+
+    <div class="ap-nav">
+      <!-- Left: brand + Plan a Trip -->
+      <div class="ap-left">
+        <a class="ap-brand" href="index.html" aria-label="Voyage Genie Home">
+          <img src="images/arowanalogo.png" alt="Arowana Profits" class="ap-logo">
+          <span class="ap-title">Arowana Profits</span>
+        </a>
+
+               <!-- Row 2: Main nav -->
+        <nav class="ap-nav-main" id="navMain" aria-label="Primary">
+          <a href="short-term-dashboard.html" class="ap-tab" data-icon="⚡">Short-Term</a>
+          <a href="long-term-dashboard.html" class="ap-tab" data-icon="📈">Long-Term</a>
+        </nav>
+      </div>
+
+      <!-- Right: My Trips + Account/Sign in -->
+      <div class="ap-right">
+        <!-- Row 1: Account area (populated by JS) -->
+        <nav class="ap-nav-top" id="navTop" aria-label="Account actions">
+          <!-- JS will insert: Account / Sign out  OR  Sign in / Sign up -->
+        </nav>
+      </div>
+    </div>
+
+  </header>
+
+  <main class="container">
+    <!-- ——— content unchanged below ——— -->
+    <h1>Option Roll Tracker</h1>
+    <p class="muted">Log your original position and each roll. Save locally or to Supabase (JSON blob).</p>
+
+    <section class="card" id="inputs">
+      <h2>🎯 Inputs & Assumptions</h2>
+      <div class="section">
+        <h3>📌 Original Position</h3>
+        <div class="form-grid">
+          <div><label>📈 Ticker</label><input id="ticker" placeholder="e.g., CEG, NVDA, SMR"/></div>
+          <div><label>🧾 Strategy</label>
+            <select id="strategy">
+              <option value="single">Single Option (Call/Put)</option>
+              <option value="vertical">Vertical Spread</option>
+              <option value="covered_call">Covered Call</option>
+              <option value="iron_condor">Iron Condor</option>
+            </select>
+          </div>
+          <div><label>🔢 Qty</label><input id="qty" type="number" min="1" value="1"/></div>
+          <div><label>🎯 Short Strike</label><input id="shortStrike" type="number" step="0.01"/></div>
+          <div><label>🛡️ Long Strike</label><input id="longStrike" type="number" step="0.01"/></div>
+          <div><label>📆 Expiration</label><input id="expiry" type="date"/></div>
+          <div><label>💵 Entry Credit (+) / Debit (−)</label><input id="entryPrice" type="number" step="0.01"/></div>
+          <div><label>💸 Fees</label><input id="fees" type="number" step="0.01" value="0"/></div>
+          <div><label>🗓️ Open Date</label><input id="openDate" type="date"/></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div>
+            <button class="btn green" id="addOriginal"><i class="fas fa-plus-circle"></i> Add Original Position</button>
+            <button class="btn ghost" id="cancelEditMeta" style="display:none;"><i class="fas fa-times-circle"></i> Cancel</button>
+            <button class="btn ghost" id="resetAll"><i class="fas fa-broom"></i> Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>♻️ Add a Roll</h3>
+        <div class="form-grid">
+          <div><label>📆 Roll Date</label><input id="rollDate" type="date"/></div>
+          <div><label>💳 Buy-to-Close (old) (−)</label><input id="btc" type="number" step="0.01"/></div>
+          <div><label>💰 Sell-to-Open (new) (+)</label><input id="sto" type="number" step="0.01"/></div>
+          <div><label>💸 Extra Fees</label><input id="rollFees" type="number" step="0.01" value="0"/></div>
+          <div><label>🎯 New Short Strike</label><input id="newShort" type="number" step="0.01"/></div>
+          <div><label>🛡️ New Long Strike</label><input id="newLong" type="number" step="0.01"/></div>
+          <div><label>📆 New Expiration</label><input id="newExp" type="date"/></div>
+          <div><label>🔢 New Qty</label><input id="newQty" type="number" step="1" min="1"/></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div>
+            <button class="btn primary" id="addRoll"><i class="fas fa-sync-alt"></i> Add Roll</button>
+            <button class="btn ghost" id="cancelEditRoll" style="display:none;"><i class="fas fa-times-circle"></i> Cancel</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>🏁 Close Now? (Hypothetical)</h3>
+        <div class="form-grid">
+          <div><label>🔔 Close Price per contract</label><input id="closeNowPrice" type="number" step="0.01"/></div>
+          <div><label>💸 Close Fees</label><input id="closeNowFees" type="number" step="0.01" value="0"/></div>
+        </div>
+        <div class="row" style="margin-top:10px">
+          <div>
+            <button class="btn primary" id="calcClose"><i class="fas fa-calculator"></i> Calculate P/L if Sold Now</button>
+            <button class="btn red" id="commitClose"><i class="fas fa-check-circle"></i> Record Close (realized)</button>
+          </div>
+        </div>
+        <div class="status-note" id="note"></div>
+      </div>
+
+      <div class="section">
+        <h3>💾 Save / Load</h3>
+        <div class="row two">
+          <div>
+            <button class="btn ghost" id="saveLocal"><i class="fas fa-download"></i> Save to Browser</button>
+            <button class="btn ghost" id="loadLocal"><i class="fas fa-upload"></i> Load from Browser</button>
+            <button class="btn ghost" id="clearLocal"><i class="fas fa-trash"></i> Clear Browser Save</button>
+          </div>
+          <div>
+            <button class="btn ghost" id="exportCsv"><i class="fas fa-file-csv"></i> Export CSV</button>
+            <label class="btn ghost" for="importCsv"><i class="fas fa-file-import"></i> Import CSV</label>
+            <input id="importCsv" type="file" accept=".csv" style="display:none"/>
+          </div>
+        </div>
+
+        <div class="section">
+          <h4>☁️ Cloud Save (Supabase)</h4>
+          <div class="form-grid">
+            <div><label>🧾 Chain Name</label><input id="cloudName" placeholder="e.g., TSLA short 440 chain"/></div>
+            <div><label>🆔 Chain ID</label><input id="cloudId" placeholder="auto after first save" readonly/></div>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <div>
+              <button class="btn primary" id="saveCloud"><i class="fas fa-cloud-upload-alt"></i> Save to Cloud</button>
+              <button class="btn ghost" id="loadCloud"><i class="fas fa-cloud-download-alt"></i> Load from Cloud</button>
+              <button class="btn red" id="deleteCloud"><i class="fas fa-trash"></i> Delete from Cloud</button>
+            </div>
+          </div>
+
+          <p class="sub">Table: <code>option_roll_chains</code> with columns: <code>id uuid</code>, <code>name text</code>, <code>state jsonb</code>, <code>user_id uuid</code> (nullable), <code>created_at</code>, <code>updated_at</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="results">
+      <h2>📈 Results & Ledger</h2>
+
+      <div class="mini-grid">
+        <div class="mini"><div class="k">Total Credits</div><div class="v" id="totCredits">$0.00</div></div>
+        <div class="mini"><div class="k">Total Debits</div><div class="v" id="totDebits">$0.00</div></div>
+        <div class="mini"><div class="k">Cumulative Fees</div><div class="v" id="totFees">$0.00</div></div>
+      </div>
+      <div class="mini-grid">
+        <div class="mini"><div class="k">Net Premium</div><div class="v" id="netPremium">$0.00</div></div>
+        <div class="mini"><div class="k">Realized P/L</div><div class="v" id="realized">$0.00</div></div>
+        <div class="mini"><div class="k">Unrealized (if sold now)</div><div class="v" id="unrealized">$0.00</div></div>
+      </div>
+
+      <div class="section">
+        <h3>🧵 Chain Timeline</h3>
+        <div class="table-wrap">
+          <table id="timeline">
+            <thead>
+              <tr>
+                <th>Step</th><th>Date</th><th>Detail</th>
+                <th class="num">Credit</th><th class="num">Debit</th><th class="num">Fees</th><th class="num">Net</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="section">
+        <h3>📜 Transactions</h3>
+        <div class="table-wrap">
+          <table id="tx">
+            <thead>
+              <tr>
+                <th>Type</th><th>When</th><th>Strikes</th><th>Expiry</th><th>Qty</th>
+                <th class="num">Credit</th><th class="num">Debit</th><th class="num">Fees</th><th class="num">Net</th><th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div><h4>Investment Genie</h4><div>Smarter tools for traders & investors.</div></div>
+        <div><h4>Dashboards</h4><div><a href="short-term-dashboard.html">Short-Term</a></div><div><a href="long-term-dashboard.html">Long-Term</a></div></div>
+        <div><h4>Learn</h4><div><a href="learn-investing.html">Guides & Playbooks</a></div></div>
+        <div><h4>Support</h4><div><a href="contact.html">Contact</a></div></div>
+      </div>
+      <div class="foot-bottom">© <span id="year"></span> Arowana Profits · Investment Genie</div>
+    </div>
+  </footer>
+
+  <script>
+    // === Mobile menu ===
+(function(){
+  var hamburger = document.getElementById('hamburger');
+  var mobileMenu = document.getElementById('mobileMenu');
+
+  if (hamburger && mobileMenu) {
+    hamburger.addEventListener('click', function(){
+      var open = mobileMenu.style.display === 'block';
+      mobileMenu.style.display = open ? 'none':'block';
+      hamburger.setAttribute('aria-expanded', String(!open));
+      mobileMenu.setAttribute('aria-hidden', String(open));
+    });
+  }
+
+  var yearEl = document.getElementById('year');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+})();
+
+
+    // === Helpers ===
+    var $ = function(s){ return document.querySelector(s); };
+    var fmt = function(n){ if(isNaN(n)) n=0; var s=(n<0?'-$':'$')+Math.abs(n).toFixed(2); return s; };
+    var toNum = function(v){ return (v==="" || v==null) ? 0 : Number(v); };
+
+    // === State ===
+    var state = { meta:null, legs:[], realizedPL:0, editingMeta:false, editingLegIndex:null };
+
+    function computeAggregates(){
+      var credits=0,debits=0,fees=0,i,l;
+      for(i=0;i<state.legs.length;i++){
+        l=state.legs[i];
+        if(l.credit) credits += l.credit*l.qty*100;
+        if(l.debit)  debits  += l.debit*l.qty*100;
+        if(l.fees)   fees    += l.fees;
+      }
+      if(state.meta){
+        var c = Math.max(0, state.meta.entry);
+        var d = Math.max(0, -state.meta.entry);
+        credits += c*state.meta.qty*100;
+        debits  += d*state.meta.qty*100;
+        fees    += state.meta.fees;
+      }
+      return {credits:credits, debits:debits, fees:fees, netPremium: credits-debits-fees};
+    }
+    function currentOpenQty(){
+      if(!state.meta) return 0;
+      var q=state.meta.qty, i, l;
+      for(i=0;i<state.legs.length;i++){ l=state.legs[i]; if(l.kind==='roll') q=l.qty; }
+      return q;
+    }
+    function addRow(tb,cells){
+      var tr=document.createElement('tr');
+      for(var i=0;i<cells.length;i++){
+        var c=cells[i], td=document.createElement('td');
+        if(c && c.num) td.classList.add('num');
+        if(c && typeof c==='object' && 'html' in c){ td.innerHTML=c.html; }
+        else if(c && typeof c==='object'){ td.textContent = (c.text!=null? c.text : ''); }
+        else { td.textContent = (c!=null? c : ''); }
+        tr.appendChild(td);
+      }
+      tb.appendChild(tr);
+    }
+    function actionChips(kind, idx, allowEdit){
+      if(typeof idx==='undefined') idx=null;
+      if(typeof allowEdit==='undefined') allowEdit=true;
+
+      var editBtn =
+        '<button class="chip edit" data-action="edit" data-kind="' + kind + '"' +
+        (idx!==null ? ' data-index="' + idx + '"' : '') +
+        '><i class="fas fa-pen"></i> Edit</button>';
+
+      var delBtn  =
+        '<button class="chip del" data-action="delete" data-kind="' + kind + '"' +
+        (idx!==null ? ' data-index="' + idx + '"' : '') +
+        '><i class="fas fa-trash"></i> Delete</button>';
+
+      if (!allowEdit) return '<div class="acts">' + delBtn + '</div>';
+      return '<div class="acts">' + editBtn + delBtn + '</div>';
+    }
+
+    function render(){
+      var agg=computeAggregates();
+      $('#totCredits').textContent = fmt(agg.credits);
+      $('#totDebits').textContent  = fmt(agg.debits);
+      $('#totFees').textContent    = fmt(agg.fees);
+      $('#netPremium').textContent = fmt(agg.netPremium);
+      $('#realized').textContent   = fmt(state.realizedPL);
+
+      // Timeline
+      var tBody = $('#timeline tbody'); tBody.innerHTML='';
+      if(state.meta){
+        var entry=state.meta.entry;
+        var credit= entry>0 ? entry*state.meta.qty*100 : 0;
+        var debit = entry<0 ? -entry*state.meta.qty*100 : 0;
+        var net   = credit - debit - state.meta.fees;
+
+        var detail = String(state.meta.strategy) + ' • ' + String(state.meta.ticker) +
+          ' • short ' + (state.meta.short!=null ? state.meta.short : '') +
+          (state.meta.long!=null ? ' / long ' + state.meta.long : '');
+
+        addRow(tBody, [
+          'Open',
+          state.meta.openDate || '',
+          detail,
+          {num:true,text: credit ? fmt(credit): ''},
+          {num:true,text: debit ? fmt(debit): ''},
+          {num:true,text: state.meta.fees?fmt(state.meta.fees):''},
+          {num:true,text: fmt(net)},
+          {html: actionChips('meta')}
+        ]);
+      }
+
+      var step=1, i, l;
+      for(i=0;i<state.legs.length;i++){
+        l=state.legs[i];
+        var c2=(l.credit||0)*l.qty*100;
+        var d2=(l.debit||0)*l.qty*100;
+        var n2=c2 - d2 - (l.fees||0);
+        addRow(tBody, [
+          (l.kind==='roll' ? ('Roll ' + (step++)) : 'Close'),
+          l.date || '',
+          (l.desc || ''),
+          {num:true,text: c2?fmt(c2): ''},
+          {num:true,text: d2?fmt(d2): ''},
+          {num:true,text: l.fees?fmt(l.fees): ''},
+          {num:true,text: fmt(n2)},
+          {html: actionChips('leg', i, l.kind==='roll')}
+        ]);
+      }
+
+      // Transactions
+      var xBody = $('#tx tbody'); xBody.innerHTML='';
+      if(state.meta){
+        var strikes = (state.meta.short!=null ? state.meta.short : '') +
+                      (state.meta.long!=null ? ' / ' + state.meta.long : '');
+        addRow(xBody, [
+          'Open',
+          state.meta.openDate || '',
+          strikes,
+          state.meta.expiry || '',
+          state.meta.qty || '',
+          {num:true,text: entry>0?fmt(entry*state.meta.qty*100): ''},
+          {num:true,text: entry<0?fmt(-entry*state.meta.qty*100): ''},
+          {num:true,text: state.meta.fees?fmt(state.meta.fees): ''},
+          {num:true,text: fmt((entry*state.meta.qty*100) - state.meta.fees)},
+          {html: actionChips('meta')}
+        ]);
+      }
+      for(i=0;i<state.legs.length;i++){
+        l=state.legs[i];
+        var strikes2 = (l.short!=null ? l.short : '') + (l.long!=null ? ' / ' + l.long : '');
+        var cc=(l.credit||0)*l.qty*100, dd=(l.debit||0)*l.qty*100, nn=cc-dd-(l.fees||0);
+        addRow(xBody, [
+          (l.kind==='roll' ? 'Roll' : 'Close'),
+          l.date || '',
+          strikes2,
+          l.expiry || '',
+          l.qty || '',
+          {num:true,text: cc?fmt(cc): ''},
+          {num:true,text: dd?fmt(dd): ''},
+          {num:true,text: l.fees?fmt(l.fees): ''},
+          {num:true,text: fmt(nn)},
+          {html: actionChips('leg', i, l.kind==='roll')}
+        ]);
+      }
+    }
+
+    // === Form helpers ===
+    function fillOriginalForm(m){
+      $('#ticker').value=m.ticker||''; $('#strategy').value=m.strategy||'single'; $('#qty').value=m.qty||1;
+      $('#shortStrike').value=(m.short!=null? m.short : ''); $('#longStrike').value=(m.long!=null? m.long : ''); $('#expiry').value=m.expiry||'';
+      $('#entryPrice').value=(m.entry!=null? m.entry : 0); $('#fees').value=(m.fees!=null? m.fees : 0); $('#openDate').value=m.openDate||'';
+    }
+    function clearRollForm(){ $('#rollDate').value=''; $('#btc').value=''; $('#sto').value=''; $('#rollFees').value='0'; $('#newShort').value=''; $('#newLong').value=''; $('#newExp').value=''; $('#newQty').value=''; }
+    function fillRollForm(l){ $('#rollDate').value=l.date||''; $('#btc').value=l.debit||''; $('#sto').value=l.credit||''; $('#rollFees').value=l.fees||0; $('#newShort').value=(l.short!=null? l.short : ''); $('#newLong').value=(l.long!=null? l.long : ''); $('#newExp').value=l.expiry||''; $('#newQty').value=l.qty||''; }
+    function setMetaEditUI(on){ state.editingMeta=on; $('#addOriginal').innerHTML = on? '<i class="fas fa-save"></i> Save Changes':'<i class="fas fa-plus-circle"></i> Add Original Position'; $('#cancelEditMeta').style.display = on ? 'inline-flex':'none'; }
+    function setRollEditUI(on){ $('#addRoll').innerHTML = on? '<i class="fas fa-save"></i> Save Changes':'<i class="fas fa-sync-alt"></i> Add Roll'; $('#cancelEditRoll').style.display = on ? 'inline-flex':'none'; }
+
+    // === Original position ===
+    $('#addOriginal').addEventListener('click', function(){
+      var entry=toNum($('#entryPrice').value); var qty=Math.max(1, parseInt($('#qty').value||'1',10));
+      var newMeta = {
+        ticker: String(($('#ticker').value||'').trim()).toUpperCase(),
+        strategy: $('#strategy').value, qty: qty,
+        short: $('#shortStrike').value ? toNum($('#shortStrike').value) : null,
+        long:  $('#longStrike').value ? toNum($('#longStrike').value)  : null,
+        expiry: $('#expiry').value || '',
+        entry: entry,
+        fees: toNum($('#fees').value),
+        openDate: $('#openDate').value || ''
+      };
+      if(state.editingMeta && state.meta){ state.meta=newMeta; setMetaEditUI(false); }
+      else { state.meta=newMeta; }
+      render();
+    });
+    $('#cancelEditMeta').addEventListener('click', function(){ setMetaEditUI(false); if(state.meta) fillOriginalForm(state.meta); });
+    $('#resetAll').addEventListener('click', function(){
+      if(!confirm('Reset the current tracker?')) return;
+      state.meta=null; state.legs=[]; state.realizedPL=0; state.editingMeta=false; state.editingLegIndex=null;
+      setMetaEditUI(false); setRollEditUI(false); $('#unrealized').textContent=fmt(0); $('#note').style.display='none'; render();
+    });
+
+    // === Rolls ===
+    $('#addRoll').addEventListener('click', function(){
+      if(!state.meta){ alert('Please add the original position first.'); return; }
+      var btc=toNum($('#btc').value), sto=toNum($('#sto').value), fees=toNum($('#rollFees').value);
+      var qty=Math.max(1, parseInt($('#newQty').value || state.meta.qty,10));
+      var short=$('#newShort').value ? toNum($('#newShort').value) : null;
+      var long =$('#newLong').value ? toNum($('#newLong').value)  : null;
+
+      var desc = 'Close old @ ' + (btc ? btc.toFixed(2) : '-') +
+                 ' ; Open new @ ' + (sto ? sto.toFixed(2) : '-') +
+                 ' • short ' + (short!=null ? short : '-') +
+                 (long!=null ? ' / long ' + long : '');
+
+      var payload = {
+        kind:'roll',
+        date: $('#rollDate').value || new Date().toISOString().slice(0,10),
+        credit: sto>0 ? sto : 0,
+        debit:  btc>0 ? btc : 0,
+        fees: fees,
+        qty: qty,
+        short: short,
+        long: long,
+        expiry: $('#newExp').value || '',
+        desc: desc
+      };
+
+      if(state.editingLegIndex!==null){
+        state.legs[state.editingLegIndex] = payload;
+        state.editingLegIndex = null;
+        setRollEditUI(false);
+      } else {
+        state.legs.push(payload);
+      }
+      render();
+      clearRollForm();
+    });
+    $('#cancelEditRoll').addEventListener('click', function(){ state.editingLegIndex=null; setRollEditUI(false); clearRollForm(); });
+
+    // === Hypothetical close ===
+    $('#calcClose').addEventListener('click', function(){
+      if(!state.meta){ alert('Please add the original position first.'); return; }
+      var price=toNum($('#closeNowPrice').value), fees=toNum($('#closeNowFees').value);
+      if(price===0 && fees===0){ alert('Enter a close price and/or fees.'); return; }
+      var liveQty=currentOpenQty(); if(liveQty<=0){ alert('No current open qty to close.'); return; }
+      var net = 0 - (Math.max(0,price)*liveQty*100) - fees;
+      var agg=computeAggregates(); var unreal = agg.netPremium + net;
+      $('#unrealized').textContent = fmt(unreal);
+      var note=$('#note'); note.textContent = 'If you sell now at ' + fmt(price*liveQty*100) + ' total cost (incl. fees ' + fmt(fees) + '), your chain P/L would be ' + fmt(unreal) + '.'; note.style.display='block';
+    });
+
+    // === Commit close ===
+    $('#commitClose').addEventListener('click', function(){
+      if(!state.meta){ alert('Please add the original position first.'); return; }
+      var price=toNum($('#closeNowPrice').value), fees=toNum($('#closeNowFees').value);
+      var liveQty=currentOpenQty(); if(liveQty<=0){ alert('No current open qty to close.'); return; }
+      var last = state.legs.length ? state.legs[state.legs.length - 1] : {};
+      state.legs.push({
+        kind:'close',
+        date: new Date().toISOString().slice(0,10),
+        credit: 0,
+        debit: Math.max(0,price),
+        fees: fees,
+        qty: liveQty,
+        short: (last.short!=null ? last.short : state.meta.short),
+        long:  (last.long!=null  ? last.long  : state.meta.long),
+        expiry:(last.expiry || state.meta.expiry),
+        desc: 'Close live leg @ ' + price.toFixed(2)
+      });
+      var agg=computeAggregates(); state.realizedPL=agg.netPremium;
+      $('#unrealized').textContent=fmt(0); $('#note').style.display='none'; render();
+    });
+
+    // === Delegated table actions ===
+    function handleActionClick(e){
+      var btn=e.target.closest('[data-action]'); if(!btn) return;
+      var action=btn.getAttribute('data-action');
+      var kind=btn.getAttribute('data-kind');
+      var idx = btn.hasAttribute('data-index') ? parseInt(btn.getAttribute('data-index'),10) : null;
+
+      if(action==='delete'){
+        if(kind==='meta'){
+          if(!state.meta) return;
+          if(confirm('Delete the original position and reset the tracker?')){
+            state.meta=null; state.legs=[]; state.realizedPL=0; state.editingMeta=false; state.editingLegIndex=null;
+            setMetaEditUI(false); setRollEditUI(false); render();
+          }
+        } else if(kind==='leg' && idx!==null){
+          if(!state.legs[idx]) return;
+          if(confirm('Delete this record?')){
+            state.legs.splice(idx,1);
+            render();
+          }
+        }
+        return;
+      }
+
+      if(action==='edit'){
+        if(kind==='meta'){
+          if(!state.meta) return;
+          fillOriginalForm(state.meta);
+          setMetaEditUI(true);
+          window.scrollTo({top: document.getElementById('inputs').offsetTop - 10, behavior:'smooth'});
+        } else if(kind==='leg' && idx!==null){
+          var leg=state.legs[idx]; if(!leg) return;
+          if(leg.kind!=='roll'){ alert('Editing is available for Roll entries. Delete & re-add a Close if needed.'); return; }
+          fillRollForm(leg); state.editingLegIndex=idx; setRollEditUI(true);
+          window.scrollTo({top: document.getElementById('inputs').offsetTop - 10, behavior:'smooth'});
+        }
+      }
+    }
+    document.getElementById('timeline').addEventListener('click', handleActionClick);
+    document.getElementById('tx').addEventListener('click', handleActionClick);
+
+    // === Local storage & CSV ===
+    var KEY='option_roll_tracker_v1';
+    $('#saveLocal').addEventListener('click', function(){ localStorage.setItem(KEY, JSON.stringify(state)); alert('Saved to your browser.'); });
+    $('#loadLocal').addEventListener('click', function(){
+      var raw=localStorage.getItem(KEY); if(!raw){ alert('No saved data found.'); return; }
+      try{ var parsed=JSON.parse(raw); state.meta=parsed.meta||null; state.legs=parsed.legs||[]; state.realizedPL=parsed.realizedPL||0; state.editingMeta=false; state.editingLegIndex=null; setMetaEditUI(false); setRollEditUI(false); render(); }
+      catch(e){ alert('Failed to load saved data.'); }
+    });
+    $('#clearLocal').addEventListener('click', function(){ localStorage.removeItem(KEY); alert('Browser save cleared.'); });
+
+    function toCSV(){
+      var rows=[], i, l;
+      rows.push(['type','date','ticker','strategy','qty','short','long','expiry','credit','debit','fees','desc'].join(','));
+      if(state.meta){
+        rows.push(['open', state.meta.openDate||'', state.meta.ticker, state.meta.strategy, state.meta.qty,
+          (state.meta.short!=null? state.meta.short:''), (state.meta.long!=null? state.meta.long:''), state.meta.expiry || '',
+          (state.meta.entry>0 ? state.meta.entry : ''), (state.meta.entry<0 ? -state.meta.entry : ''), (state.meta.fees || 0), 'original open'
+        ].join(','));
+      }
+      for(i=0;i<state.legs.length;i++){
+        l=state.legs[i];
+        rows.push([l.kind, l.date||'', (state.meta? state.meta.ticker: ''), (state.meta? state.meta.strategy: ''), (l.qty||''),
+          (l.short!=null? l.short : ''), (l.long!=null? l.long : ''), (l.expiry || ''), (l.credit || ''), (l.debit || ''), (l.fees || ''), String(l.desc||'').replace(/,/g,';')].join(','));
+      }
+      return rows.join('\n');
+    }
+    $('#exportCsv').addEventListener('click', function(){
+      var blob=new Blob([toCSV()], {type:'text/csv;charset=utf-8;'});
+      var url=URL.createObjectURL(blob); var a=document.createElement('a'); a.href=url; a.download='option-roll-tracker.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    });
+    $('#importCsv').addEventListener('change', function(e){
+      var file=e.target.files && e.target.files[0]; if(!file) return; var reader=new FileReader();
+      reader.onload=function(evt){
+        try{
+          var text=String(evt.target.result); var lines=text.split(/\r?\n/).filter(Boolean); var head=lines.shift().split(',');
+          var idx=function(k){ return head.indexOf(k); };
+          state.meta=null; state.legs=[]; state.realizedPL=0; state.editingMeta=false; state.editingLegIndex=null; setMetaEditUI(false); setRollEditUI(false);
+          for(var i=0;i<lines.length;i++){
+            var cols=lines[i].split(',');
+            var type=cols[idx('type')];
+            if(type==='open'){
+              state.meta={
+                ticker: cols[idx('ticker')],
+                strategy: cols[idx('strategy')],
+                qty: parseInt(cols[idx('qty')]||'1',10),
+                short: cols[idx('short')]? Number(cols[idx('short')]) : null,
+                long:  cols[idx('long')]?  Number(cols[idx('long')])  : null,
+                expiry: cols[idx('expiry')],
+                entry: (toNum(cols[idx('credit')]) - toNum(cols[idx('debit')])),
+                fees: toNum(cols[idx('fees')]),
+                openDate: cols[idx('date')]
+              };
+            } else {
+              state.legs.push({
+                kind: type,
+                date: cols[idx('date')],
+                qty: parseInt(cols[idx('qty')]||'1',10),
+                short: cols[idx('short')]? Number(cols[idx('short')]) : null,
+                long:  cols[idx('long')]?  Number(cols[idx('long')])  : null,
+                expiry: cols[idx('expiry')],
+                credit: toNum(cols[idx('credit')]),
+                debit:  toNum(cols[idx('debit')]),
+                fees:   toNum(cols[idx('fees')]),
+                desc: cols[idx('desc')] || ''
+              });
+            }
+          }
+          render(); alert('CSV imported.');
+        }catch(err){ console.error(err); alert('Failed to import CSV.'); }
+      };
+      reader.readAsText(file); e.target.value='';
+    });
+
+// === Supabase: JSON blob in option_roll_chains ===
+var CLOUD_KEY='option_roll_tracker_last_id';
+
+async function ensureSupabase() {
+  // 1) If we already have a client, just reuse it
+  if (window.sb) return window.sb;
+
+  // 2) Try to import supabase-init.js and grab whatever it exposes
+  try {
+    const mod = await import('./js/supabase-init.js').catch(() => null)
+              || await import('../js/supabase-init.js').catch(() => null)
+              || await import('/js/supabase-init.js').catch(() => null);
+
+    if (mod) {
+      // Named export `supabase`
+      if (mod.supabase) {
+        window.sb = mod.supabase;
+        return window.sb;
+      }
+      // Or a default export that might contain a client
+      if (mod.default) {
+        if (mod.default.supabase) {
+          window.sb = mod.default.supabase;
+          return window.sb;
+        }
+        // If the default itself is a client
+        if (mod.default.from && mod.default.auth) {
+          window.sb = mod.default;
+          return window.sb;
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Failed to import supabase-init.js in ensureSupabase:', e);
+  }
+
+  // 3) As a last resort, if a global supabase client exists, use it
+  if (window.supabase && window.supabase.from && window.supabase.auth) {
+    window.sb = window.supabase;
+    return window.sb;
+  }
+
+  // 4) Still nothing – just throw (auto-load will catch this and stay blank)
+  throw new Error('Supabase missing');
+}
+
+async function initFromTrade() {
+    try {
+      const params = new URLSearchParams(window.location.search);
+      const tradeId = params.get("fromTrade") || params.get("tradeId");
+      if (!tradeId) return false;
+
+      const sb = await ensureSupabase();
+      const { data, error } = await sb
+        .from("trading_journal")
+        .select("*")
+        .eq("id", tradeId)
+        .single();
+
+      if (error || !data) {
+        console.warn("Could not load trade for roll tracker:", error || "No data");
+        return false;
+      }
+
+      // Map trading_journal row -> roll tracker meta
+      // Adjust these mappings if your column names differ.
+      const rawStrat = (data.option_strategy || data.strategy || "").toLowerCase();
+      let strategy = "single";
+      if (rawStrat.includes("vertical")) strategy = "vertical";
+      else if (rawStrat.includes("covered")) strategy = "covered_call";
+      else if (rawStrat.includes("condor")) strategy = "iron_condor";
+
+      state.meta = {
+        ticker: (data.ticker || "").toUpperCase(),
+        strategy,
+        qty: data.quantity || 1,
+        short: data.strike != null ? Number(data.strike) : null,
+        long: null, // extend later if you add long_strike/etc. to trading_journal
+        expiry: data.expiry_date || "",
+        entry: data.open_price != null ? Number(data.open_price) : 0, // per-contract
+        fees: data.fee != null ? Number(data.fee) : 0,
+        openDate: data.open_date || ""
+      };
+
+      // Fill the "Original Position" form from this meta
+      fillOriginalForm(state.meta);
+      render();
+      return true;
+    } catch (err) {
+      console.error("initFromTrade error:", err);
+      return false;
+    }
+  }
+
+    async function saveToCloud(){
+      const sb = await ensureSupabase();
+      var name = String(($('#cloudName').value || '').trim() || (state.meta && state.meta.ticker ? state.meta.ticker+' chain' : 'untitled chain'));
+      var id   = String(($('#cloudId').value || '').trim() || (crypto && crypto.randomUUID ? crypto.randomUUID() : (Date.now().toString(36)+'-'+Math.random().toString(36).slice(2))));
+      var ures = await sb.auth.getUser();
+      var user = ures && ures.data ? ures.data.user : null;
+      var payload = { id:id, name:name, state:state, user_id: (user? user.id: null), updated_at: new Date().toISOString() };
+
+      var up = await sb.from('option_roll_chains').upsert(payload, { onConflict: 'id' });
+      if(up.error){ alert('Cloud save failed: ' + up.error.message); return; }
+      $('#cloudId').value = id; localStorage.setItem(CLOUD_KEY, id); alert('Saved to cloud.');
+    }
+    async function loadFromCloud(opts){
+      const silent = opts && opts.silent;
+      const sb = await ensureSupabase();
+      var id = String(($('#cloudId').value || '').trim());
+      if(!id){
+        id = localStorage.getItem(CLOUD_KEY) || (silent ? '' : prompt('Enter Chain ID to load:'));
+      }
+      if(!id){ return false; }
+      var q = await sb.from('option_roll_chains').select('id,name,state').eq('id', id).single();
+      if(q.error || !q.data){
+        if(!silent){
+          alert('Not found: ' + (q.error ? q.error.message : 'invalid id'));
+        }
+        return false;
+      }
+      var s = q.data.state || {};
+      state.meta = s.meta || null;
+      state.legs = s.legs || [];
+      state.realizedPL = s.realizedPL || 0;
+      state.editingMeta=false; state.editingLegIndex=null; setMetaEditUI(false); setRollEditUI(false);
+      $('#cloudId').value = q.data.id; $('#cloudName').value = q.data.name || ''; localStorage.setItem(CLOUD_KEY, q.data.id);
+      render();
+      if(!silent){
+        alert('Loaded from cloud.');
+      }
+      return true;
+    }
+
+    // … keep ensureSupabase(), saveToCloud(), loadFromCloud() as in your file …
+
+    async function deleteFromCloud() {
+      const sb = await ensureSupabase();
+      const id = String(($('#cloudId').value || '').trim());
+      if (!id) { alert('No Chain ID to delete.'); return; }
+      if (!confirm('Delete this chain from cloud?')) return;
+
+      const { error } = await sb.from('option_roll_chains').delete().eq('id', id);
+      if (error) { alert('Delete failed: ' + error.message); return; }
+
+      // Clear local UI/state for ID only
+      $('#cloudId').value = '';
+      alert('Deleted from cloud.');
+    }
+    
+    document.getElementById('saveCloud').addEventListener('click', () => { saveToCloud().catch(console.error); });
+    document.getElementById('loadCloud').addEventListener('click', () => { loadFromCloud().catch(console.error); });
+    document.getElementById('deleteCloud').addEventListener('click', () => { deleteFromCloud().catch(console.error); });
+
+    // Initial load: if ?rollId=... is present, use it as Cloud ID and try to auto-load silently
+  (function initFromQuery(){
+    (async () => {
+      try {
+        const params = new URLSearchParams(window.location.search);
+
+        // 1) If coming from trade-journal with ?fromTrade=..., preload from trading_journal
+        const tradeId = params.get("fromTrade") || params.get("tradeId");
+        if (tradeId) {
+          const ok = await initFromTrade();
+          if (ok) {
+            // We have an original position prefilled; nothing else to do.
+            return;
+          }
+        }
+
+        // 2) Otherwise, fall back to existing cloud chain auto-load (?rollId / ?id / ?cid)
+        const paramId = params.get("rollId") || params.get("id") || params.get("cid");
+        if (paramId) {
+          const cidInput = document.getElementById("cloudId");
+          if (cidInput && !cidInput.value) cidInput.value = String(paramId);
+          try { localStorage.setItem(CLOUD_KEY, String(paramId)); } catch (_) {}
+          await loadFromCloud({ silent: true }).catch(err => {
+            console.warn("Auto-load from rollId failed:", err);
+          });
+          return;
+        }
+
+        // 3) Default: just render blank / last local state
+        render();
+      } catch (err) {
+        console.warn("Error in initFromQuery:", err);
+        render();
+      }
+    })();
+  })();
+  </script>
+
+<script type="module">
+  import { supabase } from "./js/supabase-init.js";
+
+  // Helpers
+  const $ = (s) => document.querySelector(s);
+  const nav = $("#nav");                               // desktop nav
+  const mobileGrid = $("#mobileMenu .grid");           // mobile menu grid
+
+  // Build the URL we want to return to after login/signup
+  const nextParam = encodeURIComponent(
+    (location.pathname.startsWith("/") ? location.pathname.slice(1) : location.pathname) + location.search
+  );
+
+  // Element builders
+  function makeLink(href, text, iconHtml = "") {
+    const a = document.createElement("a");
+    a.href = href;
+    a.innerHTML = iconHtml ? `${iconHtml} ${text}` : text;
+    return a;
+  }
+  function makeSignOut() {
+    const a = makeLink("#", "Sign out", '<i class="fas fa-sign-out-alt"></i>');
+    a.addEventListener("click", async (e) => {
+      e.preventDefault();
+      try {
+        await supabase.auth.signOut();
+      } finally {
+        // Return user to the current page after sign-out
+        location.reload();
+      }
+    });
+    return a;
+  }
+
+  async function mountAuthLinks() {
+    if (!nav) return;
+
+    // 1) Check current auth state
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // 2) Build the right set of links
+    let links = [];
+    if (user) {
+      // Logged in: show Account + Sign out
+      const account = makeLink("account.html", user.email || "Account", '<i class="fas fa-user-circle"></i>');
+      const signOut = makeSignOut();
+      links = [account, signOut];
+    } else {
+      // Logged out: show Sign in + Sign up (return to this page after)
+      const signIn = makeLink(`login.html?next=${nextParam}`, "Sign in", '<i class="fas fa-sign-in-alt"></i>');
+      const signUp = makeLink(`signup.html?next=${nextParam}`, "Sign up", '<i class="fas fa-user-plus"></i>');
+      links = [signIn, signUp];
+    }
+
+    // 3) Append to desktop nav (after “Features”)
+    links.forEach((a) => nav.appendChild(a));
+
+    // 4) Mirror into the mobile menu grid (optional, looks nice)
+    if (mobileGrid) {
+      links.forEach((a) => mobileGrid.appendChild(a.cloneNode(true)));
+      // Re-wire the Sign out in the mobile copy
+      const mobileSignOut = mobileGrid.querySelector('a[href="#"]');
+      if (mobileSignOut) {
+        mobileSignOut.addEventListener("click", async (e) => {
+          e.preventDefault();
+          try {
+            await supabase.auth.signOut();
+          } finally {
+            location.reload();
+          }
+        });
+      }
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", mountAuthLinks);
+</script>
+
+<script type="module">
+  import { supabase } from "./js/supabase-init.js";
+
+  const navTop = document.getElementById("navTop");       // ✅ correct target
+  const mobileGrid = document.querySelector("#mobileMenu .grid");
+
+  const nextParam = encodeURIComponent(location.pathname + location.search);
+
+  // Same “emoji badge” look as your tabs
+  const mk = (href, text, emoji) => {
+    const a = document.createElement("a");
+    a.href = href;
+    a.className = "ap-toplink";
+    a.innerHTML = `<span class="ap-emoji">${emoji}</span><span>${text}</span>`;
+    return a;
+  };
+
+  async function renderAuthLinks(){
+    if (!navTop) return;
+
+    // clear then mount
+    navTop.innerHTML = "";
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (user) {
+      const label = user.email?.split("@")[0] || "Account";
+      const account = mk("account.html", label, "🪪");
+      const signOut = mk("#", "Sign out", "🚪");
+      signOut.addEventListener("click", async (e) => {
+        e.preventDefault();
+        try { await supabase.auth.signOut(); } finally { location.reload(); }
+      });
+      navTop.append(account, signOut);
+    } else {
+      const signIn = mk(`login.html?next=${nextParam}`, "Sign in", "🔑");
+      const signUp = mk(`signup.html?next=${nextParam}`, "Sign up", "🆕");
+      navTop.append(signIn, signUp);
+    }
+
+    // mirror into mobile grid (optional)
+    if (mobileGrid) {
+      // remove previous clones
+      mobileGrid.querySelectorAll(".ap-toplink").forEach(n => n.remove());
+      navTop.querySelectorAll(".ap-toplink").forEach(el => {
+        const clone = el.cloneNode(true);
+        if (clone.textContent.includes("Sign out")) {
+          clone.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try { await supabase.auth.signOut(); } finally { location.reload(); }
+          });
+        }
+        mobileGrid.appendChild(clone);
+      });
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", renderAuthLinks);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Terms of Service — Arowana Profits</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>📄</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0b4f8a;--brand-dark:#083c69;--bg:#f6f8fb;--panel:#fff;--ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;--radius:14px;--max:820px;--shadow:0 4px 20px rgba(11,79,138,.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.7}
+a{color:var(--brand)} button{font-family:inherit;cursor:pointer}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* V1 Nav */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;text-decoration:none}
+.logo img{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);padding:2px}
+.nav-links{display:flex;align-items:center;gap:3px;flex:1;justify-content:center}
+.nav-links a{color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none;transition:background .15s}
+.nav-links a:hover{background:rgba(255,255,255,.13)}
+.nav-links .agent{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.nav-div{width:1px;height:16px;background:rgba(255,255,255,.18);margin:0 4px;flex-shrink:0}
+.nav-auth{display:flex;align-items:center;gap:7px}
+.nbtn{padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;text-decoration:none;transition:all .15s}
+.nbtn-g{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.nbtn-s{background:#fff;color:var(--brand);font-weight:700}
+.nav-user{position:relative;display:none}.nav-user.show{display:block}
+.nav-user-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600}
+.nav-user-menu{position:absolute;right:0;top:calc(100%+8px);min-width:195px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:6px;display:none;z-index:200}
+.nav-user.open .nav-user-menu{display:block}
+.nav-user-menu a,.nav-user-menu button{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:var(--muted);font-size:.82rem;font-weight:500;background:none;border:none;width:100%;text-align:left;text-decoration:none;cursor:pointer}
+.nav-user-menu a:hover,.nav-user-menu button:hover{color:var(--ink);background:rgba(11,79,138,.06)}
+.menu-sep{height:1px;background:var(--border);margin:3px 0}
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mob-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mob-menu[data-open="true"]{display:block}
+.mob-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mob-link{padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none;display:block}
+.mob-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:700px){.nav-links{display:none}.nbtn-s{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* Content */
+main{flex:1;padding:48px 0 64px}
+.page-header{margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.page-icon{font-size:2.5rem;margin-bottom:12px}
+.page-title{font-family:"Inter Tight",sans-serif;font-size:clamp(22px,3vw,32px);font-weight:800;margin-bottom:8px}
+.page-sub{font-size:.93rem;color:var(--muted);line-height:1.65}
+.last-updated{font-size:.78rem;color:var(--muted);margin-top:8px}
+.section{margin-bottom:32px}
+.section h2{font-family:"Inter Tight",sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:10px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.section h2::before{content:"";display:inline-block;width:4px;height:18px;background:var(--brand);border-radius:2px}
+.section p{font-size:.9rem;color:#374151;line-height:1.75;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;font-weight:600;color:var(--brand);text-decoration:none;margin-bottom:28px}
+.back-link:hover{text-decoration:underline}
+
+/* Footer */
+.site-footer{background:var(--brand-dark);color:#94a3b8;padding:36px 0 22px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:4px}
+.footer-tag{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6}
+.fc-title{font-weight:700;color:rgba(255,255,255,.7);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.fl{display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none}
+.fl:hover{color:rgba(255,255,255,.8)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.73rem;color:rgba(255,255,255,.3);margin-bottom:8px}
+.fpill{background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35);margin-left:4px}
+.fdis{font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.6}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div class="nav-wrap">
+<nav class="nav">
+  <a href="index.html" class="logo"><img src="images/arowanalogo.png?v=20260117" alt="" onerror="this.style.display='none'">Arowana Profits</a>
+  <div class="nav-links">
+    <a href="trading-command.html" class="agent">&#9889; Trading Command</a>
+    <a href="options-hub.html" class="agent">&#128200; Options Hub</a>
+    <div class="nav-div"></div>
+    <a href="wheel-calculator.html">&#129518; Wheel calculator</a>
+    <a href="assignment-risk.html">&#9888;&#65039; Assignment risk</a>
+    <a href="pricing.html">&#128179; Pricing</a>
+    <a href="support.html">&#128172; Support</a>
+  </div>
+  <button class="nav-burger" id="navBurger">&#9776;</button>
+  <div class="nav-auth">
+    <a href="login.html" id="navSignIn" class="nbtn nbtn-g">Sign In</a>
+    <a href="signup.html" id="navSignUp" class="nbtn nbtn-s">&#128640; Start Free</a>
+    <div class="nav-user" id="navUserDrop">
+      <button class="nav-user-btn" id="navUserBtn">&#128100; <span id="navUserName">Account</span></button>
+      <div class="nav-user-menu">
+        <a href="account.html">&#128282; My Account</a>
+        <div class="menu-sep"></div>
+        <a href="trading-command.html">&#9889; Trading Command</a>
+        <a href="portfolio-command.html">&#127974; Portfolio Command</a>
+        <div class="menu-sep"></div>
+        <button id="navSignOutBtn">&#128682; Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</div>
+<div class="mob-menu" id="mobMenu" data-open="false">
+  <div class="mob-panel">
+    <a class="mob-link" href="trading-command.html">&#9889; Trading Command</a>
+    <a class="mob-link" href="options-hub.html">&#128200; Options Hub</a>
+    <a class="mob-link" href="wheel-calculator.html">&#129518; Wheel calculator</a>
+    <a class="mob-link" href="pricing.html">&#128179; Pricing</a>
+    <div class="mob-div"></div>
+    <div id="mobAuthLinks"></div>
+  </div>
+</div>
+
+<main>
+<div class="container">
+  <a href="javascript:history.back()" class="back-link">&#8592; Back</a>
+  <div class="page-header">
+    <div class="page-icon">📄</div>
+    <h1 class="page-title">Terms of Service</h1>
+    <p class="page-sub">The agreement between you and Exodon Profits LLC for using the Wheel Strategy Desk.</p>
+    <p class="last-updated">Last updated: September 2026</p>
+  </div>
+    <div class="section">
+    <h2>Acceptance of Terms</h2>
+    <p>Arowana Profits (&ldquo;the Platform&rdquo;) is operated by Exodon Profits LLC. By creating an account or using the Platform you agree to these Terms, to our <a href="privacy.html">Privacy Policy</a>, and to the <a href="disclosures.html">Disclosures</a>. If you do not agree, do not use the Platform. You must be at least 18 years old.</p>
+  </div>
+  <div class="section">
+    <h2>Educational Use Only</h2>
+    <p>The Platform is for education and information. Scan results, roll-coach choices, scores, income figures, guardrail warnings, briefs and pattern findings are not recommendations to trade and are not personalised advice. We are not a registered investment adviser or broker-dealer, we do not execute trades or hold funds, and using the Platform creates no advisory or fiduciary relationship. Every trading decision is yours, and you are responsible for its outcome.</p>
+  </div>
+  <div class="section">
+    <h2>Market Data</h2>
+    <p>Prices and option quotes come from third-party providers, are delayed, and in the case of option quotes are indicative estimates rather than executable prices. We do not guarantee their accuracy, completeness or availability, and you must verify prices with your broker before trading. Data may be interrupted or withdrawn by a provider at any time, which can delay or prevent scans from running.</p>
+  </div>
+  <div class="section">
+    <h2>Accounts and Security</h2>
+    <p>You are responsible for keeping your credentials secure and for everything done under your account. Do not share your account or any API key you add. Tell us promptly at support@arowanaprofits.com if you believe your account has been accessed without permission. One person per account; accounts are not transferable.</p>
+  </div>
+  <div class="section">
+    <h2>Plans, Billing and Renewal</h2>
+    <p>The Free plan is provided as-is with no uptime commitment. Paid plans (Pro and Founders) are billed in advance through Stripe on the cycle you choose, monthly or annual, and <strong>renew automatically</strong> at the then-current rate until cancelled. You can cancel at any time from the billing portal on your Account page; cancellation stops future charges and your plan stays active until the end of the period you have paid for. We do not pro-rate partial periods. Founders members keep the Founders rate for as long as the subscription remains active and uncancelled; if it lapses, that rate is no longer available.</p>
+  </div>
+  <div class="section">
+    <h2>Refunds</h2>
+    <p>If the Platform is not for you, email support@arowanaprofits.com within 30 days of your first payment and we will refund it in full. After 30 days, payments are non-refundable except where required by law. Refunds apply to a first subscription, not to renewals.</p>
+  </div>
+  <div class="section">
+    <h2>What We May Change</h2>
+    <p>We are actively building this product, and features may be added, altered or withdrawn. If we materially reduce what a paid plan includes, we will give notice by email and you may cancel for a pro-rated refund of the unused period. Schedules for the nightly scans, brief and coach are best-effort: a provider outage or a failed job may mean a day without results, and that is not grounds for a refund on its own.</p>
+  </div>
+  <div class="section">
+    <h2>Acceptable Use</h2>
+    <p>You may not: break any law or exchange rule; scrape, resell or redistribute Platform content or the market data within it; share your account with others; attempt to bypass plan limits or security; reverse-engineer the Platform; or use it to build a competing service. Market data is licensed to us for use inside the Platform, and you may not extract or redistribute it.</p>
+  </div>
+  <div class="section">
+    <h2>Your Content</h2>
+    <p>Your trades, watchlists, notes and settings remain yours. You grant us only the licence needed to run the service: to store that data, process it to produce your scans, coach output, income figures and brief, and to show it back to you. We do not sell it or use it to train models. You can export your journal and watchlists at any time.</p>
+  </div>
+  <div class="section">
+    <h2>Intellectual Property</h2>
+    <p>The Platform, its code, design, wording and scoring rules belong to Exodon Profits LLC. You may use the outputs for your own trading and record-keeping; you may not reproduce, distribute or create derivative works from the Platform itself without written permission.</p>
+  </div>
+  <div class="section">
+    <h2>Disclaimer of Warranties</h2>
+    <p>The Platform is provided &ldquo;as is&rdquo; and &ldquo;as available&rdquo;, without warranties of any kind, express or implied, including merchantability, fitness for a particular purpose, accuracy of data, or uninterrupted operation.</p>
+  </div>
+  <div class="section">
+    <h2>Limitation of Liability</h2>
+    <p>To the maximum extent permitted by law, Exodon Profits LLC is not liable for trading losses, lost profits, or any indirect, incidental, special or consequential damages arising from your use of the Platform, from errors or delays in data, or from decisions you make using it. Our total liability for any claim is limited to the amount you paid us in the twelve months before the claim arose. Some jurisdictions do not allow these limits, in which case they apply to the fullest extent permitted.</p>
+  </div>
+  <div class="section">
+    <h2>Termination</h2>
+    <p>You may close your account at any time from the Account page. We may suspend or close an account that breaches these Terms, or wind the service down entirely; if we close a paid account without cause, we will refund the unused portion of the period you paid for. You can export your data before closing, and deletion follows the schedule in the Privacy Policy.</p>
+  </div>
+  <div class="section">
+    <h2>Changes to These Terms</h2>
+    <p>We may update these Terms. Material changes will be announced by email or a prominent notice in the Platform at least 14 days before they take effect, and continuing to use the Platform after that means you accept them. The date at the top of this page shows the current version.</p>
+  </div>
+  <div class="section">
+    <h2>Governing Law and Disputes</h2>
+    <p>These Terms are governed by the laws of the State of Illinois, without regard to conflict-of-law rules. We would rather sort out any problem directly, so please email support@arowanaprofits.com first. Any dispute that cannot be resolved that way will be brought in the state or federal courts located in Illinois, and both parties consent to that jurisdiction.</p>
+  </div>
+  <div class="section">
+    <h2>Contact</h2>
+    <p>Exodon Profits LLC &mdash; support@arowanaprofits.com</p>
+  </div>
+
+</div>
+</main>
+
+<footer class="site-footer">
+<div class="container">
+  <div class="footer-grid">
+    <div><div class="footer-brand">Arowana Profits</div><div class="footer-tag">The desk for traders who run the wheel. Education only, not financial advice.</div></div>
+    <div><div class="fc-title">Explore</div><a class="fl" href="wheel-calculator.html">Wheel calculator</a><a class="fl" href="assignment-risk.html">Assignment risk</a><a class="fl" href="pricing.html">Pricing</a></div>
+    <div><div class="fc-title">Legal</div><a class="fl" href="disclosures.html">Disclosures</a><a class="fl" href="terms.html">Terms</a><a class="fl" href="privacy.html">Privacy</a></div>
+    <div><div class="fc-title">Account</div><a class="fl" href="signup.html">Sign Up Free</a><a class="fl" href="login.html">Sign In</a><a class="fl" href="account.html">My Account</a></div>
+  </div>
+  <div class="foot-bot"><div>&#169; <span id="footYear"></span> Arowana Profits. All rights reserved.</div><div><span class="fpill">Education-only</span><span class="fpill">Not financial advice</span></div></div>
+  <p class="fdis"><strong>Important:</strong> Arowana Profits is for educational purposes only. Not financial advice.</p>
+</div>
+</footer>
+
+<script>
+(function(){
+  document.getElementById('footYear').textContent = new Date().getFullYear();
+  var aKeys=['gs_auth_user_v1','gs_session','ap_session','sb-access-token'];
+  var u=JSON.parse(localStorage.getItem('gs_auth_user_v1')||'null');
+  var has=u||aKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+  var si=document.getElementById('navSignIn'),su=document.getElementById('navSignUp'),dd=document.getElementById('navUserDrop');
+  if(has){
+    if(si)si.style.display='none'; if(su)su.style.display='none'; if(dd)dd.classList.add('show');
+    var n=u&&(u.name||u.full_name||(u.email?u.email.split('@')[0]:null))||'Account';
+    var nm=document.getElementById('navUserName'); if(nm)nm.textContent=n;
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="account.html">&#128282; My Account</a>';
+  }else{
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="login.html">&#128272; Sign In</a><a class="mob-link" href="signup.html">&#128640; Start Free</a>';
+  }
+  var utog=document.getElementById('navUserBtn'),ddrop=document.getElementById('navUserDrop');
+  if(utog&&ddrop){utog.addEventListener('click',function(e){e.stopPropagation();ddrop.classList.toggle('open');});document.addEventListener('click',function(){ddrop.classList.remove('open');});}
+  var sob=document.getElementById('navSignOutBtn');
+  if(sob)sob.addEventListener('click',function(){aKeys.forEach(function(k){localStorage.removeItem(k);});location.href='index.html';});
+  var burger=document.getElementById('navBurger'),mm=document.getElementById('mobMenu');
+  if(burger&&mm)burger.addEventListener('click',function(){mm.setAttribute('data-open',mm.getAttribute('data-open')==='true'?'false':'true');});
+})();
+</script>
+</body>
+</html>

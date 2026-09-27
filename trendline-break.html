@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Trendline Break Scanner — Arowana Profits</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  
+  <style>
+/* -------------------------------------------------------------------------- */
+/* 1. Tokens & Base Styles */
+/* -------------------------------------------------------------------------- */
+:root{
+  /* Shell */
+  --brand:#1a3c5e;
+  --ink:#222;
+  --bg:#f3f6fb;
+
+  /* Dashboard */
+  --card:#fff; 
+  --text:#111827; 
+  --shadow:0 4px 12px rgba(0,0,0,.08);
+  --border:#e5e7eb;
+  --radius-lg:1.25rem; 
+  --radius-sm:.625rem;
+  
+  /* Colors */
+  --blue:#2563eb; 
+  --blue-700:#1d4ed8; 
+  --green:#16a34a; 
+  --green-700:#15803d;
+  --amber:#d97706; 
+  --red:#dc2626;
+}
+
+/* Base */
+*{box-sizing:border-box}
+html,body{
+  margin:0; 
+  padding:0;
+  font-family: Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+  background:var(--bg); 
+  color:var(--text, var(--ink));
+  min-height:100vh; 
+  display:flex; 
+  flex-direction:column;
+}
+a{color:var(--brand); text-decoration:none}
+.container{max-width:1100px;margin:0 auto;padding:0 16px}
+
+/* Buttons */
+.btn{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.65rem .9rem;border-radius:999px;border:1px solid var(--border);
+  background:#fff;color:#0f172a;cursor:pointer;font-weight:700
+}
+.btn:hover{background:#f9fafb}
+.btn.primary{background:var(--blue);color:#fff;border-color:transparent}
+.btn.primary:hover{background:var(--blue-700)}
+.btn.ghost{background:transparent;color:#0f172a;border-color:var(--border)}
+.icon{width:1rem;height:1rem}
+
+/* Inputs */
+label{display:block;font-weight:700;margin:.2rem 0 .5rem}
+input,select{
+  width:100%;padding:.65rem .8rem;border:1px solid var(--border);border-radius:.6rem;
+  background:#fff;color:#0f172a;outline:none
+}
+.hint{font-size:.85rem;color:#6b7280;margin-top:.35rem}
+
+/* -------------------------------------------------------------------------- */
+/* 2. Header & Navigation */
+/* -------------------------------------------------------------------------- */
+.header{
+  width:100%; 
+  max-width:none;
+  margin-top:0;
+  background:#1a3c5e; 
+  color:#fff;
+  padding:20px 0;
+  position:relative; 
+  display:block;
+}
+.header-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+.logo{
+  display:flex; align-items:center; gap:10px; font-weight:800;
+  font-size:clamp(18px, 4vw, 20px); white-space: nowrap;
+}
+.logo-img{width:50px;height:50px;border-radius:6px}
+.brand-link{color:#fff; text-decoration:none}
+.nav{display:flex; gap:18px; align-items:center}
+.nav a{color:#eaf1f9; padding:8px 10px; border-radius:10px}
+.nav a[aria-current="page"]{background:rgba(255,255,255,.22); color:#fff}
+.nav a:active{background:rgba(255,255,255,.15)}
+.hamburger{display:none; font-size:24px; cursor:pointer; color:#eaf1f9; padding:8px; border-radius:10px}
+
+/* Mobile Menu */
+.mobile-menu{
+  display:none; 
+  position:absolute; left:0; right:0; top:100%;
+  background:#0f2a44; color:#fff; z-index:50;
+  box-shadow:0 12px 30px rgba(0,0,0,.35);
+  padding:14px 0 20px;
+}
+.mobile-menu .grid{display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:12px}
+.mobile-menu a{
+  display:flex; align-items:center; gap:10px; 
+  padding:12px 16px; margin:0 16px; border:1px solid rgba(255,255,255,.12);
+  border-radius:12px; background:rgba(255,255,255,.06); color:#fff
+}
+.mobile-menu a:hover{background:rgba(255,255,255,.1)}
+
+/* Footer */
+footer{margin-top:auto;background:#0f2a44;color:#eaf1f9;padding:28px 0}
+footer .cols{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+footer h4{margin:0 0 6px}
+footer a{color:#b6c3d6}
+.foot-bottom{margin-top:14px; font-size:12px; text-align:center; color:#9aa6b6}
+
+/* -------------------------------------------------------------------------- */
+/* 4. Dashboard & General Components */
+/* -------------------------------------------------------------------------- */
+
+/* Card */
+.card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:1rem}
+
+/* Row Layout */
+.row{display:grid;gap:1rem}
+.row.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+.row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:980px){.row.two,.row.three{grid-template-columns:1fr}}
+
+/* Screener Title/Header */
+.screener-title{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap; margin:1rem 0 1.25rem}
+.screener-title h1{margin:0;font-size:clamp(1.3rem,2.4vw,1.9rem);font-weight:800;letter-spacing:.2px}
+.screener-title .sub{color:var(--muted);font-size:.95rem}
+.screener-back{ 
+  text-decoration:none; 
+  display:inline-flex; 
+  align-items:center; 
+  gap:.5rem; 
+  font-weight:700; 
+  color:var(--blue); 
+  white-space:nowrap 
+}
+
+/* Screener Grid */
+.screener{display:grid;gap:1rem; align-items: center;}
+.screener .left{display:grid;gap:1rem}
+.screener .right{display:grid;gap:1rem}
+
+/* Table */
+.table-wrap{background:#fff;border-radius:1rem;box-shadow:var(--shadow);overflow:hidden}
+.table-head{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.9rem 1rem;border-bottom:1px solid var(--border)}
+.table-head h3{margin:0;font-size:1.05rem}
+.tools{display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.table{width:100%;border-collapse:collapse;font-size:.95rem}
+th,td{padding:.7rem .8rem;border-bottom:1px solid var(--border);text-align:left}
+th{position:sticky;top:0;background:#f8fafc;font-size:.9rem;color:#0f172a;cursor:pointer}
+tr:hover td{background:#f8fafc}
+
+/* Result Pills */
+.pill{display:inline-flex;align-items:center;gap:.35rem;padding:.35rem .6rem;border-radius:999px;font-size:.82rem;font-weight:700}
+.pill.bullish-break{background:#dcfce7;color:#065f46} /* Green for Bullish Breakout */
+.pill.bearish-break{background:#fee2e2;color:#991b1b} /* Red for Bearish Breakdown */
+.pill.neutral{background:#f3f4f6;color:#374151}
+
+/* Note/Alert Box */
+.note{background:#ecfeff;border-left:4px solid var(--blue);padding:.8rem .9rem;border-radius:.5rem}
+
+/* -------------------------------------------------------------------------- */
+/* 5. Responsive Overrides */
+/* -------------------------------------------------------------------------- */
+@media (max-width: 640px){
+  .hamburger{display:block}
+  .nav{display:none}
+  /* let JS toggle visibility */
+  .mobile-menu[aria-hidden="true"]{display:none}
+  .mobile-menu[aria-hidden="false"]{display:grid}
+  body{padding-bottom:82px}
+}
+@supports(padding: max(0px)){
+  @media (max-width: 640px){
+    body{ padding-bottom: max(82px, env(safe-area-inset-bottom)); }
+  }
+}
+</style>
+  
+  <style>
+    .header-bar{
+      width:100%;
+      background:#1a3c5e;
+      color:#fff;
+      position:relative;
+    }
+    .ap-header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      color:#fff;
+      box-shadow:0 2px 12px rgba(0,0,0,.08);
+    }
+    .ap-nav{
+      max-width:1200px;
+      margin:0 auto;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .ap-left{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      min-width:0;
+    }
+    .ap-brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#fff;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .ap-logo{
+      width:50px;
+      height:50px;
+      border-radius:7px;
+      object-fit:contain;
+      background:rgba(255,255,255,.2);
+    }
+    .ap-title{
+      font-weight:800;
+      font-size:1.35rem;
+      letter-spacing:.2px;
+    }
+    .ap-nav-main{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .ap-tab{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color:#fff;
+      text-decoration:none;
+      padding:7px 10px;
+      border-radius:7px;
+      background:transparent;
+      transition:background .2s ease,opacity .2s ease;
+      opacity:.95;
+    }
+    .ap-tab::before{
+      content:attr(data-icon);
+      font-size:1rem;
+      line-height:1;
+    }
+    .ap-tab:hover{
+      background:rgba(255,255,255,.08);
+      opacity:1;
+    }
+    .ap-tab.is-active{
+      background:rgba(255,255,255,.18);
+    }
+    .ap-right{
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+    .ap-nav-top{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+    }
+    .ap-nav-top a.ap-toplink{
+      text-decoration:none;
+      color:#e8f2fb;
+      background:rgba(255,255,255,.08);
+      padding:8px 14px;
+      border-radius:7px;
+      font-size:.95rem;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      transition:background .2s ease,opacity .2s ease;
+      opacity:.95;
+    }
+    .ap-nav-top a.ap-toplink:hover{
+      background:rgba(255,255,255,.16);
+      opacity:1;
+    }
+    .ap-emoji{
+      background:transparent;
+      width:auto;
+      height:auto;
+      border-radius:0;
+      padding:0;
+    }
+
+    /* Real-time ticker bar */
+    .ticker-container{
+      background:#f0f2f6;
+      overflow:hidden;
+      white-space:nowrap;
+      padding:8px 0;
+      border-top:1px solid #dde2ea;
+      border-bottom:1px solid #dde2ea;
+    }
+    .ticker{
+      display:inline-block;
+      animation:ticker 22s linear infinite;
+    }
+    .ticker span{
+      margin-right:30px;
+      font-size:14px;
+      color:#334155;
+    }
+    .ticker .up::after{
+      content:"↑";
+      color:#16a34a;
+      margin-left:6px;
+    }
+    .ticker .down::after{
+      content:"↓";
+      color:#dc2626;
+      margin-left:6px;
+    }
+    @keyframes ticker{
+      0%{transform:translateX(100%)}
+      100%{transform:translateX(-100%)}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .ticker{animation:none}
+    }
+
+    @media (max-width:640px){
+      .ap-nav{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .ap-nav-main{
+        flex-wrap:wrap;
+      }
+    }
+  </style>
+
+</head>
+<body>
+<header class="header-bar ap-header">
+  <div class="ap-nav">
+    <div class="ap-left">
+      <a class="ap-brand" href="index.html" aria-label="Arowana Profits Home">
+        <img src="images/arowanalogo.png" alt="Arowana Profits" class="ap-logo">
+        <span class="ap-title">Arowana Profits</span>
+      </a>
+
+      <nav class="ap-nav-main" id="navMain" aria-label="Primary">
+        <a href="short-term-dashboard.html" class="ap-tab" data-icon="⚡">Short-Term</a>
+        <a href="long-term-dashboard.html" class="ap-tab" data-icon="📈">Long-Term</a>
+      </nav>
+    </div>
+
+    <div class="ap-right">
+      <nav class="ap-nav-top" id="navTop" aria-label="Account actions">
+        <!-- JS fills this -->
+      </nav>
+    </div>
+  </div>
+</header>
+
+<section class="ticker-container">
+  <div class="ticker" id="tickerStrip"></div>
+</section>
+
+
+  <main class="container" style="margin:24px 0 40px">
+    <div class="screener">
+      <!-- Left: inputs -->
+      <section class="left">
+        <div class="screener-title">
+          <h1>Trendline Break Scanner</h1>
+          <div class="sub">Find stocks breaking above/below key trendlines with volume confirmation.</div>
+        </div>
+
+        <form id="trendlineForm" class="card">
+          <div class="row two">
+            <div>
+              <label for="trendType">📈 Trend Direction</label>
+              <select id="trendType" name="trendType">
+                <option value="upward" selected>Upward (looking for breakdowns)</option>
+                <option value="downward">Downward (looking for breakouts)</option>
+              </select>
+            </div>
+            <div>
+              <label for="lookbackPeriod">🗓️ Trend Lookback (Days)</label>
+              <input id="lookbackPeriod" name="lookbackPeriod" type="number" placeholder="e.g. 50" min="20" step="1" value="50" />
+              <div class="hint">The number of days used to calculate the trendline slope and starting point.</div>
+            </div>
+          </div>
+          
+          <div class="row three">
+            <div>
+              <label for="minBreakPct">🎯 Min Break Distance (%)</label>
+              <input id="minBreakPct" name="minBreakPct" type="number" placeholder="e.g. 1.0" min="0.1" step="0.1" value="1.0" />
+              <div class="hint">The minimum percentage price must close *past* the trendline to confirm the break.</div>
+            </div>
+            <div>
+              <label for="minVolumeRatio">🚀 Min Volume Ratio</label>
+              <input id="minVolumeRatio" name="minVolumeRatio" type="number" placeholder="e.g. 1.5" min="1.0" step="0.1" value="1.5" />
+              <div class="hint">Volume today must be at least this factor greater than the average volume (e.g., 1.5x).</div>
+            </div>
+            <div>
+              <label for="priceMin">💰 Min Price</label>
+              <input id="priceMin" name="priceMin" type="number" min="0" step="1" value="5" />
+              <div class="hint">Filter out very low-priced stocks (e.g., min price of $5).</div>
+            </div>
+          </div>
+
+          <div class="row two">
+            <div>
+              <label for="ticker">🔤 Stock Ticker (optional)</label>
+              <input id="ticker" name="ticker" type="text" placeholder="e.g. MSFT; blank = broad scan" autocomplete="off" />
+            </div>
+            <div>
+              <label for="sector">🏷️ Sector (optional)</label>
+              <select id="sector" name="sector">
+                <option value="">All</option>
+                <option>Technology</option>
+                <option>Healthcare</option>
+                <option>Financials</option>
+                <option>Energy</option>
+                <option>Consumer Discretionary</option>
+                <option>Utilities</option>
+                <option>Industrials</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row two">
+            <div class="note">
+              <strong>Tip:</strong> Use “Downward” to find potential breakouts above falling trendlines; use “Upward” to catch breakdowns.
+            </div>
+            <div style="display:flex;align-items:center;gap:.6rem;justify-content:flex-end">
+              <label style="display:inline-flex;align-items:center;gap:.5rem;font-weight:700">
+                <input id="mockMode" type="checkbox" checked/> Demo Mode
+              </label>
+              <button class="btn primary" type="submit"><i class="fas fa-search"></i> Run Scan</button>
+              <button class="btn ghost" id="clearResults" type="button"><i class="fas fa-times"></i> Clear</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Right: results -->
+      <section class="right">
+        <div class="table-wrap">
+          <div class="table-head">
+            <h3 id="scan-label">DOWNWARD Breakout (50 Days)</h3>
+            <div class="tools">
+              <span id="spinner" style="display:none"><i class="fas fa-circle-notch fa-spin"></i> scanning…</span>
+            </div>
+          </div>
+          <div style="overflow:auto;max-height:60vh">
+            <table class="table" id="resultsTable">
+              <thead>
+                <tr>
+                  <th data-sort="symbol">Symbol</th>
+                  <th data-sort="price">Price</th>
+                  <th data-sort="trendlinePrice">Trendline</th>
+                  <th data-sort="breakPct">% from TL</th>
+                  <th data-sort="volumeRatio">Vol Ratio</th>
+                  <th data-sort="sector">Sector</th>
+                  <th data-sort="signal">Signal</th>
+                  <th data-sort="breakScore">Score</th>
+                </tr>
+              </thead>
+              <tbody id="resultsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div>
+          <h4>Arowana Profits</h4>
+          <p>AI-powered tools and education for traders and investors.</p>
+        </div>
+        <div>
+          <h4>Solutions</h4>
+          <ul>
+            <li><a href="short-term-dashboard.html">Trading Dashboard</a></li>
+            <li><a href="long-term-dashboard.html">Long-Term Dashboard</a></li>
+            <li><a href="learn-investing.html">Learning Center</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="careers.html">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <p><strong>Disclaimer:</strong> We do not provide investment advice. Investing involves risk, including loss of principal.</p>
+        </div>
+      </div>
+      <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
+    </div>
+  </footer>
+
+
+    <script>
+    // ===== Real-time ticker using Twelve Data =====
+    const TICKER_SYMBOLS = ["AAPL","MSFT","GOOGL","AMZN","TSLA","NVDA","META"];
+    const TICKER_API_KEY = "__TWELVE_DATA_KEY_REMOVED__"; // your key
+    const TICKER_INTERVAL_MS = 60_000; // refresh every 60s
+
+    async function fetchTickerData() {
+        try {
+        const url = new URL("https://api.twelvedata.com/quote");
+        url.searchParams.set("symbol", TICKER_SYMBOLS.join(","));
+        url.searchParams.set("apikey", TICKER_API_KEY);
+
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
+        const data = await res.json();
+        console.log("Ticker raw response:", data);
+
+        let quotes = [];
+
+        // Case 1: Twelve Data returns { data: [...] }
+        if (Array.isArray(data.data)) {
+            quotes = data.data;
+        }
+        // Case 2: It returns an array directly
+        else if (Array.isArray(data)) {
+            quotes = data;
+        }
+        // Case 3: It returns an object keyed by symbol
+        else if (data && typeof data === "object") {
+            quotes = TICKER_SYMBOLS.map(sym => ({
+            symbol: sym,
+            ...(data[sym] || data)
+            }));
+        }
+
+        if (!quotes.length) {
+            console.warn("No quotes parsed from API, falling back to static.");
+            quotes = TICKER_SYMBOLS.map(sym => ({ symbol: sym, price: 0, change: 0 }));
+        }
+
+        renderTicker(quotes);
+        } catch (err) {
+        console.error("Ticker error:", err);
+
+        // Fallback: show symbols with placeholder prices
+        const fallback = TICKER_SYMBOLS.map(sym => ({ symbol: sym, price: 0, change: 0 }));
+        renderTicker(fallback);
+        }
+    }
+
+    function renderTicker(quotes) {
+        const strip = document.getElementById("tickerStrip");
+        if (!strip) return;
+
+        strip.innerHTML = "";
+        quotes.forEach(q => {
+        if (!q || !q.symbol) return;
+
+        // Try different possible fields
+        const rawPrice = q.price ?? q.close ?? q.last ?? q.previous_close ?? 0;
+        const price = Number(rawPrice);
+        const change = Number(q.change ?? q.percent_change ?? 0);
+
+        const span = document.createElement("span");
+        span.textContent = `${q.symbol} $${isFinite(price) ? price.toFixed(2) : "—"}`;
+
+        if (change > 0) span.classList.add("up");
+        else if (change < 0) span.classList.add("down");
+
+        strip.appendChild(span);
+        });
+    }
+
+    function initTicker() {
+        fetchTickerData();
+        setInterval(fetchTickerData, TICKER_INTERVAL_MS);
+    }
+
+    // Run immediately if DOM is ready, otherwise wait
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initTicker);
+    } else {
+        initTicker();
+    }
+    </script>
+
+    <script type="module">
+      import { supabase } from "./js/supabase-init.js";
+
+      const navTop = document.getElementById("navTop");
+      const mobileGrid = document.querySelector("#mobileMenu .grid"); // optional
+
+      const nextParam = encodeURIComponent(location.pathname + location.search);
+
+      const mk = (href, text, emoji) => {
+        const a = document.createElement("a");
+        a.href = href;
+        a.className = "ap-toplink";
+        a.innerHTML = `<span class="ap-emoji">${emoji}</span><span>${text}</span>`;
+        return a;
+      };
+
+      async function renderAuthLinks(){
+        if (!navTop) return;
+        navTop.innerHTML = "";
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          const label = user.email?.split("@")[0] || "Account";
+          const account = mk("account.html", label, "🪪");
+          const signOut = mk("#", "Sign out", "🚪");
+          signOut.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try { await supabase.auth.signOut(); } finally { location.reload(); }
+          });
+          navTop.append(account, signOut);
+        } else {
+          const signIn = mk(`login.html?next=${nextParam}`, "Sign in", "🔑");
+          const signUp = mk(`signup.html?next=${nextParam}`, "Sign up", "🆕");
+          navTop.append(signIn, signUp);
+        }
+
+        if (mobileGrid) {
+          mobileGrid.querySelectorAll(".ap-toplink").forEach(n => n.remove());
+          navTop.querySelectorAll(".ap-toplink").forEach(el => {
+            const clone = el.cloneNode(true);
+            if (clone.textContent.includes("Sign out")) {
+              clone.addEventListener("click", async (e) => {
+                e.preventDefault();
+                try { await supabase.auth.signOut(); } finally { location.reload(); }
+              });
+            }
+            mobileGrid.appendChild(clone);
+          });
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        renderAuthLinks();
+        const yearEl = document.getElementById("year");
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+      });
+    </script>
+
+
+<script>
+(function () {
+  const $ = (sel, el=document) => el.querySelector(sel);
+  const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+
+  // Mobile menu toggle
+  const burger = $('#hamburger');
+  const mobile = $('#mobileMenu');
+  burger?.addEventListener('click', () => {
+    const open = mobile.getAttribute('aria-hidden') === 'false';
+    mobile.setAttribute('aria-hidden', open ? 'true' : 'false');
+    burger.setAttribute('aria-expanded', open ? 'false' : 'true');
+  });
+
+  // --- Demo data generator (placeholder for real webhook) ---
+  const sectors = ['Technology','Healthcare','Financials','Energy','Consumer Discretionary','Utilities','Industrials'];
+  function demoRows(){
+    const symbols = ['MSFT','AAPL','AMD','NVDA','TSLA','META','AMZN','NFLX','SHOP','UBER','SMR','CEG','CRM','PLTR','KO','PEP','XOM','CVX','NKE','DIS'];
+    return symbols.map((symbol,i)=>{
+      const price = 10 + Math.random()*490;
+      const volume = Math.floor(1_000_000 + Math.random()*9_000_000);
+      const volumeRatio = 0.8 + Math.random()*2.2; // 0.8x to 3.0x
+      const trendType = Math.random() > .5 ? 'upward' : 'downward';
+
+      let trendlinePrice, signalText, breakPct;
+      if(trendType === 'downward'){
+        trendlinePrice = price * (1 - (Math.random() * 0.02) - 0.01);
+        signalText = 'Bullish Breakout';
+      }else{
+        trendlinePrice = price * (1 + (Math.random() * 0.02) + 0.01);
+        signalText = 'Bearish Breakdown';
+      }
+
+      // jitter: sometimes it’s only near the line
+      if(Math.random() < 0.3){
+        if(trendType === 'downward'){
+          trendlinePrice = price * (1 - (Math.random() * 0.005) + 0.01);
+          signalText = 'Bullish Proximity';
+        } else {
+          trendlinePrice = price * (1 + (Math.random() * 0.005) - 0.01);
+          signalText = 'Bearish Proximity';
+        }
+      }
+
+      // Percentage difference between Price and TrendlinePrice
+      const pct = ((price - trendlinePrice) / trendlinePrice) * 100;
+      
+      // Score
+      const breakScore = (Math.abs(pct) * 50) + (volumeRatio * 25);
+      
+      return { 
+        symbol, 
+        price: parseFloat(price.toFixed(2)), 
+        trendlinePrice: parseFloat(trendlinePrice.toFixed(2)),
+        volumeRatio: parseFloat(volumeRatio.toFixed(2)),
+        volume, 
+        sector: sectors[i % sectors.length],
+        trendType, // 'upward' or 'downward'
+        breakPct: parseFloat(pct.toFixed(2)),
+        breakScore: parseFloat(breakScore.toFixed(2)),
+        signal: signalText
+      };
+    });
+  }
+
+  const WEBHOOK_URL = ''; // plug your n8n webhook if needed
+
+  // state
+  let currentRows = [];
+  let sortKey = 'breakScore';
+  let sortAsc = false;
+
+  function renderRows(rows){
+    const body = $('#resultsBody');
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td><strong>${r.symbol}</strong></td>
+        <td>$${r.price.toFixed(2)}</td>
+        <td>$${r.trendlinePrice.toFixed(2)}</td>
+        <td>${r.breakPct.toFixed(2)}%</td>
+        <td>${r.volumeRatio.toFixed(2)}x</td>
+        <td>${r.sector}</td>
+        <td>
+          <span class="pill ${r.signal.includes('Bullish')?'bullish-break': r.signal.includes('Bearish')?'bearish-break':'neutral'}">
+            ${r.signal}
+          </span>
+        </td>
+        <td>${r.breakScore.toFixed(2)}</td>
+      </tr>
+    `).join('');
+  }
+
+  function applySort(key){
+    if(sortKey === key){ sortAsc = !sortAsc; } else { sortKey = key; sortAsc = key !== 'breakScore'; }
+    const sorted = [...currentRows].sort((a,b)=>{
+      const av = a[key], bv = b[key];
+      if(typeof av === 'string') return sortAsc ? av.localeCompare(bv) : bv.localeCompare(av);
+      return sortAsc ? av - bv : bv - av;
+    });
+    renderRows(sorted);
+  }
+
+  async function runScreen(e){
+    e.preventDefault();
+
+    const trendType = $('#trendType').value;
+    const lookbackPeriod = parseInt($('#lookbackPeriod').value) || 50;
+    const minBreakPct = parseFloat($('#minBreakPct').value) || 0;
+    const minVolumeRatio = parseFloat($('#minVolumeRatio').value) || 0;
+    const priceMin = parseFloat($('#priceMin').value);
+
+    const payload = {
+      ticker: $('#ticker').value.toUpperCase().trim(),
+      // volumeMin removed (input not present; avoids null read)
+      sector: $('#sector').value,
+      trendType,
+      lookbackPeriod,
+      minBreakPct,
+      minVolumeRatio,
+      priceMin: isNaN(priceMin) ? 0 : priceMin
+    };
+      
+    $('#scan-label').textContent = `${trendType.toUpperCase()} Breakout (${lookbackPeriod} Days)`;
+
+    $('#spinner').style.display = 'block';
+    try{
+      let rows = [];
+      const demo = $('#mockMode').checked || !WEBHOOK_URL;
+      if(demo){
+        await new Promise(r=> setTimeout(r, 600));
+        rows = demoRows();
+        
+        // Apply Trendline Break specific front-end filters to demo data
+        rows = rows.filter(r=> {
+          // Trend direction filter: when scanning for “downward” trend (breakouts), keep rows whose trendType is downward
+          if (trendType === 'downward' && r.trendType !== 'downward') return false;
+          if (trendType === 'upward' && r.trendType !== 'upward') return false;
+          if (payload.ticker && r.symbol.toUpperCase() !== payload.ticker) return false;
+          if (payload.sector && r.sector !== payload.sector) return false;
+          if (payload.priceMin && r.price < payload.priceMin) return false;
+          // if (payload.volumeMin && r.volume < payload.volumeMin) return false; // safe even if undefined
+          if (Math.abs(r.breakPct) < payload.minBreakPct) return false;
+          if (r.volumeRatio < payload.minVolumeRatio) return false;
+          return true;
+        });
+      }else{
+        const res = await fetch(WEBHOOK_URL, {
+          method:'POST',
+          headers:{'Content-Type':'application/json'},
+          body:JSON.stringify(payload)
+        });
+        rows = await res.json();
+      }
+
+      currentRows = rows;
+      applySort('breakScore');
+      $('#spinner').style.display='none';
+    }catch(err){
+      console.error(err);
+      $('#spinner').style.display='none';
+      alert('Something went wrong. Check console for details.');
+    }
+  }
+
+  function clearResults(){
+    currentRows = [];
+    $('#resultsBody').innerHTML = '';
+  }
+
+  document.addEventListener('DOMContentLoaded', ()=>{
+    $('#trendlineForm').addEventListener('submit', runScreen);
+    $('#clearResults').addEventListener('click', clearResults);
+    
+    // Sort logic
+    $$('#resultsTable th[data-sort]').forEach(th => {
+      th.addEventListener('click', () => applySort(th.dataset.sort));
+    });
+    
+    // Initial state load
+    if ($('#mockMode').checked) runScreen({ preventDefault: () => {} });
+  });
+})();
+</script>
+</body>
+</html>

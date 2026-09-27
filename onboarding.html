@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Set up your desk &mdash; Arowana Profits</title>
+  <meta name="robots" content="noindex"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--cyan:#35c3dc;--navy:#061426;
+  --bg:#f6f8fb;--panel:#fff;--ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;
+  --good:#11a779;--good-bg:#e7f7f1;--bad:#dc4c64;--warn-bg:#fdf3e2;--warn-ink:#7c4a03;
+  --radius:16px;--mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
+a{color:var(--brand);text-decoration:none}
+.top{background:var(--navy);color:#fff;padding:14px 0}
+.shell{max-width:840px;margin:0 auto;padding:0 20px}
+.top .shell{display:flex;justify-content:space-between;align-items:center;gap:16px}
+.top strong{font:800 1.05rem "Inter Tight",system-ui,sans-serif}
+.top a{color:#cfe3f5;font-size:.88rem;font-weight:600}
+main{padding:30px 0 60px}
+.steps{display:flex;gap:10px;margin-bottom:22px;flex-wrap:wrap}
+.step-dot{display:flex;align-items:center;gap:8px;font-size:.84rem;font-weight:600;color:var(--muted)}
+.step-dot b{width:24px;height:24px;border-radius:50%;background:#e3ebf2;color:var(--muted);display:flex;align-items:center;justify-content:center;font:700 .78rem var(--mono)}
+.step-dot.on{color:var(--ink)}
+.step-dot.on b{background:var(--brand);color:#fff}
+.step-dot.done b{background:var(--good);color:#fff}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:26px;box-shadow:0 4px 20px rgba(11,79,138,.06)}
+h1{font:800 1.6rem/1.2 "Inter Tight",system-ui,sans-serif;letter-spacing:-.02em;margin-bottom:8px}
+h2{font:800 1.25rem "Inter Tight",system-ui,sans-serif;margin-bottom:6px}
+p.lede{color:var(--muted);font-size:.95rem;margin-bottom:18px;max-width:64ch}
+.panel{display:none}
+.panel.on{display:block}
+label.fl{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:5px}
+input[type=text],input[type=number]{width:100%;min-height:44px;border:1px solid #c8d5de;border-radius:10px;padding:0 12px;font:500 .95rem var(--mono);color:var(--ink);background:#fff}
+input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,79,138,.15)}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row>div{flex:1;min-width:150px}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.chip{border:1px solid #c8d5de;background:#fff;border-radius:99px;padding:8px 14px;font:600 .85rem var(--mono);cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.picked{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;min-height:34px}
+.pill{background:var(--good-bg);border:1px solid #a5e2cd;color:#0b6b52;border-radius:99px;padding:6px 10px;font:600 .82rem var(--mono);display:flex;align-items:center;gap:7px}
+.pill button{border:0;background:none;color:inherit;cursor:pointer;font-size:1rem;line-height:1;padding:0}
+.hint{font-size:.8rem;color:var(--muted);margin-top:8px;line-height:1.5}
+.note{background:var(--warn-bg);color:var(--warn-ink);border-radius:10px;padding:11px 13px;font-size:.85rem;margin-top:14px;line-height:1.5}
+.actions{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:22px}
+.btn{border:0;border-radius:11px;padding:12px 22px;font:700 .95rem inherit;background:var(--brand);color:#fff;cursor:pointer}
+.btn[disabled]{opacity:.55;cursor:not-allowed}
+.btn.ghost{background:none;color:var(--muted);padding-left:0}
+.msg{font-size:.85rem;min-height:1.2em}
+.msg.err{color:var(--bad)}
+.msg.ok{color:var(--good)}
+.done-list{list-style:none;margin:14px 0 0}
+.done-list li{padding:9px 0;border-bottom:1px solid #eef2f6;font-size:.92rem;display:flex;gap:10px}
+.done-list li:last-child{border-bottom:0}
+.done-list b{color:var(--good)}
+@media(max-width:560px){.card{padding:20px}.btn{width:100%;text-align:center}.btn.ghost{width:auto}}
+</style>
+</head>
+<body>
+  <header class="top">
+    <div class="shell">
+      <strong>Arowana Profits</strong>
+      <a href="trading-command.html">Skip setup &rarr;</a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <div class="steps" id="steps">
+      <div class="step-dot on" data-step="1"><b>1</b> Stocks you'd own</div>
+      <div class="step-dot" data-step="2"><b>2</b> Your limits</div>
+      <div class="step-dot" data-step="3"><b>3</b> Your trades</div>
+    </div>
+
+    <div class="card">
+      <!-- Step 1 ------------------------------------------------------- -->
+      <section class="panel on" data-panel="1">
+        <h1>Which stocks would you be happy to own?</h1>
+        <p class="lede">The wheel only works on stocks you actually want. Every put the desk suggests comes from this list, so pick the ones you'd hold if you were assigned tomorrow.</p>
+
+        <label class="fl" for="tickerInput">Add a ticker</label>
+        <div class="row">
+          <div><input id="tickerInput" type="text" placeholder="e.g. MSFT" maxlength="10" autocomplete="off"></div>
+          <button class="btn" type="button" id="addTicker" style="flex:none">Add</button>
+        </div>
+
+        <p class="hint">Or start from these commonly wheeled names:</p>
+        <div class="chips" id="suggestChips"></div>
+
+        <div class="picked" id="picked" aria-live="polite"></div>
+        <p class="hint" id="pickedHint">Pick at least one. Three to eight is a sensible start.</p>
+
+        <div class="actions">
+          <button class="btn" type="button" id="next1" disabled>Continue</button>
+          <span class="msg" id="msg1"></span>
+        </div>
+      </section>
+
+      <!-- Step 2 ------------------------------------------------------- -->
+      <section class="panel" data-panel="2">
+        <h2>How much are you willing to commit?</h2>
+        <p class="lede">Selling a put means setting aside cash to buy 100 shares. These limits are yours, and the desk warns you before a trade breaks them rather than after.</p>
+
+        <div class="row">
+          <div>
+            <label class="fl" for="capital">Wheel capital</label>
+            <input id="capital" type="number" min="1" step="any" placeholder="e.g. 50000">
+            <p class="hint">Cash you'd commit to selling puts. Not your whole net worth.</p>
+          </div>
+          <div>
+            <label class="fl" for="maxTicker">Most in one ticker</label>
+            <input id="maxTicker" type="number" min="1" max="100" step="1" value="20">
+            <p class="hint">Percent of that capital.</p>
+          </div>
+          <div>
+            <label class="fl" for="maxTotal">Most committed at once</label>
+            <input id="maxTotal" type="number" min="1" max="100" step="1" value="60">
+            <p class="hint">Leaves room to roll or buy dips.</p>
+          </div>
+        </div>
+
+        <div class="note">You can change these any time on the Puts tab, and leave capital blank if you'd rather not say — you'll just see exposure in dollars instead of percentages.</div>
+
+        <div class="actions">
+          <button class="btn" type="button" id="next2">Continue</button>
+          <button class="btn ghost" type="button" data-goto="1">← Back</button>
+          <span class="msg" id="msg2"></span>
+        </div>
+      </section>
+
+      <!-- Step 3 ------------------------------------------------------- -->
+      <section class="panel" data-panel="3">
+        <h2>Bring in your trades</h2>
+        <p class="lede">The income tracker, roll coach and daily brief all read your journal. Importing a broker CSV takes a minute and fills in your whole history; you can also add trades by hand, or skip and do it later.</p>
+
+        <ul class="done-list">
+          <li><b>✓</b><span>Broker CSV import supports Schwab, Robinhood, Webull, E*Trade, Tastytrade and thinkorswim.</span></li>
+          <li><b>✓</b><span>Stocks and options both import, with duplicates detected automatically.</span></li>
+          <li><b>✓</b><span>Nothing is shared: your trades stay in your account.</span></li>
+        </ul>
+
+        <div class="actions">
+          <a class="btn" href="trade-journal-pro.html?import=1">Import a CSV</a>
+          <a class="btn ghost" href="trade-journal-pro.html">Add a trade by hand</a>
+          <button class="btn ghost" type="button" id="finish">Skip for now</button>
+        </div>
+      </section>
+
+      <!-- Done --------------------------------------------------------- -->
+      <section class="panel" data-panel="4">
+        <h2>Your desk is set up</h2>
+        <p class="lede">Here's what happens next, without you doing anything:</p>
+        <ul class="done-list">
+          <li><b>5:30 PM ET</b><span>Prices, volatility and earnings dates cached for your tickers.</span></li>
+          <li><b>5:45 PM ET</b><span>Covered call scanner checks shares you own.</span></li>
+          <li><b>5:50 PM ET</b><span>Put scanner works through your Want-to-Own list.</span></li>
+          <li><b>5:55 PM ET</b><span>Roll coach checks every option you've sold.</span></li>
+          <li><b>7:30 AM ET</b><span>Your brief is written, before the open.</span></li>
+        </ul>
+        <div class="note">Scans run on weekday evenings, so your first picks appear tomorrow morning rather than right now.</div>
+        <div class="actions">
+          <a class="btn" href="trading-command.html">Open my desk</a>
+          <a class="btn ghost" href="options-hub.html?tab=quality">See my Want-to-Own list</a>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <script>window.GS_CONFIG_URL="./js/config.json";</script>
+  <script src="./js/app-config.js?v=20260918c"></script>
+  <script src="./js/supabase_min.js?v=20260918c"></script>
+  <script>
+  (function () {
+    'use strict';
+    var SUGGESTIONS = ['AAPL', 'MSFT', 'NVDA', 'AMD', 'GOOGL', 'AMZN', 'KO', 'JPM', 'XOM', 'SPY', 'QQQ', 'SCHD'];
+    var picked = [];
+    var step = 1;
+
+    function el(id) { return document.getElementById(id); }
+    function clean(v) { return String(v || '').trim().toUpperCase(); }
+    function valid(sym) { return /^[A-Z][A-Z0-9.\-]{0,9}$/.test(sym); }
+
+    function getClient() {
+      return window.supabaseClient || window.sbClient
+        || (window.supabase && window.AP_WEBHOOKS && window.AP_WEBHOOKS.supabase && window.AP_WEBHOOKS.supabase.url
+            ? window.supabase.createClient(window.AP_WEBHOOKS.supabase.url, window.AP_WEBHOOKS.supabase.anonKey || window.AP_WEBHOOKS.supabase.anon_key)
+            : null);
+    }
+    function waitForClient(ms) {
+      return new Promise(function (resolve) {
+        var c = getClient();
+        if (c && c.auth) return resolve(c);
+        var done = false;
+        function finish() { if (done) return; var x = getClient(); if (x && x.auth) { done = true; cleanup(); resolve(x); } }
+        function cleanup() { window.removeEventListener('ap:config:ready', finish); clearInterval(poll); }
+        window.addEventListener('ap:config:ready', finish);
+        var poll = setInterval(finish, 200);
+        setTimeout(function () { if (!done) { done = true; cleanup(); resolve(null); } }, ms);
+      });
+    }
+    async function requireUser() {
+      var sb = await waitForClient(5000);
+      if (!sb) return null;
+      var sess = await sb.auth.getSession();
+      var user = sess && sess.data && sess.data.session && sess.data.session.user;
+      if (!user) { window.location.href = 'login.html?next=' + encodeURIComponent('onboarding.html'); return null; }
+      return { sb: sb, user: user };
+    }
+
+    function goto(n) {
+      step = n;
+      Array.prototype.forEach.call(document.querySelectorAll('.panel'), function (p) {
+        p.classList.toggle('on', Number(p.getAttribute('data-panel')) === n);
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('.step-dot'), function (d) {
+        var s = Number(d.getAttribute('data-step'));
+        d.classList.toggle('on', s === n);
+        d.classList.toggle('done', s < n);
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function renderPicked() {
+      el('picked').innerHTML = picked.map(function (s) {
+        return '<span class="pill">' + s + '<button type="button" data-remove="' + s + '" aria-label="Remove ' + s + '">×</button></span>';
+      }).join('');
+      el('next1').disabled = picked.length === 0;
+      el('pickedHint').textContent = picked.length
+        ? picked.length + ' ticker' + (picked.length === 1 ? '' : 's') + ' chosen. Three to eight is a sensible start.'
+        : 'Pick at least one. Three to eight is a sensible start.';
+      Array.prototype.forEach.call(document.querySelectorAll('.chip'), function (c) {
+        c.classList.toggle('on', picked.indexOf(c.textContent) >= 0);
+      });
+    }
+    function add(sym) {
+      sym = clean(sym);
+      if (!valid(sym)) { el('msg1').textContent = 'That doesn\u2019t look like a ticker.'; el('msg1').className = 'msg err'; return; }
+      if (picked.indexOf(sym) < 0) picked.push(sym);
+      el('msg1').textContent = '';
+      renderPicked();
+    }
+
+    el('suggestChips').innerHTML = SUGGESTIONS.map(function (s) {
+      return '<button type="button" class="chip">' + s + '</button>';
+    }).join('');
+    el('suggestChips').addEventListener('click', function (e) {
+      var c = e.target.closest('.chip');
+      if (!c) return;
+      var sym = c.textContent;
+      var i = picked.indexOf(sym);
+      if (i >= 0) picked.splice(i, 1); else picked.push(sym);
+      renderPicked();
+    });
+    el('picked').addEventListener('click', function (e) {
+      var b = e.target.closest('[data-remove]');
+      if (!b) return;
+      var i = picked.indexOf(b.getAttribute('data-remove'));
+      if (i >= 0) picked.splice(i, 1);
+      renderPicked();
+    });
+    el('addTicker').addEventListener('click', function () { add(el('tickerInput').value); el('tickerInput').value = ''; el('tickerInput').focus(); });
+    el('tickerInput').addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') { e.preventDefault(); add(el('tickerInput').value); el('tickerInput').value = ''; }
+    });
+
+    // Step 1 → save the watchlist, marked Want to Own so the put scanner uses it
+    el('next1').addEventListener('click', async function () {
+      var btn = el('next1'), msg = el('msg1');
+      btn.disabled = true; btn.textContent = 'Saving…'; msg.textContent = '';
+      try {
+        var ctx = await requireUser();
+        if (!ctx) return;
+        var lists = await ctx.sb.from('watchlists').select('id').eq('user_id', ctx.user.id).limit(1);
+        if (lists.error) throw lists.error;
+        var listId = lists.data && lists.data[0] && lists.data[0].id;
+        if (!listId) {
+          var made = await ctx.sb.from('watchlists').insert({ user_id: ctx.user.id, name: 'Default' }).select('id').single();
+          if (made.error) throw made.error;
+          listId = made.data.id;
+        }
+        var rows = picked.map(function (s) {
+          return { watchlist_id: listId, user_id: ctx.user.id, symbol: s, want_to_own: true, want_to_own_at: new Date().toISOString() };
+        });
+        var ins = await ctx.sb.from('watchlist_items').upsert(rows, { onConflict: 'watchlist_id,symbol' });
+        if (ins.error) throw ins.error;
+        goto(2);
+      } catch (err) {
+        console.warn('[onboarding] watchlist save failed', err);
+        msg.textContent = 'Those didn\u2019t save. Check your connection and try again.';
+        msg.className = 'msg err';
+      } finally {
+        btn.disabled = picked.length === 0; btn.textContent = 'Continue';
+      }
+    });
+
+    // Step 2 → save the guardrails
+    el('next2').addEventListener('click', async function () {
+      var btn = el('next2'), msg = el('msg2');
+      var capital = el('capital').value.trim();
+      var ticker = Number(el('maxTicker').value), total = Number(el('maxTotal').value);
+      if (capital !== '' && !(Number(capital) > 0)) { msg.textContent = 'Wheel capital must be a positive number, or left blank.'; msg.className = 'msg err'; return; }
+      if (!(ticker > 0 && ticker <= 100) || !(total > 0 && total <= 100)) { msg.textContent = 'Percentages must be between 1 and 100.'; msg.className = 'msg err'; return; }
+      btn.disabled = true; btn.textContent = 'Saving…'; msg.textContent = '';
+      try {
+        var ctx = await requireUser();
+        if (!ctx) return;
+        var res = await ctx.sb.from('ap_risk_settings').upsert({
+          user_id: ctx.user.id,
+          wheel_capital: capital === '' ? null : Number(capital),
+          max_ticker_pct: ticker, max_total_pct: total,
+          max_puts_per_ticker: 2, warn_earnings: true,
+          updated_at: new Date().toISOString()
+        }, { onConflict: 'user_id' });
+        if (res.error) throw res.error;
+        goto(3);
+      } catch (err) {
+        console.warn('[onboarding] limits save failed', err);
+        msg.textContent = 'Those didn\u2019t save. Try again in a moment.';
+        msg.className = 'msg err';
+      } finally {
+        btn.disabled = false; btn.textContent = 'Continue';
+      }
+    });
+
+    el('finish').addEventListener('click', function () { goto(4); });
+    document.addEventListener('click', function (e) {
+      var back = e.target.closest('[data-goto]');
+      if (back) goto(Number(back.getAttribute('data-goto')));
+    });
+
+    renderPicked();
+    requireUser();   // bounce to login early rather than after typing everything
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Webhook Test</title>
+</head>
+<body>
+  <h2>Test RSI Webhook</h2>
+  <form id="webhookForm">
+    <label>Stock Ticker:
+      <input type="text" name="ticker" id="ticker" required placeholder="e.g. TSLA">
+    </label>
+    <br><br>
+    <button type="submit">Submit to Webhook</button>
+  </form>
+
+  <pre id="responseBox"></pre>
+
+  <script>
+    document.getElementById("webhookForm").addEventListener("submit", async function (e) {
+      e.preventDefault();
+      const ticker = document.getElementById("ticker").value.trim().toUpperCase();
+
+      const response = await fetch("https://exodonprofits.app.n8n.cloud/webhook/trade-signal-checker", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ticker })
+      });
+
+      const result = await response.json();
+      document.getElementById("responseBox").textContent = JSON.stringify(result, null, 2);
+    });
+  </script>
+</body>
+</html>

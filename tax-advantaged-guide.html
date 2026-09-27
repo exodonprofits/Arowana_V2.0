@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Tax‑Advantaged Guide • Long‑Term Dashboard</title>
+<style>
+  /* ===== GenieSphere Base (aligned with Dividend/Planner pages) ===== */
+  :root{
+    --bg:#f9fafb; --card:#ffffff; --ink:#0f172a; --muted:#6b7280; --ring:#d1d5db;
+    --brand:#0ea5e9; --brand-strong:#0284c7; --accent:#22c55e; --danger:#ef4444; --warn:#f59e0b;
+    --soft:rgba(0,0,0,.06); --radius-lg:1.25rem; --radius-sm:.625rem; --shadow:0 8px 24px rgba(0,0,0,.08); --shadow-soft:0 4px 14px rgba(0,0,0,.07); --focus:0 0 0 4px rgba(14,165,233,.25);
+    --font:'Segoe UI', system-ui, -apple-system, "Inter", Roboto, Helvetica, Arial, sans-serif;
+    --input-h: 44px; --input-px:.85rem; --input-py:.7rem;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);display:flex;flex-direction:column;min-height:100vh}
+  .wrap{width:100%;max-width:1200px;margin:0 auto;padding:1.25rem}
+
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:1rem 0 1.25rem;flex-wrap:wrap}
+  .title{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap}
+  .title h1{margin:0;font-size:clamp(1.3rem,2.4vw,1.9rem);font-weight:800;letter-spacing:.2px}
+  .title .sub{color:var(--muted);font-size:.95rem}
+
+  /* Layout */
+  .grid{display:grid;gap:1rem;grid-template-columns:1fr}
+  .card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:1.25rem}
+  .card h2{margin:0 0 .75rem;font-size:1.05rem;letter-spacing:.2px}
+  .sep{height:1px;background:var(--ring);opacity:.5;margin:.75rem 0 1rem}
+
+  /* Form + Inputs */
+  form{display:grid;gap:1rem}
+  label{font-weight:700;font-size:.92rem;display:inline-flex;align-items:center;gap:.5rem}
+  .hint{color:var(--muted);font-size:.85rem;margin-top:.15rem}
+  input[type="text"],input[type="number"],input[type="url"],input[type="search"],select,textarea{
+    width:100%; background:#fff; border:1px solid var(--ring); border-radius:var(--radius-sm);
+    padding:var(--input-py) var(--input-px); height:var(--input-h); line-height:calc(var(--input-h) - 2px);
+    font-size:1rem; color:var(--ink); transition:box-shadow .15s ease,border-color .15s ease; appearance:none;
+  }
+  input::placeholder,textarea::placeholder{color:#9ca3af;opacity:1}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:var(--brand);box-shadow:var(--focus)}
+  input[disabled],select[disabled],textarea[disabled],input[readonly],select[readonly],textarea[readonly]{background:#f3f4f6;color:#6b7280;cursor:not-allowed}
+  input[type="number"]::-webkit-outer-spin-button,input[type="number"]::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+  input[type="number"]{-moz-appearance:textfield}
+
+    /* Restore native dropdown arrow for selects (RSI-style) */
+    select{
+    appearance:auto;
+    -webkit-appearance:auto;
+    -moz-appearance:auto;
+    background-image:none; /* rely on native chevron */
+    padding-right: var(--input-px);
+    }
+
+
+  /* Grids */
+  .row{display:grid;grid-template-columns:1fr;gap:.85rem}
+  @media (min-width:720px){.row.two{grid-template-columns:1fr 1fr}}
+  @media (min-width:960px){.row.three{grid-template-columns:1fr 1fr 1fr}}
+  @media (min-width:1200px){.row.four{grid-template-columns:1fr 1fr 1fr 1fr}}
+
+  /* Buttons */
+  .actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.25rem}
+  .btn{appearance:none;border:0;cursor:pointer;padding:.75rem 1.15rem;font-weight:700;border-radius:999px;box-shadow:var(--shadow-soft);display:inline-flex;align-items:center;gap:.5rem}
+  .btn.primary{background:var(--brand);color:#fff}.btn.primary:hover{background:var(--brand-strong)}
+  .btn.success{background:var(--accent);color:#052e16}
+  .btn.gray{background:#e5e7eb;color:#111827}.btn.gray:hover{background:#d1d5db}
+  .btn.warn{background:var(--warn);color:#111827}
+  .btn.link{background:transparent;box-shadow:none;padding:.4rem .2rem;color:var(--brand-strong);border-radius:.5rem}
+
+  /* Blocks */
+  .note{background:#ecfeff;border-left:4px solid var(--brand);padding:.8rem .9rem;border-radius:.5rem}
+  .error{background:#fee2e2;border-left:4px solid var(--danger);padding:.8rem .9rem;border-radius:.5rem;color:#991b1b}
+  .success{background:#ecfdf5;border-left:4px solid var(--accent);padding:.8rem .9rem;border-radius:.5rem;color:#065f46}
+
+  /* List/table cards */
+  .kpis{display:grid;grid-template-columns:1fr;gap:.75rem}
+  @media (min-width:720px){.kpis{grid-template-columns:repeat(3,1fr)}}
+  .kpi{background:#f8fafc;border:1px solid var(--ring);border-radius:12px;padding:12px 14px}
+  .kpi .k{font-size:.82rem;color:var(--muted)} .kpi .v{font-size:1.15rem;font-weight:800;color:#0f172a}
+
+  ul.clean{margin:.25rem 0 0;padding-left:1.1rem;color:#334155}
+  ul.clean li{margin:.25rem 0}
+
+  table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  thead th{font-size:.9rem;color:#475569;text-align:left;padding:8px 10px}
+  tbody td{background:#ffffff;border:1px solid #e5e7eb;border-left:none;border-right:none;padding:10px;border-radius:8px}
+  tbody tr{box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  tbody tr td:first-child{border-left:1px solid #e5e7eb;border-top-left-radius:12px;border-bottom-left-radius:12px}
+  tbody tr td:last-child{border-right:1px solid #e5e7eb;border-top-right-radius:12px;border-bottom-right-radius:12px}
+
+  footer{margin:1.5rem 0 2.5rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title" role="group" aria-label="Page Title">
+        <h1>🧾 Tax‑Advantaged Guide</h1>
+        <span class="sub">Prioritize contributions • Optimize asset location • Plan tax‑smart withdrawals</span>
+      </div>
+      <nav><a class="btn link" href="long-term-dashboard.html">⬅️ Back</a></nav>
+    </header>
+
+    <div class="grid">
+      <!-- Controls (Top) -->
+      <section class="card" aria-labelledby="controlsTitle">
+        <h2 id="controlsTitle">⚙️ Household & Account Inputs</h2>
+        <p class="hint">Enter high‑level assumptions. The guide builds a personalized priority list and suggestions. Educative tool only (not tax advice).</p>
+        <form id="form" novalidate>
+          <div class="row three">
+            <div>
+              <label for="filing">👥 Filing Status</label>
+              <select id="filing">
+                <option value="single">Single</option>
+                <option value="mfj" selected>Married Filing Jointly</option>
+                <option value="mfs">Married Filing Separately</option>
+                <option value="hoh">Head of Household</option>
+              </select>
+            </div>
+            <div>
+              <label for="age">🎂 Primary Age</label>
+              <input id="age" type="number" min="18" max="100" value="45" />
+            </div>
+            <div>
+              <label for="stateTax">🏷️ Est. State Tax %</label>
+              <input id="stateTax" type="number" step="0.1" value="0" />
+            </div>
+          </div>
+
+          <div class="row three">
+            <div>
+              <label for="marginalNow">📊 Marginal Rate Now %</label>
+              <input id="marginalNow" type="number" step="0.1" value="22" />
+            </div>
+            <div>
+              <label for="marginalRet">🔮 Expected Marginal in Retirement %</label>
+              <input id="marginalRet" type="number" step="0.1" value="15" />
+            </div>
+            <div>
+              <label for="hsaEligible">🏥 HSA Eligible</label>
+              <select id="hsaEligible"><option value="yes">Yes</option><option value="no" selected>No</option></select>
+            </div>
+          </div>
+
+          <div class="row four">
+            <div>
+              <label for="balTaxable">💼 Taxable Balance ($)</label>
+              <input id="balTaxable" type="number" step="100" placeholder="100000" />
+            </div>
+            <div>
+              <label for="balTrad">🏦 Traditional (Pre‑Tax) Balance ($)</label>
+              <input id="balTrad" type="number" step="100" placeholder="250000" />
+            </div>
+            <div>
+              <label for="balRoth">🟣 Roth Balance ($)</label>
+              <input id="balRoth" type="number" step="100" placeholder="80000" />
+            </div>
+            <div>
+              <label for="balHsa">🩺 HSA Balance ($)</label>
+              <input id="balHsa" type="number" step="100" placeholder="0" />
+            </div>
+          </div>
+
+          <div class="row three">
+            <div>
+              <label for="matchPct">🏢 401(k)/403(b) Employer Match % of Pay</label>
+              <input id="matchPct" type="number" step="0.1" value="4" />
+              <div class="hint">Typical: 3–6%</div>
+            </div>
+            <div>
+              <label for="matchCap">📏 Match Cap % of Pay</label>
+              <input id="matchCap" type="number" step="0.1" value="6" />
+              <div class="hint">E.g., “100% of first 3% + 50% of next 3%” ≈ 4.5% on 6%</div>
+            </div>
+            <div>
+              <label for="income">💵 Household Income ($)</label>
+              <input id="income" type="number" step="1000" placeholder="150000" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div style="align-self:center;display:flex;gap:.6rem;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:.5rem"><input type="checkbox" id="megaBackdoor"/> Enable Mega Backdoor Roth (plan allows after‑tax)</label>
+              <label style="display:flex;align-items:center;gap:.5rem"><input type="checkbox" id="backdoorRoth"/> Using Backdoor Roth IRA</label>
+              <span id="status" class="hint">Ready</span>
+            </div>
+            <div class="actions" style="justify-content:flex-end">
+              <button class="btn gray" type="button" id="loadSample">🧪 Load Sample</button>
+              <button class="btn warn" type="button" id="reset">🗑️ Reset</button>
+              <button class="btn primary" type="button" id="run">▶️ Build Guide</button>
+              <button class="btn gray" type="button" id="saveJSON">💾 Save</button>
+              <input type="file" id="filePicker" accept="application/json" style="display:none" />
+              <button class="btn gray" type="button" id="loadJSON">⬆️ Load</button>
+            </div>
+          </div>
+        </form>
+      </section>
+
+      <!-- Results (Bottom) -->
+      <section class="card" aria-labelledby="outTitle">
+        <h2 id="outTitle">📑 Your Tax‑Advantaged Playbook</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="k">Est. Effective Tax Now</div><div class="v" id="kEffNow">—</div></div>
+          <div class="kpi"><div class="k">Est. Effective Tax in Retirement</div><div class="v" id="kEffRet">—</div></div>
+          <div class="kpi"><div class="k">Suggested Asset Location Mix</div><div class="v" id="kAL">—</div></div>
+        </div>
+
+        <div class="sep"></div>
+
+        <h3>1) Contribution Priority (Typical Ordering)</h3>
+        <div id="priority" class="note">Run the guide to generate a personalized list.</div>
+
+        <h3 style="margin-top:1rem">2) Asset Location Suggestions</h3>
+        <div id="assetLocation" class="note">The guide will suggest which assets often fit best in each account type based on taxes and your inputs.</div>
+
+        <h3 style="margin-top:1rem">3) Withdrawal Order (Retirement)</h3>
+        <div id="withdrawal" class="note">You’ll see a suggested order (taxable → pre‑tax → Roth), with caveats for brackets, healthcare credits, and RMDs.</div>
+
+        <h3 style="margin-top:1rem">4) Roth Conversion Sandbox</h3>
+        <div class="row two">
+          <div>
+            <label for="convAmount">📤 Test Conversion Amount ($)</label>
+            <input id="convAmount" type="number" step="500" placeholder="20000" />
+            <div class="hint">Rough estimate: tax owed = amount × (current marginal rate)</div>
+          </div>
+          <div class="actions" style="align-items:flex-end;justify-content:flex-start">
+            <button class="btn success" id="calcConv" type="button">🧮 Estimate Taxes</button>
+          </div>
+        </div>
+        <div id="convOutput" class="success" style="display:none"></div>
+
+        <h3 style="margin-top:1rem">5) Checklist</h3>
+        <ul id="checklist" class="clean"></ul>
+
+        <div class="sep"></div>
+        <p class="hint">⚠️ This is a planning helper, not tax or legal advice. Verify limits (401(k), IRA, HSA, 529, etc.) and rules for your current year and your specific plan.</p>
+      </section>
+    </div>
+
+    <footer>
+      <div>GenieSphere • Tax‑Advantaged Guide</div>
+      <div><a class="btn link" href="long-term-dashboard.html">⬅️ Back to Dashboard</a></div>
+    </footer>
+  </div>
+
+<script>
+/* ================= Helpers ================= */
+const $ = (id)=>document.getElementById(id);
+const money0 = (n)=> isFinite(n) ? "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0}) : "—";
+const pct0 = (n)=> isFinite(n) ? Number(n).toFixed(0)+"%" : "—";
+function setStatus(t){ $("status").textContent = t||""; }
+
+function gather(){
+  return {
+    filing: $('filing').value,
+    age: Number($('age').value||0),
+    stateTax: Number($('stateTax').value||0),
+    marginalNow: Number($('marginalNow').value||0),
+    marginalRet: Number($('marginalRet').value||0),
+    hsaEligible: $('hsaEligible').value==='yes',
+    bal: {
+      taxable: Number($('balTaxable').value||0),
+      trad: Number($('balTrad').value||0),
+      roth: Number($('balRoth').value||0),
+      hsa: Number($('balHsa').value||0)
+    },
+    matchPct: Number($('matchPct').value||0),
+    matchCap: Number($('matchCap').value||0),
+    income: Number($('income').value||0),
+    megaBackdoor: $('megaBackdoor').checked,
+    backdoorRoth: $('backdoorRoth').checked
+  };
+}
+
+/* Rough effective tax proxies (for UI feedback only) */
+function effectiveTax(marginal, state){
+  if(!isFinite(marginal)) return null;
+  const fedFactor = Math.min(1, Math.max(0, marginal/100));
+  const effFed = fedFactor * 0.6; // proxy: effective ~60% of marginal for middle brackets
+  const effState = Math.max(0, state||0)/100 * 0.8; // proxy
+  return (effFed + effState) * 100; // in %
+}
+
+function buildPriority(p){
+  const items = [];
+  // 1) Emergency fund (not an account here but foundational)
+  items.push("Emergency fund 3–6 months (high‑yield savings)");
+  // 2) Employer match is usually first free money
+  if(p.matchPct>0){ items.push(`Contribute to 401(k)/403(b) to get FULL employer match (≈ up to ${p.matchCap||6}% of pay)`); }
+  // 3) HSA (if eligible)
+  if(p.hsaEligible){ items.push("HSA (if HDHP): fund for triple‑tax advantage — consider investing and paying medical out of pocket to allow growth"); }
+  // 4) Roth vs Traditional IRA decision
+  const nowVsRet = (p.marginalNow || 0) - (p.marginalRet || 0);
+  if(nowVsRet <= 0){ items.push("Max Roth IRA (or Backdoor Roth if income too high)"); }
+  else { items.push("Max Traditional IRA (deductible if eligible) or Roth IRA depending on phase‑out"); }
+  // 5) Max workplace plan beyond match
+  items.push("Increase 401(k)/403(b) contributions toward max (traditional vs Roth based on tax rate now vs later)");
+  // 6) Mega Backdoor Roth if plan allows
+  if(p.megaBackdoor){ items.push("After‑tax 401(k) + in‑plan Roth conversion (Mega Backdoor Roth), if permitted by plan"); }
+  // 7) Taxable brokerage: broad index funds/munis
+  items.push("Taxable brokerage (broad index funds; consider municipal bonds for high state tax)");
+  // 8) 529 for education (optional)
+  items.push("529 college savings (state‑specific benefits and rules)");
+  return items;
+}
+
+function buildAssetLocation(p){
+  // High‑level rules of thumb
+  // - Highest tax drag → shelter in pre‑tax/Roth (REITs, high‑yield bonds, actively traded funds)
+  // - Tax‑efficient equities → taxable (broad index, ETFs with low turnover)
+  // - HSA often for stock tilt (long horizon) or bonds (if near‑term use)
+  const nowHighTax = (p.marginalNow + (p.stateTax||0)) >= 28; // heuristic
+  const mix = {
+    taxable: [
+      'Broad equity index ETFs (VTI, VXUS‑style)',
+      'Municipal bond funds (if in high state tax bracket)',
+      'Long‑term holdings with low turnover'
+    ],
+    trad: [
+      'REITs / high‑yield bond funds',
+      'Active strategies with higher turnover',
+      'Tax‑inefficient alternatives'
+    ],
+    roth: [
+      'Highest expected growth (small‑cap/innovation tilt)',
+      'Equities you expect to hold longest'
+    ],
+    hsa: [
+      p.hsaEligible ? 'Long‑horizon equity index (if paying expenses out of pocket)' : '—',
+      p.hsaEligible ? 'Or short‑term bond/cash if spending within 1–3 years' : '—'
+    ]
+  };
+  // Show a compact summary string for KPI
+  const kpi = nowHighTax
+    ? 'Taxable: broad equity • Pre‑Tax: REITs/bonds • Roth: highest growth'
+    : 'Taxable: broad equity/munis • Pre‑Tax: bonds/REITs • Roth: highest growth';
+  return {mix, kpi};
+}
+
+function buildWithdrawal(p){
+  const lines = [];
+  lines.push('1) Taxable first to harvest favorable cap‑gains rates and preserve tax‑sheltered accounts');
+  lines.push('2) Strategic Roth conversions from pre‑tax in low‑income years (before RMD age)');
+  lines.push('3) Pre‑tax (Traditional) up to top of your target bracket each year (watch IRMAA/ACA cliffs)');
+  lines.push('4) Roth last for tax‑free growth and flexibility');
+  lines.push('• Always satisfy RMDs once applicable for pre‑tax accounts');
+  return lines;
+}
+
+function buildChecklist(p){
+  const list = [];
+  list.push('Confirm current‑year contribution limits for 401(k)/403(b), IRA, HSA, and 529');
+  list.push('Document employer match formula and vesting schedule');
+  if(p.hsaEligible) list.push('HSA: decide invest‑for‑later vs spend‑now strategy; keep receipts if deferring reimbursements');
+  if(p.backdoorRoth) list.push('Backdoor Roth: check pro‑rata rule (existing pre‑tax IRA balances can cause taxes)');
+  if(p.megaBackdoor) list.push('Mega Backdoor: confirm plan allows after‑tax contributions and in‑plan Roth conversions');
+  list.push('Set asset location targets in your IPS and implement with actual funds/ETFs');
+  list.push('Plan annual tax‑aware rebalancing (harvest losses, realize gains in 0% bracket when possible)');
+  list.push('Map potential Roth conversion windows before Social Security and RMDs');
+  list.push('Track bracket thresholds and healthcare subsidy cliffs (ACA/IRMAA) before large withdrawals');
+  return list;
+}
+
+function renderPriority(list){
+  const el = $('priority');
+  el.className = '';
+  el.innerHTML = '<ol style="margin:.3rem 0 0; padding-left:1.2rem">'+ list.map(x=>`<li>${x}</li>`).join('') +'</ol>';
+}
+function renderAssetLocation(obj){
+  const el = $('assetLocation');
+  el.className = '';
+  el.innerHTML = `
+    <div class="row four">
+      <div><div class="kpi"><div class="k">Taxable</div><div class="v">—</div></div><ul class="clean">${obj.mix.taxable.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div><div class="kpi"><div class="k">Traditional</div><div class="v">—</div></div><ul class="clean">${obj.mix.trad.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div><div class="kpi"><div class="k">Roth</div><div class="v">—</div></div><ul class="clean">${obj.mix.roth.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+      <div><div class="kpi"><div class="k">HSA</div><div class="v">—</div></div><ul class="clean">${obj.mix.hsa.map(x=>`<li>${x}</li>`).join('')}</ul></div>
+    </div>`;
+}
+function renderWithdrawal(lines){
+  const el = $('withdrawal');
+  el.className='';
+  el.innerHTML = '<ol style="margin:.3rem 0 0; padding-left:1.2rem">'+ lines.map(x=>`<li>${x}</li>`).join('') +'</ol>';
+}
+function renderChecklist(list){
+  const el = $('checklist');
+  el.innerHTML = list.map(x=>`<li><label style="display:flex;gap:.5rem;align-items:center"><input type="checkbox"/> ${x}</label></li>`).join('');
+}
+
+function run(){
+  const p = gather();
+  // KPIs
+  const effNow = effectiveTax(p.marginalNow, p.stateTax); // %
+  const effRet = effectiveTax(p.marginalRet, p.stateTax);
+  $('kEffNow').textContent = effNow==null? '—' : pct0(effNow);
+  $('kEffRet').textContent = effRet==null? '—' : pct0(effRet);
+
+  const al = buildAssetLocation(p);
+  $('kAL').textContent = al.kpi;
+
+  renderPriority(buildPriority(p));
+  renderAssetLocation(al);
+  renderWithdrawal(buildWithdrawal(p));
+  renderChecklist(buildChecklist(p));
+  setStatus('Guide updated.');
+}
+
+/* Save/Load */
+$('saveJSON').addEventListener('click', ()=>{
+  const blob = new Blob([JSON.stringify(gather(), null, 2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='tax-advantaged-guide-settings.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),800);
+});
+$('loadJSON').addEventListener('click', ()=> $('filePicker').click());
+$('filePicker').addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return; const r=new FileReader(); r.onload=()=>{ try{ const p=JSON.parse(r.result); Object.entries(p).forEach(([k,v])=>{
+    if(k==='bal'){ Object.entries(v).forEach(([kk,vv])=>{ const id = kk==='trad' ? 'balTrad' : kk==='roth' ? 'balRoth' : kk==='hsa' ? 'balHsa' : 'balTaxable'; $(id).value = vv; }); }
+    else if($(k)) $(k).value = v; // direct map if ids match
+  }); $('megaBackdoor').checked = !!p.megaBackdoor; $('backdoorRoth').checked = !!p.backdoorRoth; run(); }catch{ alert('Invalid JSON'); } }; r.readAsText(f);
+});
+
+/* Buttons */
+$('run').addEventListener('click', run);
+$('calcConv').addEventListener('click', ()=>{
+  const amt = Number($('convAmount').value||0); const rate = Number($('marginalNow').value||0)/100; const state = Number($('stateTax').value||0)/100; const tax = amt * (rate + state);
+  const out = $('convOutput');
+  if(!amt){ out.style.display='none'; return; }
+  out.style.display='block';
+  out.innerHTML = `<b>Est. tax on conversion:</b> ${money0(tax)} <span class="hint" style="margin-left:.5rem">(federal+state, simple proxy)</span>`;
+});
+$('loadSample').addEventListener('click', ()=>{
+  $('filing').value='mfj'; $('age').value=50; $('stateTax').value=5; $('marginalNow').value=24; $('marginalRet').value=12; $('hsaEligible').value='yes';
+  $('balTaxable').value=120000; $('balTrad').value=450000; $('balRoth').value=160000; $('balHsa').value=10000;
+  $('matchPct').value=4; $('matchCap').value=6; $('income').value=220000; $('megaBackdoor').checked=true; $('backdoorRoth').checked=true;
+  run();
+});
+$('reset').addEventListener('click', ()=>{ document.querySelectorAll('input,select').forEach(el=>{ if(el.type==='checkbox') el.checked=false; else el.value=''; }); $('filing').value='mfj'; $('age').value=45; $('stateTax').value=0; $('marginalNow').value=22; $('marginalRet').value=15; $('hsaEligible').value='no'; setStatus('Reset.'); ['priority','assetLocation','withdrawal','checklist'].forEach(id=>{ const el=$(id); el.className='note'; el.textContent='Fill inputs and run the guide.'; }); $('kEffNow').textContent='—'; $('kEffRet').textContent='—'; $('kAL').textContent='—'; $('convOutput').style.display='none'; });
+
+// Init
+setStatus('Ready');
+</script>
+</body>
+</html>

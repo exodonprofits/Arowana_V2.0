@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>✅ My Rules (Long‑Term Investing)</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+    /* -------------------------------------------------------------------------- */
+    /* CSS Variables & Base Styles (Arowana Shell) */
+    /* -------------------------------------------------------------------------- */
+    :root {
+      --brand: #1a3c5e;
+      --ink: #111827;
+      --muted: #667085;
+      --bg: #f9fafb;
+      --panel: #ffffff;
+      --ring: rgba(26, 60, 94, 0.22);
+      --border: #e5e7eb;
+      --shadow: 0 4px 12px rgba(0, 0, 0, .08);
+      --page-width: min(1200px, 92vw);
+      --radius-lg: 1.25rem;
+      --radius-sm: .625rem;
+      --red: #dc2626;
+      --blue: #2563eb;
+    }
+
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: Inter, 'Segoe UI', system-ui, -apple-system, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    a {
+      color: var(--brand);
+      text-decoration: none;
+    }
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 4px var(--ring);
+    }
+    .container {
+      width: 100%;
+      max-width: var(--page-width);
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+    .muted { color: var(--muted); }
+
+    /* -------------------------------------------------------------------------- */
+    /* Header & Navigation */
+    /* -------------------------------------------------------------------------- */
+    .header {
+      background: var(--brand);
+      color: #fff;
+      padding: 20px 0;
+      position: relative;
+    }
+    .header-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .logo-area {
+      font-weight: 800;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      font-size: clamp(18px, 4vw, 20px);
+      white-space: nowrap;
+    }
+    .logo-area img {
+      width: 50px;
+      height: 50px;
+      border-radius: 6px;
+    }
+    .nav {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .nav a {
+      color: #eaf1f9;
+      padding: 8px 10px;
+      border-radius: 10px;
+    }
+    .nav a[aria-current="page"] {
+      background: rgba(255, 255, 255, .22);
+      color: #fff;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* Main Content & Page Structure */
+    /* -------------------------------------------------------------------------- */
+    main { padding: 20px 0; }
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(22px, 4vw, 32px);
+    }
+    .main-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .action-buttons {
+      display: flex;
+      gap: .5rem;
+      flex-wrap: wrap;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* Cards, Forms, and Inputs */
+    /* -------------------------------------------------------------------------- */
+    .card {
+      background: var(--panel);
+      border-radius: var(--radius-lg);
+      padding: 18px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      margin: 12px 0;
+    }
+    .card h2 {
+      margin: 0 0 8px;
+      color: var(--brand);
+      font-size: 1.2rem;
+    }
+    label {
+      display: block;
+      margin-bottom: 4px;
+      color: #1b3350; /* A slightly darker ink for labels */
+      font-size: .9rem;
+      font-weight: 600; /* Added weight for better form structure */
+    }
+    input, textarea, select {
+      width: 100%;
+      padding: 10px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      font-size: .95rem;
+      background: #fff;
+      font-family: inherit;
+    }
+    .allocation-grid {
+      display: grid;
+      gap: 12px;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    }
+    .save-area {
+      margin-top: 10px;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* Buttons */
+    /* -------------------------------------------------------------------------- */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: .5rem;
+      border: none;
+      border-radius: 9999px;
+      padding: .55rem 1rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .btn.primary {
+      background: var(--blue); /* Using generic blue for primary */
+      color: #fff;
+    }
+    .btn.ghost {
+      background: #fff;
+      border: 1px solid #dfe5ef;
+      color: #1f2937;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* Checklist */
+    /* -------------------------------------------------------------------------- */
+    .checklist {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 800px;
+    }
+    .checklist li {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 0;
+      border-bottom: 1px dashed #eef2f6;
+    }
+
+    /* -------------------------------------------------------------------------- */
+    /* Footer */
+    /* -------------------------------------------------------------------------- */
+    footer {
+      margin-top: auto;
+      background: var(--brand);
+      color: #d7dae0;
+      padding: 28px 0;
+    }
+    footer .cols {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+    footer h4 { color: #fff; }
+    footer a { color: #b6c3d6; }
+    .foot-bottom {
+      margin-top: 14px;
+      font-size: 12px;
+      text-align: center;
+      color: #9aa6b6;
+    }
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container header-top">
+      <div class="logo-area">
+        <img src="images/arowanalogo.png" alt="Arowana Profits logo"/>Arowana Profits
+      </div>
+      <nav class="nav">
+        <a href="index.html">Home</a>
+        <a href="short-term-dashboard.html">Short-Term</a>
+        <a href="long-term-dashboard.html" aria-current="page">Long-Term</a>
+        <a href="learn-investing.html">Learn</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="main-header">
+      <div>
+        <h1>✅ My Rules (Long‑Term Investing)</h1>
+        <p class="muted">Define principles for your portfolio allocation, rebalancing, and emotions — your written plan for calm investing.</p>
+      </div>
+      <div class="action-buttons">
+        <a class="btn ghost" href="long-term-dashboard.html">← Dashboard</a>
+      </div>
+    </div>
+
+    <section class="card">
+      <h2>Portfolio & Allocation</h2>
+      <div class="allocation-grid">
+        <div><label>Target equity %</label><input id="eqPct" type="number" step="1" min="0" max="100" value="70"></div>
+        <div><label>Target bonds %</label><input id="bondPct" type="number" step="1" min="0" max="100" value="30"></div>
+        <div><label>Rebalance threshold ±%</label><input id="rebalanceBand" type="number" step="1" min="1" max="20" value="5"></div>
+        <div><label>Rebalance frequency</label><select id="rebalanceFreq"><option>Quarterly</option><option selected>Annually</option><option>Only when bands breached</option></select></div>
+      </div>
+      <div class="save-area">
+        <button id="saveRules" class="btn primary">💾 Save</button><span id="saveStatus" class="muted" style="margin-left:8px">Not saved</span>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2>Risk & Behavior</h2>
+      <textarea id="rulesBehavior" rows="6">• Stay invested regardless of market noise.
+• Rebalance to maintain target allocation.
+• Keep 3–6 months of expenses in cash.
+• Increase savings rate during market downturns.
+• Avoid leverage or speculative positions.</textarea>
+    </section>
+
+    <section class="card">
+      <h2>Decision Triggers</h2>
+      <textarea id="rulesTriggers" rows="5">• Review plan annually.
+• Rebalance if deviation > band or major life event.
+• Adjust contribution rate if savings goals drift.
+• Do not change allocation based on news or fear.</textarea>
+    </section>
+
+    <section class="card">
+      <h2>Checklist</h2>
+      <ul id="ltChecklist" class="checklist"></ul>
+      <div class="muted">Generated from your rules • <span id="ltSaved">not saved</span></div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container cols">
+      <div><h4>Arowana Profits</h4><p>AI-powered tools for investors.</p></div>
+      <div><h4>Solutions</h4><ul><li><a href="long-term-dashboard.html">Long-Term Dashboard</a></li><li><a href="short-term-dashboard.html">Trading Tools</a></li></ul></div>
+      <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+      <div><h4>Legal</h4><p><strong>Disclaimer:</strong> Educational use only; not investment advice.</p></div>
+    </div>
+    <div class="foot-bottom">© 2025 Arowana Profit LLC</div>
+  </footer>
+
+  <script>
+    const $=s=>document.querySelector(s);
+    const LS='my_rules_longterm_v1';
+    const CK='my_rules_longterm_check';
+
+    function save(){
+      const data={
+        eqPct:$('#eqPct').value,
+        bondPct:$('#bondPct').value,
+        rebalanceBand:$('#rebalanceBand').value,
+        rebalanceFreq:$('#rebalanceFreq').value,
+        rulesBehavior:$('#rulesBehavior').value,
+        rulesTriggers:$('#rulesTriggers').value,
+        savedAt:new Date().toISOString()
+      };
+      localStorage.setItem(LS,JSON.stringify(data));
+      $('#saveStatus').textContent='Saved '+new Date().toLocaleString();
+      $('#ltSaved').textContent='saved '+new Date().toLocaleString();
+      renderChecklist();
+    }
+
+    function load(){
+      try{
+        const d=JSON.parse(localStorage.getItem(LS)||'{}');
+        Object.entries(d).forEach(([k,v])=>{if($('#'+k))$('#'+k).value=v});
+        $('#ltSaved').textContent=d.savedAt?'saved '+new Date(d.savedAt).toLocaleString():'not saved';
+        renderChecklist();
+      }catch{}
+    }
+
+    function checklistItems(){
+      return[
+        `Equity ${$('#eqPct').value}% / Bonds ${$('#bondPct').value}%`,
+        `Rebalance ${$('#rebalanceFreq').value} (±${$('#rebalanceBand').value}%)`,
+        `Rules set: ${($('#rulesBehavior').value.split('\n')[0]||'…')}`,
+        'Cash reserve 3–6mo ready',
+        'Annual review date scheduled'
+      ];
+    }
+
+    function renderChecklist(){
+      const saved=JSON.parse(localStorage.getItem(CK)||'{}');
+      $('#ltChecklist').innerHTML=checklistItems().map((t,i)=>
+        `<li><input type="checkbox" id="ck${i}" ${saved['ck'+i]?'checked':''}><label for="ck${i}">${t}</label></li>`
+      ).join('');
+    }
+
+    document.addEventListener('change',e=>{
+      if(e.target.closest('#ltChecklist')){
+        const s=JSON.parse(localStorage.getItem(CK)||'{}');
+        s[e.target.id]=e.target.checked;
+        localStorage.setItem(CK,JSON.stringify(s));
+      }
+    });
+
+    document.getElementById('saveRules').addEventListener('click',save);
+    load();
+    renderChecklist();
+  </script>
+</body>
+</html>

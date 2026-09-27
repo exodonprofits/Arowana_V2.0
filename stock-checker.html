@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Value Checker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 40px;
+      background-color: #f7f9fb;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #1a3c5e;
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      background-color: #1a3c5e;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      font-size: 16px;
+      border-radius: 5px;
+      cursor: pointer;
+      width: 100%;
+    }
+    button:hover {
+      background-color: #16324a;
+    }
+    .result {
+      margin-top: 20px;
+      padding: 15px;
+      border-left: 4px solid #1a3c5e;
+      background: #f0f4f9;
+    }
+    #spinner {
+      text-align: center;
+      display: none;
+      margin-top: 20px;
+    }
+    #spinner div {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #1a3c5e;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📈 Stock Value Checker</h1>
+    <label for="ticker">Enter Stock Ticker:</label>
+    <input type="text" id="ticker" placeholder="e.g. AAPL">
+    <!--button onclick="checkStock()">Check Value</button-->
+    <button onclick="checkStock()">🚀 Check Value</button>
+    <div id="spinner"><div></div></div>
+    <div class="result" id="result"></div>
+  </div>
+  <div style="text-align: center; margin-top: 30px;">
+    <a href="short-term-dashboard.html" style="color: #1a3c5e; text-decoration: none; font-weight: bold;">
+      🔙 Go Back
+    </a>
+  </div>
+  
+  <script>
+    async function checkStock() {
+      const ticker = document.getElementById('ticker').value.trim();
+      const resultEl = document.getElementById('result');
+      const spinnerEl = document.getElementById('spinner');
+
+      if (!ticker) {
+        resultEl.innerHTML = "Please enter a stock ticker.";
+        return;
+      }
+
+      resultEl.innerHTML = "";
+      spinnerEl.style.display = 'block';
+
+      try {
+        const response = await fetch('https://exodonprofits.app.n8n.cloud/webhook/stock-checker/s3cur3t0k3n', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ticker })
+        });
+        const data = await response.json();
+        spinnerEl.style.display = 'none';
+        resultEl.innerHTML = `<strong>${data.ticker}</strong><br>
+          Current Price: $${data.current_price}<br>
+          Estimated Value: $${data.estimated_value}<br>
+          <strong>Status: ${data.status}</strong><br><br>
+          <em>${data.explanation}</em>`;
+      } catch (err) {
+        spinnerEl.style.display = 'none';
+        resultEl.innerHTML = "Something went wrong. Please try again later.";
+        console.error(err);
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Scalp Trading Screener (Webhook + CSV)</title>
+<style>
+  :root{
+    --bg:#0b1220; --panel:#121a2b; --text:#e5e7eb; --muted:#94a3b8;
+    --border:#1f2a44; --card:#0f172a; --accent:#22c55e; --accent2:#2563eb; --danger:#ef4444;
+    --shadow:0 10px 24px rgba(0,0,0,.35); --r:14px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font:16px/1.5 system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial}
+  .wrap{max-width:1200px;margin:0 auto;padding:28px}
+  header{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:18px}
+  .brand{display:flex;align-items:center;gap:12px}
+  .logo{width:42px;height:42px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,var(--accent),#16a34a);font-weight:800;box-shadow:var(--shadow)}
+  .muted{color:var(--muted)}
+  .panel{background:linear-gradient(180deg, rgba(255,255,255,.02), transparent 60%), var(--panel);border:1px solid var(--border);border-radius:var(--r);box-shadow:var(--shadow)}
+  .controls{padding:18px}
+  .row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  @media (max-width:980px){.row{grid-template-columns:repeat(2,1fr)}}
+  @media (max-width:680px){.row{grid-template-columns:1fr}}
+  .control{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px}
+  label{display:block;font-weight:700;margin-bottom:8px}
+  input[type="number"],input[type="text"],select,textarea{
+    width:100%;background:#0c1325;color:var(--text);border:1px solid var(--border);border-radius:10px;padding:10px 12px;outline:none
+  }
+  textarea{min-height:110px;resize:vertical}
+  .switch{display:flex;align-items:center;gap:10px}
+  .actions{display:flex;flex-wrap:wrap;gap:10px}
+  .btn{display:inline-flex;align-items:center;gap:8px;padding:10px 16px;border-radius:999px;border:1px solid transparent;cursor:pointer;background:var(--accent);color:#fff;font-weight:800;box-shadow:var(--shadow)}
+  .btn.secondary{background:var(--accent2)}
+  .btn.ghost{background:transparent;border-color:var(--border)}
+  .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .chip{padding:6px 10px;border-radius:999px;background:#1f2937;border:1px solid var(--border);font-size:12px}
+  .resultHead{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;border-bottom:1px solid var(--border)}
+  table{width:100%;border-collapse:collapse}
+  th,td{padding:10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left}
+  .tag{padding:4px 8px;border-radius:999px;border:1px solid var(--border);font-size:12px}
+  .bad{background:rgba(239,68,68,.12)}
+  .good{background:rgba(34,197,94,.12)}
+  canvas{width:100%;height:120px;display:block}
+  .note{font-size:13px;color:var(--muted)}
+  .kbd{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono";background:#0b1020;border:1px solid var(--border);padding:2px 6px;border-radius:6px;font-size:12px}
+  .sectionTitle{padding:12px 18px;border-top:1px solid var(--border);font-weight:800;letter-spacing:.2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="logo">SC</div>
+      <div>
+        <h1 style="margin:0;font-size:20px">⚡ Scalp Trading Screener</h1>
+        <div class="muted">VWAP • 9/20 EMA • RSI(7) • Stoch(14,3) • Volume Spike • Opening Range • n8n Webhook</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="btn" id="scanBtn">Scan</button>
+      <button class="btn secondary" id="exportBtn">Export CSV</button>
+      <button class="btn ghost" id="resetBtn">Reset</button>
+    </div>
+  </header>
+
+  <!-- DATA SOURCE -->
+  <section class="panel controls">
+    <div class="row">
+      <div class="control">
+        <label>📡 Data Source</label>
+        <div class="switch">
+          <input type="radio" name="src" id="srcCsv" checked>
+          <span>CSV / Paste</span>
+        </div>
+        <div class="switch" style="margin-top:8px">
+          <input type="radio" name="src" id="srcWebhook">
+          <span>n8n Webhook</span>
+        </div>
+        <span class="note">Choose where bars come from</span>
+      </div>
+
+      <div class="control">
+        <label for="symbol">🔤 Symbol (label only)</label>
+        <input id="symbol" type="text" placeholder="e.g., AAPL 1m (for your reference)">
+        <span class="note">Label used in output; webhook can also receive symbol</span>
+      </div>
+
+      <div class="control">
+        <label for="tf">🧭 Bar Timeframe</label>
+        <select id="tf">
+          <option value="1">1 min</option>
+          <option value="2">2 min</option>
+          <option value="5" selected>5 min</option>
+        </select>
+        <span class="note">Make sure source data matches this</span>
+      </div>
+
+      <!-- CSV / PASTE -->
+      <div class="control" id="csvBlock" style="grid-column:1/-1">
+        <label>📥 CSV Input (columns: time,open,high,low,close,volume)</label>
+        <input id="file" type="file" accept=".csv,text/csv">
+        <div style="height:6px"></div>
+        <textarea id="paste" placeholder="Or paste CSV rows here"></textarea>
+      </div>
+
+      <!-- WEBHOOK -->
+      <div class="control" id="webhookBlock" style="grid-column:1/-1; display:none">
+        <label>🛰️ n8n Webhook Settings</label>
+        <div class="row" style="margin:0;gap:10px">
+          <div class="control">
+            <label for="whUrl">URL</label>
+            <input id="whUrl" type="text" placeholder="https://YOUR-WORKSPACE.n8n.cloud/webhook/xxxxxx">
+          </div>
+          <div class="control">
+            <label for="whMethod">Method</label>
+            <select id="whMethod">
+              <option value="GET" selected>GET</option>
+              <option value="POST">POST</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="whQuery">Query Params (auto-add)</label>
+            <input id="whQuery" type="text" value="symbol={{SYMBOL}}&tf={{TF}}">
+            <span class="note">Placeholders: {{SYMBOL}}, {{TF}}</span>
+          </div>
+          <div class="control">
+            <label for="whHeaders">Headers (JSON)</label>
+            <input id="whHeaders" type="text" placeholder='{"Authorization":"Bearer ..."}'>
+          </div>
+          <div class="control" style="grid-column:1/-1">
+            <label for="whBody">Body (POST JSON)</label>
+            <textarea id="whBody" placeholder='{"symbol":"{{SYMBOL}}","tf":"{{TF}}"}'></textarea>
+          </div>
+          <div class="control">
+            <label for="autoRefresh">🔁 Auto-Refresh (sec, 0=off)</label>
+            <input id="autoRefresh" type="number" value="0" min="0" step="1">
+            <span class="note">Fetch & rescan every N seconds</span>
+          </div>
+          <div class="control">
+            <label>&nbsp;</label>
+            <button class="btn secondary" id="testWebhookBtn">Test Fetch</button>
+            <span class="note">Quick check without scanning</span>
+          </div>
+        </div>
+        <div class="note">Expected response: JSON array of bars [{time,open,high,low,close,volume}]</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILTERS -->
+  <section class="panel controls" style="margin-top:14px">
+    <div class="row">
+      <div class="control">
+        <label for="timeWindow">⏱ Time Window (ET)</label>
+        <input id="timeWindow" type="text" value="09:30-11:30, 15:00-16:00">
+        <span class="note">Comma-separated, HH:MM-HH:MM</span>
+      </div>
+      <div class="control">
+        <label for="vwapBias">📈 VWAP Bias</label>
+        <select id="vwapBias">
+          <option value="ANY">Any</option>
+          <option value="LONG">Above (long)</option>
+          <option value="SHORT" selected>Below (short)</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="emaAlign">📉 EMA Alignment</label>
+        <select id="emaAlign">
+          <option value="ANY">Any</option>
+          <option value="BULL">9>20</option>
+          <option value="BEAR" selected>9<20</option>
+        </select>
+      </div>
+
+      <div class="control">
+        <label for="htfAlign">📏 HTF Alignment (EMA200)</label>
+        <select id="htfAlign">
+          <option value="ANY" selected>Any</option>
+          <option value="BULL">Price > 200EMA</option>
+          <option value="BEAR">Price < 200EMA</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="rsiMin">📊 RSI(7) ≥</label>
+        <input id="rsiMin" type="number" value="0">
+      </div>
+      <div class="control">
+        <label for="rsiMax">📊 RSI(7) ≤</label>
+        <input id="rsiMax" type="number" value="100">
+      </div>
+
+      <div class="control">
+        <label>🎚️ Stoch(14,3) Cross</label>
+        <div class="switch">
+          <input type="checkbox" id="stochCross" checked>
+          <span class="note">K crosses D in direction</span>
+        </div>
+      </div>
+      <div class="control">
+        <label for="volSpike">📦 Volume Spike ×</label>
+        <input id="volSpike" type="number" value="1.5" step="0.1">
+        <span class="note">Bar vol ≥ x × avg(20)</span>
+      </div>
+      <div class="control">
+        <label for="minAvgVol">💧 Min Avg Vol (20 bars)</label>
+        <input id="minAvgVol" type="number" value="100000" step="1000">
+      </div>
+
+      <div class="control">
+        <label for="atrFrac">🎯 Target / Stop (ATR)</label>
+        <input id="atrFrac" type="text" value="0.2/0.2">
+        <span class="note">e.g., 0.2/0.2 of ATR(14)</span>
+      </div>
+      <div class="control">
+        <label for="orMinutes">📐 Opening Range (min)</label>
+        <select id="orMinutes">
+          <option value="5">5</option>
+          <option value="15" selected>15</option>
+          <option value="30">30</option>
+        </select>
+      </div>
+      <div class="control">
+        <label for="pmh">🌅 Premarket High (opt)</label>
+        <input id="pmh" type="number" step="0.01" placeholder="e.g., 192.40">
+      </div>
+      <div class="control">
+        <label for="pml">🌅 Premarket Low (opt)</label>
+        <input id="pml" type="number" step="0.01" placeholder="e.g., 189.70">
+      </div>
+    </div>
+    <div class="chips" id="activeFilters"></div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="panel" style="margin-top:16px">
+    <div class="resultHead">
+      <div class="muted">Signals appear below when all criteria align. Tip: press <span class="kbd">Enter</span> to scan.</div>
+      <div class="muted" id="status"></div>
+    </div>
+    <div style="padding:12px 16px">
+      <canvas id="spark"></canvas>
+    </div>
+    <div style="overflow:auto">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Price</th>
+            <th>VWAP</th>
+            <th>EMA9/20</th>
+            <th>EMA200</th>
+            <th>RSI7</th>
+            <th>Stoch K/D</th>
+            <th>Vol</th>
+            <th>Vol×Avg</th>
+            <th>Trigger</th>
+            <th>Bias</th>
+            <th>TP/SL (ATR)</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="sectionTitle">Notes</div>
+    <div class="note" style="padding:0 18px 18px">
+      Webhook response must be an array: <span class="kbd">[{time,open,high,low,close,volume}, ...]</span>.  
+      If your n8n returns a different shape, map it in the webhook or adjust <span class="kbd">normalizeWebhookRows()</span>.
+    </div>
+  </section>
+</div>
+
+<script>
+  // ===== Utils =====
+  const $ = s => document.querySelector(s);
+  const fmt2 = n => Number(n).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
+  const parseTime = s => new Date(s);
+  const setStatus = (t)=> $('#status').textContent = t||'';
+
+  // ===== Indicator helpers (SMA/EMA/RSI/Stoch/ATR/VWAP) =====
+  function SMA(arr,n){ const out=Array(arr.length).fill(null); let sum=0;
+    for(let i=0;i<arr.length;i++){ sum+=arr[i]; if(i>=n) sum-=arr[i-n]; if(i>=n-1) out[i]=sum/n; } return out; }
+  function EMA(arr,n){ const out=Array(arr.length).fill(null); const k=2/(n+1);
+    let ema=0,seed=0,seeded=false; for(let i=0;i<arr.length;i++){ const v=arr[i];
+      if(!seeded){ seed+=v; if(i===n-1){ ema=seed/n; out[i]=ema; seeded=true; } }
+      else{ ema=v*k+ema*(1-k); out[i]=ema; } } return out; }
+  function RSI(close,n=7){ const out=Array(close.length).fill(null); let g=0,l=0;
+    for(let i=1;i<close.length;i++){ const ch=close[i]-close[i-1];
+      if(i<=n){ if(ch>0) g+=ch; else l-=Math.min(ch,0); if(i===n){ const rs=(g/n)/((l/n)||1e-12); out[i]=100-100/(1+rs);} }
+      else{ const up=Math.max(ch,0), dn=Math.max(-ch,0); g=(g*(n-1)+up)/n; l=(l*(n-1)+dn)/n; const rs=g/(l||1e-12); out[i]=100-100/(1+rs);} }
+    return out; }
+  function Stoch(high,low,close,kLen=14,dLen=3){ const k=Array(close.length).fill(null), d=Array(close.length).fill(null);
+    for(let i=0;i<close.length;i++){ if(i<kLen-1) continue; let hh=-Infinity,ll=Infinity;
+      for(let j=i-kLen+1;j<=i;j++){ if(high[j]>hh) hh=high[j]; if(low[j]<ll) ll=low[j]; }
+      const denom=(hh-ll)||1e-12; k[i]=((close[i]-ll)/denom)*100; }
+    const dArr = EMA(k.map(v=>v??0), dLen).map((v,i)=> k[i]==null?null:v); for(let i=0;i<close.length;i++) d[i]=dArr[i];
+    return {k,d}; }
+  function ATR(high,low,close,n=14){ const tr=[];
+    for(let i=0;i<close.length;i++){ if(i===0) tr.push(high[i]-low[i]);
+      else tr.push(Math.max(high[i]-low[i], Math.abs(high[i]-close[i-1]), Math.abs(low[i]-close[i-1]))); }
+    const out=Array(close.length).fill(null); let sum=0;
+    for(let i=0;i<tr.length;i++){ if(i<n){ sum+=tr[i]; if(i===n-1) out[i]=sum/n; } else out[i]=(out[i-1]*(n-1)+tr[i])/n; }
+    return out; }
+  function VWAP(high,low,close,vol){ const out=Array(close.length).fill(null); let cumPV=0,cumV=0;
+    for(let i=0;i<close.length;i++){ const tp=(high[i]+low[i]+close[i])/3; const v=vol[i]||0; cumPV+=tp*v; cumV+=v; out[i]=cumV?(cumPV/cumV):tp; } return out; }
+
+  // ===== CSV parsing =====
+  function parseCSV(text){
+    const lines=text.trim().split(/\r?\n/).filter(Boolean); if(!lines.length) return [];
+    const heads=lines[0].split(',').map(s=>s.trim().toLowerCase());
+    const idx = ['time','open','high','low','close','volume'].reduce((m,k)=> (m[k]=heads.indexOf(k),m),{});
+    return lines.slice(1).map(l=>{
+      const p=l.split(',');
+      return { time:p[idx.time], open:+p[idx.open], high:+p[idx.high], low:+p[idx.low], close:+p[idx.close], volume:+p[idx.volume] };
+    }).filter(r=>r && r.time && Number.isFinite(r.close));
+  }
+
+  // ===== Webhook fetch =====
+  function tpl(s, sym, tf){ return (s||'').replaceAll('{{SYMBOL}}', sym).replaceAll('{{TF}}', tf); }
+  function normalizeWebhookRows(json){
+    // If your webhook returns a different shape, map it here
+    // Expect array of {time,open,high,low,close,volume}
+    if(Array.isArray(json)) return json;
+    if(json && Array.isArray(json.data)) return json.data;
+    return [];
+  }
+  async function fetchFromWebhook(){
+    const url = $('#whUrl').value.trim();
+    if(!url) throw new Error('Webhook URL required');
+    const method = $('#whMethod').value;
+    const sym = $('#symbol').value.trim() || 'SYMBOL';
+    const tf = $('#tf').value;
+    let fullUrl = url;
+    const qp = $('#whQuery').value.trim();
+    if(qp){
+      const qs = tpl(qp, sym, tf);
+      fullUrl += (fullUrl.includes('?') ? '&' : '?') + qs;
+    }
+    const headers = $('#whHeaders').value.trim() ? JSON.parse($('#whHeaders').value.trim()) : {};
+    let body;
+    if(method==='POST' && $('#whBody').value.trim()){
+      body = JSON.stringify(JSON.parse(tpl($('#whBody').value, sym, tf)));
+      headers['Content-Type'] = headers['Content-Type'] || 'application/json';
+    }
+    const res = await fetch(fullUrl, {method, headers, body, mode:'cors'});
+    if(!res.ok) throw new Error(`Webhook ${res.status}`);
+    const json = await res.json();
+    const rows = normalizeWebhookRows(json);
+    if(!Array.isArray(rows) || !rows.length) throw new Error('Empty or invalid JSON array from webhook');
+    return rows;
+  }
+
+  // ===== Criteria helpers =====
+  function withinWindows(date, windows){
+    const hh = date.getHours().toString().padStart(2,'0'); const mm = date.getMinutes().toString().padStart(2,'0');
+    const t = `${hh}:${mm}`; return windows.some(([a,b]) => t>=a && t<=b);
+  }
+  function inBias(price,vwap,bias){ if(bias==='ANY') return true; if(bias==='LONG') return price>=vwap; if(bias==='SHORT') return price<=vwap; }
+  function emaAlignOK(e9,e20,mode){ if(mode==='ANY') return true; if(mode==='BULL') return e9>=e20; if(mode==='BEAR') return e9<=e20; }
+  function htfAlignOK(price,e200,mode){ if(mode==='ANY') return true; if(mode==='BULL') return price>=e200; if(mode==='BEAR') return price<=e200; }
+  function stochCrossDir(kArr,dArr,i,dir){ if(i<1||kArr[i-1]==null||dArr[i-1]==null||kArr[i]==null||dArr[i]==null) return false;
+    if(dir==='UP') return (kArr[i-1]<dArr[i-1])&&(kArr[i]>dArr[i]); if(dir==='DOWN') return (kArr[i-1]>dArr[i-1])&&(kArr[i]<dArr[i]); return false; }
+  function inRSIRange(rsi, min, max){ if(rsi==null) return false; return rsi>=min && rsi<=max; }
+  function calcOpeningRange(rows, minutes){
+    if(!rows.length) return null; const start=new Date(rows[0].time); const end=new Date(start.getTime()+minutes*60000);
+    let hi=-Infinity, lo=Infinity; for(const r of rows){ const t=new Date(r.time); if(t<=end){ if(r.high>hi) hi=r.high; if(r.low<lo) lo=r.low; } else break; }
+    return {hi,lo,end};
+  }
+
+  // ===== Scan core =====
+  function analyze(rows){
+    const close=rows.map(r=>r.close), high=rows.map(r=>r.high), low=rows.map(r=>r.low), vol=rows.map(r=>r.volume);
+    const time=rows.map(r=>parseTime(r.time));
+    const ema9=EMA(close,9), ema20=EMA(close,20), ema200=EMA(close,200);
+    const vwap=VWAP(high,low,close,vol); const rsi7=RSI(close,7);
+    const {k:stK, d:stD}=Stoch(high,low,close,14,3); const atr=ATR(high,low,close,14); const avgVol20=SMA(vol,20);
+
+    const sym = $('#symbol').value.trim()||'SYMBOL';
+    const windows = $('#timeWindow').value.split(',').map(s=>s.trim()).filter(Boolean).map(win=>win.split('-'));
+    const vwapBias=$('#vwapBias').value, emaAlign=$('#emaAlign').value, htfAlign=$('#htfAlign').value;
+    const rsiMin=+($('#rsiMin').value||0), rsiMax=+($('#rsiMax').value||100);
+    const stochOn=$('#stochCross').checked, volSpike=+($('#volSpike').value||1.5);
+    const minAvgVol=+($('#minAvgVol').value||0); const [tpFrac,slFrac]=($('#atrFrac').value||'0.2/0.2').split('/').map(Number);
+    const orMins=+($('#orMinutes').value||15); const pmh=parseFloat($('#pmh').value); const pml=parseFloat($('#pml').value);
+
+    const overallAvgVol = avgVol20.at(-1)||0; if(overallAvgVol<minAvgVol){ console.warn('AvgVol below min'); }
+
+    const or=calcOpeningRange(rows, orMins);
+    const signals=[];
+    for(let i=0;i<rows.length;i++){
+      const t=time[i], price=close[i];
+      if(windows.length && !withinWindows(t, windows)) continue;
+      if(!inBias(price, vwap[i], vwapBias)) continue;
+      if(!emaAlignOK(ema9[i], ema20[i], emaAlign)) continue;
+      if(!htfAlignOK(price, ema200[i], htfAlign)) continue;
+      if(!inRSIRange(rsi7[i], rsiMin, rsiMax)) continue;
+      const dir = (vwapBias==='LONG')?'UP':(vwapBias==='SHORT'?'DOWN':null);
+      if(stochOn && dir && !stochCrossDir(stK, stD, i, dir)) continue;
+      const spike = avgVol20[i] ? (vol[i]/avgVol20[i]) : 0; if(spike < volSpike) continue;
+
+      const triggers=[];
+      if(or && t>or.end){ if(price>or.hi) triggers.push('ORB↑'); if(price<or.lo) triggers.push('ORB↓'); }
+      if(!Number.isNaN(pmh) && price>pmh) triggers.push('PMH↑');
+      if(!Number.isNaN(pml) && price<pml) triggers.push('PML↓');
+      if(!triggers.length) triggers.push('Momentum');
+
+      const tp = atr[i]? tpFrac*atr[i]:null, sl= atr[i]? slFrac*atr[i]:null;
+
+      signals.push({ t, price, vwap:vwap[i], e9:ema9[i], e20:ema20[i], e200:ema200[i],
+        rsi:rsi7[i], k:stK[i], d:stD[i], vol:vol[i], spike, trig:triggers.join(', '), bias:vwapBias, tp, sl, sym });
+    }
+    return {signals, rows, close};
+  }
+
+  function renderChips(){
+    const chips=[];
+    chips.push(`VWAP: ${$('#vwapBias').value}`);
+    chips.push(`EMA: ${$('#emaAlign').value}`);
+    chips.push(`HTF: ${$('#htfAlign').value}`);
+    chips.push(`RSI7 ${$('#rsiMin').value}–${$('#rsiMax').value}`);
+    chips.push(`StochCross: ${$('#stochCross').checked?'On':'Off'}`);
+    chips.push(`Vol Spike ≥ ${$('#volSpike').value}×`);
+    chips.push(`Min AvgVol20 ≥ ${Number($('#minAvgVol').value).toLocaleString()}`);
+    chips.push(`OR ${$('#orMinutes').value}m`);
+    $('#activeFilters').innerHTML = chips.map(c=>`<span class="chip">${c}</span>`).join('');
+  }
+  function renderResults(signals){
+    const tbody=$('#tbl tbody');
+    if(!signals.length){ tbody.innerHTML = `<tr><td colspan="12" class="muted">No matches. Loosen filters or check data/time windows.</td></tr>`; return; }
+    tbody.innerHTML = signals.map(s=>`
+      <tr>
+        <td>${s.t.toISOString().replace('T',' ').slice(0,16)}</td>
+        <td>${fmt2(s.price)}</td>
+        <td>${fmt2(s.vwap)}</td>
+        <td>${fmt2(s.e9)}/${fmt2(s.e20)}</td>
+        <td>${s.e200?fmt2(s.e200):'—'}</td>
+        <td>${s.rsi? s.rsi.toFixed(1):'—'}</td>
+        <td>${(s.k!=null && s.d!=null)? `${s.k.toFixed(1)}/${s.d.toFixed(1)}`:'—'}</td>
+        <td>${s.vol.toLocaleString()}</td>
+        <td>${s.spike? s.spike.toFixed(2):'—'}×</td>
+        <td><span class="tag ${s.trig.includes('↓')?'bad':'good'}">${s.trig}</span></td>
+        <td>${s.bias}</td>
+        <td>${s.tp&&s.sl? `${fmt2(s.tp)}/${fmt2(s.sl)}`:'—'}</td>
+      </tr>
+    `).join('');
+  }
+  function drawSpark(rows, marksIdx){
+    const canvas=$('#spark'), ctx=canvas.getContext('2d');
+    const w=canvas.width=canvas.clientWidth*(window.devicePixelRatio||1);
+    const h=canvas.height=120*(window.devicePixelRatio||1);
+    ctx.clearRect(0,0,w,h); if(!rows.length) return;
+    const c=rows.map(r=>r.close); const min=Math.min(...c), max=Math.max(...c);
+    const x=i=> (i/(c.length-1))*(w-20)+10; const y=v=> h-10 - ((v-min)/(max-min||1))*(h-20);
+    ctx.beginPath(); ctx.moveTo(x(0), y(c[0])); for(let i=1;i<c.length;i++) ctx.lineTo(x(i), y(c[i]));
+    ctx.lineWidth=2; ctx.strokeStyle='#9ecbff'; ctx.stroke();
+    ctx.fillStyle='#f87171'; marksIdx.forEach(ix=>{ const px=x(ix), py=y(c[ix]); ctx.beginPath(); ctx.arc(px,py,4,0,Math.PI*2); ctx.fill(); });
+  }
+
+  // ===== Source switching & wiring =====
+  let parsedRows = [];
+  let autoTimer = null;
+
+  function toggleSource(){
+    const useWebhook = $('#srcWebhook').checked;
+    $('#webhookBlock').style.display = useWebhook ? '' : 'none';
+    $('#csvBlock').style.display = useWebhook ? 'none' : '';
+  }
+  $('#srcCsv').addEventListener('change', toggleSource);
+  $('#srcWebhook').addEventListener('change', toggleSource);
+
+  $('#file').addEventListener('change', async e=>{
+    const f=e.target.files?.[0]; if(!f) return; parsedRows = parseCSV(await f.text());
+  });
+  $('#paste').addEventListener('input', e=>{
+    const text=e.target.value.trim(); parsedRows = text ? parseCSV(text) : [];
+  });
+
+  async function scanOnce(){
+    try{
+      setStatus('Fetching…');
+      let rows = parsedRows;
+      if($('#srcWebhook').checked){
+        rows = await fetchFromWebhook();
+        setStatus(`Fetched ${rows.length} bars`);
+      } else {
+        setStatus(parsedRows.length ? `Loaded ${parsedRows.length} bars` : 'No CSV data');
+      }
+      if(!rows || !rows.length){ renderResults([]); drawSpark([],[]); return; }
+      renderChips();
+      const {signals, rows:allRows} = analyze(rows);
+      renderResults(signals);
+      const markTimes = new Set(signals.map(s=> +s.t));
+      const marksIdx = allRows.map((r,i)=> markTimes.has(+new Date(r.time)) ? i : -1).filter(i=>i>=0);
+      drawSpark(allRows, marksIdx);
+    }catch(err){
+      console.error(err);
+      setStatus(`Error: ${err.message||err}`);
+      renderResults([]); drawSpark([],[]);
+    }
+  }
+
+  $('#scanBtn').addEventListener('click', ()=>{
+    clearInterval(autoTimer); autoTimer=null;
+    scanOnce().then(()=>{
+      const sec = +($('#autoRefresh').value||0);
+      if($('#srcWebhook').checked && sec>0){
+        autoTimer = setInterval(scanOnce, sec*1000);
+        setStatus(`Auto-refresh every ${sec}s`);
+      }
+    });
+  });
+
+  $('#testWebhookBtn').addEventListener('click', async ()=>{
+    try{
+      const rows = await fetchFromWebhook();
+      alert(`OK: got ${rows.length} rows`);
+    }catch(e){ alert(`Fetch failed: ${e.message||e}`); }
+  });
+
+  $('#exportBtn').addEventListener('click', ()=>{
+    const rows = [...$('#tbl').querySelectorAll('tr')].map(tr => [...tr.children].map(td => `"${td.innerText.replace(/"/g,'""')}"`).join(','));
+    const blob = new Blob([rows.join('\n')], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download='scalp-screener-signals.csv'; document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(()=>URL.revokeObjectURL(url),800);
+  });
+
+  $('#resetBtn').addEventListener('click', ()=>{
+    clearInterval(autoTimer); autoTimer=null;
+    $('#srcCsv').checked=true; toggleSource();
+    $('#symbol').value=''; $('#tf').value='5';
+    $('#timeWindow').value='09:30-11:30, 15:00-16:00';
+    $('#vwapBias').value='SHORT'; $('#emaAlign').value='BEAR'; $('#htfAlign').value='ANY';
+    $('#rsiMin').value='0'; $('#rsiMax').value='100'; $('#stochCross').checked=true;
+    $('#volSpike').value='1.5'; $('#minAvgVol').value='100000'; $('#atrFrac').value='0.2/0.2';
+    $('#orMinutes').value='15'; $('#pmh').value=''; $('#pml').value='';
+    $('#file').value=''; $('#paste').value=''; parsedRows=[];
+    $('#whUrl').value=''; $('#whMethod').value='GET'; $('#whQuery').value='symbol={{SYMBOL}}&tf={{TF}}'; $('#whHeaders').value=''; $('#whBody').value='';
+    $('#autoRefresh').value='0'; $('#tbl tbody').innerHTML=''; const ctx=$('#spark').getContext('2d'); ctx.clearRect(0,0,$('#spark').width,$('#spark').height); setStatus('');
+    $('#activeFilters').innerHTML='';
+  });
+
+  document.addEventListener('keydown', e => { if(e.key==='Enter') $('#scanBtn').click(); });
+
+  // init
+  toggleSource();
+</script>
+</body>
+</html>

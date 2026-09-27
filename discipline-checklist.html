@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Discipline Checklist – GenieSphere</title>
+  <style>
+    :root{
+      /* Light scheme */
+      --bg: #f7fafc;
+      --panel: #ffffff;
+      --ink: #0f172a;
+      --muted: #64748b;
+      --brand: #10b981; /* green */
+      --brand-600: #059669;
+      --brand-700: #047857;
+      --blue: #2563eb;
+      --blue-600:#1d4ed8;
+      --border:#e5e7eb;
+      --chip:#eef2ff;
+      --warn:#ef4444;
+      --ok:#16a34a;
+      --yellow:#f59e0b;
+      --shadow: 0 6px 20px rgba(2,8,23,0.06);
+      --radius: 14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background:var(--bg);
+      color:var(--ink);
+      line-height:1.5;
+    }
+    a{color:var(--blue);text-decoration:none}
+    a:hover{text-decoration:underline}
+    /* Header / Nav */
+    .wrap{max-width:1100px;margin:0 auto;padding:20px}
+    .nav{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:16px;padding:14px 18px;background:var(--panel);border:1px solid var(--border);
+      border-radius:var(--radius);box-shadow:var(--shadow);
+      position:sticky; top:10px; z-index:5;
+    }
+    .brand{display:flex;align-items:center;gap:12px}
+    .logo{
+      width:36px;height:36px;border-radius:50%;
+      background: radial-gradient(120% 120% at 30% 20%, #34d399 0%, #10b981 35%, #059669 72%, #047857 100%);
+      display:grid;place-items:center;color:white;font-weight:800;letter-spacing:0.5px;
+      box-shadow: inset 0 0 0 2px rgba(255,255,255,0.25);
+    }
+    .brand h1{font-size:18px;margin:0}
+    .nav-links{display:flex;flex-wrap:wrap;gap:8px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;
+      padding:10px 16px;border-radius:999px;transition:.2s;
+      font-weight:600;
+    }
+    .btn-blue{background:var(--blue);color:#fff}
+    .btn-blue:hover{background:var(--blue-600)}
+    .btn-green{background:var(--brand);color:#fff}
+    .btn-green:hover{background:var(--brand-600)}
+    .btn-ghost{background:transparent;border:1px solid var(--border);color:var(--ink)}
+    .btn-ghost:hover{background:#f1f5f9}
+    .btn-red{background:var(--warn);color:#fff}
+    .btn-yellow{background:var(--yellow);color:#111827}
+    .tag{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;background:var(--chip);color:#3730a3;font-weight:600;font-size:12px}
+    /* Layout */
+    .grid{
+      display:grid;grid-template-columns: 1fr;gap:16px;margin-top:18px
+    }
+    @media(min-width:900px){
+      .grid{grid-template-columns: 320px 1fr}
+    }
+    .panel{
+      background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);
+      padding:18px;
+    }
+    .title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+    h2{font-size:18px;margin:0}
+    .muted{color:var(--muted);font-size:14px}
+    .section{display:flex;flex-direction:column;gap:12px;margin-top:10px}
+    /* Presets */
+    .presets{display:flex;flex-wrap:wrap;gap:8px}
+    .preset{
+      display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px dashed var(--border);
+      border-radius:12px;cursor:pointer;background:#f8fafc;
+    }
+    .preset:hover{background:#f1f5f9}
+    /* Tabs */
+    .tabs{display:flex;gap:8px;flex-wrap:wrap}
+    .tab{
+      border:1px solid var(--border);background:#f8fafc;color:#0f172a;padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:700
+    }
+    .tab.active{background:var(--brand);color:white;border-color:transparent}
+    /* Checklist */
+    .list{display:flex;flex-direction:column;gap:8px}
+    .item{
+      display:grid;grid-template-columns: 28px 1fr auto auto;align-items:center;
+      gap:10px;padding:10px 12px;border:1px solid var(--border);border-radius:12px;
+      background:#ffffff;
+    }
+    .item.done{opacity:.65}
+    .lbl{display:flex;flex-direction:column}
+    .lbl small{color:var(--muted);font-size:12px}
+    .streak{font-weight:700;padding:6px 10px;border-radius:999px;background:#ecfccb;border:1px solid #d9f99d;color:#365314}
+    .note-btn{border:1px solid var(--border);background:#f8fafc;border-radius:10px;padding:6px 10px;cursor:pointer}
+    .note{display:none;margin-top:8px}
+    .note textarea{width:100%;min-height:70px;border:1px solid var(--border);border-radius:10px;padding:10px}
+    .add-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+    .add-row input[type="text"]{
+      flex:1;min-width:180px;border:1px solid var(--border);border-radius:10px;padding:10px
+    }
+    .progress-wrap{display:flex;align-items:center;gap:10px;margin-top:6px}
+    progress{width:160px;height:10px;border:1px solid var(--border);border-radius:999px}
+    /* Footer buttons */
+    .actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+    /* Utilities */
+    .sr-only{position:absolute;left:-9999px}
+    .right{margin-left:auto}
+    .chip{display:inline-flex;align-items:center;gap:6px;background:#f1f5f9;border:1px solid var(--border);padding:6px 10px;border-radius:999px}
+    .kpi{
+      display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px
+    }
+    .kpi .box{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:12px;text-align:center}
+    .kpi h3{margin:0;font-size:26px}
+    .kpi p{margin:2px 0 0;color:var(--muted);font-size:12px}
+    .small{font-size:12px;color:var(--muted)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <!-- Header / Nav -->
+    <div class="nav">
+      <div class="brand">
+        <div class="logo">G</div>
+        <div>
+          <h1>GenieSphere • Discipline Checklist</h1>
+          <div class="small">Light scheme • Mobile‑friendly • Autosave</div>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a class="btn btn-blue" href="./long-term-dashboard.html">⬅️ Back</a>
+        <button class="btn btn-green" id="btnPrint">🖨️ Print</button>
+        <button class="btn btn-ghost" id="btnExport">⬇️ Export</button>
+        <label class="btn btn-ghost" for="importFile">⬆️ Import</label>
+        <input id="importFile" class="sr-only" type="file" accept="application/json" />
+      </div>
+    </div>
+
+    <div class="grid">
+      <!-- Left: Presets & Settings -->
+      <aside class="panel">
+        <div class="title">
+          <h2>🎛️ Setup</h2><span class="tag">Consistent UI</span>
+        </div>
+        <p class="muted">Pick a preset to auto‑load items. You can edit later.</p>
+        <div class="presets">
+          <button class="preset" data-preset="personal">🌅 Personal</button>
+          <button class="preset" data-preset="business">🏢 Business</button>
+          <button class="preset" data-preset="investing">📈 Investing</button>
+          <button class="preset" data-preset="family">🏠 Family</button>
+        </div>
+
+        <div class="section">
+          <div class="title"><h2>⚙️ Preferences</h2></div>
+          <label class="chip"><input type="checkbox" id="carryForward" /> Carry incomplete items to next period</label>
+          <label class="chip"><input type="checkbox" id="enableStreaks" checked /> Track streaks for completed items</label>
+          <label class="chip"><input type="checkbox" id="confirmReset" checked /> Ask before resetting periods</label>
+          <div class="kpi">
+            <div class="box">
+              <h3 id="kpiDaily">0%</h3><p>Daily completion</p>
+            </div>
+            <div class="box">
+              <h3 id="kpiWeekly">0%</h3><p>Weekly completion</p>
+            </div>
+            <div class="box">
+              <h3 id="kpiMonthly">0%</h3><p>Monthly completion</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section">
+          <div class="title"><h2>🗓️ Reset</h2></div>
+          <div class="actions">
+            <button class="btn btn-yellow" data-reset="daily">Reset Today</button>
+            <button class="btn btn-yellow" data-reset="weekly">Reset This Week</button>
+            <button class="btn btn-yellow" data-reset="monthly">Reset This Month</button>
+            <button class="btn btn-red right" id="resetAll">Reset All</button>
+          </div>
+        </div>
+      </aside>
+
+      <!-- Right: Checklist -->
+      <main class="panel">
+        <div class="title">
+          <h2>✅ Discipline Checklist</h2>
+          <div class="tabs" id="tabs">
+            <button class="tab active" data-scope="daily">Daily</button>
+            <button class="tab" data-scope="weekly">Weekly</button>
+            <button class="tab" data-scope="monthly">Monthly</button>
+          </div>
+        </div>
+
+        <div id="scopeTitle" class="muted">Focus: Daily habits</div>
+
+        <div class="section">
+          <div class="progress-wrap">
+            <progress id="progress" value="0" max="100"></progress>
+            <span id="progressText" class="muted">0% complete</span>
+          </div>
+
+          <div class="list" id="list"></div>
+
+          <div class="add-row">
+            <input id="newItem" type="text" placeholder="Add a new habit… e.g., 📚 Read 10 pages" />
+            <button class="btn btn-green" id="addBtn">Add</button>
+            <button class="btn btn-ghost" id="templateBtn">+ Template items</button>
+          </div>
+
+          <div class="actions">
+            <span class="muted">Tips: tap an item to toggle done • click “📝 Notes” to add details</span>
+            <button class="btn btn-blue right" id="shareState">🔗 Copy Share Link</button>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    /********************
+     * State + Storage  *
+     ********************/
+    const STATE_KEY = "gs_discipline_v1";
+    const el = (q, ctx=document)=>ctx.querySelector(q);
+    const els = (q, ctx=document)=>[...ctx.querySelectorAll(q)];
+    const today = new Date();
+
+    const defaultState = () => ({
+      prefs:{carryForward:false, enableStreaks:true, confirmReset:true},
+      scope:"daily",
+      items:{
+        daily:[],
+        weekly:[],
+        monthly:[]
+      },
+      streaks:{} // key: itemId -> count
+    });
+
+    function loadState(){
+      try{
+        const raw = localStorage.getItem(STATE_KEY);
+        if(!raw) return defaultState();
+        const parsed = JSON.parse(raw);
+        // defensive merge
+        return Object.assign(defaultState(), parsed);
+      }catch(e){
+        console.warn("Failed to parse state", e);
+        return defaultState();
+      }
+    }
+    function saveState(){
+      localStorage.setItem(STATE_KEY, JSON.stringify(state));
+      renderKPIs();
+    }
+
+    let state = loadState();
+
+    /********************
+     * Presets          *
+     ********************/
+    const PRESETS = {
+      personal:{
+        daily:[
+          {t:"🌅 Wake before 6:30 AM"},
+          {t:"🛏️ Make the bed"},
+          {t:"💧 Drink 24 oz water"},
+          {t:"🏃 20 min movement"},
+          {t:"🧘 5 min breathe/meditate"},
+          {t:"📚 Read 10 pages"},
+          {t:"📵 No social before 9 AM"}
+        ],
+        weekly:[
+          {t:"🗂️ Review calendar & top 3 priorities"},
+          {t:"🧹 Deep clean a zone"},
+          {t:"🧺 Laundry complete + put away"}
+        ],
+        monthly:[
+          {t:"🧭 Review goals & metrics"},
+          {t:"🧽 Declutter one area"},
+          {t:"📦 Donate or recycle items"}
+        ]
+      },
+      business:{
+        daily:[
+          {t:"🧾 Quick books: reconcile inbox / receipts"},
+          {t:"✉️ Inbox Zero checkpoint (AM/PM)"},
+          {t:"📋 Plan the ‘MIT’ (Most Important Task)"},
+          {t:"🤝 Check in with team / vendors"},
+          {t:"📈 Review KPIs for 3 mins"}
+        ],
+        weekly:[
+          {t:"💼 Update P&L snapshot"},
+          {t:"🧭 90‑day roadmap review"},
+          {t:"🎯 Marketing post or outreach batch"}
+        ],
+        monthly:[
+          {t:"💳 Pay statements & recurring bills"},
+          {t:"📊 Review KPI trends & adjust"},
+          {t:"🧾 Sales tax / bookkeeping tidy"}
+        ]
+      },
+      investing:{
+        daily:[
+          {t:"📒 Log trades & notes (5m)"},
+          {t:"🛑 Respect risk per trade (≤1%)"},
+          {t:"🧘 No revenge trades"},
+          {t:"📈 Follow entry/exit rules only"}
+        ],
+        weekly:[
+          {t:"🧪 Post‑mortem 3 trades"},
+          {t:"🧰 Refresh watchlist / setups"},
+          {t:"📚 Study one concept"}
+        ],
+        monthly:[
+          {t:"🧭 Long‑term allocation review"},
+          {t:"💵 Auto‑invest contributions"},
+          {t:"📓 Journal performance & lessons"}
+        ]
+      },
+      family:{
+        daily:[
+          {t:"🍱 Prep kids’ lunches / snacks"},
+          {t:"🧑‍🍳 Family dinner plan"},
+          {t:"🧹 Tidy common areas"},
+          {t:"🛏️ Kids bedtime routine"}
+        ],
+        weekly:[
+          {t:"🧾 Grocery list & budget"},
+          {t:"🚗 Car clean‑up / gas fill"},
+          {t:"🗓️ Family calendar sync"}
+        ],
+        monthly:[
+          {t:"🏠 Home maintenance checks"},
+          {t:"🧺 Donate unused clothes"},
+          {t:"📦 Restock household items"}
+        ]
+      }
+    };
+
+    /********************
+     * Helpers          *
+     ********************/
+    const id = () => Math.random().toString(36).slice(2,9);
+    function scopeTitle(s){return s.charAt(0).toUpperCase()+s.slice(1)}
+    function currentList(){return state.items[state.scope]}
+    function calcProgress(list){
+      if(list.length===0) return 0;
+      const done = list.filter(i=>i.d).length;
+      return Math.round(done*100/list.length);
+    }
+    function updateProgress(){
+      const list = currentList();
+      const v = calcProgress(list);
+      el("#progress").value = v;
+      el("#progressText").textContent = v+"% complete";
+      // KPIs
+      if(state.scope==="daily") el("#kpiDaily").textContent = v+"%";
+      if(state.scope==="weekly") el("#kpiWeekly").textContent = v+"%";
+      if(state.scope==="monthly") el("#kpiMonthly").textContent = v+"%";
+    }
+    function renderKPIs(){
+      ["daily","weekly","monthly"].forEach(sc=>{
+        const v = calcProgress(state.items[sc]);
+        if(sc==="daily") el("#kpiDaily").textContent = v+"%";
+        if(sc==="weekly") el("#kpiWeekly").textContent = v+"%";
+        if(sc==="monthly") el("#kpiMonthly").textContent = v+"%";
+      });
+    }
+
+    /********************
+     * Rendering        *
+     ********************/
+    function render(){
+      // prefs
+      el("#carryForward").checked = !!state.prefs.carryForward;
+      el("#enableStreaks").checked = !!state.prefs.enableStreaks;
+      el("#confirmReset").checked = !!state.prefs.confirmReset;
+
+      els(".tab").forEach(t=>t.classList.toggle("active", t.dataset.scope===state.scope));
+      el("#scopeTitle").textContent = "Focus: "+scopeTitle(state.scope)+" habits";
+
+      const container = el("#list");
+      container.innerHTML = "";
+      currentList().forEach((item)=>{
+        const row = document.createElement("div");
+        row.className = "item"+(item.d?" done":"");
+        row.dataset.id = item.id;
+        row.innerHTML = `
+          <input type="checkbox" ${item.d?"checked":""} aria-label="done">
+          <div class="lbl">
+            <div class="text">${item.t}</div>
+            ${item.n?`<div class="note" style="display:block"><textarea>${item.n||""}</textarea></div>`:""}
+          </div>
+          <div class="streak" ${state.prefs.enableStreaks?"":"style='display:none'"}>🔥 <span>${state.streaks[item.id]||0}</span> d</div>
+          <button class="note-btn">📝 Notes</button>
+        `;
+        // events
+        const cb = row.querySelector("input[type=checkbox]");
+        cb.addEventListener("change", ()=>{
+          item.d = cb.checked;
+          row.classList.toggle("done", item.d);
+          if(item.d && state.prefs.enableStreaks){
+            state.streaks[item.id] = (state.streaks[item.id]||0);
+          }
+          saveState(); updateProgress();
+        });
+        const btn = row.querySelector(".note-btn");
+        btn.addEventListener("click", ()=>{
+          const panel = row.querySelector(".note");
+          if(panel){ panel.style.display = panel.style.display==="none"?"block":"none"; return; }
+          const p = document.createElement("div");
+          p.className = "note"; p.style.display="block";
+          p.innerHTML = `<textarea placeholder="Add details…">${item.n||""}</textarea>`;
+          row.querySelector(".lbl").appendChild(p);
+          p.querySelector("textarea").addEventListener("input", (e)=>{
+            item.n = e.target.value; saveState();
+          });
+        });
+        row.querySelector(".lbl").addEventListener("click", (e)=>{
+          if(e.target.tagName.toLowerCase()==="textarea") return;
+          cb.checked = !cb.checked; cb.dispatchEvent(new Event("change"));
+        });
+        container.appendChild(row);
+      });
+      updateProgress();
+    }
+
+    /********************
+     * Actions          *
+     ********************/
+    // Tabs
+    els(".tab").forEach(tab=>{
+      tab.addEventListener("click", ()=>{
+        state.scope = tab.dataset.scope;
+        saveState(); render();
+      });
+    });
+
+    // Add item
+    el("#addBtn").addEventListener("click", ()=>{
+      const txt = el("#newItem").value.trim();
+      if(!txt) return;
+      currentList().push({id:id(), t:txt, d:false, n:""});
+      el("#newItem").value="";
+      saveState(); render();
+    });
+    el("#newItem").addEventListener("keydown", (e)=>{
+      if(e.key==="Enter"){ el("#addBtn").click(); }
+    });
+
+    // Template suggestions
+    el("#templateBtn").addEventListener("click", ()=>{
+      const s = state.scope;
+      const pack = {
+        daily:["🌞 Get sunlight 5m","🚶 5k steps","✍️ Plan top 3","🍎 High‑protein breakfast"],
+        weekly:["🧼 Fridge clean‑out","📝 Review wins & misses","📦 Bulk cook staples"],
+        monthly:["🧾 Subscriptions review","💡 Goals refresh","🧰 Maintenance task"]
+      }[s];
+      pack.forEach(t=> currentList().push({id:id(), t, d:false, n:""}));
+      saveState(); render();
+    });
+
+    // Presets
+    els(".preset").forEach(p=> p.addEventListener("click", ()=>{
+      const key = p.dataset.preset;
+      const set = PRESETS[key];
+      if(!set) return;
+      ["daily","weekly","monthly"].forEach(scope=>{
+        state.items[scope] = set[scope].map(o=>({id:id(), t:o.t, d:false, n:""}));
+      });
+      saveState(); render();
+    }));
+
+    // Reset
+    function resetScope(scope){
+      if(state.prefs.confirmReset && !confirm("Reset "+scopeTitle(scope)+" items?")) return;
+      state.items[scope].forEach(i=>{ i.d=false; });
+      saveState(); render();
+    }
+    els("[data-reset]").forEach(b=> b.addEventListener("click", ()=>{
+      resetScope(b.dataset.reset);
+    }));
+    el("#resetAll").addEventListener("click", ()=>{
+      if(!confirm("Reset ALL periods and clear streaks?")) return;
+      state = defaultState(); saveState(); render();
+    });
+
+    // Print / Export / Import / Share
+    el("#btnPrint").addEventListener("click", ()=>window.print());
+    el("#btnExport").addEventListener("click", ()=>{
+      const blob = new Blob([JSON.stringify(state,null,2)], {type:"application/json"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "discipline-checklist-state.json";
+      a.click();
+    });
+    el("#importFile").addEventListener("change", (e)=>{
+      const file = e.target.files[0]; if(!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        try{
+          const data = JSON.parse(reader.result);
+          state = Object.assign(defaultState(), data);
+          saveState(); render();
+        }catch(err){ alert("Invalid JSON"); }
+      };
+      reader.readAsText(file);
+    });
+    el("#shareState").addEventListener("click", ()=>{
+      const payload = btoa(unescape(encodeURIComponent(JSON.stringify(state))));
+      const url = location.origin + location.pathname + "#s=" + payload;
+      navigator.clipboard.writeText(url).then(()=>{
+        alert("Share link copied!");
+      });
+    });
+
+    // Load from URL hash
+    function loadFromHash(){
+      const m = location.hash.match(/#s=([\s\S]+)/);
+      if(m){
+        try{
+          const json = decodeURIComponent(escape(atob(m[1])));
+          const data = JSON.parse(json);
+          state = Object.assign(defaultState(), data);
+          saveState();
+        }catch(e){ console.warn("Failed to import from URL", e); }
+      }
+    }
+
+    // Prefs
+    el("#carryForward").addEventListener("change", e=>{ state.prefs.carryForward = e.target.checked; saveState(); });
+    el("#enableStreaks").addEventListener("change", e=>{ state.prefs.enableStreaks = e.target.checked; saveState(); render(); });
+    el("#confirmReset").addEventListener("change", e=>{ state.prefs.confirmReset = e.target.checked; saveState(); });
+
+    // First load
+    loadFromHash();
+    render();
+  </script>
+</body>
+</html>

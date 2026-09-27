@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Platform Features — Arowana Profits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--brand-light:#1a6bbb;
+  --accent:#16a34a;--bg:#f6f8fb;--panel:#ffffff;
+  --ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;
+  --max:100%;--radius:16px;
+  --shadow:0 4px 20px rgba(11,79,138,.08);
+  --shadow-lg:0 8px 32px rgba(11,79,138,.13);
+  --gradient: linear-gradient(135deg, rgba(6,52,99,.97), rgba(11,79,138,.90));
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--brand);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+::selection{background:rgba(11,79,138,.15)}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* NAV */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--gradient);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;max-width:var(--max);margin:0 auto}
+
+.nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.25rem;color:white;text-decoration:none;flex:0 0 auto}
+.nav-logo{width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px}
+
+.nav-links{display:flex;align-items:center;gap:4px;flex:1;justify-content:center;overflow-x:auto}
+.nav-links::-webkit-scrollbar{height:0}
+.nav-link{color:rgba(255,255,255,.8);font-size:.9rem;font-weight:600;padding:8px 16px;border-radius:8px;white-space:nowrap;transition:all .2s ease;text-decoration:none}
+.nav-link:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-link.active{background:rgba(255,255,255,.2);color:#fff}
+
+.nav-auth{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.auth-link{color:rgba(255,255,255,.8);text-decoration:none;font-size:.9rem;font-weight:600;padding:8px 16px;border-radius:8px;transition:all .2s ease}
+.auth-link:hover{color:#fff;background:rgba(255,255,255,.1)}
+.auth-cta{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-weight:700}
+.auth-cta:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+
+.user-dropdown{position:relative;display:none}
+.user-dropdown.show{display:block}
+.user-toggle{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 12px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s ease}
+.user-toggle:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff}
+.user-toggle.open{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);color:#fff}
+
+.user-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dropdown-arrow{font-size:.7rem;transition:transform .2s ease}
+.user-toggle.open .dropdown-arrow{transform:rotate(180deg)}
+
+.user-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:220px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);z-index:1000;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all .2s ease}
+.user-menu.open{opacity:1;visibility:visible;transform:translateY(0)}
+.user-menu::before{content:'';position:absolute;top:-6px;right:16px;width:12px;height:12px;background:#fff;border:1px solid var(--border);border-bottom:none;border-right:none;transform:rotate(45deg)}
+
+.menu-header{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+.menu-user-email{font-weight:600;color:var(--ink);margin-bottom:4px}
+.menu-user-plan{font-size:.8rem;color:var(--muted)}
+.menu-section{padding:8px 0}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--ink);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s ease;border:none;background:none;width:100%;text-align:left;cursor:pointer}
+.menu-item:hover{background:rgba(11,79,138,.06);color:var(--ink)}
+.menu-item-icon{font-size:1rem;width:20px;text-align:center}
+.menu-divider{height:1px;background:var(--border);margin:4px 0}
+
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mobile-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mobile-menu[data-open="true"]{display:block}
+.mobile-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mobile-link{display:flex;align-items:center;gap:9px;padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none}
+.mobile-link:hover{background:rgba(255,255,255,.08);color:#fff}
+.mobile-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:768px){.nav-links{display:none}.nav-auth{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* HERO */
+.page-hero{
+  background:radial-gradient(circle at 20% 50%,rgba(26,107,187,.1),transparent 55%),
+    radial-gradient(circle at 80% 20%,rgba(22,163,74,.08),transparent 50%),
+    linear-gradient(180deg,#fff,var(--bg));
+  border-bottom:1px solid var(--border);padding:56px 0 48px;text-align:center;
+}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:rgba(11,79,138,.08);border:2px solid rgba(11,79,138,.15);font-size:.78rem;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px}
+.hero-badge-icon{font-size:1rem}
+.hero-title{font-family:"Inter Tight",sans-serif;font-size:clamp(28px,4.5vw,48px);font-weight:900;color:var(--ink);letter-spacing:-.8px;line-height:1.1;margin-bottom:16px}
+.hero-title .highlight{background:linear-gradient(135deg,var(--brand),var(--brand-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:580px;margin:0 auto 32px;line-height:1.65;font-weight:500}
+.hero-sub .emphasis{color:var(--brand);font-weight:700}
+
+.hero-cta{display:flex;align-items:center;justify-content:center;gap:16px;margin-top:32px}
+
+/* SECTIONS */
+.section{padding:60px 0}
+.section-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.15);font-size:.72rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+.section-title{font-family:"Inter Tight",sans-serif;font-size:2.2rem;font-weight:800;color:var(--ink);margin-bottom:12px;text-align:center}
+.section-sub{font-size:1.1rem;color:var(--muted);text-align:center;margin-bottom:56px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6}
+
+/* FEATURE CARDS */
+.features-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;margin-bottom:48px}
+.feature-card{
+  background:var(--panel);border:2px solid var(--border);
+  border-radius:20px;padding:32px 28px;display:flex;flex-direction:column;
+  transition:all .25s ease;
+}
+.feature-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px);border-color:var(--brand)}
+
+.feature-icon{font-size:3rem;text-align:center;margin-bottom:20px}
+.feature-title{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.3rem;color:var(--ink);margin-bottom:12px;text-align:center}
+.feature-desc{font-size:.95rem;color:var(--muted);line-height:1.6;margin-bottom:24px;text-align:center}
+.feature-highlights{list-style:none;display:flex;flex-direction:column;gap:10px;margin-bottom:24px}
+.feature-highlights li{display:flex;align-items:center;gap:10px;font-size:.9rem;color:var(--ink)}
+.feature-highlights li .check{color:var(--accent);font-weight:800;flex-shrink:0}
+.feature-cta{margin-top:auto;text-align:center}
+
+/* SUPER TOOLS SECTION */
+.super-tools{background:linear-gradient(135deg,rgba(11,79,138,.02),rgba(22,163,74,.01));padding:60px 0}
+.tools-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px;margin-bottom:48px}
+@media(max-width:900px){.tools-grid{grid-template-columns:1fr;gap:24px}}
+
+.tool-card{
+  background:var(--panel);border:2px solid var(--border);
+  border-radius:24px;padding:40px 36px;display:flex;flex-direction:column;
+  position:relative;transition:all .3s ease;
+}
+.tool-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-4px);border-color:var(--brand)}
+.tool-card.featured{border-color:var(--brand);background:linear-gradient(180deg,#fff,rgba(11,79,138,.02))}
+
+.tool-header{display:flex;align-items:center;gap:16px;margin-bottom:20px}
+.tool-icon{font-size:3.5rem}
+.tool-info h3{font-family:"Inter Tight",sans-serif;font-size:1.5rem;font-weight:800;color:var(--ink);margin-bottom:4px}
+.tool-info .tool-subtitle{font-size:.9rem;color:var(--muted);font-weight:600}
+
+.tool-desc{font-size:1rem;color:var(--muted);line-height:1.6;margin-bottom:28px}
+.tool-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:28px}
+.tool-features li{display:flex;align-items:flex-start;gap:10px;font-size:.9rem;color:var(--ink);line-height:1.5}
+.tool-features li .check{color:var(--accent);font-weight:800;flex-shrink:0;margin-top:2px}
+.tool-cta{margin-top:auto}
+
+/* CAPABILITIES GRID */
+.capabilities-section{background:var(--panel);padding:60px 0;border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.capabilities-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:32px}
+.capability-item{text-align:center;padding:20px}
+.capability-icon{font-size:2.5rem;margin-bottom:16px}
+.capability-title{font-weight:700;font-size:1.1rem;color:var(--ink);margin-bottom:8px}
+.capability-desc{font-size:.9rem;color:var(--muted);line-height:1.5}
+
+/* PRICING BANNER */
+.pricing-banner{background:var(--gradient);color:white;padding:48px 0;text-align:center}
+.pricing-banner h2{font-family:"Inter Tight",sans-serif;font-size:2rem;font-weight:800;margin-bottom:12px}
+.pricing-banner p{font-size:1.1rem;opacity:.9;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+.pricing-banner .btn{margin:0 8px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:999px;font-size:.88rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s ease;text-decoration:none;min-height:48px}
+.btn:active{transform:scale(.98)}
+.btn-brand{background:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-light);transform:translateY(-1px);box-shadow:0 8px 25px rgba(11,79,138,.25)}
+.btn-outline{background:transparent;color:var(--brand);border:2px solid var(--brand)}.btn-outline:hover{background:rgba(11,79,138,.06);transform:translateY(-1px)}
+.btn-success{background:var(--accent);color:#fff}.btn-success:hover{background:#059669;transform:translateY(-1px);box-shadow:0 8px 25px rgba(5,150,105,.25)}
+.btn-ghost{background:var(--panel);color:var(--muted);border:2px solid var(--border)}.btn-ghost:hover{color:var(--ink);border-color:var(--brand);transform:translateY(-1px)}
+.btn-white{background:#fff;color:var(--brand);border:2px solid rgba(255,255,255,.3)}.btn-white:hover{background:rgba(255,255,255,.9);transform:translateY(-1px)}
+
+/* RESPONSIVE */
+@media(max-width:800px){
+  .hero-cta{flex-direction:column}
+  .features-grid{grid-template-columns:1fr}
+  .capabilities-grid{grid-template-columns:repeat(2,1fr)}
+  .pricing-banner .btn{margin:8px 4px}
+}
+@media(max-width:600px){
+  .capabilities-grid{grid-template-columns:1fr}
+  .tool-header{flex-direction:column;text-align:center}
+  .tool-icon{margin-bottom:8px}
+}
+/* FOOTER */
+footer.site-footer{margin-top:auto;background:var(--brand-dark);color:#c9d6e3;padding:44px 0 22px}
+.footer-grid{display:grid;grid-template-columns:1.4fr 1fr 1fr 1fr;gap:28px;margin-bottom:28px}
+@media(max-width:900px){.footer-grid{grid-template-columns:1fr 1fr;}}
+@media(max-width:600px){.footer-grid{grid-template-columns:1fr;}}
+.footer-brand{display:flex;align-items:center;gap:10px;font-weight:800;font-size:1.1rem;color:#fff;margin-bottom:10px}
+.footer-description{font-size:.9rem;color:#a9bbcc;line-height:1.6}
+footer.site-footer h4{color:#fff;font-size:.85rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px}
+.footer-links{list-style:none;display:flex;flex-direction:column;gap:9px}
+.footer-links a{color:#b7c6d6;font-size:.9rem}
+.footer-links a:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.12);padding-top:18px;font-size:.82rem;color:#8fa2b5;text-align:center}
+</style>
+</head>
+<body>
+
+  <!-- NAVIGATION -->
+  <div class="nav-wrap">
+    <nav class="nav">
+      <a class="nav-brand" href="index.html" aria-label="Arowana Profits Home">
+        <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" class="nav-logo" onerror="this.style.display='none'">
+        <span>Arowana Profits</span>
+      </a>
+      
+      <div class="nav-links">
+        <a href="trading-command.html" class="nav-link">⚡ Trading Command</a>
+        <a href="portfolio-command.html" class="nav-link">🏦 Portfolio Command</a>
+        <a href="analysis-central.html" class="nav-link">🔍 Ticker Research</a>
+        <a href="options-hub.html" class="nav-link">📈 Options Hub</a>
+        <a href="tools.html" class="nav-link">🧰 All Tools</a>
+      </div>
+      
+      <div class="nav-auth">
+        <!-- When not logged in -->
+        <a href="login.html" class="auth-link" id="navSignIn">Sign In</a>
+        <a href="pricing.html" class="auth-link auth-cta" id="navSignUp">🚀 Start Free</a>
+        
+        <!-- When logged in -->
+        <div class="user-dropdown" id="navUserDropdown">
+          <button class="user-toggle" id="navUserToggle">
+            <span class="user-name" id="navUserName">Jimmy T</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          
+          <div class="user-menu">
+            <div class="menu-header">
+              <div class="menu-user-email" id="menuUserEmail">jtran112675@gmail.com</div>
+              <div class="menu-user-plan">Free Plan</div>
+            </div>
+            
+            <div class="menu-section">
+              <a href="account.html" class="menu-item">
+                <span class="menu-item-icon">⚙️</span>
+                <span>Account Settings</span>
+              </a>
+              <a href="pricing.html" class="menu-item">
+                <span class="menu-item-icon">⚡</span>
+                <span>Upgrade to Pro</span>
+              </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <a href="trading-command.html" class="menu-item">
+                <span class="menu-item-icon">⚡</span>
+                <span>Trading Command</span>
+              </a>
+              <a href="analysis-central.html" class="menu-item">
+                <span class="menu-item-icon">📊</span>
+                <span>Ticker Research</span>
+              </a>
+              <a href="options-hub.html" class="menu-item">
+                <span class="menu-item-icon">📈</span>
+                <span>Options Hub</span>
+              </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <button class="menu-item" onclick="openSupport()">
+                <span class="menu-item-icon">💬</span>
+                <span>Help & Support</span>
+              </button>
+              <button class="menu-item danger" onclick="signOut()">
+                <span class="menu-item-icon">🚪</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <button class="nav-burger" id="navBurger">&#9776;</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu" data-open="false">
+      <div class="mobile-panel">
+        <a class="mobile-link" href="trading-command.html">🎯 Trading Command</a>
+        <a class="mobile-link" href="portfolio-command.html">📊 Portfolio Command</a>
+        <a class="mobile-link" href="analysis-central.html">🔍 Ticker Research</a>
+        <a class="mobile-link" href="options-hub.html">⚡ Options Hub</a>
+        <a class="mobile-link" href="tools.html">🧰 All Tools</a>
+        <div class="mobile-div"></div>
+        <a class="mobile-link" href="features.html">Features</a>
+        <a class="mobile-link" href="pricing.html">Pricing</a>
+        <a class="mobile-link" href="about.html">About</a>
+        <div class="mobile-div"></div>
+        <div id="mobileAuthLinks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO SECTION -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="hero-badge-icon">🚀</span>
+        COMPLETE PLATFORM FEATURES
+      </div>
+      <h1 class="hero-title">
+        Everything You Need for<br>
+        <span class="highlight">Smart Trading & Investing</span>
+      </h1>
+      <p class="hero-sub">
+        From <span class="emphasis">short-term trading</span> to <span class="emphasis">long-term portfolio management</span>, 
+        our comprehensive suite of AI-powered tools gives you the edge you need to succeed in today's markets.
+      </p>
+      <div class="hero-cta">
+        <a href="checkout.html?plan=professional" class="btn btn-brand">Start Professional</a>
+        <a href="portfolio-command.html" class="btn btn-outline">Try Live Demo</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- SUPER TOOLS SECTION -->
+  <section class="super-tools">
+    <div class="container">
+      <div style="text-align:center;">
+        <div class="section-badge">⚡ SUPER TOOLS</div>
+        <h2 class="section-title">Four Powerful Platforms</h2>
+        <p class="section-sub">
+          Each super-tool is a complete platform designed for specific trading and investing needs, 
+          with AI-powered insights throughout.
+        </p>
+      </div>
+
+      <div class="tools-grid">
+        <!-- Trading Command -->
+        <div class="tool-card featured">
+          <div class="tool-header">
+            <div class="tool-icon">⚡</div>
+            <div class="tool-info">
+              <h3>Trading Command</h3>
+              <div class="tool-subtitle">Short-Term Trading Hub</div>
+            </div>
+          </div>
+          <p class="tool-desc">
+            Advanced day trading and swing trading platform with real-time market data, 
+            technical analysis tools, and AI-powered trade recommendations.
+          </p>
+          <ul class="tool-features">
+            <li><span class="check">✓</span> Real-time market scanners & watchlists</li>
+            <li><span class="check">✓</span> Advanced charting with 50+ indicators</li>
+            <li><span class="check">✓</span> AI trade signal generation</li>
+            <li><span class="check">✓</span> Risk management calculators</li>
+            <li><span class="check">✓</span> Paper trading simulator</li>
+            <li><span class="check">✓</span> Performance analytics & journaling</li>
+          </ul>
+          <div class="tool-cta">
+            <a href="trading-command.html" class="btn btn-brand">Launch Trading Command</a>
+          </div>
+        </div>
+
+        <!-- Portfolio Command -->
+        <div class="tool-card featured">
+          <div class="tool-header">
+            <div class="tool-icon">🏦</div>
+            <div class="tool-info">
+              <h3>Portfolio Command</h3>
+              <div class="tool-subtitle">Investment Management Center</div>
+            </div>
+          </div>
+          <p class="tool-desc">
+            Complete long-term investment platform for building, tracking, and optimizing 
+            your portfolio with professional-grade tools and AI insights.
+          </p>
+          <ul class="tool-features">
+            <li><span class="check">✓</span> Holdings tracking & asset allocation</li>
+            <li><span class="check">✓</span> Performance analytics & attribution</li>
+            <li><span class="check">✓</span> Goal planning & progress tracking</li>
+            <li><span class="check">✓</span> Automatic rebalancing suggestions</li>
+            <li><span class="check">✓</span> Risk analysis & stress testing</li>
+            <li><span class="check">✓</span> ESG & sustainability scoring</li>
+          </ul>
+          <div class="tool-cta">
+            <a href="portfolio-command.html" class="btn btn-brand">Launch Portfolio Command</a>
+          </div>
+        </div>
+
+        <!-- Ticker Research -->
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon">📊</div>
+            <div class="tool-info">
+              <h3>Ticker Research</h3>
+              <div class="tool-subtitle">Research & Analytics Hub</div>
+            </div>
+          </div>
+          <p class="tool-desc">
+            Deep-dive research platform combining fundamental analysis, technical analysis, 
+            and AI-powered market insights for comprehensive investment research.
+          </p>
+          <ul class="tool-features">
+            <li><span class="check">✓</span> Company fundamental analysis</li>
+            <li><span class="check">✓</span> Sector & industry comparisons</li>
+            <li><span class="check">✓</span> AI-generated research reports</li>
+            <li><span class="check">✓</span> Earnings predictions & modeling</li>
+            <li><span class="check">✓</span> Market sentiment analysis</li>
+            <li><span class="check">✓</span> Custom screening & filtering</li>
+          </ul>
+          <div class="tool-cta">
+            <a href="analysis-central.html" class="btn btn-outline">Launch Ticker Research</a>
+          </div>
+        </div>
+
+        <!-- Options Hub -->
+        <div class="tool-card">
+          <div class="tool-header">
+            <div class="tool-icon">📈</div>
+            <div class="tool-info">
+              <h3>Options Hub</h3>
+              <div class="tool-subtitle">Options Trading Platform</div>
+            </div>
+          </div>
+          <p class="tool-desc">
+            Specialized options trading platform with advanced strategies, risk modeling, 
+            and profit/loss visualization for sophisticated derivatives trading.
+          </p>
+          <ul class="tool-features">
+            <li><span class="check">✓</span> Options chain analysis & visualization</li>
+            <li><span class="check">✓</span> Strategy builder & backtesting</li>
+            <li><span class="check">✓</span> Greeks calculation & monitoring</li>
+            <li><span class="check">✓</span> Volatility analysis & forecasting</li>
+            <li><span class="check">✓</span> Risk/reward scenario modeling</li>
+            <li><span class="check">✓</span> Position management & alerts</li>
+          </ul>
+          <div class="tool-cta">
+            <a href="options-hub.html" class="btn btn-outline">Launch Options Hub</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LONG-TERM PLANNING SECTION -->
+  <section class="section" style="padding-top:0;">
+    <div class="container">
+      <div style="text-align:center;">
+        <div class="section-badge">📈 LONG-TERM PLANNING</div>
+        <h2 class="section-title">Free Retirement &amp; Tax Planning Tools</h2>
+        <p class="section-sub">
+          Beyond the 4 super-tools, Arowana includes 55+ free planning tools — no account required to try them,
+          including a full retirement and tax-planning suite.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🧭</div>
+          <h3 class="feature-title">Retirement Planner</h3>
+          <p class="feature-desc">
+            8 tools in one session: roadmap, stress test, contribution waterfall, Social Security timing,
+            portfolio picker, Roth vs. Traditional, withdrawal sequencing, and a 12-month action plan.
+          </p>
+          <div class="feature-cta">
+            <a href="retirement-planner.html" class="btn btn-outline">Open Retirement Planner</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🧮</div>
+          <h3 class="feature-title">Retirement Calculator</h3>
+          <p class="feature-desc">
+            Monte Carlo net-worth projection with a full year-by-year accumulation and drawdown table,
+            chart, and CSV export.
+          </p>
+          <div class="feature-cta">
+            <a href="retirement-calculator.html" class="btn btn-outline">Open Calculator</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">💵</div>
+          <h3 class="feature-title">Withdrawal Planner</h3>
+          <p class="feature-desc">
+            Compare 4 withdrawal-rate strategies — 4%-rule, % of portfolio, guardrails, RMD-glide — with
+            Monte Carlo and sequence-of-returns stress testing.
+          </p>
+          <div class="feature-cta">
+            <a href="withdrawal-planner.html" class="btn btn-outline">Open Withdrawal Planner</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🧾</div>
+          <h3 class="feature-title">Tax-Advantaged Guide</h3>
+          <p class="feature-desc">
+            Contribution priority, asset location by account type, and a backdoor/mega-backdoor Roth checklist.
+          </p>
+          <div class="feature-cta">
+            <a href="tax-advantaged-guide.html" class="btn btn-outline">Open Tax Guide</a>
+          </div>
+        </div>
+      </div>
+
+      <div style="text-align:center;">
+        <a href="tools.html" class="btn btn-ghost">🧰 Browse all 55+ tools →</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- CORE FEATURES SECTION -->
+  <section class="section">
+    <div class="container">
+      <div style="text-align:center;">
+        <div class="section-badge">🛠️ CORE CAPABILITIES</div>
+        <h2 class="section-title">Built for Every Trading Style</h2>
+        <p class="section-sub">
+          Whether you're a day trader, swing trader, or long-term investor, 
+          our platform adapts to your needs with powerful, integrated tools.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">🤖</div>
+          <h3 class="feature-title">AI-Powered Analysis</h3>
+          <p class="feature-desc">
+            Advanced machine learning algorithms analyze market patterns, 
+            generate trade signals, and provide personalized insights.
+          </p>
+          <ul class="feature-highlights">
+            <li><span class="check">✓</span> Real-time pattern recognition</li>
+            <li><span class="check">✓</span> Sentiment analysis integration</li>
+            <li><span class="check">✓</span> Predictive modeling</li>
+            <li><span class="check">✓</span> Custom strategy optimization</li>
+          </ul>
+          <div class="feature-cta">
+            <a href="analysis-central.html" class="btn btn-outline">Explore AI Tools</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📊</div>
+          <h3 class="feature-title">Professional Charting</h3>
+          <p class="feature-desc">
+            Advanced charting with 50+ technical indicators, drawing tools, 
+            and customizable layouts for deep market analysis.
+          </p>
+          <ul class="feature-highlights">
+            <li><span class="check">✓</span> Real-time price data</li>
+            <li><span class="check">✓</span> Multi-timeframe analysis</li>
+            <li><span class="check">✓</span> Custom indicator creation</li>
+            <li><span class="check">✓</span> Pattern detection alerts</li>
+          </ul>
+          <div class="feature-cta">
+            <a href="trading-command.html" class="btn btn-outline">View Charts</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3 class="feature-title">Risk Management</h3>
+          <p class="feature-desc">
+            Comprehensive risk tools including position sizing, stop-loss optimization, 
+            and portfolio stress testing.
+          </p>
+          <ul class="feature-highlights">
+            <li><span class="check">✓</span> Position sizing calculators</li>
+            <li><span class="check">✓</span> Risk/reward analysis</li>
+            <li><span class="check">✓</span> Portfolio correlation tracking</li>
+            <li><span class="check">✓</span> Volatility monitoring</li>
+          </ul>
+          <div class="feature-cta">
+            <a href="portfolio-command.html" class="btn btn-outline">Manage Risk</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📱</div>
+          <h3 class="feature-title">Mobile Optimized</h3>
+          <p class="feature-desc">
+            Full-featured mobile experience that works seamlessly across all devices 
+            for trading and monitoring on the go.
+          </p>
+          <ul class="feature-highlights">
+            <li><span class="check">✓</span> Responsive design</li>
+            <li><span class="check">✓</span> Touch-optimized interface</li>
+            <li><span class="check">✓</span> Offline functionality</li>
+            <li><span class="check">✓</span> Push notifications</li>
+          </ul>
+          <div class="feature-cta">
+            <a href="pricing.html" class="btn btn-outline">Start Mobile</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">🔗</div>
+          <h3 class="feature-title">Broker Integration</h3>
+          <p class="feature-desc">
+            Connect with major brokerages for seamless order execution, 
+            account synchronization, and real-time position tracking.
+          </p>
+          <ul class="feature-highlights">
+            <li><span class="check">✓</span> Schwab integration</li>
+            <li><span class="check">✓</span> CSV import/export</li>
+            <li><span class="check">✓</span> Order execution APIs</li>
+            <li><span class="check">✓</span> Account reconciliation</li>
+          </ul>
+          <div class="feature-cta">
+            <a href="account.html" class="btn btn-outline">Connect Broker</a>
+          </div>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon">📚</div>
+          <h3 class="feature-title">Trade Journaling</h3>
+          <p class="feature-desc">
+            Professional trade journal with performance analytics, 
+            strategy tracking, and detailed profit/loss reporting.
+          </p>
+          <ul class="feature-highlights">
+            <li><span class="check">✓</span> Automatic trade logging</li>
+            <li><span class="check">✓</span> Performance metrics</li>
+            <li><span class="check">✓</span> Strategy analysis</li>
+            <li><span class="check">✓</span> Custom reporting</li>
+          </ul>
+          <div class="feature-cta">
+            <a href="trade-journal-pro.html" class="btn btn-outline">Start Journal</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAPABILITIES SECTION -->
+  <section class="capabilities-section">
+    <div class="container">
+      <div style="text-align:center;margin-bottom:48px;">
+        <h2 class="section-title" style="margin-bottom:12px;">Platform Capabilities</h2>
+        <p class="section-sub" style="margin-bottom:0;">
+          Comprehensive tools and features designed for professional traders and serious investors.
+        </p>
+      </div>
+
+      <div class="capabilities-grid">
+        <div class="capability-item">
+          <div class="capability-icon">⚡</div>
+          <h4 class="capability-title">Real-Time Data</h4>
+          <p class="capability-desc">Live market data with millisecond latency for accurate decision making</p>
+        </div>
+        
+        <div class="capability-item">
+          <div class="capability-icon">🎯</div>
+          <h4 class="capability-title">Smart Alerts</h4>
+          <p class="capability-desc">Intelligent notifications based on your strategies and risk parameters</p>
+        </div>
+        
+        <div class="capability-item">
+          <div class="capability-icon">📈</div>
+          <h4 class="capability-title">Advanced Analytics</h4>
+          <p class="capability-desc">Deep performance analysis with attribution and benchmark comparisons</p>
+        </div>
+        
+        <div class="capability-item">
+          <div class="capability-icon">🔄</div>
+          <h4 class="capability-title">Auto-Rebalancing</h4>
+          <p class="capability-desc">Automated portfolio rebalancing with customizable rules and thresholds</p>
+        </div>
+        
+        <div class="capability-item">
+          <div class="capability-icon">🛠️</div>
+          <h4 class="capability-title">Custom Tools</h4>
+          <p class="capability-desc">Build your own indicators, screens, and automated strategies</p>
+        </div>
+        
+        <div class="capability-item">
+          <div class="capability-icon">📊</div>
+          <h4 class="capability-title">Backtesting</h4>
+          <p class="capability-desc">Test strategies against historical data with realistic execution modeling</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRICING BANNER -->
+  <section class="pricing-banner">
+    <div class="container">
+      <h2>Ready to Transform Your Trading?</h2>
+      <p>
+        Start with our revolutionary BYOK Free tier or upgrade to Professional for unlimited access to all features.
+      </p>
+      <div style="display:flex;justify-content:center;gap:16px;flex-wrap:wrap;">
+        <a href="pricing.html" class="btn btn-white">View Pricing</a>
+        <a href="checkout.html?plan=professional" class="btn btn-outline" style="border-color:rgba(255,255,255,.5);color:white;">Start Professional</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">
+            <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" width="28" height="28" style="border-radius:50%;background:rgba(255,255,255,.1);padding:2px" onerror="this.style.display='none'">
+            <span>Arowana Profits</span>
+          </div>
+          <p class="footer-description">
+            Professional trading platform empowering retail investors with institutional-grade tools, AI-powered analysis, and comprehensive portfolio management — completely free.
+          </p>
+        </div>
+
+        <div>
+          <h4>Platforms</h4>
+          <ul class="footer-links">
+            <li><a href="trading-command.html">⚡ Trading Command</a></li>
+            <li><a href="portfolio-command.html">🏦 Portfolio Command</a></li>
+            <li><a href="analysis-central.html">🔍 Ticker Research</a></li>
+            <li><a href="options-hub.html">📈 Options Hub</a></li>
+            <li><a href="tools.html">🧰 All Tools (55+)</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Resources</h4>
+          <ul class="footer-links">
+            <li><a href="pricing.html">Pricing</a></li>
+            <li><a href="support.html">Support</a></li>
+            <li><a href="docs.html">Documentation</a></li>
+            <li><a href="api.html">API Access</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4>Company</h4>
+          <ul class="footer-links">
+            <li><a href="about.html">About</a></li>
+            <li><a href="privacy.html">Privacy Policy</a></li>
+            <li><a href="terms.html">Terms of Service</a></li>
+            <li><a href="contact.html">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        © 2026 Arowana Profits. Professional trading platform for retail investors.
+      </div>
+    </div>
+  </footer>
+
+<script>
+  /* Enhanced Authentication System - Modern Approach */
+  
+  function initAuthDropdown() {
+    // Check if user is logged in (using Supabase auth pattern)
+    const authUser = localStorage.getItem('gs_auth_user_v1');
+    
+    if (authUser) {
+      try {
+        const user = JSON.parse(authUser);
+        showUserDropdown(user);
+      } catch (e) {
+        console.error('Error parsing user data:', e);
+        showAuthButtons();
+      }
+    } else {
+      showAuthButtons();
+    }
+  }
+  
+  function showUserDropdown(user) {
+    // Hide auth buttons with error handling
+    const authSignIn = document.getElementById('navSignIn');
+    const authSignUp = document.getElementById('navSignUp');
+    if (authSignIn) authSignIn.style.display = 'none';
+    if (authSignUp) authSignUp.style.display = 'none';
+    
+    // Show user dropdown
+    const userDropdown = document.getElementById('navUserDropdown');
+    if (userDropdown) {
+      userDropdown.classList.add('show');
+    }
+    
+    // Update user info - show name/username in button, email in dropdown
+    const userName = user.name || user.username || getNameFromEmail(user.email) || 'User';
+    const userEmail = user.email || 'jtran112675@gmail.com';
+    
+    const userNameEl = document.getElementById('navUserName');
+    const menuUserEmailEl = document.getElementById('menuUserEmail');
+    
+    if (userNameEl) {
+      userNameEl.textContent = userName;
+    }
+    if (menuUserEmailEl) {
+      menuUserEmailEl.textContent = userEmail;
+    }
+    
+    // Update mobile menu
+    const mobileAuthLinks = document.getElementById('mobileAuthLinks');
+    if (mobileAuthLinks) {
+      mobileAuthLinks.innerHTML = '<a class="mobile-link" href="account.html">My Account</a><a class="mobile-link" id="mobOut" href="#">Sign Out</a>';
+      const mobileSignOut = document.getElementById('mobOut');
+      if (mobileSignOut) {
+        mobileSignOut.addEventListener('click', function(e) {
+          e.preventDefault();
+          signOut();
+        });
+      }
+    }
+  }
+  
+  function getNameFromEmail(email) {
+    if (!email) return null;
+    
+    // Extract username from email and create a display name
+    const username = email.split('@')[0];
+    
+    // Handle common patterns
+    if (username.toLowerCase().includes('jtran')) {
+      return 'Jimmy T';
+    }
+    
+    // For other emails, create a nice display name
+    return username.charAt(0).toUpperCase() + username.slice(1);
+  }
+  
+  function showAuthButtons() {
+    // Show auth buttons
+    const authSignIn = document.getElementById('navSignIn');
+    const authSignUp = document.getElementById('navSignUp');
+    if (authSignIn) authSignIn.style.display = 'inline-flex';
+    if (authSignUp) authSignUp.style.display = 'inline-flex';
+    
+    // Hide user dropdown
+    const userDropdown = document.getElementById('navUserDropdown');
+    if (userDropdown) {
+      userDropdown.classList.remove('show');
+    }
+    
+    // Update mobile menu for non-logged in state
+    const mobileAuthLinks = document.getElementById('mobileAuthLinks');
+    if (mobileAuthLinks) {
+      mobileAuthLinks.innerHTML = '<a class="mobile-link" href="login.html">Sign In</a><a class="mobile-link" href="signup.html">Start Free</a>';
+    }
+  }
+  
+  function initUserDropdown() {
+    const userToggle = document.getElementById('navUserToggle');
+    const userDropdown = document.getElementById('navUserDropdown');
+    
+    if (!userToggle || !userDropdown) {
+      return;
+    }
+    
+    // Toggle dropdown on click
+    userToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleUserMenu();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!userToggle.contains(e.target) && !userDropdown.contains(e.target)) {
+        closeUserMenu();
+      }
+    });
+    
+    // Close dropdown on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeUserMenu();
+      }
+    });
+  }
+  
+  function toggleUserMenu() {
+    const userDropdown = document.getElementById('navUserDropdown');
+    const userMenu = userDropdown ? userDropdown.querySelector('.user-menu') : null;
+    
+    if (userDropdown && userMenu) {
+      userDropdown.classList.toggle('open');
+      userMenu.classList.toggle('open');
+    }
+  }
+  
+  function closeUserMenu() {
+    const userDropdown = document.getElementById('navUserDropdown');
+    const userMenu = userDropdown ? userDropdown.querySelector('.user-menu') : null;
+    
+    if (userDropdown && userMenu) {
+      userDropdown.classList.remove('open');
+      userMenu.classList.remove('open');
+    }
+  }
+  
+  function signOut() {
+    // Clear auth data
+    const authKeys = ['gs_auth_user_v1', 'gs_session', 'ap_session', 'sb-access-token'];
+    authKeys.forEach(function(key) {
+      try {
+        localStorage.removeItem(key);
+      } catch(e) {
+        console.warn('Failed to remove', key, e);
+      }
+    });
+    
+    // Redirect to home
+    setTimeout(function() {
+      window.location.href = 'index.html';
+    }, 1000);
+  }
+  
+  // Initialize mobile menu
+  function initMobileMenu() {
+    const burger = document.getElementById('navBurger');
+    if (burger) {
+      burger.addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobileMenu');
+        if (mobileMenu) {
+          const isOpen = mobileMenu.getAttribute('data-open') === 'true';
+          mobileMenu.setAttribute('data-open', isOpen ? 'false' : 'true');
+        }
+      });
+    }
+  }
+  
+  // Initialize everything when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      initAuthDropdown();
+      initUserDropdown();
+      initMobileMenu();
+    } catch (e) {
+      console.error('Error initializing authentication:', e);
+      // Fallback: just show auth buttons
+      try {
+        showAuthButtons();
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+      }
+    }
+  });
+
+  // Support functions
+  function openSupport() {
+    // Implement support functionality
+    window.open('mailto:support@arowanaprofits.com', '_blank');
+  }
+</script>
+
+</body>
+</html>

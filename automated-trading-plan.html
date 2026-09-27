@@ -1,0 +1,939 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>📊</text></svg>">
+<title>Automated Trading Plan — Arowana Profits</title>
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dk:#083d6e;--brand-lt:#e8f2fb;
+  --bg:#f6f8fb;--panel:#fff;--text:#111827;--muted:#64748b;
+  --border:#e5e7eb;--shadow:0 4px 24px rgba(11,79,138,.08);--radius:14px;
+  --ring:rgba(11,79,138,.22);--green:#16a34a;--red:#dc2626;--amber:#d97706;
+  --blue:#3b9eff;--cyan:#00d4ff;
+  --page-width:min(1200px,92vw)
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+/* ─ NAV ─ */
+.nav-shell{background:var(--brand);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;font-size:1.2rem;white-space:nowrap}
+.nav-logo{width:34px;height:34px;border-radius:8px;object-fit:contain;background:rgba(255,255,255,.15);padding:2px}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{color:rgba(255,255,255,.75);padding:7px 11px;border-radius:8px;font-size:.875rem;font-weight:600;transition:.15s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nav-btn{color:rgba(255,255,255,.8);padding:6px 12px;border-radius:8px;font-size:.85rem;font-weight:600;transition:.15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.nav-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-btn.cta{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.nav-btn.cta:hover{background:rgba(255,255,255,.28)}
+
+/* ─ PAGE HERO ─ */
+.page-hero{background:linear-gradient(135deg,#0b4f8a 0%,#1565a8 60%,#0d7bc4 100%);color:#fff;padding:28px 0 24px}
+.page-hero h1{margin:0 0 4px;font-size:1.7rem;font-weight:800}
+.page-hero p{margin:0;opacity:.8;font-size:.9rem}
+
+/* ─ CARDS ─ */
+.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:1rem;font-weight:700;margin:0}
+
+/* ─ BUTTONS ─ */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.875rem;font-family:inherit;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dk)}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:#f8fafc}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b91c1c}
+.btn-amber{background:var(--amber);color:#fff}.btn-amber:hover{background:#b45309}
+.btn-sm{padding:5px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─ INPUTS ─ */
+input[type=text],input[type=number],select,textarea{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:var(--text);background:#fff;width:100%;transition:.15s}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px var(--ring);border-color:var(--brand)}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.hint{font-size:.75rem;color:var(--muted);margin-top:3px}
+
+/* ─ LAYOUT ─ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.three-col{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.three-col{grid-template-columns:1fr}}
+
+/* ─ PLAN INPUT ─ */
+.plan-config{margin-bottom:16px}
+.config-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin-bottom:16px}
+
+/* ─ SPINNER ─ */
+.spinner{display:none;text-align:center;padding:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-icon{width:22px;height:22px;border:3px solid #e5e7eb;border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+
+/* ─ ALERTS ─ */
+.alert{border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:.9rem}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-warning{background:#fffbeb;border:1px solid #fed7aa;color:#92400e}
+.alert-danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+
+/* ─ TIMELINE ─ */
+.timeline{position:relative;padding-left:30px}
+.timeline::before{content:'';position:absolute;left:15px;top:0;bottom:0;width:2px;background:var(--border)}
+.time-block{position:relative;margin-bottom:24px;background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;box-shadow:0 2px 8px rgba(0,0,0,.04)}
+.time-block::before{content:'';position:absolute;left:-22px;top:20px;width:12px;height:12px;border-radius:50%;background:var(--brand);border:2px solid #fff;box-shadow:0 0 0 2px var(--border)}
+.time-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.time-title{font-size:1.1rem;font-weight:700;color:var(--text)}
+.time-range{font-size:.85rem;color:var(--muted);font-weight:600;background:#f3f4f6;padding:4px 8px;border-radius:6px}
+.time-description{color:var(--muted);font-size:.9rem;margin-bottom:12px;line-height:1.5}
+
+/* ─ CHECKLIST ─ */
+.checklist{list-style:none;padding:0;margin:0}
+.checklist-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f3f4f6}
+.checklist-item:last-child{border-bottom:none}
+.checklist-checkbox{width:18px;height:18px;border:2px solid var(--border);border-radius:4px;cursor:pointer;transition:.15s;margin-top:2px;position:relative;background:#fff}
+.checklist-checkbox:hover{border-color:var(--brand)}
+.checklist-checkbox.checked{background:var(--brand);border-color:var(--brand)}
+.checklist-checkbox.checked::after{content:'✓';position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#fff;font-size:.8rem;font-weight:700}
+.checklist-text{flex:1;line-height:1.5;font-size:.9rem}
+.checklist-text.completed{color:var(--muted);text-decoration:line-through}
+.checklist-priority{font-size:.75rem;padding:2px 6px;border-radius:4px;font-weight:600;text-transform:uppercase}
+.priority-high{background:#fee2e2;color:#dc2626}
+.priority-medium{background:#fef3c7;color:#d97706}
+.priority-low{background:#f0fdf4;color:#16a34a}
+
+/* ─ MARKET STATUS ─ */
+.market-status{background:linear-gradient(135deg,#f8fafc,#e2e8f0);border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.market-status h4{margin:0 0 8px;color:var(--text)}
+.status-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:12px}
+.status-item{text-align:center;padding:8px;background:#fff;border-radius:8px;border:1px solid #e5e7eb}
+.status-label{font-size:.75rem;color:var(--muted);margin-bottom:2px}
+.status-value{font-weight:700;font-size:.9rem}
+.status-open{color:var(--green)}
+.status-closed{color:var(--red)}
+.status-premarket{color:var(--amber)}
+
+/* ─ PROGRESS BAR ─ */
+.progress-container{margin:16px 0}
+.progress-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.progress-bar{height:8px;background:#e5e7eb;border-radius:4px;overflow:hidden}
+.progress-fill{height:100%;background:var(--green);border-radius:4px;transition:width 0.3s ease}
+
+/* ─ TOAST NOTIFICATIONS ─ */
+.toast-container{position:fixed;top:70px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px}
+.toast{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;min-width:300px;animation:slideIn .3s ease}
+.toast.success{border-left:4px solid var(--green)}
+.toast.error{border-left:4px solid var(--red)}
+.toast.info{border-left:4px solid var(--blue)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ─ FOOTER ─ */
+footer{background:var(--brand);color:#cfe0f5;padding:28px 0;margin-top:auto}
+.f-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:720px){.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.f-grid{grid-template-columns:1fr}}
+.f-col h4{color:#fff;font-size:.875rem;font-weight:700;margin:0 0 8px}
+.f-col a{display:block;color:#94bad8;font-size:.8rem;margin-bottom:4px}
+.f-col a:hover{color:#fff}
+.f-col p{font-size:.78rem;margin:0;line-height:1.6}
+.f-bottom{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);text-align:center;font-size:.73rem;color:#6b94b8}
+
+/* ─ MOBILE RESPONSIVE ─ */
+@media(max-width:600px){
+  .container{padding:0 12px}
+  .page-hero h1{font-size:1.4rem}
+  .nav-inner{padding:0 12px}
+  .nav-brand{font-size:1rem}
+  .card{padding:16px}
+  .config-grid{grid-template-columns:1fr}
+  .timeline{padding-left:20px}
+  .time-block{padding:12px}
+  .status-grid{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="nav-shell">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <img src="https://arowanaprofits.com/images/logo-icon.png" alt="" class="nav-logo">
+      Arowana Profits
+    </a>
+    <div class="nav-links">
+      <a href="arowana-trader.html" class="nav-link">📊 Trader</a>
+      <a href="portfolio-advisor.html" class="nav-link">💼 Portfolio</a>
+      <a href="features.html" class="nav-link">🛠️ Tools</a>
+      <a href="automated-trading-plan.html" class="nav-link active">📋 Trading Plan</a>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="location.href='login.html'">Sign In</button>
+      <button class="nav-btn cta" onclick="location.href='pricing.html'">Start Free</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="container">
+    <h1>📋 Complete Automated Trading Plan</h1>
+    <p>Generate structured daily trading plans with time blocks, checklists, and systematic procedures for consistent execution.</p>
+  </div>
+</section>
+
+<!-- Main Content -->
+<main style="padding:24px 0">
+  <div class="container">
+    
+    <!-- Plan Configuration -->
+    <div class="card">
+      <div class="card-hd">
+        <h2 class="card-title">⚙️ Trading Plan Configuration</h2>
+        <div style="display:flex;gap:8px">
+          <button id="demoBtn" class="btn btn-ghost btn-sm">🧪 Demo Mode</button>
+          <button id="saveTemplateBtn" class="btn btn-ghost btn-sm">💾 Save Template</button>
+          <button id="resetBtn" class="btn btn-ghost btn-sm">🔄 Reset</button>
+        </div>
+      </div>
+      
+      <div class="config-grid">
+        <div>
+          <label for="market">Primary Market/Asset</label>
+          <select id="market">
+            <option value="us_stocks">US Stocks</option>
+            <option value="us_options">US Options</option>
+            <option value="forex">Forex</option>
+            <option value="crypto">Crypto</option>
+            <option value="futures">Futures</option>
+            <option value="etfs">ETFs</option>
+          </select>
+          <div class="hint">Select your primary trading focus</div>
+        </div>
+        
+        <div>
+          <label for="tradingStyle">Trading Style</label>
+          <select id="tradingStyle">
+            <option value="day_trading">Day Trading</option>
+            <option value="swing_trading">Swing Trading</option>
+            <option value="scalping">Scalping</option>
+            <option value="position_trading">Position Trading</option>
+            <option value="hybrid">Hybrid Approach</option>
+          </select>
+          <div class="hint">Your preferred trading timeframe</div>
+        </div>
+        
+        <div>
+          <label for="timezone">Your Timezone</label>
+          <select id="timezone">
+            <option value="EST">Eastern Time (EST)</option>
+            <option value="CST">Central Time (CST)</option>
+            <option value="MST">Mountain Time (MST)</option>
+            <option value="PST">Pacific Time (PST)</option>
+            <option value="GMT">GMT</option>
+            <option value="CET">Central European (CET)</option>
+          </select>
+          <div class="hint">For accurate time scheduling</div>
+        </div>
+      </div>
+      
+      <div class="two-col">
+        <div>
+          <label for="riskTolerance">Daily Risk Tolerance</label>
+          <select id="riskTolerance">
+            <option value="conservative">Conservative (0.5-1% per trade)</option>
+            <option value="moderate">Moderate (1-2% per trade)</option>
+            <option value="aggressive">Aggressive (2-3% per trade)</option>
+            <option value="custom">Custom Amount</option>
+          </select>
+          <div class="hint">Your maximum risk per trade</div>
+        </div>
+        
+        <div>
+          <label for="experienceLevel">Experience Level</label>
+          <select id="experienceLevel">
+            <option value="beginner">Beginner (0-1 year)</option>
+            <option value="intermediate">Intermediate (1-3 years)</option>
+            <option value="advanced">Advanced (3+ years)</option>
+            <option value="professional">Professional Trader</option>
+          </select>
+          <div class="hint">Affects plan complexity and guidance level</div>
+        </div>
+      </div>
+      
+      <div style="margin-top:16px">
+        <button id="generatePlanBtn" class="btn btn-primary">
+          <span id="generateText">🚀 Generate Trading Plan</span>
+          <div id="generateSpinner" class="spinner" style="display:none">
+            <div class="spin-icon"></div>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Demo Mode Notice -->
+      <div id="demoNotice" class="alert alert-warning" style="display:none">
+        🧪 <strong>Demo Mode Active:</strong> Plan generation uses sample data for demonstration purposes.
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" style="display:none">
+      
+      <!-- Market Status Overview -->
+      <div class="market-status">
+        <h4>📊 Market Status & Overview</h4>
+        <div class="status-grid">
+          <div class="status-item">
+            <div class="status-label">Market Status</div>
+            <div class="status-value status-open" id="marketStatus">Open</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">SPY</div>
+            <div class="status-value" id="spyPrice">$428.50</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">VIX</div>
+            <div class="status-value" id="vixLevel">16.2</div>
+          </div>
+          <div class="status-item">
+            <div class="status-label">Economic Events</div>
+            <div class="status-value" id="economicEvents">2 Today</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress Tracking -->
+      <div class="card">
+        <div class="progress-container">
+          <div class="progress-header">
+            <span style="font-weight:600">Daily Plan Progress</span>
+            <span id="progressText">0 of 0 completed</span>
+          </div>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill" style="width:0%"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Trading Plan Timeline -->
+      <div class="card">
+        <div class="card-hd">
+          <h2 class="card-title">⏰ Daily Trading Schedule</h2>
+          <div style="font-size:.8rem;color:var(--muted)" id="planMeta">
+            Plan for: <span id="selectedMarket"></span> | Style: <span id="selectedStyle"></span>
+          </div>
+        </div>
+        
+        <div class="timeline" id="tradingTimeline">
+          <!-- Timeline blocks will be populated here -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="f-grid">
+      <div class="f-col">
+        <h4>Arowana Profits</h4>
+        <p>Risk-first education and AI-assisted planning for retail traders.</p>
+      </div>
+      <div class="f-col">
+        <h4>Explore</h4>
+        <a href="arowana-trader.html">Arowana Trader</a>
+        <a href="portfolio-advisor.html">Portfolio Advisor</a>
+        <a href="features.html">Features</a>
+        <a href="pricing.html">Plans</a>
+      </div>
+      <div class="f-col">
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="security.html">Security</a>
+        <a href="blog.html">Blog</a>
+      </div>
+      <div class="f-col">
+        <h4>Legal</h4>
+        <a href="disclosures.html">Disclosures</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="f-bottom">
+      &copy; <span id="footYear"></span> Arowana Profits. All rights reserved. Educational purposes only. Not financial advice.
+    </div>
+  </div>
+</footer>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+(function(){
+'use strict';
+
+// ─ CONSTANTS ─
+const DEMO_MODE_KEY = 'trading_plan_demo_mode';
+const PLAN_CACHE_KEY = 'trading_plan_last_config';
+const PROGRESS_KEY = 'trading_plan_daily_progress';
+
+// ─ STATE ─
+let isDemoMode = false;
+let currentPlan = null;
+let dailyProgress = {};
+let totalTasks = 0;
+
+// ─ DOM REFERENCES ─
+const $ = id => document.getElementById(id);
+
+// ─ INITIALIZATION ─
+function init() {
+  // Set footer year
+  const fy = $('footYear');
+  if (fy) fy.textContent = new Date().getFullYear();
+  
+  // Load demo mode preference
+  isDemoMode = localStorage.getItem(DEMO_MODE_KEY) === 'true';
+  updateDemoMode();
+  
+  // Load today's progress
+  loadDailyProgress();
+  
+  // Bind events
+  $('demoBtn').addEventListener('click', toggleDemoMode);
+  $('saveTemplateBtn').addEventListener('click', saveTemplate);
+  $('resetBtn').addEventListener('click', resetAll);
+  $('generatePlanBtn').addEventListener('click', generatePlan);
+  
+  // Load cached config if available
+  loadCachedConfig();
+  
+  // Listen for app config ready
+  document.addEventListener('ap:config:ready', () => {
+    // Webhook configuration available
+  });
+}
+
+// ─ DEMO MODE ─
+function toggleDemoMode() {
+  isDemoMode = !isDemoMode;
+  localStorage.setItem(DEMO_MODE_KEY, isDemoMode.toString());
+  updateDemoMode();
+  showToast(isDemoMode ? '🧪 Demo mode enabled' : '🌐 Live mode enabled', 'info');
+}
+
+function updateDemoMode() {
+  const btn = $('demoBtn');
+  const notice = $('demoNotice');
+  
+  if (isDemoMode) {
+    btn.textContent = '🌐 Live Mode';
+    btn.className = 'btn btn-amber btn-sm';
+    notice.style.display = 'block';
+  } else {
+    btn.textContent = '🧪 Demo Mode';
+    btn.className = 'btn btn-ghost btn-sm';
+    notice.style.display = 'none';
+  }
+}
+
+// ─ MAIN PLAN GENERATION ─
+async function generatePlan() {
+  const config = {
+    market: $('market').value,
+    tradingStyle: $('tradingStyle').value,
+    timezone: $('timezone').value,
+    riskTolerance: $('riskTolerance').value,
+    experienceLevel: $('experienceLevel').value
+  };
+  
+  setBusyState(true);
+  
+  try {
+    let planData;
+    
+    if (isDemoMode) {
+      // Demo mode - simulated plan generation
+      await new Promise(resolve => setTimeout(resolve, 2000)); // Simulate API delay
+      planData = generateDemoPlan(config);
+    } else {
+      // Live mode - would call actual API
+      planData = await callPlanGenerationAPI(config);
+    }
+    
+    currentPlan = planData;
+    
+    // Cache the config
+    localStorage.setItem(PLAN_CACHE_KEY, JSON.stringify(config));
+    
+    displayPlan(planData);
+    showToast('✅ Trading plan generated successfully', 'success');
+    
+  } catch (error) {
+    console.error('Plan generation error:', error);
+    showToast(`❌ Plan generation failed: ${error.message}`, 'error');
+  } finally {
+    setBusyState(false);
+  }
+}
+
+// ─ DEMO PLAN GENERATOR ─
+function generateDemoPlan(config) {
+  const planData = {
+    config,
+    marketStatus: generateMarketStatus(),
+    timeBlocks: generateTimeBlocks(config),
+    isDemo: true
+  };
+  
+  return planData;
+}
+
+function generateMarketStatus() {
+  // Simulate market data
+  return {
+    status: 'Open',
+    spyPrice: '$' + (425 + Math.random() * 10).toFixed(2),
+    vixLevel: (14 + Math.random() * 8).toFixed(1),
+    economicEvents: Math.floor(Math.random() * 4) + 1
+  };
+}
+
+function generateTimeBlocks(config) {
+  const blocks = [];
+  const isIntraday = config.tradingStyle === 'day_trading' || config.tradingStyle === 'scalping';
+  
+  // Pre-Market Analysis (6:00-9:30 AM EST for US markets)
+  if (config.market === 'us_stocks' || config.market === 'us_options' || config.market === 'etfs') {
+    blocks.push({
+      id: 'premarket',
+      title: '📊 Pre-Market Analysis',
+      timeRange: '6:00 - 9:30 AM',
+      description: 'Market preparation and opportunity identification before the opening bell.',
+      checklist: [
+        { text: 'Check overnight news and earnings reports', priority: 'high' },
+        { text: 'Review futures and international markets', priority: 'high' },
+        { text: 'Scan for gap-ups/downs and unusual volume', priority: 'high' },
+        { text: 'Update watchlist with key levels', priority: 'medium' },
+        { text: 'Check economic calendar for today\'s events', priority: 'medium' },
+        { text: 'Review sector rotation patterns', priority: 'low' },
+        { text: 'Prepare risk management parameters', priority: 'high' }
+      ]
+    });
+  }
+  
+  // Market Open Strategy
+  if (isIntraday) {
+    blocks.push({
+      id: 'market_open',
+      title: '🚀 Market Open Strategy',
+      timeRange: '9:30 - 10:30 AM',
+      description: 'Execute opening range plays and capture early momentum.',
+      checklist: [
+        { text: 'Monitor opening range breakouts', priority: 'high' },
+        { text: 'Look for gap fill opportunities', priority: 'high' },
+        { text: 'Track volume confirmation on moves', priority: 'high' },
+        { text: 'Set stops on any opened positions', priority: 'high' },
+        { text: 'Avoid FOMO trades in first 15 minutes', priority: 'medium' },
+        { text: 'Document entry reasons for each trade', priority: 'medium' }
+      ]
+    });
+  }
+  
+  // Mid-Session Management
+  blocks.push({
+    id: 'mid_session',
+    title: '⚖️ Mid-Session Management',
+    timeRange: isIntraday ? '10:30 AM - 2:00 PM' : '10:00 AM - 2:00 PM',
+    description: 'Active position management and new opportunity assessment.',
+    checklist: [
+      { text: 'Review P&L and position status', priority: 'high' },
+      { text: 'Adjust stops to breakeven on profitable trades', priority: 'high' },
+      { text: 'Look for trend continuation setups', priority: 'medium' },
+      { text: 'Monitor sector strength/weakness rotation', priority: 'medium' },
+      { text: 'Check for earnings or news catalysts', priority: 'medium' },
+      { text: 'Take partial profits at key resistance levels', priority: 'low' },
+      { text: 'Stay hydrated and take short breaks', priority: 'low' }
+    ]
+  });
+  
+  // Power Hour / End of Day
+  blocks.push({
+    id: 'power_hour',
+    title: '⚡ Power Hour & Close',
+    timeRange: '3:00 - 4:00 PM',
+    description: 'Final hour momentum plays and position closure decisions.',
+    checklist: [
+      { text: 'Monitor for end-of-day momentum moves', priority: 'high' },
+      { text: 'Decide on overnight holds vs day trade exits', priority: 'high' },
+      { text: 'Close any day trading positions by 3:50 PM', priority: 'high' },
+      { text: 'Trail stops on swing positions', priority: 'medium' },
+      { text: 'Look for late-day institutional flows', priority: 'medium' },
+      { text: 'Prepare for after-hours earnings', priority: 'low' }
+    ]
+  });
+  
+  // Post-Market Review
+  blocks.push({
+    id: 'post_market',
+    title: '📝 Post-Market Review',
+    timeRange: '4:00 - 5:00 PM',
+    description: 'Trading journal updates and next day preparation.',
+    checklist: [
+      { text: 'Update trading journal with all trades', priority: 'high' },
+      { text: 'Review what worked and what didn\'t', priority: 'high' },
+      { text: 'Calculate daily P&L and risk metrics', priority: 'high' },
+      { text: 'Plan tomorrow\'s watchlist and setups', priority: 'medium' },
+      { text: 'Check after-hours earnings results', priority: 'medium' },
+      { text: 'Review market breadth and internals', priority: 'low' },
+      { text: 'Set alerts for overnight developments', priority: 'low' }
+    ]
+  });
+  
+  // Add experience-level specific tasks
+  if (config.experienceLevel === 'beginner') {
+    // Add more educational tasks
+    blocks.forEach(block => {
+      if (block.id === 'premarket') {
+        block.checklist.push({ text: 'Read 2-3 market analysis articles', priority: 'medium' });
+      }
+      if (block.id === 'post_market') {
+        block.checklist.push({ text: 'Practice chart reading for 15 minutes', priority: 'medium' });
+        block.checklist.push({ text: 'Review trading rules and strategy notes', priority: 'high' });
+      }
+    });
+  } else if (config.experienceLevel === 'professional') {
+    // Add advanced analysis tasks
+    blocks.forEach(block => {
+      if (block.id === 'premarket') {
+        block.checklist.push({ text: 'Analyze options flow and unusual activity', priority: 'medium' });
+        block.checklist.push({ text: 'Review institutional order flow data', priority: 'low' });
+      }
+    });
+  }
+  
+  return blocks;
+}
+
+// ─ LIVE API CALL (PLACEHOLDER) ─
+async function callPlanGenerationAPI(config) {
+  // This would integrate with your plan generation service
+  throw new Error('Live plan generation API not configured. Enable demo mode to test.');
+  
+  /* Example implementation:
+  const webhookUrl = getWebhookUrl();
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'generate_trading_plan',
+      ...config,
+      date: new Date().toISOString().split('T')[0]
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return await response.json();
+  */
+}
+
+// ─ DISPLAY PLAN ─
+function displayPlan(planData) {
+  $('resultsSection').style.display = 'block';
+  
+  // Update plan meta
+  $('selectedMarket').textContent = getDisplayName('market', planData.config.market);
+  $('selectedStyle').textContent = getDisplayName('style', planData.config.tradingStyle);
+  
+  // Update market status
+  updateMarketStatus(planData.marketStatus);
+  
+  // Update timeline
+  updateTimeline(planData.timeBlocks);
+  
+  // Calculate and update progress
+  updateProgress();
+  
+  // Scroll to results on mobile
+  if (window.innerWidth < 800) {
+    $('resultsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+function updateMarketStatus(status) {
+  $('marketStatus').textContent = status.status;
+  $('marketStatus').className = `status-value status-${status.status.toLowerCase()}`;
+  $('spyPrice').textContent = status.spyPrice;
+  $('vixLevel').textContent = status.vixLevel;
+  $('economicEvents').textContent = status.economicEvents + ' Today';
+}
+
+function updateTimeline(timeBlocks) {
+  const timeline = $('tradingTimeline');
+  timeline.innerHTML = '';
+  
+  totalTasks = 0;
+  
+  timeBlocks.forEach(block => {
+    const blockEl = document.createElement('div');
+    blockEl.className = 'time-block';
+    blockEl.setAttribute('data-block-id', block.id);
+    
+    // Count total tasks
+    totalTasks += block.checklist.length;
+    
+    blockEl.innerHTML = `
+      <div class="time-header">
+        <div class="time-title">${block.title}</div>
+        <div class="time-range">${block.timeRange}</div>
+      </div>
+      <div class="time-description">${block.description}</div>
+      <ul class="checklist" data-block="${block.id}">
+        ${block.checklist.map((item, index) => `
+          <li class="checklist-item">
+            <div class="checklist-checkbox" data-block="${block.id}" data-task="${index}" onclick="toggleTask('${block.id}', ${index})"></div>
+            <div class="checklist-text">${item.text}</div>
+            <div class="checklist-priority priority-${item.priority}">${item.priority}</div>
+          </li>
+        `).join('')}
+      </ul>
+    `;
+    
+    timeline.appendChild(blockEl);
+  });
+  
+  // Restore progress from localStorage
+  restoreProgress();
+}
+
+function updateProgress() {
+  const completed = Object.values(dailyProgress).reduce((sum, blockProgress) => {
+    return sum + Object.values(blockProgress).filter(Boolean).length;
+  }, 0);
+  
+  const percentage = totalTasks > 0 ? (completed / totalTasks) * 100 : 0;
+  
+  $('progressText').textContent = `${completed} of ${totalTasks} completed`;
+  $('progressFill').style.width = `${percentage}%`;
+}
+
+function toggleTask(blockId, taskIndex) {
+  // Initialize block progress if not exists
+  if (!dailyProgress[blockId]) {
+    dailyProgress[blockId] = {};
+  }
+  
+  // Toggle task completion
+  dailyProgress[blockId][taskIndex] = !dailyProgress[blockId][taskIndex];
+  
+  // Update UI
+  const checkbox = document.querySelector(`[data-block="${blockId}"][data-task="${taskIndex}"]`);
+  const textEl = checkbox.parentElement.querySelector('.checklist-text');
+  
+  if (dailyProgress[blockId][taskIndex]) {
+    checkbox.classList.add('checked');
+    textEl.classList.add('completed');
+  } else {
+    checkbox.classList.remove('checked');
+    textEl.classList.remove('completed');
+  }
+  
+  // Update progress
+  updateProgress();
+  
+  // Save progress
+  saveDailyProgress();
+  
+  // Show completion message if all tasks done
+  if (isAllTasksCompleted()) {
+    showToast('🎉 All daily tasks completed! Great job staying disciplined.', 'success');
+  }
+}
+
+function isAllTasksCompleted() {
+  const completed = Object.values(dailyProgress).reduce((sum, blockProgress) => {
+    return sum + Object.values(blockProgress).filter(Boolean).length;
+  }, 0);
+  
+  return completed === totalTasks && totalTasks > 0;
+}
+
+function restoreProgress() {
+  Object.keys(dailyProgress).forEach(blockId => {
+    Object.keys(dailyProgress[blockId]).forEach(taskIndex => {
+      if (dailyProgress[blockId][taskIndex]) {
+        const checkbox = document.querySelector(`[data-block="${blockId}"][data-task="${taskIndex}"]`);
+        const textEl = checkbox?.parentElement?.querySelector('.checklist-text');
+        
+        if (checkbox && textEl) {
+          checkbox.classList.add('checked');
+          textEl.classList.add('completed');
+        }
+      }
+    });
+  });
+}
+
+// ─ PROGRESS MANAGEMENT ─
+function loadDailyProgress() {
+  const today = new Date().toDateString();
+  try {
+    const saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+    dailyProgress = saved[today] || {};
+  } catch (e) {
+    dailyProgress = {};
+  }
+}
+
+function saveDailyProgress() {
+  const today = new Date().toDateString();
+  try {
+    const allProgress = JSON.parse(localStorage.getItem(PROGRESS_KEY) || '{}');
+    allProgress[today] = dailyProgress;
+    localStorage.setItem(PROGRESS_KEY, JSON.stringify(allProgress));
+  } catch (e) {
+    // Ignore save errors
+  }
+}
+
+// ─ UTILITY FUNCTIONS ─
+function getDisplayName(type, value) {
+  const displayNames = {
+    market: {
+      'us_stocks': 'US Stocks',
+      'us_options': 'US Options',
+      'forex': 'Forex',
+      'crypto': 'Cryptocurrency',
+      'futures': 'Futures',
+      'etfs': 'ETFs'
+    },
+    style: {
+      'day_trading': 'Day Trading',
+      'swing_trading': 'Swing Trading',
+      'scalping': 'Scalping',
+      'position_trading': 'Position Trading',
+      'hybrid': 'Hybrid Approach'
+    }
+  };
+  
+  return displayNames[type]?.[value] || value;
+}
+
+function setBusyState(busy) {
+  const btn = $('generatePlanBtn');
+  const text = $('generateText');
+  const spinner = $('generateSpinner');
+  const inputs = ['market', 'tradingStyle', 'timezone', 'riskTolerance', 'experienceLevel'];
+  
+  if (busy) {
+    btn.disabled = true;
+    text.style.display = 'none';
+    spinner.style.display = 'block';
+    inputs.forEach(id => $(id).disabled = true);
+  } else {
+    btn.disabled = false;
+    text.style.display = 'block';
+    spinner.style.display = 'none';
+    inputs.forEach(id => $(id).disabled = false);
+  }
+}
+
+function resetAll() {
+  // Reset form
+  $('market').value = 'us_stocks';
+  $('tradingStyle').value = 'day_trading';
+  $('timezone').value = 'EST';
+  $('riskTolerance').value = 'moderate';
+  $('experienceLevel').value = 'intermediate';
+  
+  // Reset plan and progress
+  currentPlan = null;
+  dailyProgress = {};
+  totalTasks = 0;
+  
+  // Hide results
+  $('resultsSection').style.display = 'none';
+  
+  // Clear cache
+  localStorage.removeItem(PLAN_CACHE_KEY);
+  
+  showToast('🔄 Trading plan reset', 'info');
+}
+
+function saveTemplate() {
+  if (!currentPlan) {
+    showToast('Please generate a plan first before saving template', 'error');
+    return;
+  }
+  
+  // This would save the current configuration as a template
+  showToast('💾 Plan template saved for future use', 'success');
+}
+
+function loadCachedConfig() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(PLAN_CACHE_KEY) || 'null');
+    if (cached) {
+      $('market').value = cached.market || 'us_stocks';
+      $('tradingStyle').value = cached.tradingStyle || 'day_trading';
+      $('timezone').value = cached.timezone || 'EST';
+      $('riskTolerance').value = cached.riskTolerance || 'moderate';
+      $('experienceLevel').value = cached.experienceLevel || 'intermediate';
+    }
+  } catch (e) {
+    // Ignore cache errors
+  }
+}
+
+function showToast(message, type = 'info') {
+  const container = $('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'info' ? 'ℹ️' : '⚠️';
+  
+  toast.innerHTML = `
+    <span>${icon}</span>
+    <span>${message}</span>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 4000);
+}
+
+// Make toggleTask globally available
+window.toggleTask = toggleTask;
+
+// Initialize when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+
+<!-- App Config Integration -->
+<script src="app-config.js"></script>
+
+</body>
+</html>

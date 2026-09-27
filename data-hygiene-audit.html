@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Trade Journal — Data Hygiene Audit</title>
+<style>
+:root{
+  --brand:#0b4f8a; --bg:#f6f8fb; --panel:#fff; --ink:#0f172a; --text:#111827;
+  --muted:#64748b; --ring:rgba(11,79,138,0.22); --border:#e5e7eb; --radius:14px;
+  --shadow:0 8px 30px rgba(0,0,0,.06);
+  --green:#16a34a; --amber:#f59e0b; --red:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+.container{max-width:1100px;margin:0 auto;padding:24px 18px}
+header{background:linear-gradient(135deg,rgba(6,52,99,.97),rgba(11,79,138,.90));color:#fff;padding:20px 24px;border-radius:var(--radius);margin-bottom:18px;box-shadow:var(--shadow)}
+header h1{margin:0;font-size:1.4rem;display:flex;align-items:center;gap:10px}
+header p{margin:6px 0 0;opacity:.85;font-size:.92rem}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px 20px;margin-bottom:14px}
+.card h2{margin:0 0 12px;font-size:1.05rem;display:flex;align-items:center;gap:.5rem;color:var(--brand)}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:10px 14px}
+.kpi .k{font-size:.78rem;color:var(--muted);margin-bottom:3px}
+.kpi .v{font-size:1.3rem;font-weight:800}
+.kpi .v.crit{color:var(--red)}
+.kpi .v.warn{color:var(--amber)}
+.kpi .v.ok{color:var(--green)}
+.issue-grid{display:grid;gap:10px}
+.issue{background:#f8fafc;border:1px solid var(--border);border-left:4px solid var(--brand);border-radius:7px;padding:14px 16px}
+.issue.crit{border-left-color:var(--red);background:#fef2f2}
+.issue.warn{border-left-color:var(--amber);background:#fffbeb}
+.issue.info{border-left-color:#3b82f6;background:#eff6ff}
+.issue h3{margin:0 0 4px;font-size:.95rem;display:flex;align-items:center;gap:.4rem}
+.issue .count{background:#e5e7eb;color:#374151;padding:1px 9px;border-radius:999px;font-size:.74rem;font-weight:700}
+.issue.crit .count{background:#fecaca;color:#991b1b}
+.issue.warn .count{background:#fde68a;color:#92400e}
+.issue .desc{font-size:.85rem;color:var(--muted);margin:0 0 8px;line-height:1.4}
+.issue .fix{background:#fff;border:1px solid var(--border);border-radius:6px;padding:8px 12px;font-size:.82rem;color:var(--text);margin-top:6px}
+.issue .fix strong{color:var(--brand)}
+.issue table{width:100%;border-collapse:collapse;font-size:.82rem;margin-top:10px;background:#fff;border:1px solid var(--border);border-radius:6px;overflow:hidden}
+.issue th{background:#f3f4f6;padding:7px 10px;text-align:left;font-weight:700;color:#374151;font-size:.74rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid var(--border)}
+.issue td{padding:7px 10px;border-bottom:1px solid #f1f5f9}
+.issue tr:last-child td{border-bottom:none}
+.issue td.sym{font-weight:700;color:var(--brand)}
+.issue .more{font-size:.78rem;color:var(--muted);font-style:italic;padding:8px 10px}
+.btn{background:var(--brand);color:#fff;border:none;padding:.55rem 1rem;border-radius:7px;font-weight:700;cursor:pointer;font-size:.88rem}
+.btn:hover{background:#083c69}
+.btn.ghost{background:#fff;color:var(--brand);border:1px solid var(--brand)}
+.btn-row{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+.empty-state{text-align:center;padding:30px 20px;color:var(--muted);font-size:.95rem}
+.empty-state .icon{font-size:2rem;margin-bottom:10px}
+.code{font-family:ui-monospace,Menlo,Consolas,monospace;background:#0f172a;color:#e2e8f0;padding:10px 14px;border-radius:7px;font-size:.78rem;overflow-x:auto;line-height:1.55;margin-top:10px}
+details summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:.85rem;padding:4px 0}
+.muted{color:var(--muted);font-size:.85rem}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:.78rem;color:var(--muted);margin-bottom:8px}
+.legend .dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:middle}
+.legend .dot.crit{background:var(--red)}
+.legend .dot.warn{background:var(--amber)}
+.legend .dot.info{background:#3b82f6}
+.export-area{margin-top:14px}
+.export-area textarea{width:100%;min-height:200px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;border:1px solid var(--border);border-radius:7px;padding:10px;background:#fff;resize:vertical}
+</style>
+</head>
+<body>
+<div class="container">
+
+<header>
+  <h1>🔍 Trade Journal — Data Hygiene Audit</h1>
+  <p>Scans your localStorage trade data and produces a punch-list of records needing attention. Read-only — no changes made to your data.</p>
+</header>
+
+<div class="card">
+  <h2>📊 Data Snapshot</h2>
+  <div class="kpi-grid" id="snapshotKpis">
+    <div class="kpi"><div class="k">Loading…</div><div class="v">—</div></div>
+  </div>
+  <div class="muted" id="dataSourceNote"></div>
+</div>
+
+<div class="card">
+  <h2>🛠 Issues Found</h2>
+  <div class="legend">
+    <span><span class="dot crit"></span>Critical — affects accuracy of dashboard numbers</span>
+    <span><span class="dot warn"></span>Warning — degrades analytics quality</span>
+    <span><span class="dot info"></span>Info — nice-to-have for richer insights</span>
+  </div>
+  <div class="issue-grid" id="issuesContainer"></div>
+</div>
+
+<div class="card">
+  <h2>📤 Export Punch-List</h2>
+  <p class="muted">Copy this CSV to Excel, mark off as you fix each row, or paste it into a Claude conversation for guided cleanup.</p>
+  <div class="btn-row">
+    <button class="btn" onclick="generateCsv()">Generate CSV Punch-List</button>
+    <button class="btn ghost" onclick="copyCsv()">Copy to Clipboard</button>
+    <button class="btn ghost" onclick="downloadCsv()">Download CSV</button>
+  </div>
+  <div class="export-area" id="csvOut" style="display:none">
+    <textarea id="csvText" readonly></textarea>
+  </div>
+</div>
+
+<div class="card">
+  <h2>📖 How to Use This Audit</h2>
+  <ol style="font-size:.92rem;line-height:1.6;color:var(--text)">
+    <li><strong>Save this file</strong> as <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px">data-hygiene-audit.html</code> in the same directory as <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px">trade-journal-pro.html</code> on your localhost server.</li>
+    <li><strong>Open it in the same browser</strong> where you've been using the journal — it reads from the same localStorage, so it sees the same data the journal sees.</li>
+    <li><strong>Review the issues</strong> by severity. Critical issues are causing the "—" placeholders you see on your dashboard.</li>
+    <li><strong>Fix in batches.</strong> Don't try to fix all 195 trades at once. Knock out the past-expiration cleanup first (5-minute job), then tackle the missing-field categories one ticker at a time.</li>
+    <li><strong>Re-run this audit</strong> after each fix session to see your data quality improve.</li>
+  </ol>
+</div>
+
+</div>
+
+<script>
+'use strict';
+
+const LS_OPTIONS = 'tj_options_v3';
+const LS_OPTIONS_FALLBACK = 'tj_options_v2';
+const LS_STOCKS  = 'tj_stocks_v2';
+const LS_ACCOUNTS = 'tj_accounts_v1';
+
+function loadJson(key){
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+  catch { return []; }
+}
+
+let stocks  = loadJson(LS_STOCKS);
+let options = loadJson(LS_OPTIONS);
+if(!options.length) options = loadJson(LS_OPTIONS_FALLBACK);
+let accounts = loadJson(LS_ACCOUNTS);
+
+function dteFromToday(dateStr){
+  if(!dateStr) return null;
+  const d = new Date(dateStr); if(isNaN(d)) return null;
+  const today = new Date(); today.setHours(0,0,0,0);
+  return Math.round((d - today) / 86400000);
+}
+function fmtMoney(n){ return n==null ? '—' : (n>=0?'$':'-$') + Math.abs(n).toFixed(2); }
+function fmtDate(s){ return s ? s.slice(0,10) : '—'; }
+function escHtml(s){ return String(s ?? '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+// ============================================================
+// RENDER SNAPSHOT
+// ============================================================
+function renderSnapshot(){
+  const el = document.getElementById('snapshotKpis');
+  const stockOpen   = stocks.filter(t => t.status === 'open').length;
+  const stockClosed = stocks.filter(t => t.status === 'closed').length;
+  const optOpen     = options.filter(t => t.status === 'open').length;
+  const optClosed   = options.filter(t => t.status !== 'open').length;
+  const total       = stocks.length + options.length;
+
+  el.innerHTML = `
+    <div class="kpi"><div class="k">Total Records</div><div class="v">${total}</div></div>
+    <div class="kpi"><div class="k">Stock Trades</div><div class="v">${stocks.length}</div></div>
+    <div class="kpi"><div class="k">Option Trades</div><div class="v">${options.length}</div></div>
+    <div class="kpi"><div class="k">Open Stocks</div><div class="v ${stockOpen ? 'warn' : 'ok'}">${stockOpen}</div></div>
+    <div class="kpi"><div class="k">Open Options</div><div class="v ${optOpen ? 'warn' : 'ok'}">${optOpen}</div></div>
+    <div class="kpi"><div class="k">Accounts</div><div class="v">${accounts.length}</div></div>
+  `;
+
+  let note = '';
+  if(!total){
+    note = '⚠️ No trades found in localStorage. Either you need to log in to the journal first (this file must be opened from the same origin/port), or the v3 migration has not run yet.';
+  } else {
+    const lsKey = options === loadJson(LS_OPTIONS) ? LS_OPTIONS : LS_OPTIONS_FALLBACK;
+    note = `Reading from <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px">${LS_STOCKS}</code> and <code style="background:#f3f4f6;padding:1px 6px;border-radius:4px">${lsKey}</code> in this browser's localStorage.`;
+  }
+  document.getElementById('dataSourceNote').innerHTML = note;
+}
+
+// ============================================================
+// ISSUE DETECTION
+// ============================================================
+const issues = [];
+
+// --- CRITICAL: open trades past expiration (options) ---
+const expiredOpen = options.filter(t => {
+  if(t.status !== 'open') return false;
+  const dte = dteFromToday(t.expiry);
+  return dte !== null && dte < 0;
+});
+if(expiredOpen.length){
+  issues.push({
+    severity: 'crit',
+    title: 'Open option trades past expiration',
+    desc: 'These contracts have expired but are still flagged as "open". They distort your Open Positions count and need to be closed out as Expired (Worthless), Closed, or Assigned.',
+    count: expiredOpen.length,
+    fix: 'Edit each trade → set Status to <strong>Expired (Worthless)</strong> if it expired without action, or <strong>Assigned</strong> if you took shares. P/L will recalculate automatically.',
+    table: {
+      headers: ['Ticker','Strategy','Strike','Expired','Days Past'],
+      rows: expiredOpen.slice(0, 20).map(t => [
+        t.ticker || '—',
+        t.strategy || (t.optType==='put'?'Put':'Call'),
+        t.strike ? '$' + t.strike : '—',
+        fmtDate(t.expiry),
+        Math.abs(dteFromToday(t.expiry)) + 'd'
+      ])
+    },
+    truncated: expiredOpen.length > 20 ? expiredOpen.length - 20 : 0,
+  });
+}
+
+// --- WARNING: open stock trades missing entry price ---
+const stocksNoEntry = stocks.filter(t => t.status === 'open' && (!t.entryPrice || t.entryPrice <= 0));
+if(stocksNoEntry.length){
+  issues.push({
+    severity: 'warn',
+    title: 'Open stock trades missing entry price',
+    desc: 'Without entry prices, the Capital Deployed metric on your dashboard cannot be calculated. This is why your Capital Deployed shows "—".',
+    count: stocksNoEntry.length,
+    fix: 'Edit each trade and add the average fill price. If imported from Schwab CSV without prices, you can find them in your broker order history.',
+    table: {
+      headers: ['Ticker','Qty','Entry Date','Side','Entry Price'],
+      rows: stocksNoEntry.slice(0, 20).map(t => [
+        t.ticker || '—',
+        t.qty || '—',
+        fmtDate(t.entryDate),
+        t.side || 'long',
+        t.entryPrice ? '$' + t.entryPrice : '<em style="color:#dc2626">missing</em>'
+      ])
+    },
+    truncated: stocksNoEntry.length > 20 ? stocksNoEntry.length - 20 : 0,
+  });
+}
+
+// --- WARNING: closed stock trades missing R-multiple components (stop loss) ---
+const closedNoRisk = stocks.filter(t => {
+  if(t.status !== 'closed') return false;
+  if(t.rMultiple != null) return false;
+  return !t.stopLoss || !t.entryPrice;
+});
+if(closedNoRisk.length){
+  issues.push({
+    severity: 'warn',
+    title: 'Closed stock trades missing stop-loss for R-multiple',
+    desc: 'R-multiple = profit ÷ initial risk. Without a stop loss recorded at entry, this metric cannot be computed. This is why your dashboard Avg R-Multiple shows "—".',
+    count: closedNoRisk.length,
+    fix: 'For past trades, you can backfill the stop-loss you originally planned (or the natural support/resistance level you would have used). For new trades, set Stop Loss when you log entry.',
+    table: {
+      headers: ['Ticker','Entry Date','Entry $','Exit $','P/L','Stop Loss'],
+      rows: closedNoRisk.slice(0, 15).map(t => [
+        t.ticker || '—',
+        fmtDate(t.entryDate),
+        t.entryPrice ? '$' + t.entryPrice : '—',
+        t.exitPrice ? '$' + t.exitPrice : '—',
+        fmtMoney(t.pnl),
+        '<em style="color:#dc2626">missing</em>'
+      ])
+    },
+    truncated: closedNoRisk.length > 15 ? closedNoRisk.length - 15 : 0,
+  });
+}
+
+// --- WARNING: option trades missing isCredit flag ---
+const optNoCreditFlag = options.filter(t => {
+  if(!t.premiumIn) return false;
+  return t.isCredit === undefined || t.isCredit === null;
+});
+if(optNoCreditFlag.length){
+  issues.push({
+    severity: 'warn',
+    title: 'Option trades with ambiguous credit/debit status',
+    desc: 'Trades imported without a clear credit-vs-debit flag cannot be counted in your Premium Collected total. This is why your Premium Collected shows "—".',
+    count: optNoCreditFlag.length,
+    fix: 'Edit each trade — set Credit/Debit dropdown correctly. Cash-Secured Puts and Covered Calls are <strong>credit</strong>. Long Puts/Calls are <strong>debit</strong>. Spreads depend on whether you paid or received net premium.',
+    table: {
+      headers: ['Ticker','Strategy','Type','Premium','Status'],
+      rows: optNoCreditFlag.slice(0, 15).map(t => [
+        t.ticker || '—',
+        t.strategy || '—',
+        t.optType || '—',
+        '$' + (t.premiumIn || 0).toFixed(2),
+        t.status || 'open'
+      ])
+    },
+    truncated: optNoCreditFlag.length > 15 ? optNoCreditFlag.length - 15 : 0,
+  });
+}
+
+// --- WARNING: closed trades with no P/L recorded ---
+const closedNoPnl = [
+  ...stocks.filter(t => t.status === 'closed' && (t.pnl == null || isNaN(t.pnl))),
+  ...options.filter(t => t.status !== 'open' && (t.pnl == null || isNaN(t.pnl))),
+];
+if(closedNoPnl.length){
+  issues.push({
+    severity: 'crit',
+    title: 'Closed trades missing P/L',
+    desc: 'These trades are flagged closed but have no P/L recorded. They are silently dropped from your Total Realized P/L and Win Rate calculations.',
+    count: closedNoPnl.length,
+    fix: 'Edit each trade and either fill in Exit Price (auto-calculates P/L) or manually enter the realized P/L.',
+    table: {
+      headers: ['Type','Ticker','Entry Date','Exit Date','Status'],
+      rows: closedNoPnl.slice(0, 15).map(t => [
+        t.strategy ? 'Option' : 'Stock',
+        t.ticker || '—',
+        fmtDate(t.entryDate),
+        fmtDate(t.exitDate),
+        t.status || '—'
+      ])
+    },
+    truncated: closedNoPnl.length > 15 ? closedNoPnl.length - 15 : 0,
+  });
+}
+
+// --- INFO: trades with no broker/account assigned ---
+const noBroker = [
+  ...stocks.filter(t => !t.broker || !t.broker.trim()),
+  ...options.filter(t => !t.broker || !t.broker.trim()),
+];
+if(noBroker.length){
+  issues.push({
+    severity: 'info',
+    title: 'Trades with no account assigned',
+    desc: 'Without an account/broker tag, these trades cannot be filtered or analyzed by account in performance reports.',
+    count: noBroker.length,
+    fix: 'Bulk-edit by ticker or date range to assign an account. If all trades are from one Schwab account, you can run a one-line console command to backfill (see Quick Fix below).',
+    code: `// Run this in browser console while on trade-journal-pro.html\n// (Replaces empty broker on all trades with 'Schwab')\nconst stk = JSON.parse(localStorage.getItem('tj_stocks_v2') || '[]');\nstk.forEach(t => { if(!t.broker) t.broker = 'Schwab'; });\nlocalStorage.setItem('tj_stocks_v2', JSON.stringify(stk));\n\nconst opt = JSON.parse(localStorage.getItem('tj_options_v3') || '[]');\nopt.forEach(t => { if(!t.broker) t.broker = 'Schwab'; });\nlocalStorage.setItem('tj_options_v3', JSON.stringify(opt));\n\nlocation.reload();`,
+  });
+}
+
+// --- INFO: closed trades with no setup tag ---
+const noSetup = stocks.filter(t => t.status === 'closed' && (!t.setup || !t.setup.trim()));
+if(noSetup.length){
+  issues.push({
+    severity: 'info',
+    title: 'Closed stock trades with no setup tag',
+    desc: 'Setup tags (Breakout, Pullback, Earnings, etc.) let you analyze win rate by strategy. The more you tag, the more pattern visibility you get.',
+    count: noSetup.length,
+    fix: 'Backfill setup tags as you remember them. Even tagging your last 20-30 trades will give you meaningful insights into which setups actually make money for you.',
+  });
+}
+
+// --- INFO: closed trades with no notes/thesis ---
+const noNotes = [
+  ...stocks.filter(t => t.status === 'closed' && (!t.notes || !t.notes.trim())),
+  ...options.filter(t => t.status !== 'open' && (!t.notes || !t.notes.trim())),
+];
+if(noNotes.length){
+  issues.push({
+    severity: 'info',
+    title: 'Closed trades with no thesis or notes',
+    desc: 'Trades without notes are nearly impossible to learn from. You will not remember why you took the trade or what you learned.',
+    count: noNotes.length,
+    fix: 'For future trades, write at minimum 1 sentence on entry ("Why I am taking this") and 1 sentence on exit ("What I learned"). Backfilling old trades is optional but valuable for your most impactful trades (best wins, worst losses).',
+  });
+}
+
+// --- WARNING: option trades with strategy="Other" or empty ---
+const optBadStrategy = options.filter(t => !t.strategy || t.strategy === 'Other' || t.strategy === '');
+if(optBadStrategy.length){
+  issues.push({
+    severity: 'warn',
+    title: 'Option trades with no/unknown strategy',
+    desc: 'Without a strategy tag, these trades will not be categorized correctly in performance breakdowns. The Tier 1 Needs Attention widget also relies on strategy to display correctly.',
+    count: optBadStrategy.length,
+    fix: 'Edit and select the matching strategy: Long Call, Long Put, Cash-Secured Put, Covered Call, Credit Spread, Debit Spread, Iron Condor, Straddle, Strangle, Calendar Spread, or Diagonal.',
+    table: {
+      headers: ['Ticker','Type','Strike','Premium','Strategy'],
+      rows: optBadStrategy.slice(0, 10).map(t => [
+        t.ticker || '—',
+        t.optType || '—',
+        t.strike ? '$' + t.strike : '—',
+        t.premiumIn ? '$' + t.premiumIn.toFixed(2) : '—',
+        t.strategy ? `<em>${escHtml(t.strategy)}</em>` : '<em style="color:#dc2626">empty</em>'
+      ])
+    },
+    truncated: optBadStrategy.length > 10 ? optBadStrategy.length - 10 : 0,
+  });
+}
+
+// --- WARNING: open trades missing target/stop (Tier 1 plan capture) ---
+const openNoPlan = options.filter(t => {
+  if(t.status !== 'open') return false;
+  return !t.targetPremium && !t.stopPremium && !t.manageBy;
+});
+if(openNoPlan.length){
+  issues.push({
+    severity: 'warn',
+    title: 'Open option trades with no exit plan',
+    desc: 'You added the Tier 1 Exit Plan fields (target / stop / manage-by) — but existing open trades do not have those values set. This means the "Needs Attention" widget cannot warn you about them at the right times.',
+    count: openNoPlan.length,
+    fix: 'Edit each open option trade and fill in: <strong>Profit Target</strong> (typically 50% of max profit), <strong>Stop Loss</strong> (typically 2× credit or full debit lost), and <strong>Manage By Date</strong> (typically expiration minus 21 days).',
+    table: {
+      headers: ['Ticker','Strategy','Strike','Expiry','DTE'],
+      rows: openNoPlan.slice(0, 15).map(t => [
+        t.ticker || '—',
+        t.strategy || '—',
+        t.strike ? '$' + t.strike : '—',
+        fmtDate(t.expiry),
+        dteFromToday(t.expiry) ?? '—'
+      ])
+    },
+    truncated: openNoPlan.length > 15 ? openNoPlan.length - 15 : 0,
+  });
+}
+
+// ============================================================
+// RENDER ISSUES
+// ============================================================
+function renderIssues(){
+  const c = document.getElementById('issuesContainer');
+  if(!issues.length){
+    c.innerHTML = `<div class="empty-state">
+      <div class="icon">✨</div>
+      <div><strong>Your data is clean!</strong></div>
+      <p>No hygiene issues detected. Everything is properly tagged and tracked.</p>
+    </div>`;
+    return;
+  }
+
+  // Sort: crit > warn > info
+  const order = { crit: 0, warn: 1, info: 2 };
+  issues.sort((a, b) => order[a.severity] - order[b.severity]);
+
+  c.innerHTML = issues.map(iss => {
+    const tableHtml = iss.table ? `
+      <table>
+        <thead><tr>${iss.table.headers.map(h => `<th>${escHtml(h)}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${iss.table.rows.map(r => `<tr>${r.map((c, i) => `<td${i===0?' class="sym"':''}>${c}</td>`).join('')}</tr>`).join('')}
+        </tbody>
+      </table>
+      ${iss.truncated ? `<div class="more">… and ${iss.truncated} more — see CSV export below for the full list</div>` : ''}
+    ` : '';
+
+    const codeHtml = iss.code ? `<details style="margin-top:10px"><summary>Show quick-fix script</summary><pre class="code">${escHtml(iss.code)}</pre></details>` : '';
+
+    return `
+      <div class="issue ${iss.severity}">
+        <h3>
+          <span class="count">${iss.count}</span>
+          ${escHtml(iss.title)}
+        </h3>
+        <p class="desc">${escHtml(iss.desc)}</p>
+        <div class="fix">💡 <strong>Fix:</strong> ${iss.fix}</div>
+        ${tableHtml}
+        ${codeHtml}
+      </div>
+    `;
+  }).join('');
+}
+
+// ============================================================
+// CSV EXPORT
+// ============================================================
+function generateCsv(){
+  const rows = [['type','ticker','status','entry_date','expiry_or_exit_date','issue','recommended_action','trade_id']];
+
+  // Expired but open
+  options.filter(t => t.status === 'open' && dteFromToday(t.expiry) < 0).forEach(t => {
+    rows.push(['option', t.ticker || '', t.status, t.entryDate || '', t.expiry || '',
+      'expired but still open', 'Set status to Expired/Closed/Assigned', t.id || '']);
+  });
+
+  // Stocks missing entry price
+  stocks.filter(t => t.status === 'open' && (!t.entryPrice || t.entryPrice <= 0)).forEach(t => {
+    rows.push(['stock', t.ticker || '', t.status, t.entryDate || '', t.exitDate || '',
+      'missing entry price', 'Add entry price from broker', t.id || '']);
+  });
+
+  // Stocks missing R components
+  stocks.filter(t => t.status === 'closed' && t.rMultiple == null && (!t.stopLoss || !t.entryPrice)).forEach(t => {
+    rows.push(['stock', t.ticker || '', t.status, t.entryDate || '', t.exitDate || '',
+      'missing stop loss for R-multiple', 'Add original stop loss level', t.id || '']);
+  });
+
+  // Options missing isCredit
+  options.filter(t => t.premiumIn && (t.isCredit === undefined || t.isCredit === null)).forEach(t => {
+    rows.push(['option', t.ticker || '', t.status, t.entryDate || '', t.expiry || '',
+      'missing credit/debit flag', 'Set Credit/Debit dropdown correctly', t.id || '']);
+  });
+
+  // Closed no PnL
+  stocks.filter(t => t.status === 'closed' && (t.pnl == null || isNaN(t.pnl))).forEach(t => {
+    rows.push(['stock', t.ticker || '', t.status, t.entryDate || '', t.exitDate || '',
+      'closed without P/L', 'Add exit price or manual P/L', t.id || '']);
+  });
+  options.filter(t => t.status !== 'open' && (t.pnl == null || isNaN(t.pnl))).forEach(t => {
+    rows.push(['option', t.ticker || '', t.status, t.entryDate || '', t.expiry || '',
+      'closed without P/L', 'Add exit premium or manual P/L', t.id || '']);
+  });
+
+  // No broker
+  [...stocks.filter(t => !t.broker || !t.broker.trim()).map(t => ({...t, _type: 'stock'})),
+   ...options.filter(t => !t.broker || !t.broker.trim()).map(t => ({...t, _type: 'option'}))
+  ].forEach(t => {
+    rows.push([t._type, t.ticker || '', t.status, t.entryDate || '', t.exitDate || t.expiry || '',
+      'no account assigned', 'Set broker/account', t.id || '']);
+  });
+
+  // No setup
+  stocks.filter(t => t.status === 'closed' && (!t.setup || !t.setup.trim())).forEach(t => {
+    rows.push(['stock', t.ticker || '', t.status, t.entryDate || '', t.exitDate || '',
+      'no setup tag', 'Add setup tag (Breakout/Pullback/etc)', t.id || '']);
+  });
+
+  // Bad strategy
+  options.filter(t => !t.strategy || t.strategy === 'Other' || t.strategy === '').forEach(t => {
+    rows.push(['option', t.ticker || '', t.status, t.entryDate || '', t.expiry || '',
+      'no strategy tag', 'Set strategy correctly', t.id || '']);
+  });
+
+  // Open no plan
+  options.filter(t => t.status === 'open' && !t.targetPremium && !t.stopPremium && !t.manageBy).forEach(t => {
+    rows.push(['option', t.ticker || '', t.status, t.entryDate || '', t.expiry || '',
+      'no exit plan set', 'Set profit target / stop / manage-by date', t.id || '']);
+  });
+
+  const csv = rows.map(r => r.map(c => {
+    const s = String(c ?? '');
+    return /[",\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+  }).join(',')).join('\n');
+
+  document.getElementById('csvText').value = csv;
+  document.getElementById('csvOut').style.display = '';
+  return csv;
+}
+
+function copyCsv(){
+  const csv = generateCsv();
+  navigator.clipboard.writeText(csv).then(() => {
+    alert('Punch-list copied to clipboard! Paste it into Excel or a Claude chat.');
+  });
+}
+
+function downloadCsv(){
+  const csv = generateCsv();
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'trade-journal-hygiene-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================
+// INITIALIZE
+// ============================================================
+renderSnapshot();
+renderIssues();
+</script>
+</body>
+</html>

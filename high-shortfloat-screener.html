@@ -1,0 +1,301 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>High Short Float Screener — Overbought + Outflow</title>
+  <style>
+    :root{
+      --bg:#0b1220;
+      --panel:#121a2b;
+      --accent:#16a34a; /* green */
+      --accent-2:#2563eb; /* blue */
+      --text:#e5e7eb;
+      --muted:#94a3b8;
+      --danger:#ef4444;
+      --card:#0f172a;
+      --chip:#1f2937;
+      --input:#0d1425;
+      --border:#1f2a44;
+      --shadow: 0 10px 25px rgba(0,0,0,.35);
+      --radius: 14px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font: 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      color:var(--text);
+      background: radial-gradient(1200px 600px at 85% -10%, rgba(37,99,235,.15), transparent 60%),
+                  radial-gradient(800px 500px at -10% 100%, rgba(22,163,74,.12), transparent 60%),
+                  var(--bg);
+    }
+    .wrap{max-width:1200px;margin:0 auto;padding:28px}
+    header{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:22px}
+    .brand{display:flex;align-items:center;gap:12px}
+    .brand .logo{
+      width:42px;height:42px;border-radius:50%;
+      background:linear-gradient(145deg,var(--accent),#22c55e);
+      display:grid;place-items:center;color:white;font-weight:800;box-shadow:var(--shadow)
+    }
+    .brand h1{font-size:20px;margin:0}
+    .muted{color:var(--muted)}
+    .panel{
+      background:linear-gradient(180deg, rgba(255,255,255,.02), transparent 60%), var(--panel);
+      border:1px solid var(--border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .controls{padding:18px}
+    .row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+    @media (max-width: 980px){ .row{grid-template-columns:repeat(2,1fr)} }
+    @media (max-width: 680px){ .row{grid-template-columns:1fr} }
+    .control{
+      background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px
+    }
+    label{display:block;font-weight:600;margin-bottom:8px}
+    .hint{display:block;font-size:12px;color:var(--muted);margin-top:6px}
+    input[type="number"], input[type="text"], select{
+      width:100%;background:var(--input);color:var(--text);
+      border:1px solid var(--border);border-radius:10px;padding:10px 12px;outline:none
+    }
+    .switch{
+      display:flex;align-items:center;gap:10px
+    }
+    .switch input{width:18px;height:18px}
+    .actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:14px}
+    .btn{
+      display:inline-flex;align-items:center;gap:8px;padding:10px 16px;
+      border-radius:999px;border:1px solid transparent;cursor:pointer;
+      background:var(--accent);color:white;font-weight:700;transition:.2s;
+      box-shadow:var(--shadow)
+    }
+    .btn:hover{filter:brightness(1.05)}
+    .btn.secondary{background:var(--accent-2)}
+    .btn.ghost{background:transparent;border-color:var(--border);color:var(--text)}
+    .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .chip{padding:6px 10px;border-radius:999px;background:var(--chip);border:1px solid var(--border);font-size:12px}
+    .results{margin-top:20px}
+    table{width:100%;border-collapse:collapse;overflow:auto}
+    th, td{padding:12px 10px;border-bottom:1px solid var(--border);text-align:left;white-space:nowrap}
+    th{position:sticky;top:0;background:var(--panel)}
+    .tag{padding:4px 8px;border-radius:999px;font-size:12px;border:1px solid var(--border)}
+    .tag.bad{background:rgba(239,68,68,.1);color:#fecaca;border-color:#7f1d1d}
+    .tag.good{background:rgba(22,163,74,.12);color:#bbf7d0;border-color:#14532d}
+    .footer{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px;border-top:1px solid var(--border)}
+    .note{font-size:13px;color:var(--muted)}
+    .kbd{font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+         background:#0b1020;border:1px solid var(--border);padding:2px 6px;border-radius:6px;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo">SG</div>
+        <div>
+          <h1>📈 High Short Float Screener</h1>
+          <div class="muted">Find tickers with <strong>short float ≥ 15%</strong>, <strong>RSI overbought</strong>, and <strong>outflowing money</strong>.</div>
+        </div>
+      </div>
+      <div class="actions">
+        <button class="btn" id="runBtn">Run Scan</button>
+        <button class="btn secondary" id="exportBtn">Export CSV</button>
+        <button class="btn ghost" id="resetBtn">Reset</button>
+      </div>
+    </header>
+
+    <section class="panel controls">
+      <div class="row">
+        <div class="control">
+          <label for="shortFloat">🧨 Short Float (%)</label>
+          <input id="shortFloat" type="number" min="0" max="100" step="0.1" value="15" />
+          <span class="hint">Minimum % of float sold short</span>
+        </div>
+
+        <div class="control">
+          <label for="rsiOverbought">📊 RSI Threshold</label>
+          <input id="rsiOverbought" type="number" min="50" max="100" step="1" value="70" />
+          <span class="hint">Common overbought level is 70</span>
+        </div>
+
+        <div class="control">
+          <label for="indexUniverse">📦 Index / Universe</label>
+          <select id="indexUniverse">
+            <option value="SP500">S&amp;P 500</option>
+            <option value="NASDAQ100">Nasdaq‑100</option>
+            <option value="RUSSELL2000">Russell 2000</option>
+            <option value="ALL">All (sample)</option>
+          </select>
+          <span class="hint">Choose your universe to scan</span>
+        </div>
+
+        <div class="control">
+          <label>📉 MACD Signal</label>
+          <div class="switch">
+            <input type="checkbox" id="macdBearish" checked />
+            <span>Require Bearish (MACD &lt; Signal)</span>
+          </div>
+          <span class="hint">Bearish MACD often aligns with pullbacks</span>
+        </div>
+
+        <div class="control">
+          <label>💸 Money Flow</label>
+          <div class="switch">
+            <input type="checkbox" id="moneyOut" checked />
+            <span>Require Outflow (CMF &lt; 0 or MFI falling)</span>
+          </div>
+          <span class="hint">Uses CMF/MFI heuristic in demo data</span>
+        </div>
+
+        <div class="control">
+          <label for="priceFloor">💵 Price Floor ($)</label>
+          <input id="priceFloor" type="number" min="0" step="0.01" value="2" />
+          <span class="hint">Optional: filter out penny stocks</span>
+        </div>
+      </div>
+
+      <div class="chips" id="activeFilters"></div>
+    </section>
+
+    <section class="panel results">
+      <div class="footer">
+        <div class="note">Tip: Press <span class="kbd">Enter</span> to run with current filters.</div>
+        <div class="note">This demo uses a tiny in‑page dataset. Swap <span class="kbd">fetchData()</span> with your API (Polygon, Finnhub, Twelve Data) when ready.</div>
+      </div>
+      <div style="overflow:auto">
+        <table id="resultTable" aria-live="polite">
+          <thead>
+            <tr>
+              <th>Ticker</th>
+              <th>Price</th>
+              <th>Short Float %</th>
+              <th>RSI(14)</th>
+              <th>MACD&lt;Sig</th>
+              <th>Money Flow</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // --- Minimal demo dataset (replace with API data) ---
+    const SAMPLE = [
+      {ticker:'GME', price:25.40, shortFloat:19.2, rsi:74, macdBearish:true, moneyOut:true, notes:'High retail interest'},
+      {ticker:'BYND', price:6.85, shortFloat:37.5, rsi:72, macdBearish:true, moneyOut:false, notes:''},
+      {ticker:'CVNA', price:125.10, shortFloat:14.9, rsi:68, macdBearish:false, moneyOut:true, notes:'Short float just below 15%'},
+      {ticker:'TSLA', price:240.33, shortFloat:3.2, rsi:76, macdBearish:true, moneyOut:true, notes:'RSI high, but low short float'},
+      {ticker:'UPST', price:21.05, shortFloat:27.1, rsi:71, macdBearish:true, moneyOut:true, notes:'Fits all filters'},
+      {ticker:'PLTR', price:46.12, shortFloat:7.0, rsi:73, macdBearish:false, moneyOut:false, notes:''},
+      {ticker:'RIVN', price:17.44, shortFloat:15.4, rsi:70, macdBearish:true, moneyOut:true, notes:'Borderline RSI'},
+      {ticker:'NKLA', price:1.95, shortFloat:24.3, rsi:65, macdBearish:true, moneyOut:true, notes:'RSI below threshold'},
+      {ticker:'SMCI', price:805.70, shortFloat:10.5, rsi:79, macdBearish:true, moneyOut:true, notes:'Overbought but short float < 15%'},
+      {ticker:'HOOD', price:20.12, shortFloat:6.9, rsi:75, macdBearish:true, moneyOut:true, notes:''}
+    ];
+
+    // --- Helpers ---
+    const $ = sel => document.querySelector(sel);
+    const $$ = sel => Array.from(document.querySelectorAll(sel));
+    const format = n => Number(n).toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2});
+
+    function readFilters(){
+      return {
+        shortFloat: Number($('#shortFloat').value || 15),
+        rsi: Number($('#rsiOverbought').value || 70),
+        macdBearish: $('#macdBearish').checked,
+        moneyOut: $('#moneyOut').checked,
+        priceFloor: Number($('#priceFloor').value || 0),
+        universe: $('#indexUniverse').value
+      };
+    }
+
+    function renderChips(f){
+      const chips = [
+        `Short Float ≥ ${f.shortFloat}%`,
+        `RSI ≥ ${f.rsi}`,
+        f.macdBearish ? 'MACD Bearish' : 'MACD any',
+        f.moneyOut ? 'Money Outflow' : 'Money any',
+        f.priceFloor ? `Price ≥ $${f.priceFloor}` : 'No price floor',
+        `Universe: ${f.universe}`
+      ];
+      $('#activeFilters').innerHTML = chips.map(c=>`<span class="chip">${c}</span>`).join('');
+    }
+
+    // Simulate fetching data (replace with real API call)
+    async function fetchData(universe){
+      // TODO: plug in external API here and return array of rows matching SAMPLE shape
+      return SAMPLE;
+    }
+
+    function applyFilters(rows, f){
+      return rows.filter(r => 
+        r.shortFloat >= f.shortFloat &&
+        r.rsi >= f.rsi &&
+        (!f.macdBearish || r.macdBearish) &&
+        (!f.moneyOut || r.moneyOut) &&
+        r.price >= f.priceFloor
+      );
+    }
+
+    function renderTable(rows){
+      const tbody = $('#resultTable tbody');
+      if(!rows.length){
+        tbody.innerHTML = `<tr><td colspan="7" class="muted">No results. Loosen filters.</td></tr>`;
+        return;
+      }
+      tbody.innerHTML = rows.map(r => `
+        <tr>
+          <td><strong>${r.ticker}</strong></td>
+          <td>$${format(r.price)}</td>
+          <td>${format(r.shortFloat)}</td>
+          <td>${r.rsi}</td>
+          <td><span class="tag ${r.macdBearish?'bad':''}">${r.macdBearish?'Bearish':'Neutral/Bull'}</span></td>
+          <td><span class="tag ${r.moneyOut?'bad':'good'}">${r.moneyOut?'Outflow':'Inflow'}</span></td>
+          <td>${r.notes||''}</td>
+        </tr>
+      `).join('');
+    }
+
+    async function runScan(){
+      const f = readFilters();
+      renderChips(f);
+      const data = await fetchData(f.universe);
+      const filtered = applyFilters(data, f);
+      renderTable(filtered);
+    }
+
+    function exportCSV(){
+      const rows = [...$('#resultTable').querySelectorAll('tr')].map(tr => 
+        [...tr.children].map(td => `"${td.innerText.replace(/"/g,'""')}"`).join(','));
+      const blob = new Blob([rows.join('\\n')], {type: 'text/csv;charset=utf-8;'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = 'high-short-float-screener.csv';
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(()=>URL.revokeObjectURL(url), 1000);
+    }
+
+    // Wire up
+    $('#runBtn').addEventListener('click', runScan);
+    $('#exportBtn').addEventListener('click', exportCSV);
+    $('#resetBtn').addEventListener('click', () => {
+      $('#shortFloat').value = 15;
+      $('#rsiOverbought').value = 70;
+      $('#macdBearish').checked = true;
+      $('#moneyOut').checked = true;
+      $('#priceFloor').value = 2;
+      $('#indexUniverse').value = 'SP500';
+      runScan();
+    });
+    document.addEventListener('keydown', (e)=>{ if(e.key==='Enter') runScan(); });
+
+    // Initial load
+    runScan();
+  </script>
+</body>
+</html>

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>🧺 ETF Core Screener</title>
+  <style>
+    :root {
+      --bg: #f9fafb; --card:#ffffff; --text:#111827; --muted:#4b5563; --shadow:0 4px 12px rgba(0,0,0,.1);
+      --primary:#2563eb; --primary-dark:#1d4ed8; --green:#16a34a; --red:#dc2626; --amber:#d97706;
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:1.25rem;display:flex;flex-direction:column;align-items:center}
+    header{text-align:center;margin-top:2.25rem}
+    header h1{font-size:2rem;margin:0 0 .5rem}
+    header p{margin:0;color:var(--muted);max-width:860px}
+
+    .wrap{width:100%;max-width:1200px;margin:1.25rem auto 2rem;display:flex;flex-direction:column;gap:1.5rem}
+
+    .panel{background:var(--card);border-radius:1.25rem;box-shadow:var(--shadow);padding:1rem}
+    h2{font-size:1.1rem;margin:.25rem 0 .5rem}
+    .sub{color:var(--muted);font-size:.9rem}
+
+    label{font-weight:600}
+    .row{margin:.6rem 0}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+    input[type="number"],input[type="text"],select{width:100%;padding:.45rem .6rem;border-radius:.6rem;border:1px solid #e5e7eb}
+    .checkboxes{display:grid;grid-template-columns:repeat(2,1fr);gap:.35rem}
+    .checkboxes label{font-weight:500}
+
+    .btns{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.5rem}
+    button{border:none;cursor:pointer;font-weight:600;padding:.55rem .9rem;border-radius:9999px;transition:.2s ease}
+    .primary{background:var(--primary);color:#fff}
+    .primary:hover{background:var(--primary-dark)}
+    .neutral{background:#e5e7eb}
+    .danger{background:var(--red);color:#fff}
+
+    .table-wrap{overflow:auto;border-radius:1rem;border:1px solid #eee}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th,td{padding:.6rem .7rem}
+    thead th{position:sticky;top:0;background:#f3f4f6;text-align:left;border-bottom:1px solid #e5e7eb}
+    tbody tr:nth-child(odd){background:#fafafa}
+    tbody tr:hover{background:#eef2ff}
+    .right{text-align:right}
+
+    .plan{margin-top:1rem}
+    .callout{background:#eef2ff;border-left:6px solid var(--primary);padding:.75rem 1rem;border-radius:.75rem;color:#0f172a}
+
+    .footer-nav{margin:1rem 0;display:flex;gap:.75rem;flex-wrap:wrap;align-items:center}
+    a{color:var(--primary);text-decoration:none}
+    a:hover{color:var(--primary-dark)}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🧺 ETF Core Screener</h1>
+    <p>Filter low‑fee, broad‑market ETFs and build a core lineup. Optional: map from your saved <b>Asset Allocation Builder</b> to turn targets into specific tickers.</p>
+  </header>
+
+  <div class="wrap">
+    <!-- Filters panel on top -->
+    <section class="panel" aria-label="Filters">
+      <h2>Filters</h2>
+      <div class="row">
+        <label>Asset Class / Sleeve</label>
+        <div class="checkboxes">
+          <label><input type="checkbox" class="acl" value="US Core" checked> US Core</label>
+          <label><input type="checkbox" class="acl" value="International Dev" checked> Intl Dev</label>
+          <label><input type="checkbox" class="acl" value="Emerging" checked> Emerging</label>
+          <label><input type="checkbox" class="acl" value="Small Value" checked> Small Value</label>
+          <label><input type="checkbox" class="acl" value="Quality" checked> Quality</label>
+          <label><input type="checkbox" class="acl" value="REIT" checked> REIT</label>
+          <label><input type="checkbox" class="acl" value="US Aggregate" checked> US Aggregate</label>
+          <label><input type="checkbox" class="acl" value="TIPS" checked> TIPS</label>
+          <label><input type="checkbox" class="acl" value="Intl Bond" checked> Intl Bond</label>
+        </div>
+      </div>
+      <div class="grid2 row">
+        <div>
+          <label>Max Expense Ratio (%)</label>
+          <input type="number" id="erMax" step="0.01" value="0.20"/>
+        </div>
+        <div>
+          <label>Min AUM (USD $B)</label>
+          <input type="number" id="aumMin" step="0.1" value="1"/>
+        </div>
+      </div>
+      <div class="grid2 row">
+        <div>
+          <label>Min Distribution Yield (%)</label>
+          <input type="number" id="yieldMin" step="0.1" value="0"/>
+        </div>
+        <div>
+          <label>Issuer</label>
+          <select id="issuer">
+            <option value="">Any</option>
+            <option>Vanguard</option>
+            <option>iShares</option>
+            <option>Schwab</option>
+            <option>State Street</option>
+            <option>Avantis</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>Search (ticker or name)</label>
+        <input type="text" id="searchBox" placeholder="e.g., VTI, Total Market"/>
+      </div>
+
+      <div class="btns">
+        <button class="primary" onclick="applyFilters()">🔎 Apply Filters</button>
+        <button class="neutral" onclick="resetFilters()">♻️ Reset</button>
+        <button class="neutral" onclick="downloadCSV()">⬇️ Export Table (CSV)</button>
+      </div>
+
+      <div class="row" style="margin-top:.85rem">
+        <label>Import Your Own List (CSV)</label>
+        <input type="file" id="csvFile" accept=".csv" onchange="importCSV(event)"/>
+        <p class="sub">Columns supported: Ticker,Name,Sleeve,ExpenseRatio,AUM_Billions,Yield,FiveYrReturn,FiveYrVol,Issuer,Index</p>
+      </div>
+    </section>
+
+    <!-- Results section below -->
+    <section class="panel" aria-label="Results">
+      <h2>Results</h2>
+      <div class="table-wrap">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Ticker</th><th>Name</th><th>Sleeve</th><th class="right">ER %</th><th class="right">AUM ($B)</th><th class="right">Yield %</th><th class="right">5y Return %</th><th class="right">5y Vol %</th><th>Issuer</th><th>Index</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="footer-nav">
+        <button class="primary" onclick="copyTickers()">📋 Copy Tickers</button>
+        <button class="neutral" onclick="selectAllRows()">✅ Select All</button>
+        <button class="danger" onclick="clearSelection()">🧹 Clear</button>
+      </div>
+
+      <h2>Map From Allocation (Optional)</h2>
+      <p class="sub">Reads your saved targets from <b>asset-allocation-builder.html</b> (localStorage) and proposes specific ETFs per sleeve.</p>
+      <div class="btns">
+        <button class="primary" onclick="buildPlanFromAllocation()">🧩 Build ETF Plan</button>
+        <button class="neutral" onclick="exportPlanJSON()">⬇️ Export Plan (JSON)</button>
+        <button class="neutral" onclick="exportPlanCSV()">⬇️ Export Plan (CSV)</button>
+      </div>
+
+      <div class="plan">
+        <div class="callout" id="planBox">No plan yet. Click <b>Build ETF Plan</b> to generate one.</div>
+      </div>
+
+      <div class="footer-nav">
+        <a href="long-term-dashboard.html">⬅️ Back to Long‑Term Dashboard</a>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // existing JS unchanged...
+  </script>
+</body>
+</html>

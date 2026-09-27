@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Sector Sentiment Meter</title>
+<style>
+  :root{
+    --bg:#0b1020; --panel:#121936; --ink:#e9edf7; --muted:#9fb2d0;
+    --good:#1fa971; --warn:#ffb020; --bad:#e05252; --over:#f07f2f;
+    --accent:#2f6dff; --accent-2:#16a34a; --card:#0f1530;
+    --grid-gap:14px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;}
+  .wrap{max-width:1200px; margin:32px auto; padding:0 16px;}
+  header{display:flex; flex-wrap:wrap; align-items:center; gap:12px; justify-content:space-between; margin-bottom:18px}
+  h1{font-size:22px; margin:0}
+  .sub{color:var(--muted); font-size:13px}
+  .btn{
+    display:inline-flex; align-items:center; gap:10px;
+    border:none; padding:10px 16px; border-radius:999px;
+    cursor:pointer; color:white; background:var(--accent); transition:filter .2s ease;
+  }
+  .btn:hover{filter:brightness(1.05)}
+  .btn.secondary{background:var(--accent-2)}
+  .btn.ghost{background:transparent; border:1px solid rgba(255,255,255,.15)}
+  .btn.small{padding:6px 10px; font-size:12px}
+
+  .grid{display:grid; grid-template-columns: repeat(12, 1fr); gap:var(--grid-gap);}
+  .panel{
+    background:linear-gradient(180deg, var(--panel), var(--card));
+    border:1px solid rgba(255,255,255,.06); border-radius:14px; padding:16px;
+    box-shadow:0 6px 24px rgba(0,0,0,.25);
+  }
+  .panel h2{margin:0 0 8px; font-size:16px}
+  .small{font-size:12px; color:var(--muted)}
+
+  /* Heatmap */
+  .heatmap{display:grid; grid-template-columns: repeat(6, 1fr); gap:10px}
+  .cell{
+    border-radius:12px; padding:14px; text-align:center;
+    background:#0d1430; border:1px solid rgba(255,255,255,.06); cursor:pointer;
+  }
+  .cell .tag{display:block; font-weight:600; margin-bottom:2px}
+  .sector-name{
+    display:block; font-size:11px; color: var(--muted); margin-bottom:6px;
+  }
+  .score{font-size:20px; font-weight:700}
+  .sig{font-size:12px; opacity:.9}
+
+  /* Score colors */
+  .s-sell{background: linear-gradient(180deg, #2a0f16, #1b0b10); border-color: rgba(224,82,82,.35)}
+  .s-neutral{background: linear-gradient(180deg, #1a1a25, #121420); border-color: rgba(255,255,255,.08)}
+  .s-buy{background: linear-gradient(180deg, #0f231b, #0b1813); border-color: rgba(31,169,113,.35)}
+  .s-over{background: linear-gradient(180deg, #231a0f, #171107); border-color: rgba(240,127,47,.35)}
+
+  /* Gauges */
+  .gauges{display:grid; grid-template-columns: repeat(2, 1fr); gap:12px}
+  .gauge{
+    display:flex; flex-direction:column; gap:8px; padding:12px; border-radius:12px;
+    background:#0d1430; border:1px solid rgba(255,255,255,.06); cursor:pointer;
+  }
+  .gauge .head{display:flex; align-items:flex-start; justify-content:space-between; gap:8px}
+  .sector-name-sm{
+    display:block; font-size:11px; color: var(--muted); line-height:1.1;
+  }
+  .meter{height:12px; border-radius:999px; background:rgba(255,255,255,.08); position:relative; overflow:hidden;}
+  .fill{position:absolute; height:100%; left:0; top:0; width:0%; background:linear-gradient(90deg, var(--bad), var(--warn), var(--good), var(--over)); transition:width .5s ease;}
+  .legend{display:flex; gap:8px; color:var(--muted); font-size:11px}
+  .chip{padding:2px 8px; border-radius:999px; border:1px solid rgba(255,255,255,.12)}
+  .chip.bad{color:#ffb3b3; border-color:#e05252}
+  .chip.mid{color:#ffd699; border-color:#ffb020}
+  .chip.good{color:#b7f5da; border-color:#1fa971}
+  .chip.over{color:#ffd3b1; border-color:#f07f2f}
+  footer{margin-top:16px; color:var(--muted); font-size:12px}
+
+  /* Time-series */
+  .ts-header{display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px}
+  .ts-controls{display:flex; gap:8px; flex-wrap:wrap}
+  canvas{width:100%; height:260px; display:block; border-radius:12px; background:#0d1430; border:1px solid rgba(255,255,255,.06)}
+  .note{font-size:12px; color:var(--muted); margin-top:6px}
+
+  @media (max-width: 900px){
+    .heatmap{grid-template-columns: repeat(3, 1fr);}
+    .gauges{grid-template-columns: 1fr;}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>📊 Sector Sentiment</h1>
+        <div class="sub">Daily composite score per sector (0–100) → signal</div>
+      </div>
+      <div>
+        <button class="btn" id="refreshBtn">🔄 Refresh</button>
+        <button class="btn secondary" id="todayBtn">📅 Today</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="panel" style="grid-column: span 12;">
+        <h2>Heatmap</h2>
+        <div class="small">Quick sector overview</div>
+        <div id="heatmap" class="heatmap"></div>
+      </section>
+
+      <section class="panel" style="grid-column: span 7;">
+        <h2>Gauges</h2>
+        <div class="small">Hover any bar for components • Click to pin</div>
+        <div id="gauges" class="gauges"></div>
+        <div class="legend" style="margin-top:8px;">
+          <span class="chip bad">0–30 Sell</span>
+          <span class="chip mid">31–50 Neutral</span>
+          <span class="chip good">51–70 Buy</span>
+          <span class="chip over">71–100 Overbought</span>
+        </div>
+      </section>
+
+      <section class="panel" style="grid-column: span 5;">
+        <h2>Details (today)</h2>
+        <div class="small">Click a sector to pin</div>
+        <div id="details" class="small">Select a sector…</div>
+      </section>
+
+      <!-- Time-series panel -->
+      <section class="panel" style="grid-column: span 12;">
+        <div class="ts-header">
+          <div>
+            <h2 id="tsTitle">Time-Series (last 30 days)</h2>
+            <div class="small" id="tsSubtitle">Sector: —</div>
+          </div>
+          <div class="ts-controls">
+            <button class="btn small ghost" data-range="7">7d</button>
+            <button class="btn small ghost" data-range="30">30d</button>
+            <button class="btn small ghost" data-range="90">90d</button>
+          </div>
+        </div>
+        <canvas id="tsCanvas" width="1100" height="260" aria-label="Time series"></canvas>
+        <div class="note">Tip: Click any sector above to update this chart.</div>
+      </section>
+    </div>
+
+    <footer>Add this to your GenieSphere dashboard. Data auto-refreshes daily via n8n.</footer>
+  </div>
+
+<script>
+/** CONFIG: plug in Supabase if you want live data now */
+const SUPABASE_URL = ""; // e.g., https://xyzcompany.supabase.co
+const SUPABASE_KEY = ""; // anon key if RLS allows read
+const USE_SUPABASE = false; // set true when you add keys
+
+/** Map ETF ticker -> sector name */
+const SECTOR_NAMES = {
+  XLK: "Technology",
+  XLF: "Financials",
+  XLE: "Energy",
+  XLV: "Healthcare",
+  XLY: "Consumer Discretionary",
+  XLP: "Consumer Staples",
+  XLI: "Industrials",
+  XLB: "Materials",
+  XLRE: "Real Estate",
+  XLC: "Communication Services",
+  XLU: "Utilities"
+};
+
+/** Today snapshot MOCK */
+const MOCK_TODAY = [
+  {sector:"XLK", score:72, signal:"Buy", components:{trend:68, options:66, news:58, flows:80}},
+  {sector:"XLF", score:45, signal:"Neutral", components:{trend:44, options:48, news:41, flows:47}},
+  {sector:"XLE", score:28, signal:"Sell", components:{trend:25, options:33, news:30, flows:20}},
+  {sector:"XLV", score:65, signal:"Buy", components:{trend:62, options:60, news:55, flows:76}},
+  {sector:"XLY", score:54, signal:"Buy", components:{trend:51, options:49, news:52, flows:66}},
+  {sector:"XLP", score:50, signal:"Neutral", components:{trend:48, options:52, news:49, flows:51}},
+  {sector:"XLI", score:59, signal:"Buy", components:{trend:60, options:55, news:50, flows:65}},
+  {sector:"XLB", score:42, signal:"Neutral", components:{trend:40, options:44, news:39, flows:45}},
+  {sector:"XLRE", score:33, signal:"Neutral", components:{trend:31, options:35, news:28, flows:38}},
+  {sector:"XLC", score:69, signal:"Buy", components:{trend:71, options:60, news:60, flows:70}},
+  {sector:"XLU", score:38, signal:"Neutral", components:{trend:36, options:40, news:33, flows:42}}
+];
+
+/** History MOCK (random walk around today's score) */
+function mockHistory(sector, days=30){
+  const today = MOCK_TODAY.find(x=>x.sector===sector) || MOCK_TODAY[0];
+  let v = today ? today.score : 50;
+  const out = [];
+  for(let i=days-1;i>=0;i--){
+    const d = new Date(); d.setDate(d.getDate()-i);
+    v += (Math.random()-0.5)*4; // small drift
+    v = Math.max(10, Math.min(95, v));
+    out.push({as_of: d.toISOString().slice(0,10), score: Math.round(v)});
+  }
+  return out;
+}
+
+let state = { data: [], pinned: null, tsRange: 30, tsData: [] };
+
+function signalClass(sig){
+  switch(sig){
+    case "Sell": return "s-sell";
+    case "Buy": return "s-buy";
+    case "Overbought": return "s-over";
+    default: return "s-neutral";
+  }
+}
+
+function renderHeatmap(list){
+  const host = document.getElementById('heatmap');
+  host.innerHTML = "";
+  list.forEach(row=>{
+    const d = document.createElement('div');
+    d.className = `cell ${signalClass(row.signal)}`;
+    d.innerHTML = `
+      <span class="tag">${row.sector}</span>
+      <span class="sector-name">${SECTOR_NAMES[row.sector] || ""}</span>
+      <div class="score">${row.score}</div>
+      <div class="sig">${row.signal}</div>
+    `;
+    d.onclick = ()=>{ showDetails(row); loadTimeSeries(row.sector); };
+    host.appendChild(d);
+  });
+}
+
+function renderGauges(list){
+  const host = document.getElementById('gauges');
+  host.innerHTML = "";
+  list.forEach(row=>{
+    const box = document.createElement('div');
+    box.className = 'gauge';
+    box.title = `Trend: ${row.components.trend}  •  Options: ${row.components.options}  •  News: ${row.components.news}  •  Flows: ${row.components.flows}`;
+    box.innerHTML = `
+      <div class="head">
+        <div>
+          <strong>${row.sector}</strong>
+          <span class="sector-name-sm">${SECTOR_NAMES[row.sector] || ""}</span>
+        </div>
+        <span>${row.score} — ${row.signal}</span>
+      </div>
+      <div class="meter"><div class="fill"></div></div>
+    `;
+    box.onclick = ()=>{ showDetails(row); loadTimeSeries(row.sector); };
+    host.appendChild(box);
+    requestAnimationFrame(()=>{ box.querySelector('.fill').style.width = `${row.score}%`; });
+  });
+}
+
+function showDetails(row){
+  state.pinned = row.sector;
+  const d = document.getElementById('details');
+  const name = SECTOR_NAMES[row.sector] || "";
+  d.innerHTML = `
+    <div style="font-size:14px"><strong>${row.sector}</strong> — ${name ? `<span>${name}</span> — ` : ""}<span>${row.score} (${row.signal})</span></div>
+    <ul>
+      <li>Trend: <strong>${row.components.trend}</strong></li>
+      <li>Options: <strong>${row.components.options}</strong></li>
+      <li>News: <strong>${row.components.news}</strong></li>
+      <li>Flows: <strong>${row.components.flows}</strong></li>
+    </ul>
+    <div class="small">Pinned. Click another sector to switch.</div>
+  `;
+}
+
+async function fetchSupabaseToday(){
+  const today = new Date().toISOString().slice(0,10);
+  const url = `${SUPABASE_URL}/rest/v1/sector_sentiment?select=sector,score,signal,components&as_of=eq.${today}&order=sector.asc`;
+  const res = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }});
+  if (!res.ok) throw new Error("Supabase fetch (today) failed");
+  return res.json();
+}
+
+async function fetchSupabaseHistory(sector, days){
+  const since = new Date(); since.setDate(since.getDate()-days+1);
+  const start = since.toISOString().slice(0,10);
+  const url = `${SUPABASE_URL}/rest/v1/sector_sentiment?select=as_of,score&sector=eq.${encodeURIComponent(sector)}&as_of=gte.${start}&order=as_of.asc`;
+  const res = await fetch(url, { headers: { apikey: SUPABASE_KEY, Authorization:`Bearer ${SUPABASE_KEY}` }});
+  if (!res.ok) throw new Error("Supabase fetch (history) failed");
+  return res.json();
+}
+
+/* ---------- Time-series rendering (pure canvas) ---------- */
+function drawTimeSeries(canvas, series){
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  ctx.clearRect(0,0,W,H);
+
+  // Padding
+  const padL = 48, padR = 12, padT = 18, padB = 28;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  // Axes bg
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  ctx.fillRect(padL, padT, plotW, plotH);
+
+  // Y scale (0..100 fixed)
+  const yMin = 0, yMax = 100;
+  const yToPx = v => padT + plotH - (v - yMin) / (yMax - yMin) * plotH;
+
+  // X scale
+  const n = series.length;
+  const xToPx = i => padL + (i/(Math.max(1,n-1))) * plotW;
+
+  // Grid lines & labels
+  ctx.strokeStyle = 'rgba(255,255,255,0.07)';
+  ctx.fillStyle = '#9fb2d0';
+  ctx.font = '12px system-ui, -apple-system, Segoe UI, Roboto, sans-serif';
+  [30,50,70].forEach(val=>{
+    const y = yToPx(val);
+    ctx.beginPath(); ctx.moveTo(padL,y); ctx.lineTo(padL+plotW,y); ctx.stroke();
+    ctx.fillText(String(val), 10, y+4);
+  });
+
+  // Signal zones
+  function zone(y0,y1,color){
+    ctx.fillStyle = color;
+    ctx.fillRect(padL, yToPx(y1), plotW, yToPx(y0)-yToPx(y1));
+  }
+  zone(30,0,'rgba(224,82,82,0.06)');
+  zone(50,30,'rgba(255,176,32,0.06)');
+  zone(70,50,'rgba(31,169,113,0.06)');
+  zone(100,70,'rgba(240,127,47,0.06)');
+
+  // Line
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+  ctx.beginPath();
+  series.forEach((p,i)=>{
+    const x = xToPx(i), y = yToPx(p.score);
+    if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // Points
+  ctx.fillStyle = 'rgba(255,255,255,0.9)';
+  series.forEach((p,i)=>{
+    const x = xToPx(i), y = yToPx(p.score);
+    ctx.beginPath(); ctx.arc(x,y,2.5,0,Math.PI*2); ctx.fill();
+  });
+
+  // X labels (sparse)
+  const step = Math.ceil(n / 6);
+  series.forEach((p,i)=>{
+    if(i%step===0 || i===n-1){
+      const x = xToPx(i);
+      const label = p.as_of.slice(5); // MM-DD
+      ctx.fillStyle = '#9fb2d0';
+      ctx.fillText(label, x-14, H-8);
+      ctx.strokeStyle = 'rgba(255,255,255,0.05)';
+      ctx.beginPath(); ctx.moveTo(x, padT); ctx.lineTo(x, padT+plotH); ctx.stroke();
+    }
+  });
+}
+
+async function loadTimeSeries(sector){
+  const days = state.tsRange || 30;
+  const name = SECTOR_NAMES[sector] || "";
+  document.getElementById('tsTitle').textContent = `Time-Series (last ${days} days)`;
+  document.getElementById('tsSubtitle').textContent = `Sector: ${sector}${name ? " — " + name : ""}`;
+  const canvas = document.getElementById('tsCanvas');
+
+  try{
+    const history = USE_SUPABASE ? await fetchSupabaseHistory(sector, days) : mockHistory(sector, days);
+    const series = history
+      .map(r=>({ as_of: r.as_of, score: Math.round(Number(r.score)) }))
+      .sort((a,b)=>a.as_of.localeCompare(b.as_of));
+    state.tsData = series;
+    drawTimeSeries(canvas, series);
+  }catch(e){
+    console.error(e);
+    const series = mockHistory(sector, days);
+    state.tsData = series;
+    drawTimeSeries(canvas, series);
+  }
+}
+
+/* ---------- Page bootstrap ---------- */
+function showFirstDetails(){
+  const first = state.data[0];
+  if (first){
+    showDetails(first);
+    loadTimeSeries(first.sector);
+  } else {
+    document.getElementById('details').textContent = 'No data.';
+  }
+}
+
+async function loadToday(){
+  try{
+    const rows = USE_SUPABASE ? await fetchSupabaseToday() : MOCK_TODAY;
+    const data = rows.map(r=>({
+      sector: r.sector,
+      score: Math.round(Number(r.score)),
+      signal: r.signal,
+      components: r.components || {trend:0,options:0,news:0,flows:0}
+    }));
+    state.data = data;
+    renderHeatmap(data);
+    renderGauges(data);
+    if (!state.pinned) showFirstDetails();
+  }catch(e){
+    console.error(e);
+    state.data = MOCK_TODAY;
+    renderHeatmap(MOCK_TODAY);
+    renderGauges(MOCK_TODAY);
+    showFirstDetails();
+  }
+}
+
+/* Controls */
+document.getElementById('refreshBtn').onclick = ()=>{ state.pinned=null; loadToday(); };
+document.getElementById('todayBtn').onclick = ()=>{ state.pinned=null; loadToday(); };
+document.querySelectorAll('.ts-controls .btn').forEach(b=>{
+  b.addEventListener('click', ()=>{
+    state.tsRange = Number(b.dataset.range||30);
+    const sector = state.pinned || (state.data[0] && state.data[0].sector) || 'XLK';
+    loadTimeSeries(sector);
+  });
+});
+
+loadToday();
+</script>
+</body>
+</html>

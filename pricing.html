@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Pricing &#x2014; Wheel Strategy Desk &#x2014; Arowana Profits</title>
+  <meta name="description" content="Pricing for the Arowana Wheel Strategy Desk: a free options and stock trade journal, Pro with covered call and cash-secured put scanners, a roll coach and a premium income tracker.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--brand-light:#1a6bbb;
+  --accent:#16a34a;--bg:#f6f8fb;--panel:#ffffff;
+  --ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;
+  --max:1160px;--radius:16px;
+  --shadow:0 4px 20px rgba(11,79,138,.08);
+  --shadow-lg:0 8px 32px rgba(11,79,138,.13);
+  --gradient: linear-gradient(135deg, rgba(6,52,99,.97), rgba(11,79,138,.90));
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--brand);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+::selection{background:rgba(11,79,138,.15)}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* NAV */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--gradient);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;max-width:1600px;margin:0 auto}
+
+.nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.25rem;color:white;text-decoration:none;flex:0 0 auto}
+.nav-logo{width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex: 2;
+  justify-content: center;
+}
+.nav-link{color:rgba(255,255,255,.8);font-size:.9rem;font-weight:600;padding:8px 16px;border-radius:8px;white-space:nowrap;transition:all .2s ease;text-decoration:none}
+.nav-link:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-link.active{background:rgba(255,255,255,.2);color:#fff}
+
+.nav-auth{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+.auth-link{color:rgba(255,255,255,.8);text-decoration:none;font-size:.9rem;font-weight:600;padding:8px 16px;border-radius:8px;transition:all .2s ease}
+.auth-link:hover{color:#fff;background:rgba(255,255,255,.1)}
+.auth-cta{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-weight:700}
+.auth-cta:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+
+.user-dropdown{position:relative;display:none}
+.user-dropdown.show{display:block}
+.user-toggle{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 12px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s ease}
+.user-toggle:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff}
+.user-toggle.open{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);color:#fff}
+
+.user-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dropdown-arrow{font-size:.7rem;transition:transform .2s ease}
+.user-toggle.open .dropdown-arrow{transform:rotate(180deg)}
+
+.user-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:220px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);z-index:1000;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all .2s ease}
+.user-menu.open{opacity:1;visibility:visible;transform:translateY(0)}
+.user-menu::before{content:'';position:absolute;top:-6px;right:16px;width:12px;height:12px;background:#fff;border:1px solid var(--border);border-bottom:none;border-right:none;transform:rotate(45deg)}
+
+.menu-header{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+.menu-user-email{font-weight:600;color:var(--text-primary);margin-bottom:4px}
+.menu-user-plan{font-size:.8rem;color:var(--text-muted)}
+.menu-section{padding:8px 0}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--text);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s ease;border:none;background:none;width:100%;text-align:left;cursor:pointer}
+.menu-item:hover{background:var(--hover);color:var(--text-primary)}
+.menu-item-icon{font-size:1rem;width:20px;text-align:center}
+.menu-divider{height:1px;background:var(--border);margin:4px 0}
+
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mobile-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mobile-menu[data-open="true"]{display:block}
+.mobile-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mobile-link{display:flex;align-items:center;gap:9px;padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none}
+.mobile-link:hover{background:rgba(255,255,255,.08);color:#fff}
+.mobile-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:700px){.nav-links{display:none}.auth-cta{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* HERO */
+.page-hero{
+  background:radial-gradient(circle at 20% 50%,rgba(26,107,187,.1),transparent 55%),
+    radial-gradient(circle at 80% 20%,rgba(22,163,74,.08),transparent 50%),
+    linear-gradient(180deg,#fff,var(--bg));
+  border-bottom:1px solid var(--border);padding:56px 0 48px;text-align:center;
+}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:rgba(11,79,138,.08);border:2px solid rgba(11,79,138,.15);font-size:.78rem;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px}
+.hero-badge-icon{font-size:1rem}
+.hero-title{font-family:"Inter Tight",sans-serif;font-size:clamp(28px,4.5vw,48px);font-weight:900;color:var(--ink);letter-spacing:-.8px;line-height:1.1;margin-bottom:16px}
+.hero-title .highlight{background:linear-gradient(135deg,var(--brand),var(--brand-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:580px;margin:0 auto 32px;line-height:1.65;font-weight:500}
+.hero-sub .emphasis{color:var(--brand);font-weight:700}
+
+/* REVOLUTIONARY PRICING GRID */
+.pricing-section{padding:48px 0 24px}
+.section-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.15);font-size:.72rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+.section-title{font-family:"Inter Tight",sans-serif;font-size:1.8rem;font-weight:800;color:var(--ink);margin-bottom:8px;text-align:center}
+.section-sub{font-size:1rem;color:var(--muted);text-align:center;margin-bottom:56px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6} /* Increased bottom margin to 56px */
+
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;max-width:1000px;margin:0 auto 48px;}
+@media(max-width:1000px){.pricing-grid{max-width:800px}}
+@media(max-width:800px){.pricing-grid{grid-template-columns:1fr;max-width:400px}}
+
+.pricing-card{
+  background:var(--panel);border:2px solid var(--border);
+  border-radius:24px;padding:32px 28px;display:flex;flex-direction:column;
+  position:relative;transition:all .25s ease;overflow:visible; /* Changed from hidden to visible */
+  margin-top:32px; /* Increased from 20px to 32px */
+}
+.pricing-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
+.pricing-card.featured{
+  border-color:var(--brand);
+  box-shadow:0 0 0 4px rgba(11,79,138,.08),var(--shadow-lg);
+  background:linear-gradient(180deg,#fff,rgba(11,79,138,.01));
+}
+.pricing-card.featured:hover{transform:translateY(-4px);box-shadow:0 0 0 6px rgba(11,79,138,.12),0 12px 40px rgba(11,79,138,.2)}
+
+.pricing-badge{
+  position:absolute;top:-16px;left:50%;transform:translateX(-50%); /* Moved up 2px more */
+  background:var(--gradient);color:#fff;
+  padding:6px 18px;border-radius:999px;font-size:.72rem;font-weight:800;
+  white-space:nowrap;letter-spacing:.05em;text-transform:uppercase;
+  box-shadow:0 4px 16px rgba(11,79,138,.3);
+  z-index:10; /* Ensure badge appears above everything */
+}
+
+.plan-header{text-align:center;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.plan-name{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.2rem;color:var(--ink);margin-bottom:8px}
+.plan-tagline{font-size:.85rem;color:var(--muted);margin-bottom:16px;font-weight:500}
+.plan-price{font-family:"Inter Tight",sans-serif;font-size:2.8rem;font-weight:900;color:var(--ink);line-height:1;margin-bottom:4px;display:flex;align-items:baseline;justify-content:center;gap:8px}
+.plan-price .currency{font-size:1.6rem;color:var(--muted);font-weight:600}
+.plan-price .period{font-size:.9rem;color:var(--muted);font-weight:600}
+.plan-price.free{font-size:3.2rem;color:var(--accent)}
+.plan-price.payg{color:var(--brand)}
+.plan-per{font-size:.78rem;color:var(--muted);margin-bottom:4px;text-align:center}
+.plan-desc{font-size:.88rem;color:var(--muted);line-height:1.5;margin-bottom:24px;text-align:center}
+
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:28px;flex:1}
+.plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:.86rem;color:var(--ink);line-height:1.5}
+.plan-features li .check{color:var(--accent);font-weight:800;flex-shrink:0;margin-top:2px;font-size:.9rem}
+.plan-features li .premium{color:var(--brand);font-weight:800;flex-shrink:0;margin-top:2px;font-size:.9rem}
+.plan-features li .star{color:#f59e0b;font-weight:800;flex-shrink:0;margin-top:2px;font-size:.9rem}
+.feature-highlight{font-weight:600;color:var(--brand)}
+.feature-tag{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:.64rem;font-weight:700;margin-left:6px;vertical-align:middle}
+.tag-new{background:#dbeafe;color:#1e40af}
+.tag-soon{background:#fef3c7;color:#854d0e}
+.pf-text{flex:1;min-width:0}
+.pf-text .feature-tag{white-space:nowrap}
+.pricing-grid{grid-template-columns:repeat(auto-fit,minmax(290px,1fr))}
+/* W0.4 pre-checkout notice */
+.pr-notice{max-width:720px;margin:0 auto 26px;padding:12px 16px;border-radius:12px;background:#eff6ff;border:1px solid #bfdbfe;color:#1e3a5f;font-size:.9rem;line-height:1.55;text-align:center}
+.pr-notice a{color:var(--brand);font-weight:700;text-decoration:underline}
+.tag-popular{background:#fef3c7;color:#854d0e}
+.tag-pro{background:#f3e8ff;color:#7c3aed}
+
+.plan-cta{margin-top:auto}
+.plan-cta .btn{width:100%;justify-content:center;min-height:48px;font-size:.9rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:999px;font-size:.88rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s ease;text-decoration:none;min-height:48px}
+.btn:active{transform:scale(.98)}
+.btn-brand{background:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-light);transform:translateY(-1px);box-shadow:0 8px 25px rgba(11,79,138,.25)}
+.btn-outline{background:transparent;color:var(--brand);border:2px solid var(--brand)}.btn-outline:hover{background:rgba(11,79,138,.06);transform:translateY(-1px)}
+.btn-success{background:var(--accent);color:#fff}.btn-success:hover{background:#059669;transform:translateY(-1px);box-shadow:0 8px 25px rgba(5,150,105,.25)}
+.btn-ghost{background:var(--panel);color:var(--muted);border:2px solid var(--border)}.btn-ghost:hover{color:var(--ink);border-color:var(--brand);transform:translateY(-1px)}
+.btn-pro{background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;font-weight:800}.btn-pro:hover{transform:translateY(-1px);box-shadow:0 8px 25px rgba(11,79,138,.3)}
+
+/* COMPARISON TABLE */
+.compare-section{padding:48px 0}
+.comparison-table{background:#fff;border:2px solid var(--border);border-radius:20px;overflow:hidden;max-width:900px;margin:0 auto}
+.table-header{background:var(--gradient);color:#fff;padding:20px;text-align:center}
+.table-header h3{font-family:"Inter Tight",sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.table-header p{font-size:.9rem;opacity:.9}
+
+.comparison-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:0}
+.comp-row{display:contents}
+.comp-cell{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.comp-feature{font-weight:600;color:var(--ink)}
+.comp-check{color:var(--accent);font-size:1.1rem;font-weight:800;justify-content:center}
+.comp-premium{color:var(--brand);font-size:1.1rem;font-weight:800;justify-content:center}
+.comp-cross{color:var(--muted);font-size:1.1rem;justify-content:center}
+.comp-header{background:rgba(11,79,138,.04);font-weight:700;color:var(--brand);justify-content:center;text-align:center;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em}
+
+/* FAQ */
+.faq-section{padding:48px 0;background:linear-gradient(180deg,transparent,rgba(11,79,138,.02))}
+.faq-container{max-width:800px;margin:0 auto}
+.faq-title{font-family:"Inter Tight",sans-serif;font-size:1.6rem;font-weight:800;color:var(--ink);margin-bottom:8px;text-align:center}
+.faq-sub{font-size:.95rem;color:var(--muted);text-align:center;margin-bottom:32px}
+.faq-item{background:#fff;border:2px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.faq-item:hover{border-color:rgba(11,79,138,.3)}
+.faq-question{width:100%;padding:20px 24px;background:none;border:none;text-align:left;font-size:.95rem;font-weight:700;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+.faq-question:hover{background:rgba(11,79,138,.02)}
+.faq-chevron{transition:transform .2s ease;color:var(--brand);font-weight:800}
+.faq-question[aria-expanded="true"] .faq-chevron{transform:rotate(180deg)}
+.faq-answer{padding:0 24px;max-height:0;overflow:hidden;transition:all .3s ease}
+.faq-answer.open{padding:0 24px 20px;max-height:200px}
+.faq-answer p{color:var(--muted);line-height:1.6;font-size:.9rem}
+
+/* CTA BANNER */
+.cta-banner{
+  background:var(--gradient);color:#fff;
+  border-radius:24px;padding:48px 32px;text-align:center;margin:48px auto;
+  max-width:800px;position:relative;overflow:hidden;
+}
+.cta-banner::before{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle,rgba(255,255,255,.1),transparent 60%);
+  animation:shine 8s linear infinite;pointer-events:none;
+}
+@keyframes shine{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.cta-title{font-family:"Inter Tight",sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:8px;position:relative;z-index:1}
+.cta-sub{font-size:1rem;opacity:.9;margin-bottom:24px;line-height:1.6;position:relative;z-index:1}
+.cta-btns{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;z-index:1}
+.btn-white{background:#fff;color:var(--brand);font-weight:800}.btn-white:hover{background:rgba(255,255,255,.92);transform:translateY(-2px)}
+.btn-outline-w{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3)}.btn-outline-w:hover{background:rgba(255,255,255,.25);transform:translateY(-2px)}
+
+/* FOOTER */
+.site-footer{background:#021d36;color:#fff;padding:48px 0 24px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-bottom:32px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:8px}
+.footer-tagline{font-size:.85rem;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:16px}
+.footer-col-title{font-weight:700;font-size:.9rem;margin-bottom:12px;color:rgba(255,255,255,.9)}
+.footer-link{display:block;color:rgba(255,255,255,.7);font-size:.85rem;margin-bottom:6px;transition:color .2s}
+.footer-link:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:.8rem;color:rgba(255,255,255,.6)}
+.footer-pills{display:flex;gap:8px;flex-wrap:wrap}
+.footer-pill{background:rgba(255,255,255,.1);padding:3px 8px;border-radius:999px;font-size:.7rem}
+.footer-disclaimer{font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.5;margin-top:16px;border-top:1px solid rgba(255,255,255,.05);padding-top:16px}
+@media(max-width:600px){.footer-bottom{flex-direction:column;text-align:center}}
+
+/* ============================================================
+   ADDED — billing toggle, plan notes, founders block, a11y fixes
+   ============================================================ */
+
+/* Billing cycle toggle */
+.billing-toggle{display:flex;justify-content:center;margin:0 auto 40px;gap:0;background:#fff;border:2px solid var(--border);border-radius:999px;padding:4px;width:max-content;max-width:100%}
+.bt-opt{background:none;border:none;border-radius:999px;padding:10px 22px;font-family:inherit;font-size:.86rem;font-weight:700;color:var(--muted);cursor:pointer;transition:all .2s ease;display:inline-flex;align-items:center;gap:8px;white-space:nowrap}
+.bt-opt:hover{color:var(--ink)}
+.bt-opt.active{background:var(--brand);color:#fff}
+.bt-save{background:rgba(22,163,74,.14);color:#059669;font-size:.66rem;font-weight:800;padding:3px 8px;border-radius:999px;letter-spacing:.03em}
+.bt-opt.active .bt-save{background:rgba(255,255,255,.22);color:#fff}
+@media(max-width:420px){.bt-opt{padding:9px 14px;font-size:.8rem}.bt-save{display:none}}
+
+/* Plan small print / limits */
+.plan-note{font-size:.74rem;color:var(--muted);text-align:center;margin-top:14px;line-height:1.45}
+.plan-limit{font-size:.78rem;color:var(--muted);font-weight:600}
+.plan-features li .cross{color:#cbd5e1;font-weight:800;flex-shrink:0;margin-top:2px;font-size:.9rem}
+.plan-features li.off{color:var(--muted)}
+
+/* Founding member block (replaces the old credit packages band) */
+.founders{background:linear-gradient(135deg,rgba(11,79,138,.04),rgba(22,163,74,.03));padding:56px 0;margin:24px 0}
+.founders-card{max-width:760px;margin:0 auto;background:#fff;border:2px solid var(--brand);border-radius:24px;padding:36px 32px;box-shadow:var(--shadow-lg);text-align:center;position:relative}
+.founders-flag{display:inline-flex;align-items:center;gap:6px;background:#fef3c7;color:#854d0e;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:6px 14px;border-radius:999px;margin-bottom:16px}
+.founders-card h3{font-family:"Inter Tight",sans-serif;font-size:1.6rem;font-weight:800;color:var(--ink);margin-bottom:10px}
+.founders-price{font-family:"Inter Tight",sans-serif;font-size:2.6rem;font-weight:900;color:var(--brand);line-height:1;margin:14px 0 6px}
+.founders-price .period{font-size:.9rem;color:var(--muted);font-weight:600}
+.founders-sub{font-size:.92rem;color:var(--muted);max-width:52ch;margin:0 auto 22px;line-height:1.6}
+.founders-list{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;text-align:left;max-width:600px;margin:0 auto 26px}
+.founders-list li{display:flex;gap:9px;align-items:flex-start;font-size:.86rem;color:var(--ink)}
+.founders-list li .check{color:var(--accent);font-weight:800;flex-shrink:0}
+.founders-seats{font-size:.78rem;color:var(--muted);margin-top:14px}
+
+/* Comparison table — scrollable on small screens */
+@media(max-width:700px){
+  .comparison-table{overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .comparison-grid{min-width:620px}
+  .comp-cell{padding:14px 14px;font-size:.82rem}
+}
+.comp-note{max-width:900px;margin:14px auto 0;font-size:.78rem;color:var(--muted);text-align:center;line-height:1.5}
+
+/* FAQ answers run longer than the original 200px cap */
+.faq-answer.open{max-height:640px}
+
+/* Trust strip under the pricing grid */
+.trust-strip{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;margin:0 auto 8px;max-width:900px}
+.trust-pill{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:8px 16px;font-size:.8rem;font-weight:600;color:var(--muted)}
+
+</style>
+</head>
+<body>
+  <!-- NAVIGATION -->
+  <div class="nav-wrap">
+    <nav class="nav">
+      <a class="nav-brand" href="index.html" aria-label="Arowana Profits Home">
+        <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" class="nav-logo" onerror="this.style.display='none'">
+        <span>Arowana Profits</span>
+      </a>
+      
+      <div class="nav-links">
+        <a href="trading-command.html" class="nav-link">⚡ Trading Command</a>
+        <a href="portfolio-command.html" class="nav-link">🏦 Portfolio Command</a>
+        <a href="analysis-central.html" class="nav-link">🔍 Ticker Research</a>
+        <a href="options-hub.html" class="nav-link">📈 Options Hub</a>
+        <!-- Public links: most people reading this page have no account yet. -->
+        <a href="wheel-calculator.html" class="nav-link">🧮 Wheel calculator</a>
+        <a href="support.html" class="nav-link">💬 Support</a>
+      </div>
+      
+      <div class="nav-auth">
+        <!-- When not logged in -->
+        <a href="login.html" class="auth-link" id="navSignIn">Sign In</a>
+        <a href="signup.html" class="auth-link auth-cta" id="navSignUp">🚀 Start Free</a>
+        
+        <!-- When logged in -->
+        <div class="user-dropdown" id="navUserDropdown">
+          <button class="user-toggle" id="navUserToggle">
+            <span class="user-name" id="navUserName">Account</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          
+          <div class="user-menu">
+            <div class="menu-header">
+              <div class="menu-user-email" id="menuUserEmail">&nbsp;</div>
+              <div class="menu-user-plan">Free Plan</div>
+            </div>
+            
+            <div class="menu-section">
+              <a href="account.html" class="menu-item">
+                <span class="menu-item-icon">⚙️</span>
+                <span>Account Settings</span>
+              </a>
+              <a href="pricing.html" class="menu-item">
+                <span class="menu-item-icon">⚡</span>
+                <span>Upgrade to Pro</span>
+              </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <a href="trading-command.html" class="menu-item">
+                <span class="menu-item-icon">⚡</span>
+                <span>Trading Command</span>
+              </a>
+              <a href="portfolio-command.html" class="menu-item">
+                <span class="menu-item-icon">🏦</span>
+                <span>Portfolio Command</span>
+              </a>
+              <a href="analysis-central.html" class="menu-item">
+                <span class="menu-item-icon">📊</span>
+                <span>Ticker Research</span>
+              </a>
+              <a href="options-hub.html" class="menu-item">
+                <span class="menu-item-icon">📈</span>
+                <span>Options Hub</span>
+              </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <button class="menu-item" onclick="openSupport()">
+                <span class="menu-item-icon">💬</span>
+                <span>Help & Support</span>
+              </button>
+              <button class="menu-item danger" onclick="signOut()">
+                <span class="menu-item-icon">🚪</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <button class="nav-burger" id="navBurger">&#9776;</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu" data-open="false">
+      <div class="mobile-panel">
+        <a class="mobile-link" href="trading-command.html">🎯 Trading Command</a>
+        <a class="mobile-link" href="portfolio-command.html">📊 Portfolio Command</a>
+        <a class="mobile-link" href="analysis-central.html">🔍 Ticker Research</a>
+        <a class="mobile-link" href="options-hub.html">⚡ Options Hub</a>
+        <div class="mobile-div"></div>
+        <a class="mobile-link" href="features.html">Features</a>
+        <a class="mobile-link" href="pricing.html">Pricing</a>
+        <a class="mobile-link" href="about.html">About</a>
+        <div class="mobile-div"></div>
+        <div id="mobileAuthLinks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="hero-badge-icon">🔒</span>
+        Simple, honest pricing
+      </div>
+      <h1 class="hero-title">
+        Pricing for the <span class="highlight">wheel strategy desk</span>
+      </h1>
+      <p class="hero-sub">
+        Start with the free trade journal. Paid plans add the wheel scanners, the premium income tracker and coaching on your own history,
+        with market data and AI included &mdash; <span class="emphasis">no API keys to set up</span>.
+      </p>
+    </div>
+  </section>
+
+  <!-- PRICING -->
+  <section class="pricing-section">
+    <div class="container">
+      <div class="section-badge">📊 Three plans</div>
+      <h2 class="section-title">Pick where you are today</h2>
+      <p class="section-sub">
+        Free is a real journal, not a demo. Pro is the wheel desk: covered call and cash-secured put scanners
+        a premium income tracker, and a coach that reads your own history and shows what is costing you money.
+      </p>
+      <div class="pr-notice" role="note">
+        Paid plans aren&rsquo;t on sale yet. The buttons below add you to the <a href="index.html#founders">Founders waitlist</a>,
+        and we&rsquo;ll email you when checkout opens. Features marked <strong>Coming soon</strong> are being built now and reach Founders first.
+      </div>
+
+      <!-- Billing cycle -->
+      <div class="billing-toggle" id="billingToggle" role="group" aria-label="Billing cycle">
+        <button type="button" class="bt-opt active" data-cycle="monthly" aria-pressed="true">Monthly</button>
+        <button type="button" class="bt-opt" data-cycle="annual" aria-pressed="false">
+          Annual <span class="bt-save">2 months free</span>
+        </button>
+      </div>
+
+      <div class="pricing-grid">
+
+        <!-- FREE -->
+        <div class="pricing-card">
+          <div class="plan-header">
+            <div class="plan-name">Free</div>
+            <div class="plan-tagline">Build the habit</div>
+            <div class="plan-price free">$0</div>
+            <div class="plan-per">Forever &mdash; no card required</div>
+            <div class="plan-desc">A working trade journal for traders who want to start logging before they start paying.</div>
+          </div>
+
+          <ul class="plan-features">
+            <li><span class="check">&#10003;</span> <span class="pf-text">Trade journal &mdash; <span class="plan-limit">25 trades / month</span></span></li>
+            <li><span class="check">&#10003;</span> 1 linked account</li>
+            <li><span class="check">&#10003;</span> Stocks &amp; options entries</li>
+            <li><span class="check">&#10003;</span> Setup tags, mistakes &amp; emotion scoring</li>
+            <li><span class="check">&#10003;</span> Basic performance stats</li>
+            <li class="off"><span class="cross">&#10007;</span> Covered call &amp; put scanners</li>
+            <li class="off"><span class="cross">&#10007;</span> Premium income tracker</li>
+            <li class="off"><span class="cross">&#10007;</span> Risk guardrails</li>
+          </ul>
+
+          <div class="plan-cta">
+            <a href="signup.html?plan=free" class="btn btn-ghost">Start free</a>
+          </div>
+          <div class="plan-note">No credit card. Upgrade or leave whenever you want.</div>
+        </div>
+
+        <!-- PRO -->
+        <div class="pricing-card featured">
+          <div class="pricing-badge">🔥 Most popular</div>
+          <div class="plan-header">
+            <div class="plan-name">Pro</div>
+            <div class="plan-tagline">The wheel desk</div>
+            <div class="plan-price">
+              <span class="currency">$</span><span class="amt" data-mo="29" data-yr="24">29</span><span class="period">/mo</span>
+            </div>
+            <div class="plan-per" data-mo="Billed monthly" data-yr="$290 billed annually">Billed monthly</div>
+            <div class="plan-desc">Everything you need to run the wheel: the journal, scanners for stocks you want to own, and every dollar of premium in one place.</div>
+          </div>
+
+          <ul class="plan-features">
+            <li><span class="check">&#10003;</span> <span class="feature-highlight">Unlimited trades &amp; accounts</span></li>
+            <li><span class="check">&#10003;</span> Broker CSV import (Schwab, thinkorswim)</li>
+            <li><span class="check">&#10003;</span> <span class="pf-text"><span class="feature-highlight">Covered call &amp; cash-secured put scanners</span></span></li>
+            <li><span class="check">&#10003;</span> <span class="pf-text">Premium income tracker &amp; adjusted cost basis</span></li>
+            <li><span class="check">&#10003;</span> <span class="pf-text">Want-to-Own list that filters every scanner</span></li>
+            <li><span class="check">&#10003;</span> <span class="pf-text">Risk guardrails &mdash; concentration &amp; earnings warnings <span class="feature-tag tag-soon">Coming soon</span></span></li>
+            <li><span class="check">&#10003;</span> <span class="pf-text">Daily brief on your open positions <span class="feature-tag tag-soon">Coming soon</span></span></li>
+            <li><span class="check">&#10003;</span> Options &amp; Greeks tracking</li>
+            <li><span class="check">&#10003;</span> Watchlists</li>
+            <li><span class="check">&#10003;</span> <span class="pf-text">5 custom alerts <span class="feature-tag tag-soon">Coming soon</span></span></li>
+            <li><span class="check">&#10003;</span> <span class="pf-text"><span class="feature-highlight">Roll coach</span> &mdash; hold, close, roll or take assignment, with the numbers behind each</span></li>
+            <li><span class="check">&#10003;</span> <span class="pf-text">Pattern detection &mdash; what your own history says about how you trade</span></li>
+            <li><span class="check">&#10003;</span> Data export &amp; email support</li>
+          </ul>
+
+          <div class="plan-cta">
+            <a href="index.html#founders" class="btn btn-brand" data-checkout="pro" data-label-open="Start 14-day trial">Join the waitlist</a>
+          </div>
+          <div class="plan-note">Includes market data and up to 50 AI analyses per day under fair use.</div>
+        </div>
+
+      </div>
+
+      <div class="trust-strip">
+        <span class="trust-pill">🔑 No API keys required</span>
+        <span class="trust-pill">↩️ 30-day money-back guarantee</span>
+        <span class="trust-pill">⚡ Cancel in one click</span>
+        <span class="trust-pill">📤 Export your data anytime</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOUNDING MEMBER -->
+  <section class="founders">
+    <div class="container">
+      <div class="founders-card">
+        <div class="founders-flag">⭐ Limited &mdash; first 100 members</div>
+        <h3>Founding Member</h3>
+        <div class="founders-price">$399<span class="period"> / year</span></div>
+        <p class="founders-sub">
+          A full year of Pro, and your rate is locked at $399 for as long as you stay subscribed &mdash;
+          even after list pricing goes up.
+        </p>
+        <ul class="founders-list">
+          <li><span class="check">&#10003;</span> 12 months of Pro, plus every tool as it ships</li>
+          <li><span class="check">&#10003;</span> Rate locked for life</li>
+          <li><span class="check">&#10003;</span> Direct line to the founder</li>
+          <li><span class="check">&#10003;</span> Vote on what gets built next</li>
+        </ul>
+        <a href="index.html#founders" class="btn btn-brand" data-checkout="founders" data-label-open="Become a founding member">Join the Founders waitlist</a>
+        <div class="founders-seats">No payment today &mdash; we&rsquo;ll email you when checkout opens. Offer closes at 100 members or when the platform leaves beta, whichever comes first.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON TABLE -->
+  <section class="compare-section">
+    <div class="container">
+      <div class="comparison-table">
+        <div class="table-header">
+          <h3>What is in each plan</h3>
+          <p>No hidden limits. Items marked <em>(coming soon)</em> are being built now and reach Founders first.</p>
+        </div>
+
+        <div class="comparison-grid">
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Feature</div>
+            <div class="comp-cell comp-header">Free</div>
+            <div class="comp-cell comp-header">Pro</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Trade journal</div>
+            <div class="comp-cell comp-feature">25 / month</div>
+            <div class="comp-cell comp-check">Unlimited</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Linked accounts</div>
+            <div class="comp-cell comp-feature">1</div>
+            <div class="comp-cell comp-check">Unlimited</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Broker CSV import</div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Options &amp; Greeks tracking</div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Covered call &amp; put scanners</div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Premium income tracker</div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Watchlists</div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Daily positions brief <em>(coming soon)</em></div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Risk guardrails <em>(coming soon)</em></div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Roll coach, AI coach &amp; pattern detection <em>(coming soon)</em></div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Custom alerts <em>(coming soon)</em></div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-feature">5</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Data export</div>
+            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
+          </div>
+
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Support</div>
+            <div class="comp-cell comp-feature">Community</div>
+            <div class="comp-cell comp-feature">Email &amp; priority</div>
+          </div>
+        </div>
+      </div>
+      <p class="comp-note">
+        Market data and AI usage are included in every paid plan. Fair use applies: 50 AI analyses per day on Pro,
+        We will contact you before restricting anything &mdash; no silent throttling.
+      </p>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="faq-container">
+        <h2 class="faq-title">Questions</h2>
+        <p class="faq-sub">The things people actually ask before subscribing</p>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Do I need my own API keys? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>No. Market data and AI are included in every paid plan &mdash; there is nothing to sign up for elsewhere and nothing to paste in. You log in and it works. If you are an advanced user who would rather supply your own keys, you can, but it is optional and it does not change the price.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            What does the Free plan actually include? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>A real, working trade journal &mdash; up to 25 trades per month on one account, with setup tags, mistake tags, emotion scoring and basic performance stats. It is not a countdown timer. Plenty of traders never need more than that, and that is fine.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            What are the risk guardrails? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Coming soon. You set your limits in advance, and Arowana warns you before a plan breaks them: too much of your cash tied up in one ticker, an earnings date falling before your expiration, or more time decay exposure than you said you wanted. Every warning shows the rule that triggered it. It never touches your broker.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            When can I buy a paid plan? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Checkout opens soon, and Founders get the first seats. Join the <a href="index.html#founders">Founders waitlist</a> and we&rsquo;ll email you once, when it&rsquo;s ready. The free journal works today.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Does Arowana place trades or connect to my broker? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>No. Arowana never places an order and never holds your broker credentials. You import trade history by CSV export from your broker. Everything here is journaling, analysis and planning.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Can I cancel anytime? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Yes, in one click from your account page, with no notice period and no phone call. Your access runs to the end of the period you paid for. Your journal data stays available on the Free plan, and you can export everything at any time.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Is there a money-back guarantee? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Thirty days, on any paid plan, no questions asked. If Arowana has not shown you something useful about your own trading in a month, you should not be paying for it.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Who is my trading data visible to? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Only you. Every record is scoped to your account at the database level, so no other user can query it. We do not sell trading data, and we do not publish or aggregate your positions. You can export or delete your data whenever you want.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Can I switch plans later? <span class="faq-chevron">&#9660;</span>
+          </button>
+          <div class="faq-answer">
+            <p>Any direction, any time, prorated. Upgrades apply immediately; downgrades take effect at the end of your current period. Your trade history is preserved across every change.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <div class="container">
+    <div class="cta-banner">
+      <div class="cta-title">Start with the free journal</div>
+      <div class="cta-sub">Log your trades for free today. When the wheel tools open, Founders get them first.</div>
+      <div class="cta-btns">
+        <a href="signup.html?plan=free" class="btn btn-white">Start free</a>
+        <a href="index.html#founders" class="btn btn-outline-w" data-checkout="pro" data-label-open="Try Pro for 14 days">Join the Founders waitlist</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">Arowana Profits</div>
+        <div class="footer-tagline">The desk for traders who run the wheel: scanners for the stocks you want to own, and every dollar of premium in one place.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Super-Tools</div>
+        <a class="footer-link" href="trading-command.html">Trading Command</a>
+        <a class="footer-link" href="portfolio-command.html">Portfolio Command</a>
+        <a class="footer-link" href="analysis-central.html">Ticker Research</a>
+        <a class="footer-link" href="options-hub.html">Options Hub</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <a class="footer-link" href="account.html">Account</a>
+        <a class="footer-link" href="pricing.html">Pricing</a>
+        <a class="footer-link" href="features.html">Features</a>
+        <a class="footer-link" href="about.html">About</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Support</div>
+        <a class="footer-link" href="support.html">Help Center</a>
+        <a class="footer-link" href="support.html">Contact</a>
+        <a class="footer-link" href="disclosures.html">Disclosures</a>
+        <a class="footer-link" href="terms.html">Terms</a>
+        <a class="footer-link" href="privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>&copy; <span id="yearNow"></span> Arowana Profits. All rights reserved.</div>
+      <div class="footer-pills"><span class="footer-pill">Education-only</span><span class="footer-pill">No performance claims</span><span class="footer-pill">Not financial advice</span></div>
+    </div>
+    <p class="footer-disclaimer"><strong>Important:</strong> Arowana Profits is a journaling and analysis tool for educational purposes. It does not place trades, does not connect to your broker, and does not provide investment, tax or legal advice. Nothing on this page is a performance claim or a promise of results. Trading involves substantial risk of loss. Prices are in USD and exclude any applicable sales tax or VAT.</p>
+  </div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script>window.GS_CONFIG_URL="./js/config.json";</script>
+  <script src="./js/app-config.js?v=20260918c"></script>
+  <script src="./js/supabase_min.js?v=20260918c"></script>
+  <script src="./js/auth-header.js?v=20260918c"></script>
+  <script>window.GSAuthHeader&&window.GSAuthHeader.init({loginUrl:"./login.html",afterLogoutUrl:"./index.html"});</script>
+  <script>
+  (function(){
+  'use strict';
+  var yn=document.getElementById('yearNow');if(yn)yn.textContent=new Date().getFullYear();
+
+  /* Enhanced Authentication System - Modern Approach */
+  
+  function initAuthDropdown() {
+    // Check if user is logged in (using Supabase auth pattern)
+    const authUser = localStorage.getItem('gs_auth_user_v1')
+                  || sessionStorage.getItem('gs_auth_user_v1');
+
+    if (!authUser) { showAuthButtons(); return; }
+
+    try {
+      const user = JSON.parse(authUser);
+      // A parsed object is not a session — require an actual identity.
+      if (user && (user.id || user.email)) {
+        showUserDropdown(user);
+      } else {
+        showAuthButtons();
+      }
+    } catch (e) {
+      console.warn('[pricing] unreadable session cache, treating as signed out');
+      showAuthButtons();
+    }
+  }
+  
+  function showUserDropdown(user) {
+    // Hide auth buttons with error handling
+    const authSignIn = document.getElementById('navSignIn');
+    const authSignUp = document.getElementById('navSignUp');
+    if (authSignIn) authSignIn.style.display = 'none';
+    if (authSignUp) authSignUp.style.display = 'none';
+    
+    // Show user dropdown
+    const userDropdown = document.getElementById('navUserDropdown');
+    if (userDropdown) {
+      userDropdown.classList.add('show');
+    }
+    
+    // Update user info - show name/username in button, email in dropdown
+    const userName = user.name || user.username || getNameFromEmail(user.email) || 'User';
+    const userEmail = user.email || '';
+    
+    const userNameEl = document.getElementById('navUserName');
+    const menuUserEmailEl = document.getElementById('menuUserEmail');
+    
+    if (userNameEl) {
+      userNameEl.textContent = userName;
+    }
+    if (menuUserEmailEl) {
+      menuUserEmailEl.textContent = userEmail;
+    }
+    
+    // Update mobile menu
+    const mobileAuthLinks = document.getElementById('mobileAuthLinks');
+    if (mobileAuthLinks) {
+      mobileAuthLinks.innerHTML = '<a class="mobile-link" href="account.html">My Account</a><a class="mobile-link" id="mobOut" href="#">Sign Out</a>';
+      const mobileSignOut = document.getElementById('mobOut');
+      if (mobileSignOut) {
+        mobileSignOut.addEventListener('click', function(e) {
+          e.preventDefault();
+          signOut();
+        });
+      }
+    }
+  }
+  
+  function getNameFromEmail(email) {
+    if (!email) return null;
+    
+    // Extract username from email and create a display name
+    const username = email.split('@')[0];
+    
+    // For other emails, create a nice display name
+    return username.charAt(0).toUpperCase() + username.slice(1);
+  }
+  
+  function showAuthButtons() {
+    // Show auth buttons
+    const authSignIn = document.getElementById('navSignIn');
+    const authSignUp = document.getElementById('navSignUp');
+    if (authSignIn) authSignIn.style.display = 'inline-flex';
+    if (authSignUp) authSignUp.style.display = 'inline-flex';
+    
+    // Hide user dropdown
+    const userDropdown = document.getElementById('navUserDropdown');
+    if (userDropdown) {
+      userDropdown.classList.remove('show');
+    }
+    
+    // Update mobile menu for non-logged in state
+    const mobileAuthLinks = document.getElementById('mobileAuthLinks');
+    if (mobileAuthLinks) {
+      mobileAuthLinks.innerHTML = '<a class="mobile-link" href="login.html">Sign In</a><a class="mobile-link" href="portfolio-command.html">Start Free</a>';
+    }
+  }
+  
+  function initUserDropdown() {
+    const userToggle = document.getElementById('navUserToggle');
+    const userDropdown = document.getElementById('navUserDropdown');
+    
+    if (!userToggle || !userDropdown) {
+      return;
+    }
+    
+    // Toggle dropdown on click
+    userToggle.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleUserMenu();
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!userToggle.contains(e.target) && !userDropdown.contains(e.target)) {
+        closeUserMenu();
+      }
+    });
+    
+    // Close dropdown on escape key
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        closeUserMenu();
+      }
+    });
+  }
+  
+  function toggleUserMenu() {
+    const userDropdown = document.getElementById('navUserDropdown');
+    const userMenu = userDropdown ? userDropdown.querySelector('.user-menu') : null;
+    
+    if (userDropdown && userMenu) {
+      userDropdown.classList.toggle('open');
+      userMenu.classList.toggle('open');
+    }
+  }
+  
+  function closeUserMenu() {
+    const userDropdown = document.getElementById('navUserDropdown');
+    const userMenu = userDropdown ? userDropdown.querySelector('.user-menu') : null;
+    
+    if (userDropdown && userMenu) {
+      userDropdown.classList.remove('open');
+      userMenu.classList.remove('open');
+    }
+  }
+  
+  window.signOut = function signOut() {
+    // Clear auth data
+    const authKeys = [
+      'gs_auth_user_v1', 'gs_session', 'ap_session', 'sb-access-token',
+      'ap_plan_v1', 'ap_last_user_v1', 'ap_journal_owner_v1', 'ap_accounts_owner_v1'
+    ];
+    authKeys.forEach(function(key) {
+      try { localStorage.removeItem(key); } catch(e) {}
+      try { sessionStorage.removeItem(key); } catch(e) {}
+    });
+    
+    // Show success message if available
+    if (typeof showMessage === 'function') {
+      showMessage('Signed out successfully', 'success');
+    }
+    
+    // Redirect to home
+    setTimeout(function() {
+      window.location.href = 'index.html';
+    }, 1000);
+  };
+
+  // Called from the nav dropdown via inline onclick — must be global.
+  window.openSupport = function openSupport() {
+    window.location.href = 'support.html';
+  };
+  
+  // Initialize mobile menu
+  function initMobileMenu() {
+    const burger = document.getElementById('navBurger');
+    if (burger) {
+      burger.addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobileMenu');
+        if (mobileMenu) {
+          const isOpen = mobileMenu.getAttribute('data-open') === 'true';
+          mobileMenu.setAttribute('data-open', isOpen ? 'false' : 'true');
+        }
+      });
+    }
+  }
+  
+  // Another tab signed in or out — repaint the header rather than
+  // leaving a stale name on screen.
+  window.addEventListener('storage', function (e) {
+    if (e.key !== 'gs_auth_user_v1') return;
+    try { initAuthDropdown(); } catch (err) {}
+  });
+
+  // Initialize everything when DOM is ready
+  document.addEventListener('DOMContentLoaded', function() {
+    try {
+      initAuthDropdown();
+      initUserDropdown();
+      initMobileMenu();
+    } catch (e) {
+      console.error('Error initializing authentication:', e);
+      // Fallback: just show auth buttons
+      try {
+        showAuthButtons();
+      } catch (fallbackError) {
+        console.error('Fallback also failed:', fallbackError);
+      }
+    }
+  });
+  
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-question').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var expanded = btn.getAttribute('aria-expanded') === 'true';
+      
+      /* Close all FAQ items */
+      document.querySelectorAll('.faq-question').forEach(function(b){
+        b.setAttribute('aria-expanded','false');
+        var ans = b.nextElementSibling;
+        if (ans) ans.classList.remove('open');
+      });
+      
+      /* Open clicked item if it was closed */
+      if (!expanded) {
+        btn.setAttribute('aria-expanded','true');
+        var answer = btn.nextElementSibling;
+        if (answer) answer.classList.add('open');
+      }
+    });
+  });
+
+  /* Checkout links are plain anchors — no JS interception.
+     Stripe plan + cycle are carried in the querystring and read
+     by checkout.html. */
+
+  })();
+  </script>
+  <!-- Billing cycle toggle -->
+  <script>
+  (function () {
+    'use strict';
+    // W3.1: flip to true once the Stripe prices are set in Supabase secrets.
+    // The buttons then call the arowana-checkout function instead of the waitlist.
+    var AP_CHECKOUT_OPEN = true;
+    var AP_CHECKOUT_FN = 'https://pbojacnagutipfhcxltj.supabase.co/functions/v1/arowana-checkout';
+
+    var toggle = document.getElementById('billingToggle');
+    if (!toggle) { return; }
+
+    var opts = toggle.querySelectorAll('.bt-opt');
+
+    function apply(cycle) {
+      var isAnnual = cycle === 'annual';
+
+      // Buttons
+      Array.prototype.forEach.call(opts, function (b) {
+        var on = b.getAttribute('data-cycle') === cycle;
+        b.classList.toggle('active', on);
+        b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      });
+
+      // Prices — read from data attributes, never rebuild markup
+      var amts = document.querySelectorAll('.plan-price .amt');
+      Array.prototype.forEach.call(amts, function (el) {
+        var v = el.getAttribute(isAnnual ? 'data-yr' : 'data-mo');
+        if (v) { el.textContent = v; }
+      });
+
+      // Billing caption under each price
+      var pers = document.querySelectorAll('.plan-per[data-mo]');
+      Array.prototype.forEach.call(pers, function (el) {
+        var v = el.getAttribute(isAnnual ? 'data-yr' : 'data-mo');
+        if (v) { el.textContent = v; }
+      });
+
+      // Checkout links carry the cycle through to Stripe — only once checkout
+      // is live. Until then every paid button stays on the Founders waitlist.
+      if (!AP_CHECKOUT_OPEN) return;
+      var links = document.querySelectorAll('a[data-checkout]');
+      Array.prototype.forEach.call(links, function (a) {
+        var plan = a.getAttribute('data-checkout');
+        a.setAttribute('href', 'checkout.html?plan=' + plan + (plan === 'founders' ? '' : '&cycle=' + cycle));
+        if (a.getAttribute('data-label-open')) a.textContent = a.getAttribute('data-label-open');
+      });
+    }
+
+    Array.prototype.forEach.call(opts, function (b) {
+      b.addEventListener('click', function () {
+        apply(b.getAttribute('data-cycle'));
+      });
+    });
+
+    apply('monthly');
+
+    /* ── Checkout ─────────────────────────────────────────────────────
+       Sends the signed-in user to Stripe. The plan and price live on the
+       server (Supabase secrets), so nothing here can be tampered with to
+       change what is charged. */
+    function checkoutMessage(text, isError) {
+      var box = document.getElementById('checkoutMsg');
+      if (!box) {
+        box = document.createElement('div');
+        box.id = 'checkoutMsg';
+        box.setAttribute('role', 'status');
+        box.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:9999;max-width:90vw;padding:12px 18px;border-radius:12px;font:600 .9rem system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.18)';
+        document.body.appendChild(box);
+      }
+      box.style.background = isError ? '#fee2e2' : '#e6f6fa';
+      box.style.color = isError ? '#991b1b' : '#0b4f8a';
+      box.textContent = text;
+      box.style.display = 'block';
+      clearTimeout(box._t);
+      box._t = setTimeout(function () { box.style.display = 'none'; }, 6000);
+    }
+
+    function getSupabase() {
+      return window.supabaseClient || window.sbClient
+        || (window.supabase && window.AP_WEBHOOKS && window.AP_WEBHOOKS.supabase && window.AP_WEBHOOKS.supabase.url
+            ? window.supabase.createClient(window.AP_WEBHOOKS.supabase.url, window.AP_WEBHOOKS.supabase.anonKey || window.AP_WEBHOOKS.supabase.anon_key)
+            : null);
+    }
+
+    document.addEventListener('click', function (e) {
+      var btn = e.target.closest && e.target.closest('a[data-checkout]');
+      // checkout.html handles the Stripe call; nothing to intercept here.
+      if (!btn || !AP_CHECKOUT_OPEN) return;
+      return;
+      if (btn.dataset.busy) return;
+      btn.dataset.busy = '1';
+      var original = btn.textContent;
+      btn.textContent = 'Opening checkout…';
+
+      (async function () {
+        try {
+          var sb = getSupabase();
+          if (!sb) throw new Error('no-client');
+          var session = await sb.auth.getSession();
+          var token = session && session.data && session.data.session && session.data.session.access_token;
+          if (!token) {
+            window.location.href = 'login.html?next=' + encodeURIComponent('pricing.html');
+            return;
+          }
+          var res = await fetch(AP_CHECKOUT_FN, {
+            method: 'POST',
+            headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify({ plan: btn.getAttribute('data-checkout'), cycle: btn.getAttribute('data-cycle-now') || 'monthly' })
+          });
+          var data = await res.json().catch(function () { return {}; });
+          if (!res.ok || !data.url) throw new Error(data.error || 'checkout-failed');
+          window.location.href = data.url;
+        } catch (err) {
+          console.warn('[checkout]', err);
+          checkoutMessage('Checkout could not start. Try again in a minute, or contact support.', true);
+          btn.textContent = original;
+          delete btn.dataset.busy;
+        }
+      })();
+    });
+
+    /* Returning from Stripe with ?checkout=cancelled — say so, don't leave
+       the user wondering whether they were charged. */
+    try {
+      if (new URLSearchParams(location.search).get('checkout') === 'cancelled') {
+        window.addEventListener('DOMContentLoaded', function () {
+          checkoutMessage('Checkout cancelled — you have not been charged.');
+        });
+      }
+    } catch (_) {}
+  })();
+  </script>
+
+</body>
+</html>

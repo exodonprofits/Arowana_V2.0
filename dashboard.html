@@ -1,0 +1,1168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Salon Genie — Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<meta name="gs-config" content="/shared/config.json"/>
+<style>
+/* ═══════════════════════════════════════════════════════════════
+   SALON GENIE — DASHBOARD
+   Design language: warm cream · DM Serif Display · DM Sans
+   Matches agents: inventory, booking, reception, marketing, analytics
+═══════════════════════════════════════════════════════════════ */
+
+/* ── TOKENS ── */
+:root {
+  --bg:        #FDFAF6;
+  --s1:        #FFFFFF;
+  --s2:        #F5F0E8;
+  --s3:        #EDE6D8;
+  --border:    rgba(0,0,0,0.07);
+  --border2:   rgba(0,0,0,0.11);
+  --ink:       #1C1814;
+  --mid:       #6A6058;
+  --muted:     #A89A8E;
+  --blush:     #C4856A;
+  --blush-dim: rgba(196,133,106,0.12);
+  --amber:     #C4993A;
+  --amber-dim: rgba(196,153,58,0.12);
+  --teal:      #3D7A72;
+  --teal-dim:  rgba(61,122,114,0.12);
+  --rose:      #C45A4A;
+  --rose-dim:  rgba(196,90,74,0.1);
+  --violet:    #7A4EA8;
+  --radius:    12px;
+  --shadow:    0 2px 14px rgba(28,24,20,0.07);
+  --header-h:  58px;
+}
+
+/* ── RESET ── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  line-height: 1.5;
+  font-weight: 400;
+}
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+/* ── TOPBAR ── */
+header {
+  position: sticky; top: 0; z-index: 100;
+  height: var(--header-h);
+  background: var(--s2);
+  border-bottom: 1px solid var(--border);
+  box-shadow: 0 1px 8px rgba(28,24,20,0.06);
+}
+.ap-header {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; align-items: center;
+  height: 100%; padding: 0 28px; gap: 16px;
+}
+
+/* Logo */
+.ap-brand { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ap-logo-gem {
+  width: 30px; height: 30px;
+  background: linear-gradient(135deg, var(--blush), var(--amber));
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+}
+.ap-brandname {
+  font-family: 'DM Serif Display', serif;
+  font-size: 20px; color: var(--ink); letter-spacing: 0.3px;
+}
+.ap-brandname span { color: var(--blush); }
+.ap-brandtag { font-size: 10px; color: var(--muted); margin-top: 1px; letter-spacing: 0.5px; }
+
+/* Nav */
+.ap-nav { display: flex; margin-left: 8px; }
+.nav-item {
+  padding: 0 16px; height: var(--header-h);
+  display: flex; align-items: center;
+  font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--muted); cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s; white-space: nowrap;
+}
+.nav-item.active { color: var(--blush); border-bottom-color: var(--blush); font-weight: 600; }
+.nav-item:hover:not(.active) { color: var(--mid); }
+
+/* Greeting centre */
+.ap-greeting {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  overflow: hidden; padding: 0 8px;
+  min-width: 0;
+}
+.ap-greeting-row {
+  display: flex; align-items: center; gap: 8px;
+  flex-wrap: nowrap; justify-content: center;
+  white-space: nowrap; min-width: 0;
+}
+.greet-text { font-size: 13px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+.greet-clock {
+  font-size: 13px; font-weight: 600; font-family: monospace;
+  letter-spacing: 1px; color: var(--mid); white-space: nowrap;
+}
+.greet-date {
+  font-size: 10px; padding: 2px 9px; border-radius: 20px;
+  border: 1px solid var(--border2); color: var(--muted); white-space: nowrap;
+}
+.greet-sub { font-size: 10px; color: var(--muted); margin-top: 2px; text-align: center; white-space: nowrap; }
+
+/* Right actions */
+.ap-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+.ap-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 8px 16px; border-radius: 8px;
+  font-size: 12px; font-weight: 600; letter-spacing: 0.3px;
+  cursor: pointer; border: none; transition: all 0.2s;
+}
+.ap-btn-ghost {
+  background: rgba(255,255,255,0.6); border: 1px solid var(--border2); color: var(--mid);
+}
+.ap-btn-ghost:hover { border-color: var(--blush); color: var(--blush); }
+.ap-btn-primary {
+  background: var(--blush); color: white;
+  box-shadow: 0 2px 12px rgba(196,133,106,0.3);
+}
+.ap-btn-primary:hover { background: #B5745A; transform: translateY(-1px); }
+
+/* ── MAIN ── */
+main { max-width: 1280px; margin: 0 auto; padding: 28px 28px 80px; }
+
+/* ── SECTION TITLE ── */
+.sec-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px; color: var(--ink); margin-bottom: 14px; margin-top: 28px;
+}
+.sec-title:first-child { margin-top: 0; }
+.sec-sub { font-size: 11px; color: var(--muted); font-weight: 400; margin-left: 6px; }
+
+/* ── GENIE SUGGESTIONS ── */
+.genie-strip {
+  display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 24px;
+}
+.genie-pill {
+  display: inline-flex; align-items: center; gap: 7px;
+  background: var(--s1); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 9px 14px;
+  font-size: 12px; font-weight: 500; color: var(--ink);
+  cursor: pointer; transition: all 0.18s;
+  box-shadow: var(--shadow);
+}
+.genie-pill:hover { border-color: var(--blush); transform: translateY(-2px); box-shadow: 0 6px 18px rgba(196,133,106,0.15); }
+
+/* ── KPI STRIP ── */
+.kpis {
+  display: grid; grid-template-columns: repeat(4,1fr);
+  gap: 12px; margin-bottom: 24px;
+}
+.kcard {
+  background: var(--s1); border-radius: var(--radius);
+  border: 1px solid var(--border); padding: 18px 20px;
+  box-shadow: var(--shadow); cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s;
+  position: relative; overflow: hidden;
+}
+.kcard::after {
+  content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px;
+}
+.kcard.blush::after { background: var(--blush); }
+.kcard.amber::after { background: var(--amber); }
+.kcard.teal::after  { background: var(--teal); }
+.kcard.rose::after  { background: var(--rose); }
+.kcard:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(28,24,20,0.1); }
+.kcard.warn { border-color: rgba(196,153,58,0.35); }
+.kcard.bad  { border-color: rgba(196,90,74,0.3); }
+.khead { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.kmain { font-family: 'DM Serif Display', serif; font-size: 34px; color: var(--ink); line-height: 1; }
+.ksub  { font-size: 11px; color: var(--muted); margin-top: 5px; }
+
+/* ── QUICK PEEK ── */
+.qp-shell {
+  background: var(--s1); border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-bottom: 24px; overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.qp-top {
+  padding: 18px 22px 14px;
+  border-bottom: 1px solid var(--border);
+}
+.qp-top-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 18px; color: var(--ink); margin-bottom: 3px;
+}
+.qp-top-sub { font-size: 12px; color: var(--muted); }
+
+.qp-split {
+  display: grid; grid-template-columns: 1fr 300px;
+}
+.qp-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1px; background: var(--border);
+}
+.qp-card {
+  background: var(--s1); padding: 18px 20px;
+  display: flex; flex-direction: column; gap: 5px;
+}
+.qp-card h4 {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px; color: var(--ink); margin-bottom: 2px;
+}
+.qp-metric { font-size: 12px; font-weight: 600; color: var(--blush); }
+.qp-tip { font-size: 12px; color: var(--muted); line-height: 1.55; }
+.qp-card.full { grid-column: 1 / -1; flex-direction: row; align-items: center; gap: 18px; flex-wrap: wrap; }
+.qp-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: auto; padding-top: 10px; }
+.qp-btn {
+  padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border2); background: var(--bg); color: var(--mid);
+  cursor: pointer; text-decoration: none; display: inline-block;
+  transition: all 0.15s;
+}
+.qp-btn:hover { border-color: var(--blush); color: var(--blush); background: var(--blush-dim); }
+.qp-btn.primary { background: var(--blush); color: white; border-color: var(--blush); }
+.qp-btn.primary:hover { background: #B5745A; }
+.qp-btn.amber { background: var(--amber-dim); color: var(--amber); border-color: rgba(196,153,58,0.25); }
+.qp-btn.teal  { background: var(--teal-dim); color: var(--teal); border-color: rgba(61,122,114,0.25); }
+
+/* Tasks sidebar */
+.qp-tasks {
+  border-left: 1px solid var(--border);
+  padding: 18px; background: #FDFAF6;
+  display: flex; flex-direction: column; gap: 12px;
+  overflow-y: auto;
+}
+.qp-tasks-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 15px; color: var(--ink); margin-bottom: 4px;
+}
+.task-filters { display: flex; gap: 5px; flex-wrap: wrap; }
+.t-pill {
+  padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 500;
+  border: 1px solid var(--border2); background: var(--s1); color: var(--muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.t-pill.active { background: var(--blush); color: white; border-color: var(--blush); }
+.t-pill:hover:not(.active) { border-color: var(--blush); color: var(--blush); }
+#taskList { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+
+/* ── AI AGENTS BLOCK ── */
+.agents-shell {
+  background: var(--s1); border-radius: 16px;
+  border: 1px solid var(--border);
+  margin-bottom: 24px; overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.agents-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px 12px; border-bottom: 1px solid var(--border);
+}
+.agents-head-title {
+  font-family: 'DM Serif Display', serif;
+  font-size: 17px; color: var(--ink);
+}
+.agents-head-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.agents-new-badge {
+  padding: 3px 12px; border-radius: 20px; font-size: 10px; font-weight: 700;
+  letter-spacing: 1.5px; text-transform: uppercase;
+  background: linear-gradient(135deg, var(--blush), var(--amber));
+  color: white;
+}
+.agents-grid {
+  display: grid; grid-template-columns: repeat(5,1fr);
+  gap: 1px; background: var(--border);
+}
+/* 9 agents — wrap into 3 rows naturally at smaller widths */
+@media (max-width: 1280px) {
+  .agents-grid { grid-template-columns: repeat(5,1fr); }
+}
+.agent-card {
+  background: var(--s1);
+  padding: 22px 18px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 8px;
+  text-decoration: none; color: var(--ink);
+  transition: background 0.18s, transform 0.18s;
+  position: relative; overflow: hidden;
+}
+.agent-card:hover { background: var(--s2); }
+.agent-card:hover .agent-icon { transform: scale(1.1) translateY(-2px); }
+.agent-ai-tag {
+  position: absolute; top: 8px; right: 8px;
+  font-size: 9px; font-weight: 700; letter-spacing: 1px;
+  padding: 2px 6px; border-radius: 5px;
+  background: var(--amber-dim); color: var(--amber);
+  border: 1px solid rgba(196,153,58,0.2);
+}
+.agent-icon { font-size: 30px; line-height: 1; transition: all 0.2s; }
+.agent-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 14px; color: var(--ink);
+}
+.agent-sub { font-size: 10px; color: var(--muted); line-height: 1.4; }
+
+/* ── TOOLS SHELL ── */
+.tools-shell { margin-bottom: 24px; }
+.tools-section { margin-bottom: 4px; }
+.tools-section-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 0 10px; flex-wrap: wrap; gap: 6px;
+}
+.tools-section-label {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px; color: var(--ink);
+}
+.tools-section-note { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.tools-chip {
+  padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 600;
+  letter-spacing: 0.5px; background: var(--s2); border: 1px solid var(--border2); color: var(--muted);
+}
+.tools-grid {
+  display: grid; grid-template-columns: repeat(6,1fr);
+  gap: 8px; padding-bottom: 4px;
+}
+.tool-card {
+  background: var(--s1); border-radius: 12px;
+  padding: 16px 10px 14px;
+  display: flex; flex-direction: column; align-items: center;
+  text-align: center; gap: 7px;
+  border: 1px solid var(--border);
+  cursor: pointer; text-decoration: none; color: var(--ink);
+  transition: transform 0.18s, box-shadow 0.18s, border-color 0.18s;
+  box-shadow: var(--shadow);
+}
+.tool-card:hover:not(.disabled) {
+  transform: translateY(-3px); border-color: var(--blush);
+  box-shadow: 0 6px 20px rgba(196,133,106,0.15);
+}
+.tool-card.disabled { opacity: 0.45; cursor: default; }
+.tool-card.disabled p::after { content: ' ↗'; font-size: 9px; opacity: 0.5; }
+.tool-icon { font-size: 26px; line-height: 1; }
+.tool-card p { font-size: 11px; font-weight: 500; color: var(--mid); line-height: 1.3; }
+
+/* ── TASK CARD ── */
+.task-card {
+  background: var(--s1); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 14px;
+}
+.task-top { display: flex; justify-content: space-between; gap: 8px; align-items: flex-start; }
+.task-title-text { font-size: 12px; font-weight: 600; color: var(--ink); }
+.task-detail-text { font-size: 11px; color: var(--muted); margin-top: 2px; }
+.task-badges { display: flex; gap: 4px; flex-wrap: wrap; flex-shrink: 0; }
+.t-badge {
+  padding: 2px 7px; border-radius: 8px; font-size: 10px; font-weight: 500;
+  background: var(--bg); border: 1px solid var(--border2); color: var(--muted);
+}
+.t-badge.urgent { background: var(--rose-dim); color: var(--rose); border-color: rgba(196,90,74,0.2); }
+.t-badge.completed { background: var(--teal-dim); color: var(--teal); border-color: rgba(61,122,114,0.2); }
+.t-badge.overdue { background: var(--rose-dim); color: var(--rose); border-color: rgba(196,90,74,0.2); }
+.task-meta-row { font-size: 10px; color: var(--muted); margin-top: 4px; }
+.task-action-row { display: flex; gap: 5px; flex-wrap: wrap; margin-top: 8px; }
+.task-empty { font-size: 12px; color: var(--muted); text-align: center; padding: 20px 0; }
+
+/* ── SEARCH BAR ── */
+.search-row {
+  display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 20px;
+}
+.searchbar {
+  flex: 1; min-width: 200px;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--s1); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 9px 14px;
+  box-shadow: var(--shadow);
+}
+.searchbar input {
+  border: none; outline: none; background: transparent;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 13px; color: var(--ink); width: 100%;
+}
+.searchbar input::placeholder { color: var(--muted); }
+.role-pills { display: flex; gap: 6px; }
+.role-pill {
+  padding: 7px 16px; border-radius: 20px; font-size: 12px; font-weight: 500;
+  border: 1px solid var(--border2); background: var(--s1); color: var(--muted);
+  cursor: pointer; transition: all 0.15s;
+}
+.role-pill.active, .role-pill:hover {
+  background: var(--blush); color: white; border-color: var(--blush);
+}
+
+/* ── FOOTER ── */
+.site-footer {
+  background: var(--s2);
+  border-top: 1px solid var(--border);
+  padding: 28px 0; margin-top: 32px;
+}
+.sf-inner {
+  max-width: 1280px; margin: 0 auto; padding: 0 28px;
+  display: flex; align-items: flex-start; justify-content: space-between;
+  flex-wrap: wrap; gap: 20px;
+}
+.sf-brand-name {
+  font-family: 'DM Serif Display', serif;
+  font-size: 16px; color: var(--ink); margin-bottom: 4px;
+}
+.sf-brand-name span { color: var(--blush); }
+.sf-sub { font-size: 12px; color: var(--muted); }
+.sf-copy { font-size: 11px; color: var(--muted); margin-top: 6px; }
+.sf-links { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 10px; }
+.sf-link { font-size: 12px; color: var(--mid); transition: color 0.15s; }
+.sf-link:hover { color: var(--blush); }
+.sf-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+.sf-badge {
+  padding: 3px 10px; border-radius: 20px; font-size: 10px; font-weight: 500;
+  background: var(--s1); border: 1px solid var(--border2); color: var(--muted);
+}
+
+/* ── MOBILE NAV ── */
+.mobile-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 200;
+  background: var(--s1); border-top: 1px solid var(--border);
+  box-shadow: 0 -2px 14px rgba(28,24,20,0.08);
+  display: none;
+}
+@media (max-width: 768px) { .mobile-nav { display: block; } }
+.mobile-nav-inner {
+  display: flex; justify-content: space-around;
+  padding: 7px 0 env(safe-area-inset-bottom,7px);
+  max-width: 520px; margin: 0 auto;
+}
+.mnav {
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+  padding: 4px 10px; text-decoration: none;
+  color: var(--muted); font-size: 10px; font-weight: 500;
+  transition: color 0.15s;
+}
+.mnav:hover, .mnav.active { color: var(--blush); }
+.mnav .ico { font-size: 20px; line-height: 1; }
+.mnav-ai { position: relative; }
+.mnav-ai-dot {
+  position: absolute; top: 3px; right: 4px;
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--blush); border: 2px solid white;
+  animation: pulse 2s infinite;
+}
+
+/* ── BOOT ERROR ── */
+#bootError {
+  display: none; padding: 12px 16px; margin: 12px 28px;
+  border: 1px solid rgba(196,90,74,0.3); border-radius: 10px;
+  background: rgba(196,90,74,0.06); color: var(--rose); font-size: 13px;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes sgFadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.35} }
+
+.kcard { animation: sgFadeUp 0.3s ease both; }
+.kcard:nth-child(1){animation-delay:.04s}
+.kcard:nth-child(2){animation-delay:.08s}
+.kcard:nth-child(3){animation-delay:.12s}
+.kcard:nth-child(4){animation-delay:.16s}
+.tools-section { animation: sgFadeUp 0.35s ease both; }
+.tools-section:nth-child(1){animation-delay:.06s}
+.tools-section:nth-child(2){animation-delay:.10s}
+.tools-section:nth-child(3){animation-delay:.14s}
+.tools-section:nth-child(4){animation-delay:.18s}
+.tools-section:nth-child(5){animation-delay:.22s}
+.tools-section:nth-child(6){animation-delay:.26s}
+
+/* ── RESPONSIVE ── */
+@media (max-width:1100px) {
+  .tools-grid { grid-template-columns: repeat(5,1fr); }
+  .agents-grid { grid-template-columns: repeat(5,1fr); }
+}
+@media (max-width:900px) {
+  main { padding: 20px 18px 80px; }
+  .ap-header { padding: 0 18px; }
+  .ap-nav { display: none; }
+  .kpis { grid-template-columns: repeat(2,1fr); }
+  .qp-split { grid-template-columns: 1fr; }
+  .qp-tasks { border-left: none; border-top: 1px solid var(--border); }
+  .tools-grid { grid-template-columns: repeat(4,1fr); }
+  .agents-grid { grid-template-columns: repeat(3,1fr); }
+}
+@media (max-width:600px) {
+  .kpis { grid-template-columns: repeat(2,1fr); }
+  .tools-grid { grid-template-columns: repeat(3,1fr); }
+  .agents-grid { grid-template-columns: repeat(3,1fr); }
+  .ap-greeting { display: none; }
+  .qp-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main" style="position:absolute;left:-9999px">Skip to main</a>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="ap-header">
+
+    <!-- Logo -->
+    <a class="ap-brand" href="salon-dashboard.html">
+      <div class="ap-logo-gem">✦</div>
+      <div>
+        <div class="ap-brandname">Salon <span>Genie</span></div>
+        <div class="ap-brandtag">Owner · Staff · AI Agents</div>
+      </div>
+    </a>
+
+    <!-- Nav -->
+    <nav class="ap-nav" aria-label="Primary">
+      <a class="nav-item active" href="salon-dashboard.html">Dashboard</a>
+      <a class="nav-item" href="salon-briefing-agent.html">Briefing</a>
+      <a class="nav-item" href="salon-booking-agent.html">Bookings</a>
+      <a class="nav-item" href="salon-reception-agent.html">Reception</a>
+      <a class="nav-item" href="salon-marketing-agent.html">Marketing</a>
+      <a class="nav-item" href="salon-analytics-agent.html">Analytics</a>
+    </nav>
+
+    <!-- Greeting -->
+    <div class="ap-greeting" id="sg-greeting">
+      <div class="ap-greeting-row">
+        <span class="greet-text" id="sgGreetText">Good morning 👋</span>
+        <span class="greet-clock" id="sgClock">--:--</span>
+      </div>
+      <div class="ap-greeting-row" style="gap:6px;margin-top:2px">
+        <span class="greet-date" id="sgClockDate">—</span>
+        <span class="greet-sub" id="sgGreetSub" style="margin-top:0">· Your salon at a glance</span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="ap-right">
+      <a class="ap-btn ap-btn-ghost" href="/onboarding/login.html">Log in</a>
+      <a class="ap-btn ap-btn-primary" href="salon-booking-agent.html">+ New Booking</a>
+    </div>
+
+  </div>
+</header>
+
+<!-- ══ MAIN ══ -->
+<main id="main">
+  <div id="bootError">⚠️ Dashboard failed to load. Please refresh or contact support.</div>
+
+  <!-- Search + Role Pills -->
+  <div class="search-row">
+    <div class="searchbar">
+      <span style="color:var(--muted)">🔍</span>
+      <input id="sgSearch" placeholder="Search tools, agents, or pages… (press /)" type="search" aria-label="Search"/>
+    </div>
+    <div class="role-pills" role="tablist" aria-label="View as">
+      <button class="role-pill active" data-role="owner" role="tab" type="button">Owner</button>
+      <button class="role-pill" data-role="manager" role="tab" type="button">Manager</button>
+      <button class="role-pill" data-role="staff" role="tab" type="button">Staff</button>
+    </div>
+  </div>
+
+  <!-- Genie Suggestions -->
+  <div class="genie-strip" id="sgShieldZone">
+    <div class="genie-pill" onclick="location.href='salon-briefing-agent.html'">🌅 Read today's briefing</div>
+    <div class="genie-pill" onclick="location.href='salon-booking-agent.html'">📅 Review today's schedule</div>
+    <div class="genie-pill" onclick="location.href='salon-inventory-agent.html'">📦 3 items low on stock</div>
+    <div class="genie-pill" onclick="location.href='salon-analytics-agent.html'">📈 Check weekly revenue</div>
+    <div class="genie-pill" onclick="location.href='salon-marketing-agent.html'">📣 Draft a Tuesday promo</div>
+    <div class="genie-pill" onclick="location.href='salon-reception-agent.html'">💬 2 unread client messages</div>
+    <div class="genie-pill" onclick="location.href='salon-staff-agent.html'">👥 Priya called out — get coverage</div>
+    <div class="genie-pill" onclick="location.href='salon-reviews-agent.html'">⭐ 3 new reviews to respond to</div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="sec-title">📅 Today — <span class="sec-sub" id="sgDate">—</span></div>
+  <div class="kpis">
+    <a class="kcard blush" href="appointment.html">
+      <div class="khead">Appointments</div>
+      <div class="kmain" id="kAppt">8</div>
+      <div class="ksub">booked today</div>
+    </a>
+    <a class="kcard amber" href="check-in-queue.html">
+      <div class="khead">Walk-ins</div>
+      <div class="kmain" id="kWalk">3</div>
+      <div class="ksub">so far today</div>
+    </a>
+    <a class="kcard warn" href="customers.html">
+      <div class="khead">No-shows</div>
+      <div class="kmain" id="kNoShow">1</div>
+      <div class="ksub">needs outreach</div>
+    </a>
+    <a class="kcard bad" href="salon-inventory-agent.html">
+      <div class="khead">Low Inventory</div>
+      <div class="kmain" id="kLow">3</div>
+      <div class="ksub">below reorder</div>
+    </a>
+  </div>
+
+  <!-- Quick Peek -->
+  <div class="qp-shell" aria-label="Quick Peek">
+    <div class="qp-top">
+      <div class="qp-top-title">⚡ Quick Peek</div>
+      <div class="qp-top-sub">No-brainer actions to run your day.</div>
+    </div>
+    <div class="qp-split">
+      <div class="qp-grid">
+
+        <!-- AI Agents -->
+        <div class="qp-card full">
+          <div>
+            <h4>✦ AI Agent Suite</h4>
+            <div class="qp-metric">9 agents ready · always on</div>
+            <p class="qp-tip">Every part of your salon, fully AI-powered — from your morning briefing to end-of-day payroll.</p>
+          </div>
+          <div class="qp-actions">
+            <a class="qp-btn primary" href="salon-briefing-agent.html">🌅 Briefing</a>
+            <a class="qp-btn primary" href="salon-booking-agent.html">📅 Bookings</a>
+            <a class="qp-btn primary" href="salon-inventory-agent.html">📦 Inventory</a>
+            <a class="qp-btn primary" href="salon-marketing-agent.html">📣 Marketing</a>
+            <a class="qp-btn primary" href="salon-analytics-agent.html">📊 Analytics</a>
+            <a class="qp-btn primary" href="salon-reception-agent.html">💬 Reception</a>
+            <a class="qp-btn primary" href="salon-payroll-agent.html">💵 Payroll</a>
+            <a class="qp-btn primary" href="salon-staff-agent.html">👥 Staff</a>
+            <a class="qp-btn primary" href="salon-reviews-agent.html">⭐ Reviews</a>
+            <a class="qp-btn primary" href="salon-loyalty-agent.html">🎁 Loyalty</a>
+          </div>
+        </div>
+
+        <!-- Best move -->
+        <div class="qp-card">
+          <h4>🎯 Today's best move</h4>
+          <div class="qp-metric">Fill open slots</div>
+          <p class="qp-tip">Post a same-day offer for your next 2–3 open appointment slots. Keep it limited and easy to book.</p>
+          <div class="qp-actions">
+            <a class="qp-btn amber" href="salon-marketing-agent.html">📣 Post Promo</a>
+            <a class="qp-btn" href="appointment.html">🗓️ View Schedule</a>
+          </div>
+        </div>
+
+        <!-- Checkout safety -->
+        <div class="qp-card">
+          <h4>💳 Checkout safety</h4>
+          <div class="qp-metric">Verify ticket</div>
+          <p class="qp-tip">Before payment, confirm you're charging the right client and the correct service.</p>
+          <div class="qp-actions">
+            <a class="qp-btn" href="pos.html">💻 POS</a>
+            <a class="qp-btn" href="check-in-queue.html">🧾 Tickets</a>
+          </div>
+        </div>
+
+        <!-- Team snapshot -->
+        <div class="qp-card">
+          <h4>👥 Team snapshot</h4>
+          <div class="qp-metric">Shifts & coverage</div>
+          <p class="qp-tip">See who's on shift, who called out, and get instant AI coverage suggestions for any gaps.</p>
+          <div class="qp-actions">
+            <a class="qp-btn primary" href="salon-staff-agent.html">👥 Staff Agent</a>
+            <a class="qp-btn" href="salon-payroll-agent.html">💵 Payroll</a>
+          </div>
+        </div>
+
+        <!-- End of day -->
+        <div class="qp-card">
+          <h4>💰 End of Day</h4>
+          <div class="qp-metric">Close out strong</div>
+          <p class="qp-tip">Review today's revenue, confirm all tickets are closed, and check tomorrow's schedule before locking up.</p>
+          <div class="qp-actions">
+            <a class="qp-btn teal" href="reports.html">📊 Revenue</a>
+            <a class="qp-btn" href="pos.html">🧾 Close Tickets</a>
+            <a class="qp-btn" href="appointment.html">📅 Tomorrow</a>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Tasks -->
+      <div class="qp-tasks">
+        <div class="qp-tasks-title">✅ My Tasks</div>
+        <div class="task-filters">
+          <button class="t-pill active" data-filter="all" type="button">All</button>
+          <button class="t-pill" data-filter="urgent" type="button">Urgent</button>
+          <button class="t-pill" data-filter="completed" type="button">Done</button>
+        </div>
+        <div id="taskList">
+          <div class="task-empty">Sign in and select a location to see your tasks.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Agents Block -->
+  <div class="agents-shell" aria-label="AI Agents">
+    <div class="agents-head">
+      <div>
+        <div class="agents-head-title">✦ AI Agents</div>
+        <div class="agents-head-sub">9 intelligent agents running your salon 24/7 — powered by Genie AI.</div>
+      </div>
+      <div class="agents-new-badge">✦ 9 Active</div>
+    </div>
+    <div class="agents-grid">
+      <a class="agent-card" href="salon-briefing-agent.html" data-keywords="ai briefing morning daily summary alerts actions">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">🌅</div>
+        <div class="agent-name">Daily Briefing</div>
+        <div class="agent-sub">Morning · Alerts · Actions</div>
+      </a>
+      <a class="agent-card" href="salon-inventory-agent.html" data-keywords="ai inventory supply stock reorder agent">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">📦</div>
+        <div class="agent-name">Inventory</div>
+        <div class="agent-sub">Stock · Reorder · Alerts</div>
+      </a>
+      <a class="agent-card" href="salon-booking-agent.html" data-keywords="ai booking appointment schedule calendar">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">📅</div>
+        <div class="agent-name">Booking</div>
+        <div class="agent-sub">Schedule · Gaps · Reminders</div>
+      </a>
+      <a class="agent-card" href="salon-reception-agent.html" data-keywords="ai reception chat front desk client messages">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">💬</div>
+        <div class="agent-name">Reception</div>
+        <div class="agent-sub">Chat · Queue · Clients</div>
+      </a>
+      <a class="agent-card" href="salon-marketing-agent.html" data-keywords="ai marketing social media caption campaign instagram">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">📣</div>
+        <div class="agent-name">Marketing</div>
+        <div class="agent-sub">Captions · Campaigns · SMS</div>
+      </a>
+      <a class="agent-card" href="salon-analytics-agent.html" data-keywords="ai analytics reports revenue kpi performance insights">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">📊</div>
+        <div class="agent-name">Analytics</div>
+        <div class="agent-sub">Revenue · KPIs · Forecast</div>
+      </a>
+      <a class="agent-card" href="salon-payroll-agent.html" data-keywords="ai payroll commission pay w2 1099 salary wages">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">💵</div>
+        <div class="agent-name">Payroll</div>
+        <div class="agent-sub">Commission · Pay Stubs · W-2</div>
+      </a>
+      <a class="agent-card" href="salon-staff-agent.html" data-keywords="ai staff shifts schedule coverage callout attendance">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">👥</div>
+        <div class="agent-name">Staff & Shifts</div>
+        <div class="agent-sub">Scheduling · Coverage · Attendance</div>
+      </a>
+      <a class="agent-card" href="salon-reviews-agent.html" data-keywords="ai reviews google yelp respond reputation rating">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">⭐</div>
+        <div class="agent-name">Reviews</div>
+        <div class="agent-sub">Respond · Track · Reputation</div>
+      </a>
+      <a class="agent-card" href="salon-loyalty-agent.html" data-keywords="ai loyalty rewards points membership retention client">
+        <div class="agent-ai-tag">AI</div>
+        <div class="agent-icon">🎁</div>
+        <div class="agent-name">Loyalty</div>
+        <div class="agent-sub">Rewards · Points · Retention</div>
+      </a>
+    </div>
+  </div>
+
+  <!-- Tools -->
+  <div class="tools-shell" id="toolsShell">
+    <div class="sec-title">🧭 Tools <span class="sec-sub">Tap to open · press "/" to search</span></div>
+
+    <!-- Most Used -->
+    <div class="tools-section" aria-label="Most used">
+      <div class="tools-section-head">
+        <div>
+          <div class="tools-section-label">🔥 Most used</div>
+          <div class="tools-section-note">The two things salons open every single day.</div>
+        </div>
+        <span class="tools-chip">Daily</span>
+      </div>
+      <div class="tools-grid">
+        <a class="tool-card" href="appointment.html" data-keywords="appointments booking schedule calendar">
+          <div class="tool-icon">🗓️</div><p>Appointments</p>
+        </a>
+        <a class="tool-card" href="check-in-queue.html" data-keywords="check in walk in queue front desk">
+          <div class="tool-icon">✅</div><p>Check-In Queue</p>
+        </a>
+        <a class="tool-card" href="pos.html" data-keywords="pos point of sale checkout ticket cash register">
+          <div class="tool-icon">💻</div><p>POS</p>
+        </a>
+        <a class="tool-card" href="social-media.html" data-keywords="social media instagram facebook tiktok post caption marketing">
+          <div class="tool-icon">#️⃣</div><p>Social Media</p>
+        </a>
+        <a class="tool-card" href="customer-review-tracker.html" data-keywords="reviews google yelp rating customer feedback">
+          <div class="tool-icon">⭐</div><p>Reviews</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- Customer Journey -->
+    <div class="tools-section" aria-label="Customer journey">
+      <div class="tools-section-head">
+        <div>
+          <div class="tools-section-label">🚀 Customer journey</div>
+          <div class="tools-section-note">From walk-in to loyal regular — in one flow.</div>
+        </div>
+        <span class="tools-chip">Front Desk</span>
+      </div>
+      <div class="tools-grid">
+        <a class="tool-card" href="checkin-kiosk.html" data-keywords="check in kiosk walk in self serve">
+          <div class="tool-icon">📲</div><p>Check-In Kiosk</p>
+        </a>
+        <a class="tool-card" href="front-desk.html" data-keywords="front desk bell ticket service">
+          <div class="tool-icon">🔔</div><p>Front Desk</p>
+        </a>
+        <a class="tool-card" href="customers.html" data-keywords="customers clients profiles history">
+          <div class="tool-icon">👥</div><p>Clients</p>
+        </a>
+        <a class="tool-card" href="salon-loyalty-agent.html" data-keywords="ai loyalty rewards points membership retention client">
+          <div class="tool-icon">🎁</div><p>Loyalty AI</p>
+        </a>
+        <a class="tool-card" href="salon-reviews-agent.html" data-keywords="ai reviews google yelp respond reputation rating star">
+          <div class="tool-icon">⭐</div><p>Reviews AI</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- Staff -->
+    <div class="tools-section" aria-label="Staff tools">
+      <div class="tools-section-head">
+        <div>
+          <div class="tools-section-label">💼 Staff</div>
+          <div class="tools-section-note">Shifts, pay, and hiring — quick and clean.</div>
+        </div>
+        <span class="tools-chip">Team</span>
+      </div>
+      <div class="tools-grid">
+        <a class="tool-card" href="salon-staff-agent.html" data-keywords="ai staff shift schedule time off roster coverage callout">
+          <div class="tool-icon">👥</div><p>Staff & Shifts AI</p>
+        </a>
+        <a class="tool-card" href="salon-payroll-agent.html" data-keywords="ai payroll pay commission w2 1099 wages salary">
+          <div class="tool-icon">💵</div><p>Payroll AI</p>
+        </a>
+        <a class="tool-card" href="manage-employees.html" data-keywords="employees staff team profiles permissions roles">
+          <div class="tool-icon">👤</div><p>Manage Employees</p>
+        </a>
+        <a class="tool-card" href="manage-agent-tasks.html" data-keywords="task manager to do templates catalog operations assign">
+          <div class="tool-icon">📋</div><p>Task Manager</p>
+        </a>
+        <a class="tool-card" href="task-assigner.html" data-keywords="assign tasks receptionist staff daily">
+          <div class="tool-icon">📌</div><p>Assign Tasks</p>
+        </a>
+        <a class="tool-card" href="all-assigned-tasks.html" data-keywords="all assigned tasks board status overdue progress">
+          <div class="tool-icon">📊</div><p>All Assigned</p>
+        </a>
+        <a class="tool-card" href="hiring.html" data-keywords="hiring applicants resumes interview">
+          <div class="tool-icon">📄</div><p>Hiring</p>
+        </a>
+        <a class="tool-card" href="import-weekly-commissions.html" data-keywords="weekly commission import excel payroll w2 1099 tips">
+          <div class="tool-icon">📥</div><p>Commission Import</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- Business Insights -->
+    <div class="tools-section" aria-label="Business insights">
+      <div class="tools-section-head">
+        <div>
+          <div class="tools-section-label">📊 Business insights</div>
+          <div class="tools-section-note">Know what's working. Fix what's not.</div>
+        </div>
+        <span class="tools-chip">Insights</span>
+      </div>
+      <div class="tools-grid">
+        <a class="tool-card" href="reports.html" data-keywords="reports analytics sales stats performance revenue">
+          <div class="tool-icon">📈</div><p>Reports</p>
+        </a>
+        <a class="tool-card" href="shift-notes-inbox.html" data-keywords="shift notes inbox complaints repairs incidents">
+          <div class="tool-icon">📬</div><p>Shift Notes</p>
+        </a>
+        <a class="tool-card" href="payment-tracker.html" data-keywords="payments payout settlement cash card">
+          <div class="tool-icon">💳</div><p>Payments</p>
+        </a>
+        <div class="tool-card disabled" data-keywords="no show noshow cancellation analysis">
+          <div class="tool-icon">🚫</div><p>No-Show Analysis</p>
+        </div>
+        <div class="tool-card disabled" data-keywords="sentiment mood feedback analysis">
+          <div class="tool-icon">😊</div><p>Sentiment</p>
+        </div>
+        <div class="tool-card disabled" data-keywords="competitor watch prices nearby">
+          <div class="tool-icon">🔭</div><p>Competitor Watch</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Marketing -->
+    <div class="tools-section" aria-label="Marketing tools">
+      <div class="tools-section-head">
+        <div>
+          <div class="tools-section-label">🌟 Marketing</div>
+          <div class="tools-section-note">Promos that don't take all day.</div>
+        </div>
+        <span class="tools-chip">Growth</span>
+      </div>
+      <div class="tools-grid">
+        <a class="tool-card" href="marketing.html" data-keywords="campaigns promotions sms email">
+          <div class="tool-icon">📢</div><p>Campaigns</p>
+        </a>
+        <a class="tool-card" href="social-media.html" data-keywords="social media instagram captions post">
+          <div class="tool-icon">#️⃣</div><p>Social Media</p>
+        </a>
+        <a class="tool-card" href="event-planner.html" data-keywords="events holiday promo planner">
+          <div class="tool-icon">🎉</div><p>Event Planner</p>
+        </a>
+        <a class="tool-card" href="review-response-templates.html" data-keywords="review replies templates responses">
+          <div class="tool-icon">✍️</div><p>Review Templates</p>
+        </a>
+      </div>
+    </div>
+
+    <!-- Operations -->
+    <div class="tools-section" aria-label="Operations">
+      <div class="tools-section-head">
+        <div>
+          <div class="tools-section-label">📦 Operations &amp; Finance</div>
+          <div class="tools-section-note">Track money and supplies without spreadsheets.</div>
+        </div>
+        <span class="tools-chip">Ops</span>
+      </div>
+      <div class="tools-grid">
+        <a class="tool-card" href="inventory.html" data-keywords="inventory supplies reorder stock">
+          <div class="tool-icon">📦</div><p>Inventory</p>
+        </a>
+        <a class="tool-card" href="payment-tracker.html" data-keywords="payments payout cash card settlement">
+          <div class="tool-icon">💰</div><p>Payments</p>
+        </a>
+        <div class="tool-card disabled" data-keywords="expense tracker budget">
+          <div class="tool-icon">🧾</div><p>Expense Tracker</p>
+        </div>
+        <div class="tool-card disabled" data-keywords="supply orders purchase order">
+          <div class="tool-icon">🛒</div><p>Supply Orders</p>
+        </div>
+        <div class="tool-card disabled" data-keywords="cash reconciliation register">
+          <div class="tool-icon">🏧</div><p>Cash Reconciliation</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <!-- /Tools -->
+
+</main>
+
+<!-- ══ FOOTER ══ -->
+<footer class="site-footer">
+  <div class="sf-inner">
+    <div>
+      <div class="sf-brand-name">Salon <span>Genie</span></div>
+      <div class="sf-sub">Built for real salon teams — simple, fast, and reliable.</div>
+      <div class="sf-copy">© 2026 Salon Genie. All rights reserved.</div>
+    </div>
+    <div>
+      <div class="sf-links">
+        <a class="sf-link" href="help.html">Help</a>
+        <a class="sf-link" href="status.html">Status</a>
+        <a class="sf-link" href="privacy.html">Privacy</a>
+        <a class="sf-link" href="terms.html">Terms</a>
+      </div>
+      <div class="sf-badges">
+        <span class="sf-badge">🔒 Secure login</span>
+        <span class="sf-badge">⚡ Fast workflow</span>
+        <span class="sf-badge">✦ 10 AI Agents</span>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<!-- ══ MOBILE NAV ══ -->
+<nav class="mobile-nav" aria-label="Mobile navigation">
+  <div class="mobile-nav-inner">
+    <a class="mnav active" href="salon-dashboard.html"><div class="ico">🏠</div><div>Home</div></a>
+    <a class="mnav" href="appointment.html"><div class="ico">🗓️</div><div>Appts</div></a>
+    <a class="mnav" href="check-in-queue.html"><div class="ico">✅</div><div>Check-in</div></a>
+    <a class="mnav" href="customers.html"><div class="ico">👥</div><div>Clients</div></a>
+    <a class="mnav mnav-ai" href="salon-booking-agent.html">
+      <div class="ico">✦</div><div>AI</div>
+      <span class="mnav-ai-dot"></span>
+    </a>
+    <a class="mnav" href="reports.html"><div class="ico">📊</div><div>Reports</div></a>
+  </div>
+</nav>
+
+<!-- ══ SCRIPTS ══ -->
+<script type="module" src="/shared/js/salon-dashboard.js?v=0304d"></script>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ── Live clock + greeting ── */
+  function tick(){
+    const now = new Date();
+    const h = now.getHours(), m = String(now.getMinutes()).padStart(2,'0');
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    const h12 = String(h%12||12).padStart(2,'0');
+    const el = document.getElementById('sgClock');
+    if(el) el.textContent = h12+':'+m+' '+ampm;
+    const gEl = document.getElementById('sgGreetText');
+    if(gEl && !gEl.dataset.set){
+      gEl.textContent = (h<12?'Good morning':h<17?'Good afternoon':'Good evening')+' 👋';
+      gEl.dataset.set=1;
+    }
+  }
+  tick(); setInterval(tick, 1000);
+
+  /* ── Date pill ── */
+  const dp = document.getElementById('sgClockDate');
+  const sgD = document.getElementById('sgDate');
+  const dateStr = new Date().toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
+  if(dp) dp.textContent = dateStr;
+  if(sgD) sgD.textContent = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
+
+  /* ── "/" focuses search, Escape clears ── */
+  document.addEventListener('keydown', e=>{
+    const s = document.getElementById('sgSearch');
+    if(!s) return;
+    if(e.key==='/' && document.activeElement!==s){ e.preventDefault(); s.focus(); }
+    if(e.key==='Escape' && document.activeElement===s){ s.blur(); s.value=''; s.dispatchEvent(new Event('input')); }
+  });
+
+  /* ── Live search across tool cards and agent cards ── */
+  const sgSearch = document.getElementById('sgSearch');
+  if(sgSearch) sgSearch.addEventListener('input', ()=>{
+    const q = sgSearch.value.trim().toLowerCase();
+    document.querySelectorAll('.tool-card, .agent-card').forEach(c=>{
+      const kw = (c.dataset.keywords||'')+' '+(c.textContent||'');
+      c.style.display = (!q || kw.toLowerCase().includes(q)) ? '' : 'none';
+    });
+    document.querySelectorAll('.tools-section').forEach(sec=>{
+      const any = [...sec.querySelectorAll('.tool-card')].some(c=>c.style.display!=='none');
+      sec.style.display = any ? '' : 'none';
+    });
+  });
+
+  /* ── Role pill tabs ── */
+  document.querySelectorAll('.role-pill').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.role-pill').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+  /* ── Task filter pills ── */
+  document.querySelectorAll('.t-pill').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('.t-pill').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+    });
+  });
+
+})();
+</script>
+
+<!-- Supabase task loader (mirrors original logic, unchanged) -->
+<script type="module">
+(async()=>{
+  const waitForClient = async () => {
+    for(let i=0;i<30;i++){
+      if(window.GSClient?.getAsync) return window.GSClient.getAsync();
+      await new Promise(r=>setTimeout(r,200));
+    }
+    return null;
+  };
+  const qs = (name) => new URL(location.href).searchParams.get(name);
+  const BUSINESS_ID = qs('business_id') || (()=>{ try{return localStorage.getItem('gs.active_business_id')||'';}catch(_){return '';} })();
+  const escHtml = (s) => String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;').replaceAll("'",'&#039;');
+  const fmtDate = (d) => { try{return new Date(d+'T12:00:00').toLocaleDateString();}catch(_){return d||'';} };
+  let sg=null, currentUser=null, currentEmployee=null, taskRows=[], taskFilter='all';
+  const list = document.getElementById('taskList');
+  if(!list) return;
+  list.innerHTML = '<div class="task-empty">Loading tasks…</div>';
+
+  function renderCard(t){
+    const status = String(t.status_live||t.status||'pending').toLowerCase();
+    const priority = String(t.priority||'normal').toLowerCase();
+    const dueLabel = t.due_date ? `Due: ${fmtDate(t.due_date)}` : 'No due date';
+    const canAct = !['completed','cancelled','skipped'].includes(status);
+    return `
+      <div class="task-card ${escHtml(status)}">
+        <div class="task-top">
+          <div>
+            <div class="task-title-text">${escHtml(t.title_snapshot||'Untitled task')}</div>
+            ${t.detail_snapshot?`<div class="task-detail-text">${escHtml(t.detail_snapshot)}</div>`:''}
+          </div>
+          <div class="task-badges">
+            <span class="t-badge">${escHtml(t.category_snapshot||'General')}</span>
+            <span class="t-badge ${priority==='urgent'?'urgent':''}">${escHtml(priority)}</span>
+            <span class="t-badge ${status==='completed'?'completed':status==='overdue'?'overdue':''}">${escHtml(status)}</span>
+          </div>
+        </div>
+        <div class="task-meta-row">${escHtml(dueLabel)}${t.note?` · ${escHtml(t.note)}`:''}</div>
+        <div class="task-action-row">
+          ${canAct?`<button class="qp-btn" data-task-start="${escHtml(t.id)}">▶ Start</button>`:''}
+          ${canAct?`<button class="qp-btn primary" data-task-complete="${escHtml(t.id)}">✅ Complete</button>`:''}
+          ${status!=='completed'?`<button class="qp-btn" data-task-help="${escHtml(t.id)}">🙋 Help</button>`:''}
+        </div>
+      </div>`;
+  }
+
+  function render(){
+    let rows=[...taskRows];
+    if(taskFilter==='urgent') rows=rows.filter(r=>String(r.priority||'').toLowerCase()==='urgent'||String(r.status_live||r.status||'').toLowerCase()==='overdue');
+    if(taskFilter==='completed') rows=rows.filter(r=>String(r.status_live||r.status||'').toLowerCase()==='completed');
+    if(!rows.length){list.innerHTML='<div class="task-empty">No tasks in this view.</div>';return;}
+    list.innerHTML=rows.map(renderCard).join('');
+    list.querySelectorAll('[data-task-start]').forEach(btn=>btn.addEventListener('click',()=>updateStatus(btn.dataset.taskStart,'in_progress')));
+    list.querySelectorAll('[data-task-complete]').forEach(btn=>btn.addEventListener('click',()=>updateStatus(btn.dataset.taskComplete,'completed')));
+    list.querySelectorAll('[data-task-help]').forEach(btn=>btn.addEventListener('click',()=>markHelp(btn.dataset.taskHelp)));
+  }
+
+  async function updateStatus(taskId,nextStatus){
+    if(!(sg&&BUSINESS_ID&&taskId)) return;
+    const patch={status:nextStatus};
+    if(nextStatus==='in_progress') patch.started_at=new Date().toISOString();
+    if(nextStatus==='completed') patch.completed_at=new Date().toISOString();
+    const res=await sg.from('salon.task_assignments').update(patch).eq('id',taskId).eq('business_id',BUSINESS_ID);
+    if(res?.error){alert('Could not update task.');return;}
+    taskRows=taskRows.map(r=>String(r.id)===String(taskId)?({...r,status:nextStatus,status_live:nextStatus,...patch}):r);
+    render();
+  }
+
+  async function markHelp(taskId){
+    const note=prompt('What help do you need?');
+    if(note==null||!note.trim()||!(sg&&BUSINESS_ID&&taskId)) return;
+    const res=await sg.from('salon.task_comments').insert({business_id:BUSINESS_ID,assignment_id:taskId,author_id:currentUser?.id||null,comment_text:note.trim()});
+    if(res?.error){alert('Could not save help request.');return;}
+    alert('Help request saved.');
+  }
+
+  document.querySelectorAll('.t-pill[data-filter]').forEach(btn=>btn.addEventListener('click',()=>{
+    taskFilter=btn.dataset.filter||'all'; render();
+  }));
+
+  try{
+    sg=await waitForClient();
+    if(!sg||!BUSINESS_ID){list.innerHTML='<div class="task-empty">Sign in and select a location to see tasks.</div>';return;}
+    const {data}=await sg.auth.getUser();
+    currentUser=data?.user||null;
+    if(!currentUser){list.innerHTML='<div class="task-empty">Sign in to see your tasks.</div>';return;}
+    let empRes=await sg.from('salon.employees').select('id,role,full_name').eq('business_id',BUSINESS_ID).eq('user_id',currentUser.id).maybeSingle();
+    if(empRes?.error&&String(empRes.error.message||'').toLowerCase().includes('user_id')) empRes={data:null,error:null};
+    currentEmployee=empRes?.data||null;
+    if(!currentEmployee?.id){list.innerHTML='<div class="task-empty">No employee profile linked. Owners can use 📋 All Assigned to monitor the salon.</div>';return;}
+    const res=await sg.from('salon.v_task_assignments_live').select('id,assignee_id,title_snapshot,detail_snapshot,category_snapshot,priority,status,status_live,due_date,due_at,note,completed_at,assigned_at').eq('business_id',BUSINESS_ID).eq('assignee_id',currentEmployee.id).order('assigned_at',{ascending:false}).limit(100);
+    if(res?.error) throw res.error;
+    taskRows=res.data||[];
+    render();
+  }catch(err){
+    console.error('[salon-dashboard tasks]',err);
+    list.innerHTML='<div class="task-empty">Could not load tasks.</div>';
+  }
+})();
+</script>
+
+</body>
+</html>

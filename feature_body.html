@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Arowana Profits — Features</title>
+  <!-- Font Awesome CDN for icons -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet"/>
+  <style>
+    /* ====== Base from index.html ====== */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+      color: #333;
+      background-color: #f7f8fb;
+    }
+    .header {
+      background-color: #1a3c5e;
+      color: white;
+      padding: 10px 20px 20px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 300px; /* a bit shorter than home hero */
+      background-image: url('header-bg-transparent.png');
+      background-size: cover;
+      background-position: right center;
+    }
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .header-top .logo-container {
+      display: flex;
+      align-items: center;
+    }
+    .header-top .logo-container img {
+      width: 40px;
+      margin-right: 12px;
+    }
+    .header-top .logo-container .logo-text {
+      font-size: 28px;
+      font-weight: bold;
+    }
+    .header-top .nav-links {
+      display: flex;
+      align-items: center;
+    }
+    .header-top .nav-links a {
+      color: #ccc;
+      margin-left: 15px;
+      text-decoration: none;
+      font-size: 16px;
+      padding: 6px 10px;
+      border-radius: 8px;
+    }
+    .header-top .nav-links a.active,
+    .header-top .nav-links a:hover {
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+    }
+    .hamburger {
+      display: none;
+      font-size: 24px;
+      cursor: pointer;
+      color: #ccc;
+    }
+    .header-content {
+      display: flex;
+      align-items: center;
+      padding: 10px 0 0 0;
+      flex-grow: 1;
+    }
+    .header-content .left { display:flex; align-items:center;}
+    .header-content .text h1 {
+      font-size: 36px;
+      margin: 0;
+    }
+    .header-content .text p {
+      font-size: 18px;
+      margin: 14px 0 22px;
+      color: #f3f4f6;
+      max-width: 900px;
+    }
+    .cta-button {
+      background-color: #1a3c5e;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+    }
+    .cta-button:hover { background-color: #0f2a44; }
+    .cta-button-white { background-color: white; color: #1a3c5e; }
+    .cta-button-white:hover { background-color: #e6e6e6; }
+
+    /* Ticker (same class names) */
+    .ticker-container {
+      background-color: #f0f0f0;
+      overflow: hidden;
+      white-space: nowrap;
+      padding: 10px 0;
+      border-top: 1px solid #ddd;
+      border-bottom: 1px solid #ddd;
+    }
+    .ticker { display: inline-block; animation: ticker 20s linear infinite; }
+    .ticker span { margin-right: 30px; font-size: 14px; }
+    .ticker .up::after { content: "↑"; color: green; margin-left: 5px; }
+    .ticker .down::after { content: "↓"; color: red; margin-left: 5px; }
+    @keyframes ticker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+
+    /* ====== Feature page specific content ====== */
+    .container{ max-width: 1200px; margin: 0 auto; padding: 24px 20px 48px; }
+    .controls{
+      background: #ffffff;
+      border-radius: 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      padding: 16px;
+      display:grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items:center;
+    }
+    .search{
+      display:flex; align-items:center; gap:8px;
+      background:#f1f5f9; border-radius: 9999px; padding: 8px 14px;
+      border:1px solid #e5e7eb;
+    }
+    .search input{
+      border:none; outline:none; background:transparent; width:100%;
+      font-size: 15px;
+    }
+    .pills{display:flex; flex-wrap:wrap; gap:8px;}
+    .pill{
+      background: #e6eef7; color: #1a3c5e; border:1px solid #c7d8ea;
+      padding:8px 12px; border-radius: 9999px; font-size: 13px; cursor:pointer; user-select:none;
+    }
+    .pill.active{background:#1a3c5e; color:#fff; border-color:#1a3c5e;}
+    .clear-btn{ border:none; background:transparent; color:#e11d48; font-weight:600; cursor:pointer; padding:6px 10px; border-radius:8px; }
+    .clear-btn:hover{ background:#fee2e2; }
+
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-top: 18px;
+    }
+    .card{
+      background: #ffffff;
+      border-radius: 20px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+      padding: 18px;
+      display:flex; flex-direction:column; gap:10px;
+      transition: transform .18s ease, box-shadow .18s ease;
+      min-height: 220px;
+    }
+    .card:hover{ transform: translateY(-4px); box-shadow: 0 10px 22px rgba(0,0,0,0.12);}
+    .card .icon{
+      width:42px; height:42px; border-radius:14px; display:flex; align-items:center; justify-content:center;
+      background:#eef2f7; color: #1a3c5e; font-size: 18px;
+    }
+    .card h3{margin:0; font-size: 16px;}
+    .card p{margin:0; color:#4b5563; font-size: 14px; line-height: 1.4;}
+    .tags{display:flex; flex-wrap:wrap; gap:6px; margin-top:4px;}
+    .tag{ font-size:11px; padding:4px 8px; border-radius:9999px; background:#f3f4f6; color:#374151; border:1px solid #e5e7eb; }
+    .actions{margin-top:auto; display:flex; gap:10px; align-items:center;}
+    .btn{
+      border:none; cursor:pointer; padding:10px 14px; border-radius: 9999px; font-weight:600;
+      transition: background-color .15s ease, transform .15s ease;
+    }
+    .btn:active{transform: translateY(1px);}
+    .btn-primary{background:#1a3c5e; color:#fff;}
+    .btn-primary:hover{background:#0f2a44;}
+    .btn-ghost{background:transparent; color:#1a3c5e;}
+    .btn-ghost:hover{background:#e6eef7;}
+
+    /* ===== Footer (same as index.html) ===== */
+    footer {
+      background-color: #333;
+      color: white;
+      padding: 40px 20px;
+    }
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      gap: 20px;
+      margin-bottom: 30px;
+      max-width: 1200px;
+      margin-left: auto; margin-right: auto;
+    }
+    .footer-column { flex: 1; }
+    .footer-column h3 { font-size: 18px; margin-bottom: 15px; }
+    .footer-column p { font-size: 14px; margin: 0 0 15px; }
+    .footer-column ul { list-style: none; padding: 0; }
+    .footer-column ul li { margin-bottom: 10px; }
+    .footer-column ul li a { color: #ccc; text-decoration: none; font-size: 14px; }
+    .social-links a { color: white; font-size: 20px; margin-right: 10px; }
+    .footer-bottom {
+      text-align: center;
+      font-size: 12px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .footer-bottom p { margin: 5px 0; }
+    .legal-links a { color: #ccc; margin: 0 10px; text-decoration: none; }
+
+    /* ===== Mobile ===== */
+    @media (max-width: 768px) {
+      .header { min-height: 240px; padding: 10px 15px; }
+      .header-top { flex-direction: row; align-items: center; margin-bottom: 15px; }
+      .header-top .logo-container .logo-text { font-size: 24px; }
+      .header-top .nav-links {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 60px;
+        right: 15px;
+        background-color: #1a3c5e;
+        padding: 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+      }
+      .header-top .nav-links.active { display: flex; }
+      .header-top .nav-links a { margin-left: 0; margin-bottom: 10px; font-size: 14px; }
+      .header-top .nav-links a:last-child { margin-bottom: 0; }
+      .hamburger { display: block; }
+      .header-content .text h1 { font-size: 26px; }
+      .header-content .text p { font-size: 16px; margin: 12px 0 18px; }
+      .ticker-container { padding: 5px 0; }
+      .ticker span { font-size: 12px; margin-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== Header (identical structure/classes to index.html) ===== -->
+  <div class="header">
+    <div class="header-top">
+      <div class="logo-container">
+        <!--img src="logo.png" alt="Arowana Profits Logo"-->
+        <div class="logo-text">Arowana Profits</div>
+      </div>
+      <div class="hamburger"><i class="fas fa-bars"></i></div>
+      <div class="nav-links">
+        <a href="short-term-dashboard.html">Short-Term Investment</a>
+        <a href="long-term-dashboard.html">Long-Term Investment</a>
+        <a class="active" href="feature.html">Feature</a>
+      </div>
+    </div>
+    <div class="header-content">
+      <div class="left">
+        <div class="text">
+          <h1>All Features</h1>
+          <p>Browse every tool in the Arowana Profits toolkit — beginner guides, trading scanners, options analyzers, and more. Use the search and quick filters to find what you need fast.</p>
+          <a href="short-term-dashboard.html"><button class="cta-button cta-button-white">Open Short‑Term Dashboard</button></a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Optional ticker (same classes as index so styles carry over) -->
+  <div class="ticker-container">
+    <div class="ticker">
+      <span class="up">AAPL $189.72</span>
+      <span class="down">MSFT $409.34</span>
+      <span class="up">GOOGL $164.82</span>
+      <span class="down">AMZN $182.50</span>
+      <span class="up">TSLA $231.45</span>
+      <span class="down">NVDA $905.54</span>
+      <span class="up">META $468.24</span>
+      <span class="down">JPM $191.76</span>
+    </div>
+  </div>
+
+  <!-- ===== MAIN CONTENT ===== -->
+  <main class="container">
+    <section class="controls" aria-label="Feature filters">
+      <div class="search" role="search">
+        <i class="fas fa-search" aria-hidden="true"></i>
+        <input id="searchInput" type="text" placeholder="Search features… (e.g., RSI, options, beginner)" aria-label="Search features">
+      </div>
+      <div class="pills" role="group" aria-label="Quick filters">
+        <span class="pill active" data-filter="all" tabindex="0">All</span>
+        <span class="pill" data-filter="beginner" tabindex="0">Beginner</span>
+        <span class="pill" data-filter="trading" tabindex="0">Day Trading</span>
+        <span class="pill" data-filter="swing" tabindex="0">Swing</span>
+        <span class="pill" data-filter="options" tabindex="0">Options</span>
+        <span class="pill" data-filter="education" tabindex="0">Education</span>
+        <span class="pill" data-filter="portfolio" tabindex="0">Portfolio</span>
+        <button class="clear-btn" id="clearBtn" title="Clear search">Clear</button>
+      </div>
+    </section>
+
+    <section class="grid" id="featureGrid" aria-label="All features">
+      <!-- Beginner / Education -->
+      <article class="card" data-tags="beginner education long-term">
+        <div class="icon"><i class="fas fa-brain"></i></div>
+        <h3>Step-by-Step Investing Helper</h3>
+        <p>Interactive roadmap for brand-new investors: goals, risk, allocation, and compounding.</p>
+        <div class="tags">
+          <span class="tag">Beginner</span><span class="tag">Long-Term</span>
+        </div>
+        <div class="actions">
+          <a href="long-term-dashboard.html"><button class="btn btn-primary">Open</button></a>
+          <a href="learn-investing.html"><button class="btn btn-ghost">Learn</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="education beginner">
+        <div class="icon"><i class="fas fa-graduation-cap"></i></div>
+        <h3>Learn Investing</h3>
+        <p>Short lessons on basics, risk, taxes, mindset, and more — learn at your own pace.</p>
+        <div class="tags"><span class="tag">Education</span></div>
+        <div class="actions">
+          <a href="learn-investing.html"><button class="btn btn-primary">Explore</button></a>
+        </div>
+      </article>
+
+      <!-- Day Trading -->
+      <article class="card" data-tags="trading scanner rsi intraday">
+        <div class="icon"><i class="fas fa-bolt"></i></div>
+        <h3>Day Trade Scanner</h3>
+        <p>Intraday scanner with RSI, VWAP, EMA, and volume to find quick opportunities.</p>
+        <div class="tags"><span class="tag">Day Trading</span><span class="tag">RSI</span></div>
+        <div class="actions">
+          <a href="day-trade-scanner.html"><button class="btn btn-primary">Open</button></a>
+          <a href="short-term-dashboard.html"><button class="btn btn-ghost">More tools</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="trading signals quick">
+        <div class="icon"><i class="fas fa-balance-scale"></i></div>
+        <h3>Buy/Sell Signal</h3>
+        <p>Simple entry/exit alerts with clear guardrails for quick decisions.</p>
+        <div class="tags"><span class="tag">Signals</span></div>
+        <div class="actions">
+          <a href="buy-sell-signal.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="trading rsi scan">
+        <div class="icon"><i class="fas fa-chart-line"></i></div>
+        <h3>RSI Screener</h3>
+        <p>Find overbought/oversold tickers to time entries and exits.</p>
+        <div class="tags"><span class="tag">RSI</span><span class="tag">Day Trading</span></div>
+        <div class="actions">
+          <a href="rsi-screener.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="trading volume">
+        <div class="icon"><i class="fas fa-search"></i></div>
+        <h3>Volume Spike</h3>
+        <p>Surface unusual activity early to spot potential moves.</p>
+        <div class="tags"><span class="tag">Volume</span></div>
+        <div class="actions">
+          <a href="volume-spike.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="swing trend moving-average">
+        <div class="icon"><i class="fas fa-wave-square"></i></div>
+        <h3>SMA Crossover</h3>
+        <p>Moving-average signals to catch trend changes for swing trades.</p>
+        <div class="tags"><span class="tag">Swing</span></div>
+        <div class="actions">
+          <a href="sma-crossover.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="swing money-flow">
+        <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+        <h3>Money Flow Alert</h3>
+        <p>Track when smart money is accumulating or distributing.</p>
+        <div class="tags"><span class="tag">Swing</span></div>
+        <div class="actions">
+          <a href="money-flow-alert.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="swing scanner">
+        <div class="icon"><i class="fas fa-satellite"></i></div>
+        <h3>Swing Trade Scanner</h3>
+        <p>Multi-indicator scan to shortlist quality swing entries.</p>
+        <div class="tags"><span class="tag">Swing</span></div>
+        <div class="actions">
+          <a href="swing_trade_scanner.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <!-- Options -->
+      <article class="card" data-tags="options ai strategist">
+        <div class="icon"><i class="fas fa-lightbulb"></i></div>
+        <h3>Options Analyzer (AI)</h3>
+        <p>AI-assisted options trade setups with risk/reward context.</p>
+        <div class="tags"><span class="tag">Options</span><span class="tag">AI</span></div>
+        <div class="actions">
+          <a href="options-analyzer.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="options roll management">
+        <div class="icon"><i class="fas fa-sync-alt"></i></div>
+        <h3>Option Roll Analyzer</h3>
+        <p>Get suggestions on when and how to roll positions as the seller.</p>
+        <div class="tags"><span class="tag">Options</span></div>
+        <div class="actions">
+          <a href="option-roll-analyzer.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="options smart-money unusual">
+        <div class="icon"><i class="fas fa-water"></i></div>
+        <h3>Smart Money Signals</h3>
+        <p>Track large trades & unusual flows to follow institutional footprints.</p>
+        <div class="tags"><span class="tag">Options</span></div>
+        <div class="actions">
+          <a href="whale-tracker.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <!-- AI & Summaries -->
+      <article class="card" data-tags="ai education">
+        <div class="icon"><i class="fas fa-robot"></i></div>
+        <h3>Trade Ideas AI</h3>
+        <p>AI-generated stock analysis and ideas (beta).</p>
+        <div class="tags"><span class="tag">AI</span></div>
+        <div class="actions">
+          <a href="#"><button class="btn btn-primary">Open</button></a>
+          <a href="short-term-dashboard.html"><button class="btn btn-ghost">See related</button></a>
+        </div>
+      </article>
+
+      <article class="card" data-tags="ai summary daily">
+        <div class="icon"><i class="fas fa-receipt"></i></div>
+        <h3>Daily Market Summary</h3>
+        <p>An all-in-one digest of movers, news, and signals tailored to you.</p>
+        <div class="tags"><span class="tag">Daily</span></div>
+        <div class="actions">
+          <a href="#"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+
+      <!-- Portfolio (planned) -->
+      <article class="card" data-tags="portfolio tracker">
+        <div class="icon"><i class="fas fa-briefcase"></i></div>
+        <h3>Portfolio Tracker</h3>
+        <p>Track holdings, P/L, and allocation with clean charts (coming soon).</p>
+        <div class="tags"><span class="tag">Portfolio</span></div>
+        <div class="actions">
+          <a href="portfolio.html"><button class="btn btn-primary">Open</button></a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <!-- ===== Footer (same as index.html) ===== -->
+  <footer>
+    <div class="container" style="padding:0; max-width:1200px;">
+      <div class="footer-content">
+        <div class="footer-column">
+          <h3>Arowana Profit LLC</h3>
+          <p>AI-powered investment education and tools for modern traders and long-term investors.</p>
+          <div class="social-links">
+            <a href="#"><i class="fab fa-twitter"></i></a>
+            <a href="#"><i class="fab fa-linkedin"></i></a>
+            <a href="#"><i class="fab fa-youtube"></i></a>
+          </div>
+        </div>
+        <div class="footer-column">
+          <h3>Solutions</h3>
+          <ul>
+            <li><a href="#">AI Investment Coach</a></li>
+            <li><a href="#">Trading Algorithms</a></li>
+            <li><a href="#">Market Analysis</a></li>
+            <li><a href="#">Portfolio Tools</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Resources</h3>
+          <ul>
+            <li><a href="#">Learning Center</a></li>
+            <li><a href="#">Market Research</a></li>
+            <li><a href="#">Webinars</a></li>
+            <li><a href="#">Blog</a></li>
+          </ul>
+        </div>
+        <div class="footer-column">
+          <h3>Company</h3>
+          <ul>
+            <li><a href="#">About Us</a></li>
+            <li><a href="#">Careers</a></li>
+            <li><a href="#">Press</a></li>
+            <li><a href="#">Contact</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p><strong>Disclaimer:</strong> Arowana Profit LLC does not provide financial advice or make investment recommendations. Investing involves risk including possible loss of principal. Past performance is not indicative of future results.</p>
+        <p>© 2025 Arowana Profit LLC. All rights reserved.</p>
+        <div class="legal-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms of Service</a>
+          <a href="#">Disclosures</a>
+          <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // Hamburger menu toggle (same behavior as index)
+    document.addEventListener('DOMContentLoaded', () => {
+      const hamburger = document.querySelector('.hamburger');
+      const navLinks = document.querySelector('.nav-links');
+      if (hamburger && navLinks) {
+        hamburger.addEventListener('click', () => {
+          navLinks.classList.toggle('active');
+        });
+      }
+    });
+
+    // Filters & Search
+    const pills = Array.from(document.querySelectorAll('.pill'));
+    const grid = document.getElementById('featureGrid');
+    const cards = Array.from(grid.querySelectorAll('.card'));
+    const searchInput = document.getElementById('searchInput');
+    const clearBtn = document.getElementById('clearBtn');
+
+    function applyFilters(){
+      const activePill = pills.find(p => p.classList.contains('active'));
+      const filter = activePill ? activePill.dataset.filter : 'all';
+      const query = searchInput.value.trim().toLowerCase();
+
+      cards.forEach(card => {
+        const tags = (card.dataset.tags || '').toLowerCase();
+        const text = (card.innerText || '').toLowerCase();
+
+        const matchesFilter = filter === 'all' ? true : tags.includes(filter);
+        const matchesQuery = query ? (text.includes(query) || tags.includes(query)) : true;
+
+        card.style.display = (matchesFilter && matchesQuery) ? '' : 'none';
+      });
+    }
+
+    pills.forEach(p => {
+      p.addEventListener('click', () => {
+        pills.forEach(x => x.classList.remove('active'));
+        p.classList.add('active');
+        applyFilters();
+      });
+      p.addEventListener('keydown', (e)=>{
+        if(e.key === 'Enter' || e.key === ' ') { e.preventDefault(); p.click(); }
+      });
+    });
+
+    searchInput.addEventListener('input', applyFilters);
+    clearBtn.addEventListener('click', ()=>{ searchInput.value=''; applyFilters(); });
+    applyFilters();
+  </script>
+</body>
+</html>

@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Billing — Arowana Profits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--brand-light:#1a6bbb;
+  --accent:#16a34a;--bg:#f6f8fb;--panel:#ffffff;
+  --ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;
+  --max:1160px;--radius:16px;
+  --shadow:0 4px 20px rgba(11,79,138,.08);
+  --shadow-lg:0 8px 32px rgba(11,79,138,.13);
+  --gradient: linear-gradient(135deg, rgba(6,52,99,.97), rgba(11,79,138,.90));
+  --credit-gold: #f59e0b;
+  --credit-gold-light: #fef3c7;
+  --danger: #dc2626;
+  --success: #16a34a;
+  --warning: #f59e0b;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--brand);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+::selection{background:rgba(11,79,138,.15)}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* NAV */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--gradient);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;max-width:1600px;margin:0 auto}
+
+.nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.25rem;color:white;text-decoration:none;flex:0 0 auto;min-width:200px}
+.nav-logo{width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px}
+
+.nav-links{display:flex;align-items:center;gap:2px;flex:1;justify-content:center;overflow-x:auto;max-width:none}
+.nav-links::-webkit-scrollbar{height:0}
+.nav-link{color:rgba(255,255,255,.8);font-size:.85rem;font-weight:600;padding:6px 12px;border-radius:8px;white-space:nowrap;transition:all .2s ease;text-decoration:none}
+.nav-link:hover{background:rgba(255,255,255,.1);color:#fff}
+.nav-link.active{background:rgba(255,255,255,.2);color:#fff}
+
+.nav-auth{display:flex;align-items:center;gap:12px;flex:0 0 auto;min-width:150px;justify-content:flex-end}
+.auth-link{color:rgba(255,255,255,.8);text-decoration:none;font-size:.9rem;font-weight:600;padding:8px 16px;border-radius:8px;transition:all .2s ease}
+.auth-link:hover{color:#fff;background:rgba(255,255,255,.1)}
+.auth-cta{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-weight:700}
+.auth-cta:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+
+.user-dropdown{position:relative;display:none}
+.user-dropdown.show{display:block}
+.user-toggle{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 12px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s ease}
+.user-toggle:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff}
+.user-toggle.open{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);color:#fff}
+
+.user-name{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dropdown-arrow{font-size:.7rem;transition:transform .2s ease}
+.user-toggle.open .dropdown-arrow{transform:rotate(180deg)}
+
+.user-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:220px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);z-index:1000;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all .2s ease}
+.user-menu.open{opacity:1;visibility:visible;transform:translateY(0)}
+.user-menu::before{content:'';position:absolute;top:-6px;right:16px;width:12px;height:12px;background:#fff;border:1px solid var(--border);border-bottom:none;border-right:none;transform:rotate(45deg)}
+
+.menu-header{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+.menu-user-email{font-weight:600;color:var(--ink);margin-bottom:4px}
+.menu-user-plan{font-size:.8rem;color:var(--muted)}
+.menu-section{padding:8px 0}
+.menu-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--ink);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s ease;border:none;background:none;width:100%;text-align:left;cursor:pointer}
+.menu-item:hover{background:rgba(11,79,138,.06);color:var(--ink)}
+.menu-item-icon{font-size:1rem;width:20px;text-align:center}
+.menu-divider{height:1px;background:var(--border);margin:4px 0}
+
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mobile-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mobile-menu[data-open="true"]{display:block}
+.mobile-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mobile-link{display:flex;align-items:center;gap:9px;padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none}
+.mobile-link:hover{background:rgba(255,255,255,.08);color:#fff}
+.mobile-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:1000px){.nav-links{display:none}.auth-cta{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* Medium screen optimization */
+@media(max-width:1200px) and (min-width:1001px){
+  .nav-link{font-size:.8rem;padding:6px 10px}
+  .nav-brand{min-width:180px}
+  .nav-auth{min-width:120px}
+}
+
+@media(max-width:1300px) and (min-width:1201px){
+  .nav-link{font-size:.82rem;padding:6px 11px}
+}
+
+/* MAIN LAYOUT */
+.main-container{max-width:1200px;margin:0 auto;padding:32px 20px;flex:1}
+.page-header{margin-bottom:40px}
+.page-title{font-family:"Inter Tight",sans-serif;font-size:2.5rem;font-weight:800;color:var(--ink);margin-bottom:8px}
+.page-subtitle{color:var(--muted);font-size:1.1rem}
+
+.billing-grid{display:grid;grid-template-columns:1fr 320px;gap:32px;margin-bottom:32px}
+@media(max-width:900px){.billing-grid{grid-template-columns:1fr;gap:24px}}
+
+/* CARDS */
+.card{background:var(--panel);border:2px solid var(--border);border-radius:20px;padding:32px;transition:all .2s ease}
+.card:hover{box-shadow:var(--shadow)}
+.card-title{font-size:1.3rem;font-weight:800;color:var(--ink);margin-bottom:8px;display:flex;align-items:center;gap:12px}
+.card-subtitle{color:var(--muted);margin-bottom:24px;font-size:.95rem}
+.card-content{display:flex;flex-direction:column;gap:20px}
+
+/* SUBSCRIPTION STATUS */
+.subscription-status{display:flex;align-items:center;justify-content:space-between;background:rgba(11,79,138,.03);border:2px solid var(--brand);border-radius:16px;padding:24px;margin-bottom:24px}
+.status-info h3{font-size:1.2rem;font-weight:800;color:var(--brand);margin-bottom:4px}
+.status-info p{color:var(--muted);font-size:.9rem}
+.status-badge{background:var(--brand);color:white;padding:6px 12px;border-radius:999px;font-size:.8rem;font-weight:700;text-transform:uppercase}
+.status-badge.professional{background:var(--brand)}
+.status-badge.credits{background:var(--credit-gold)}
+.status-badge.free{background:var(--muted)}
+
+/* CREDIT BALANCE */
+.credit-balance{text-align:center;padding:24px;background:linear-gradient(135deg,var(--credit-gold-light),rgba(245,158,11,.1));border-radius:16px;margin-bottom:24px}
+.balance-amount{font-family:"Inter Tight",sans-serif;font-size:2.5rem;font-weight:800;color:var(--credit-gold);margin-bottom:8px}
+.balance-label{color:var(--muted);font-size:.9rem;font-weight:600}
+.balance-actions{display:flex;gap:8px;justify-content:center;margin-top:16px}
+
+/* USAGE CHART */
+.usage-chart{margin-bottom:24px}
+.chart-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+.chart-title{font-weight:700;color:var(--ink)}
+.chart-period{font-size:.8rem;color:var(--muted)}
+.usage-bars{display:flex;align-items:end;gap:4px;height:120px;padding:16px;background:rgba(11,79,138,.02);border-radius:12px}
+.usage-bar{flex:1;background:var(--brand);border-radius:2px;min-height:4px;position:relative}
+.usage-bar.high{background:var(--danger)}
+.usage-bar.medium{background:var(--warning)}
+.usage-bar.low{background:var(--accent)}
+
+/* BILLING TABLE */
+.billing-table{overflow-x:auto;border-radius:12px;border:1px solid var(--border)}
+.table{width:100%;border-collapse:collapse;background:var(--panel)}
+.table th{background:rgba(11,79,138,.05);padding:16px;text-align:left;font-weight:700;color:var(--ink);border-bottom:1px solid var(--border);font-size:.9rem}
+.table td{padding:16px;border-bottom:1px solid var(--border);font-size:.9rem}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover{background:rgba(11,79,138,.02)}
+
+.invoice-status{padding:4px 8px;border-radius:999px;font-size:.75rem;font-weight:700;text-transform:uppercase}
+.invoice-status.paid{background:rgba(22,163,74,.1);color:var(--success)}
+.invoice-status.pending{background:rgba(245,158,11,.1);color:var(--warning)}
+.invoice-status.failed{background:rgba(220,38,38,.1);color:var(--danger)}
+
+.invoice-actions{display:flex;gap:8px}
+.action-btn{padding:4px 8px;font-size:.8rem;border:none;border-radius:6px;cursor:pointer;transition:all .2s ease;text-decoration:none;display:inline-flex;align-items:center;gap:4px}
+.action-btn.download{background:var(--brand);color:white}
+.action-btn.download:hover{background:var(--brand-light)}
+.action-btn.retry{background:var(--danger);color:white}
+.action-btn.retry:hover{background:rgba(220,38,38,.8)}
+
+/* PAYMENT METHOD */
+.payment-method{display:flex;align-items:center;gap:16px;padding:20px;background:rgba(11,79,138,.02);border-radius:12px;margin-bottom:16px}
+.payment-icon{width:40px;height:40px;background:var(--brand);border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-size:1.2rem}
+.payment-info h4{font-weight:700;color:var(--ink);margin-bottom:4px}
+.payment-info p{color:var(--muted);font-size:.85rem}
+.payment-actions{margin-left:auto;display:flex;gap:8px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 24px;border-radius:999px;font-size:.85rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s ease;text-decoration:none;min-height:40px}
+.btn:active{transform:scale(.98)}
+.btn-brand{background:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-light);transform:translateY(-1px);box-shadow:0 6px 20px rgba(11,79,138,.25)}
+.btn-outline{background:transparent;color:var(--brand);border:2px solid var(--brand)}.btn-outline:hover{background:rgba(11,79,138,.06);transform:translateY(-1px)}
+.btn-success{background:var(--accent);color:#fff}.btn-success:hover{background:#059669;transform:translateY(-1px)}
+.btn-warning{background:var(--warning);color:#fff}.btn-warning:hover{background:#d97706;transform:translateY(-1px)}
+.btn-danger{background:var(--danger);color:#fff}.btn-danger:hover{background:rgba(220,38,38,.8);transform:translateY(-1px)}
+.btn-ghost{background:var(--panel);color:var(--muted);border:2px solid var(--border)}.btn-ghost:hover{color:var(--ink);border-color:var(--brand);transform:translateY(-1px)}
+.btn-sm{padding:8px 16px;font-size:.8rem;min-height:32px}
+.btn-lg{padding:16px 32px;font-size:1rem;min-height:48px}
+
+/* ALERTS */
+.alert{padding:16px 20px;border-radius:12px;margin-bottom:20px;display:flex;align-items:center;gap:12px}
+.alert.warning{background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.3);color:#92400e}
+.alert.danger{background:rgba(220,38,38,.1);border:1px solid rgba(220,38,38,.3);color:#b91c1c}
+.alert.info{background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.3);color:#1d4ed8}
+.alert-icon{font-size:1.2rem}
+.alert-content h4{font-weight:700;margin-bottom:4px}
+.alert-content p{font-size:.9rem;opacity:.9}
+
+/* USAGE DETAILS */
+.usage-details{margin-bottom:24px}
+.usage-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px}
+.usage-stat{text-align:center;padding:20px;background:rgba(11,79,138,.02);border-radius:12px}
+.stat-value{font-family:"Inter Tight",sans-serif;font-size:1.8rem;font-weight:800;color:var(--brand);margin-bottom:4px}
+.stat-label{color:var(--muted);font-size:.85rem;font-weight:600}
+.stat-change{font-size:.75rem;margin-top:4px}
+.stat-change.up{color:var(--danger)}
+.stat-change.down{color:var(--success)}
+
+/* MODAL */
+.modal-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.5);backdrop-filter:blur(4px);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.show{display:flex}
+.modal-content{background:white;border-radius:20px;max-width:500px;width:100%;max-height:90vh;overflow-y:auto;box-shadow:var(--shadow-lg);animation:modalIn .3s ease}
+@keyframes modalIn{from{opacity:0;transform:scale(.9) translateY(20px)}to{opacity:1;transform:scale(1) translateY(0)}}
+.modal-header{padding:24px 28px 0;border-bottom:1px solid var(--border)}
+.modal-title{font-size:1.4rem;font-weight:800;color:var(--ink);margin-bottom:8px}
+.modal-subtitle{color:var(--muted);margin-bottom:20px}
+.modal-close{position:absolute;top:20px;right:20px;width:32px;height:32px;border:none;background:var(--bg);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .2s ease}
+.modal-close:hover{background:var(--border);color:var(--ink)}
+.modal-body{padding:20px 28px}
+.modal-footer{padding:20px 28px;border-top:1px solid var(--border);display:flex;gap:12px;justify-content:flex-end}
+
+/* RESPONSIVE */
+@media(max-width:768px){
+  .main-container{padding:20px 16px}
+  .billing-grid{grid-template-columns:1fr}
+  .usage-summary{grid-template-columns:1fr;gap:12px}
+  .subscription-status{flex-direction:column;align-items:flex-start;gap:16px}
+  .payment-method{flex-direction:column;align-items:flex-start;gap:16px}
+  .payment-actions{margin-left:0;width:100%;justify-content:center}
+  .billing-table{font-size:.8rem}
+  .table th,.table td{padding:12px 8px}
+}
+
+/* FOOTER */
+.site-footer{background:#021d36;color:#fff;padding:48px 0 24px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-bottom:32px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:8px}
+.footer-tagline{font-size:.85rem;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:16px}
+.footer-col-title{font-weight:700;font-size:.9rem;margin-bottom:12px;color:rgba(255,255,255,.9)}
+.footer-link{display:block;color:rgba(255,255,255,.7);font-size:.85rem;margin-bottom:6px;transition:color .2s}
+.footer-link:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:.8rem;color:rgba(255,255,255,.6)}
+.footer-pills{display:flex;gap:8px;flex-wrap:wrap}
+.footer-pill{background:rgba(255,255,255,.1);padding:3px 8px;border-radius:999px;font-size:.7rem}
+.footer-disclaimer{font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.5;margin-top:16px;border-top:1px solid rgba(255,255,255,.05);padding-top:16px}
+@media(max-width:600px){.footer-bottom{flex-direction:column;text-align:center}}
+
+/* ============================================================
+   ADDED — plan summary, portal card, honest empty states
+   ============================================================ */
+.plan-summary{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:20px}
+.plan-summary-main{flex:1 1 260px}
+.plan-summary h3{font-family:"Inter Tight",sans-serif;font-size:1.5rem;font-weight:800;color:var(--ink);margin-bottom:6px}
+.plan-summary .plan-price-line{color:var(--muted);font-size:.95rem}
+.plan-meta{display:flex;flex-wrap:wrap;gap:10px 28px;margin-top:18px}
+.plan-meta-item{min-width:130px}
+.plan-meta-label{font-size:.72rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+.plan-meta-value{font-size:.95rem;font-weight:600;color:var(--ink)}
+.plan-meta-value.dim{color:var(--muted);font-weight:400}
+
+.portal-list{list-style:none;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px 24px;margin:20px 0 24px}
+.portal-list li{display:flex;gap:10px;align-items:flex-start;font-size:.9rem;color:var(--ink)}
+.portal-list li::before{content:"\2713";color:var(--accent);font-weight:800;flex-shrink:0}
+
+.btn-row{display:flex;flex-wrap:wrap;gap:12px}
+.inline-note{font-size:.82rem;color:var(--muted);line-height:1.55;margin-top:14px}
+.inline-note a{color:var(--brand);font-weight:600}
+
+.upgrade-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.upgrade-tile{border:2px solid var(--border);border-radius:14px;padding:20px;transition:border-color .2s}
+.upgrade-tile:hover{border-color:var(--brand)}
+.upgrade-tile.current{border-color:var(--brand);background:rgba(11,79,138,.03)}
+.upgrade-tile h4{font-weight:800;font-size:1.05rem;margin-bottom:4px;color:var(--ink)}
+.upgrade-tile .ut-price{font-size:.9rem;color:var(--muted);margin-bottom:12px}
+.upgrade-tile .ut-current{display:inline-block;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--brand);background:rgba(11,79,138,.08);padding:4px 10px;border-radius:999px}
+
+.faq-lite{margin-top:8px}
+.faq-lite dt{font-weight:700;font-size:.92rem;color:var(--ink);margin-top:16px}
+.faq-lite dd{margin:5px 0 0;font-size:.88rem;color:var(--muted);line-height:1.6}
+@media(max-width:900px){.billing-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+  <script>
+  // ───────────────────────────────────────────────────────────────
+  // AUTH GATE — runs before any markup paints.
+  // Billing is a private page; the uploaded version had no gate, so
+  // it rendered (fabricated) billing detail to anonymous visitors.
+  // Mirrors trading-command.html / account.html.
+  // ───────────────────────────────────────────────────────────────
+  (function authGate() {
+    try {
+      const raw = localStorage.getItem('gs_auth_user_v1') || sessionStorage.getItem('gs_auth_user_v1');
+      if (raw) {
+        const user = JSON.parse(raw);
+        if (user && (user.id || user.email)) return; // looks valid — allow through
+      }
+    } catch (_) { /* fall through to redirect */ }
+
+    const next = encodeURIComponent(location.pathname + location.search + location.hash);
+    location.replace('login.html?next=' + next);
+  })();
+  </script>
+
+
+  <!-- NAVIGATION -->
+  <div class="nav-wrap">
+    <nav class="nav">
+      <a class="nav-brand" href="index.html" aria-label="Arowana Profits Home">
+        <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" class="nav-logo" onerror="this.style.display='none'">
+        <span>Arowana Profits</span>
+      </a>
+      
+      <div class="nav-links">
+        <a href="trading-command.html" class="nav-link">⚡ Trading Command</a>
+        <a href="portfolio-command.html" class="nav-link">🏦 Portfolio Command</a>
+        <a href="analysis-central.html" class="nav-link">📊 Analysis Central</a>
+        <a href="market-intelligence.html" class="nav-link">📡 Market Intel</a>
+        <a href="options-hub.html" class="nav-link">📈 Options Hub</a>
+        <a href="features.html" class="nav-link">Features</a>
+        <a href="pricing.html" class="nav-link">Pricing</a>
+      </div>
+      
+      <div class="nav-auth">
+        <!-- When not logged in -->
+        <a href="login.html" class="auth-link" id="navSignIn">Sign In</a>
+        <a href="pricing.html" class="auth-link auth-cta" id="navSignUp">🚀 Start Free</a>
+        
+        <!-- When logged in -->
+        <div class="user-dropdown" id="navUserDropdown">
+          <button class="user-toggle" id="navUserToggle">
+            <span class="user-name" id="navUserName">Account</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          
+          <div class="user-menu">
+            <div class="menu-header">
+              <div class="menu-user-email" id="menuUserEmail">&nbsp;</div>
+              <div class="menu-user-plan" id="menuUserPlan">&nbsp;</div>
+            </div>
+            
+            <div class="menu-section">
+              <a href="account.html" class="menu-item">
+                <span class="menu-item-icon">⚙️</span>
+                <span>Account Settings</span>
+              </a>
+              <a href="billing.html" class="menu-item active">
+                <span class="menu-item-icon">💳</span>
+                <span>Billing & Usage</span>
+              </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <a href="trading-command.html" class="menu-item">
+                <span class="menu-item-icon">⚡</span>
+                <span>Trading Command</span>
+              </a>
+              <a href="portfolio-command.html" class="menu-item">
+                <span class="menu-item-icon">🏦</span>
+                <span>Portfolio Command</span>
+              </a>
+              <a href="analysis-central.html" class="menu-item">
+                <span class="menu-item-icon">📊</span>
+                <span>Analysis Central</span>
+              </a>
+              <a href="market-intelligence.html" class="menu-item">
+                <span class="menu-item-icon">📡</span>
+                <span>Market Intelligence</span>
+              </a>
+              <a href="options-hub.html" class="menu-item">
+                <span class="menu-item-icon">📈</span>
+                <span>Options Hub</span>
+              </a>
+            </div>
+            
+            <div class="menu-divider"></div>
+            
+            <div class="menu-section">
+              <button class="menu-item" onclick="openSupport()">
+                <span class="menu-item-icon">💬</span>
+                <span>Help & Support</span>
+              </button>
+              <button class="menu-item danger" onclick="signOut()">
+                <span class="menu-item-icon">🚪</span>
+                <span>Sign Out</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <button class="nav-burger" id="navBurger">&#9776;</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu" data-open="false">
+      <div class="mobile-panel">
+        <a class="mobile-link" href="trading-command.html">🎯 Trading Command</a>
+        <a class="mobile-link" href="portfolio-command.html">📊 Portfolio Command</a>
+        <a class="mobile-link" href="analysis-central.html">🔍 Analysis Central</a>
+        <a class="mobile-link" href="market-intelligence.html">📡 Market Intelligence</a>
+        <a class="mobile-link" href="options-hub.html">⚡ Options Hub</a>
+        <div class="mobile-div"></div>
+        <a class="mobile-link" href="features.html">Features</a>
+        <a class="mobile-link" href="pricing.html">Pricing</a>
+        <div class="mobile-div"></div>
+        <div id="mobileAuthLinks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-container">
+
+    <!-- PAGE HEADER -->
+    <div class="page-header">
+      <h1 class="page-title">💳 Billing</h1>
+      <p class="page-subtitle">Your plan, invoices and payment details</p>
+    </div>
+
+    <!-- PLAN STATUS -->
+    <div class="subscription-status">
+      <div class="status-info plan-summary-main">
+        <h3 id="planName">Free</h3>
+        <p class="plan-price-line" id="planPriceLine">$0 &mdash; no card on file</p>
+      </div>
+      <div class="status-badge free" id="planBadge">Active</div>
+    </div>
+
+    <!-- Payment problem banner — only shown when Stripe actually reports one -->
+    <div class="alert warning" id="billingAlert" style="display: none;">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <h4>Payment issue</h4>
+        <p id="billingAlertText">There is a problem with your latest payment. Open the billing portal to update your card.</p>
+      </div>
+      <button class="btn btn-sm btn-warning" onclick="openBillingPortal()">Open portal</button>
+    </div>
+
+    <div class="billing-grid">
+
+      <div class="main-content">
+
+        <!-- BILLING PORTAL -->
+        <div class="card">
+          <h3 class="card-title">🧾 Invoices &amp; payment method</h3>
+          <p class="card-subtitle">
+            Handled in Stripe's secure billing portal. We never see or store your card details.
+          </p>
+
+          <ul class="portal-list">
+            <li>Download every past invoice as PDF</li>
+            <li>Update or replace your payment card</li>
+            <li>Switch between monthly and annual billing</li>
+            <li>Update billing address and tax details</li>
+            <li>Cancel your subscription</li>
+          </ul>
+
+          <div class="btn-row">
+            <button class="btn btn-brand btn-lg" id="portalBtn" onclick="openBillingPortal()">
+              Open billing portal &rarr;
+            </button>
+          </div>
+
+          <p class="inline-note" id="portalNote">
+            You will be signed straight in &mdash; no extra password.
+          </p>
+        </div>
+
+        <!-- PLAN DETAILS -->
+        <div class="card">
+          <h3 class="card-title">📅 Plan details</h3>
+          <p class="card-subtitle">Read from your account. Anything we do not have yet shows as a dash rather than a guess.</p>
+
+          <div class="plan-meta">
+            <div class="plan-meta-item">
+              <div class="plan-meta-label">Status</div>
+              <div class="plan-meta-value" id="metaStatus">&mdash;</div>
+            </div>
+            <div class="plan-meta-item">
+              <div class="plan-meta-label">Billing cycle</div>
+              <div class="plan-meta-value" id="metaCycle">&mdash;</div>
+            </div>
+            <div class="plan-meta-item">
+              <div class="plan-meta-label">Renews</div>
+              <div class="plan-meta-value" id="metaRenews">&mdash;</div>
+            </div>
+            <div class="plan-meta-item">
+              <div class="plan-meta-label">Member since</div>
+              <div class="plan-meta-value" id="metaSince">&mdash;</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- CHANGE PLAN -->
+        <div class="card">
+          <h3 class="card-title">⚙️ Change plan</h3>
+          <p class="card-subtitle">Upgrades apply immediately and are prorated. Downgrades take effect at the end of your current period.</p>
+
+          <div class="upgrade-grid" id="upgradeGrid"></div>
+
+          <p class="inline-note">
+            Full feature comparison is on the <a href="pricing.html">pricing page</a>.
+          </p>
+        </div>
+
+        <!-- WHAT HAPPENS IF YOU CANCEL -->
+        <div class="card">
+          <h3 class="card-title">❓ Cancelling</h3>
+          <dl class="faq-lite">
+            <dt>When does access end?</dt>
+            <dd>At the end of the period you have already paid for. Nothing is cut off the moment you cancel.</dd>
+
+            <dt>Do I lose my trades?</dt>
+            <dd>No. Your journal stays on your account and remains usable on the Free plan. You can export everything to CSV at any time from your <a href="account.html">account page</a>.</dd>
+
+            <dt>Is there a notice period?</dt>
+            <dd>None. Cancel from the billing portal in one click, no email or phone call needed.</dd>
+
+            <dt>Can I get a refund?</dt>
+            <dd>Within 30 days of a paid plan starting, yes &mdash; no questions asked. Email <a href="mailto:support@arowanaprofits.com">support@arowanaprofits.com</a>.</dd>
+          </dl>
+        </div>
+
+      </div>
+
+      <!-- SIDEBAR -->
+      <div class="sidebar">
+
+        <div class="card">
+          <h4 class="card-title">📊 Usage</h4>
+          <p class="card-subtitle" style="margin-bottom:16px">
+            Trades logged, linked accounts, alerts and AI usage all live on your account page, measured against your plan limits.
+          </p>
+          <a href="account.html" class="btn btn-outline" style="width:100%">View usage &rarr;</a>
+        </div>
+
+        <div class="card">
+          <h4 class="card-title">🔒 Payments</h4>
+          <p class="card-subtitle" style="margin-bottom:0">
+            Card details are held by Stripe, a PCI Level 1 provider. Arowana Profits never receives or stores your card number.
+          </p>
+        </div>
+
+        <div class="card">
+          <h4 class="card-title">💬 Billing questions</h4>
+          <p class="card-subtitle" style="margin-bottom:16px">
+            Wrong charge, missing invoice, or something that does not look right? Tell us and we will sort it.
+          </p>
+          <a href="mailto:support@arowanaprofits.com?subject=Billing%20question" class="btn btn-ghost" style="width:100%">Contact support</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+<script>
+/* Enhanced Authentication System */
+function initAuthDropdown() {
+  const authUser = localStorage.getItem('gs_auth_user_v1')
+                || sessionStorage.getItem('gs_auth_user_v1');
+  if (!authUser) { showAuthButtons(); return; }
+
+  try {
+    const user = JSON.parse(authUser);
+    // A parsed object is not a session — require an actual identity.
+    if (user && (user.id || user.email)) {
+      showUserDropdown(user);
+    } else {
+      showAuthButtons();
+    }
+  } catch (e) {
+    console.warn('[billing] unreadable session cache, treating as signed out');
+    showAuthButtons();
+  }
+}
+
+function showUserDropdown(user) {
+  const authSignIn = document.getElementById('navSignIn');
+  const authSignUp = document.getElementById('navSignUp');
+  if (authSignIn) authSignIn.style.display = 'none';
+  if (authSignUp) authSignUp.style.display = 'none';
+  
+  const userDropdown = document.getElementById('navUserDropdown');
+  if (userDropdown) userDropdown.classList.add('show');
+  
+  const userName = user.name || user.username || getNameFromEmail(user.email) || 'User';
+  const userEmail = user.email || '';
+  
+  const userNameEl = document.getElementById('navUserName');
+  const menuUserEmailEl = document.getElementById('menuUserEmail');
+  
+  if (userNameEl) userNameEl.textContent = userName;
+  if (menuUserEmailEl) menuUserEmailEl.textContent = userEmail;
+}
+
+function showAuthButtons() {
+  const authSignIn = document.getElementById('navSignIn');
+  const authSignUp = document.getElementById('navSignUp');
+  if (authSignIn) authSignIn.style.display = 'inline-flex';
+  if (authSignUp) authSignUp.style.display = 'inline-flex';
+  
+  const userDropdown = document.getElementById('navUserDropdown');
+  if (userDropdown) userDropdown.classList.remove('show');
+}
+
+function getNameFromEmail(email) {
+  if (!email) return null;
+  const username = email.split('@')[0];
+  return username.charAt(0).toUpperCase() + username.slice(1);
+}
+
+function signOut() {
+  const authKeys = [
+    'gs_auth_user_v1', 'gs_session', 'ap_session', 'sb-access-token',
+    'ap_plan_v1', 'ap_last_user_v1', 'ap_journal_owner_v1', 'ap_accounts_owner_v1'
+  ];
+  authKeys.forEach(function(key) {
+    try { localStorage.removeItem(key); } catch(e) {}
+    try { sessionStorage.removeItem(key); } catch(e) {}
+  });
+  setTimeout(() => window.location.href = 'index.html', 1000);
+}
+
+function openSupport() {
+  window.open('mailto:support@arowanaprofits.com', '_blank');
+}
+
+/* ────────────────────────────────────────────────────────────────
+   PLAN
+   Labels and prices mirror pricing.html and account.html. If a price
+   changes on the pricing page it changes here too.
+   Plan slugs match profiles.plan: free | pro | elite | founders
+   ──────────────────────────────────────────────────────────────── */
+var PLANS = {
+  free:     { label: 'Free',             monthly: '$0 \u2014 no card on file', annual: '$0 \u2014 no card on file', badge: 'free' },
+  pro:      { label: 'Pro',              monthly: '$29 / month',                annual: '$290 / year',               badge: 'professional' },
+  elite:    { label: 'Elite',            monthly: '$79 / month',                annual: '$790 / year',               badge: 'professional' },
+  founders: { label: 'Founding Member',  monthly: '$399 / year \u2014 rate locked', annual: '$399 / year \u2014 rate locked', badge: 'credits' }
+};
+
+var currentPlan = localStorage.getItem('ap_plan_v1') || 'free';
+var billingCycle = null;   // 'monthly' | 'annual' | null when unknown
+var _sb = null;
+
+function getSupabase() {
+  if (_sb) return _sb;
+  var cfg = window.AP_WEBHOOKS && window.AP_WEBHOOKS.supabase;
+  if (!cfg || !cfg.url || !cfg.anonKey) return null;
+  if (!window.supabase || !window.supabase.createClient) return null;
+  _sb = window.supabase.createClient(cfg.url, cfg.anonKey, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+  return _sb;
+}
+
+function cachedUser() {
+  try {
+    var raw = localStorage.getItem('gs_auth_user_v1') || sessionStorage.getItem('gs_auth_user_v1');
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) { return null; }
+}
+
+function fmtDate(value) {
+  if (!value) return null;
+  var d = new Date(value);
+  if (isNaN(d.getTime())) return null;
+  return d.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
+}
+
+/* Reads the whole profile row rather than naming columns, so the page
+   still works if plan_status / current_period_end have not been added
+   to the schema yet. Missing fields render as a dash, never a guess. */
+async function loadBillingState() {
+  var sb = getSupabase();
+  var user = cachedUser();
+  if (!sb || !user || !user.id) return null;
+
+  try {
+    var res = await sb.from('profiles').select('*').eq('id', user.id).maybeSingle();
+    if (res.error) {
+      console.warn('[billing] profile lookup failed:', res.error.message);
+      return null;
+    }
+    return res.data || null;
+  } catch (e) {
+    console.warn('[billing] profile lookup threw:', e);
+    return null;
+  }
+}
+
+function renderPlan(profile) {
+  var slug = currentPlan;
+  if (profile && profile.plan && PLANS[String(profile.plan).toLowerCase()]) {
+    slug = String(profile.plan).toLowerCase();
+    currentPlan = slug;
+    try { localStorage.setItem('ap_plan_v1', slug); } catch (e) {}
+  }
+
+  var p = PLANS[slug] || PLANS.free;
+  billingCycle = profile && profile.billing_cycle ? String(profile.billing_cycle).toLowerCase() : null;
+
+  var nameEl = document.getElementById('planName');
+  var priceEl = document.getElementById('planPriceLine');
+  var badgeEl = document.getElementById('planBadge');
+  var menuPlanEl = document.getElementById('menuUserPlan');
+
+  if (nameEl) nameEl.textContent = p.label;
+  if (priceEl) priceEl.textContent = (billingCycle === 'annual') ? p.annual : p.monthly;
+  if (menuPlanEl) menuPlanEl.textContent = p.label + ' plan';
+
+  var status = profile && profile.plan_status ? String(profile.plan_status) : (slug === 'free' ? 'active' : null);
+  if (badgeEl) {
+    badgeEl.className = 'status-badge ' + p.badge;
+    badgeEl.textContent = status ? status.replace(/_/g, ' ') : 'Active';
+  }
+
+  // Only surface a payment problem when Stripe actually reports one.
+  var alertEl = document.getElementById('billingAlert');
+  if (alertEl) {
+    var bad = status && ['past_due', 'unpaid', 'incomplete'].indexOf(status.toLowerCase()) !== -1;
+    alertEl.style.display = bad ? '' : 'none';
+  }
+
+  setText('metaStatus', status ? status.replace(/_/g, ' ') : null);
+  setText('metaCycle', billingCycle ? (billingCycle === 'annual' ? 'Annual' : 'Monthly') : (slug === 'free' ? 'Not billed' : null));
+  setText('metaRenews', profile ? fmtDate(profile.current_period_end || profile.renews_at) : null);
+  setText('metaSince', profile ? fmtDate(profile.created_at) : null);
+
+  renderUpgradeTiles(slug);
+}
+
+function setText(id, value) {
+  var el = document.getElementById(id);
+  if (!el) return;
+  if (value) {
+    el.textContent = value;
+    el.classList.remove('dim');
+  } else {
+    el.textContent = '\u2014';
+    el.classList.add('dim');
+  }
+}
+
+function renderUpgradeTiles(slug) {
+  var grid = document.getElementById('upgradeGrid');
+  if (!grid) return;
+  while (grid.firstChild) grid.removeChild(grid.firstChild);
+
+  ['free', 'pro', 'elite'].forEach(function (key) {
+    var p = PLANS[key];
+    var isCurrent = (key === slug) || (slug === 'founders' && key === 'elite');
+
+    var tile = document.createElement('div');
+    tile.className = 'upgrade-tile' + (isCurrent ? ' current' : '');
+
+    var h = document.createElement('h4');
+    h.textContent = p.label;
+    tile.appendChild(h);
+
+    var price = document.createElement('div');
+    price.className = 'ut-price';
+    price.textContent = p.monthly;
+    tile.appendChild(price);
+
+    if (isCurrent) {
+      var tag = document.createElement('span');
+      tag.className = 'ut-current';
+      tag.textContent = slug === 'founders' ? 'Included in Founding' : 'Current plan';
+      tile.appendChild(tag);
+    } else if (key === 'free') {
+      var down = document.createElement('button');
+      down.className = 'btn btn-ghost btn-sm';
+      down.type = 'button';
+      down.textContent = 'Downgrade in portal';
+      down.addEventListener('click', openBillingPortal);
+      tile.appendChild(down);
+    } else {
+      var a = document.createElement('a');
+      a.className = 'btn btn-brand btn-sm';
+      a.setAttribute('href', 'checkout.html?plan=' + key + '&cycle=' + (billingCycle || 'monthly'));
+      a.textContent = 'Switch to ' + p.label;
+      tile.appendChild(a);
+    }
+
+    grid.appendChild(tile);
+  });
+}
+
+/* ────────────────────────────────────────────────────────────────
+   STRIPE CUSTOMER PORTAL
+   Invoices, cards and cancellation are Stripe's job. This asks the
+   backend for a one-time portal session and redirects.
+   Endpoint comes from config (window.AP_WEBHOOKS.stripePortal). When
+   it is not configured the button says so plainly instead of firing
+   an alert() that pretends something happened.
+   ──────────────────────────────────────────────────────────────── */
+async function openBillingPortal() {
+  var btn = document.getElementById('portalBtn');
+  var note = document.getElementById('portalNote');
+
+  var endpoint = (window.AP_WEBHOOKS && window.AP_WEBHOOKS.stripePortal)
+              || (window.AP_CONFIG && window.AP_CONFIG.stripePortal)
+              || null;
+
+  if (!endpoint) {
+    if (note) {
+      note.textContent = 'The billing portal is not connected yet. Email support@arowanaprofits.com and we will handle invoices, card changes or cancellation directly.';
+      note.style.color = 'var(--danger)';
+    }
+    return;
+  }
+
+  if (btn) { btn.disabled = true; btn.textContent = 'Opening\u2026'; }
+
+  try {
+    var headers = { 'Content-Type': 'application/json' };
+    var sb = getSupabase();
+    if (sb) {
+      var sess = await sb.auth.getSession();
+      var token = sess && sess.data && sess.data.session && sess.data.session.access_token;
+      if (token) headers['Authorization'] = 'Bearer ' + token;
+    }
+
+    var resp = await fetch(endpoint, {
+      method: 'POST',
+      headers: headers,
+      body: JSON.stringify({ return_url: window.location.href })
+    });
+
+    if (!resp.ok) throw new Error('Portal session failed: ' + resp.status);
+
+    var data = await resp.json();
+    if (!data || !data.url) throw new Error('Portal session returned no URL');
+
+    window.location.href = data.url;
+  } catch (e) {
+    console.error('[billing] portal error:', e);
+    if (btn) { btn.disabled = false; btn.textContent = 'Open billing portal \u2192'; }
+    if (note) {
+      note.textContent = 'Could not open the billing portal. Try again, or email support@arowanaprofits.com.';
+      note.style.color = 'var(--danger)';
+    }
+  }
+}
+window.openBillingPortal = openBillingPortal;
+
+function initUserDropdown() {
+  const userToggle = document.getElementById('navUserToggle');
+  const userDropdown = document.getElementById('navUserDropdown');
+  
+  if (!userToggle || !userDropdown) {
+    return;
+  }
+  
+  // Toggle dropdown on click
+  userToggle.addEventListener('click', function(e) {
+    e.stopPropagation();
+    toggleUserMenu();
+  });
+  
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    if (!userToggle.contains(e.target) && !userDropdown.contains(e.target)) {
+      closeUserMenu();
+    }
+  });
+  
+  // Close dropdown on escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeUserMenu();
+    }
+  });
+}
+
+function toggleUserMenu() {
+  const userToggle = document.getElementById('navUserToggle');
+  const userDropdown = document.getElementById('navUserDropdown');
+  const userMenu = userDropdown ? userDropdown.querySelector('.user-menu') : null;
+  
+  if (userToggle && userDropdown && userMenu) {
+    const isOpen = userToggle.classList.contains('open');
+    
+    if (isOpen) {
+      userToggle.classList.remove('open');
+      userMenu.classList.remove('open');
+    } else {
+      userToggle.classList.add('open');
+      userMenu.classList.add('open');
+    }
+  }
+}
+
+function closeUserMenu() {
+  const userToggle = document.getElementById('navUserToggle');
+  const userDropdown = document.getElementById('navUserDropdown');
+  const userMenu = userDropdown ? userDropdown.querySelector('.user-menu') : null;
+  
+  if (userToggle && userDropdown && userMenu) {
+    userToggle.classList.remove('open');
+    userMenu.classList.remove('open');
+  }
+}
+
+// Initialize everything when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  // Update year
+  const yearEl = document.getElementById('yearNow');
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  
+  initAuthDropdown();
+  initUserDropdown();
+
+  // Paint from the cached plan, then reconcile with the server.
+  renderPlan(null);
+
+  // app-config.js may still be fetching config.json when this fires.
+  // Three-path wait: try now, listen for the ready events, and give up
+  // after a timeout — with a dedupe flag so it only runs once.
+  var reconciled = false;
+  async function reconcile() {
+    if (reconciled) return;
+    var profile = await loadBillingState();
+    if (!profile) return;          // no client yet — let a later path retry
+    reconciled = true;
+    renderPlan(profile);
+  }
+
+  reconcile();
+  window.addEventListener('ap:config:ready', reconcile);
+  window.addEventListener('ap:keys:ready', reconcile);
+  setTimeout(reconcile, 2500);
+  
+  // Mobile menu functionality
+  const burger = document.getElementById('navBurger');
+  if (burger) {
+    burger.addEventListener('click', function() {
+      const mobileMenu = document.getElementById('mobileMenu');
+      if (mobileMenu) {
+        const isOpen = mobileMenu.getAttribute('data-open') === 'true';
+        mobileMenu.setAttribute('data-open', isOpen ? 'false' : 'true');
+      }
+    });
+  }
+});
+</script>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">Arowana Profits</div>
+        <div class="footer-tagline">A journal-first trading desk for retail traders. Log every trade, see the patterns, stop the bad session.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Super-Tools</div>
+        <a class="footer-link" href="trading-command.html">Trading Command</a>
+        <a class="footer-link" href="portfolio-command.html">Portfolio Command</a>
+        <a class="footer-link" href="analysis-central.html">Analysis Central</a>
+        <a class="footer-link" href="market-intelligence.html">Market Intelligence</a>
+        <a class="footer-link" href="options-hub.html">Options Hub</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <a class="footer-link" href="account.html">Account</a>
+        <a class="footer-link" href="pricing.html">Pricing</a>
+        <a class="footer-link" href="features.html">Features</a>
+        <a class="footer-link" href="billing.html">Billing</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Support</div>
+        <a class="footer-link" href="support.html">Help Center</a>
+        <a class="footer-link" href="contact.html">Contact</a>
+        <a class="footer-link" href="terms.html">Terms</a>
+        <a class="footer-link" href="privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>&copy; <span id="yearNow"></span> Arowana Profits. All rights reserved.</div>
+      <div class="footer-pills"><span class="footer-pill">Education-only</span><span class="footer-pill">No performance claims</span><span class="footer-pill">Not financial advice</span></div>
+    </div>
+    <p class="footer-disclaimer"><strong>Billing:</strong> Payments are processed by Stripe. Arowana Profits does not receive or store card numbers. Prices are in USD and exclude any applicable sales tax or VAT. Arowana Profits is a journaling and analysis tool for educational purposes and does not provide investment, tax or legal advice.</p>
+  </div>
+  </footer>
+
+  <!-- App Config + Supabase + Auth header (platform standard order) -->
+  <script>window.GS_CONFIG_URL="./js/config.json";</script>
+  <script src="./js/app-config.js"></script>
+  <script src="./js/supabase_min.js"></script>
+  <script src="./js/auth-header.js"></script>
+
+</body>
+</html>

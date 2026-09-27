@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>All Tools • Arowana Profits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#0b4f8a;
+      --brand-2:#1a6bbb;
+      --brand-dark:#083c69;
+      --ink:#0d1b2a;
+      --muted:#64748b;
+      --bg:#f6f8fb;
+      --panel:#ffffff;
+      --ring:rgba(11,79,138,0.22);
+      --border:#e2e8f0;
+      --page-width:100%;
+      --shadow:0 10px 28px rgba(6,52,99,0.08);
+      --shadow-soft:0 4px 14px rgba(6,52,99,0.06);
+      --shadow-lg:0 8px 32px rgba(11,79,138,.13);
+      --blue:#2563eb;
+      --blue-700:#1d4ed8;
+      --green:#16a34a;
+      --amber:#d97706;
+      --red:#dc2626;
+      --purple:#7c3aed;
+      --gradient: linear-gradient(135deg, rgba(6,52,99,.97), rgba(11,79,138,.90));
+      --r-lg:20px;
+      --r-md:14px;
+      --r-sm:10px;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0;padding:0;font-family:"Inter",system-ui,-apple-system,Arial,sans-serif;
+      background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;
+    }
+    a{color:var(--brand);text-decoration:none}
+    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+      outline:none;box-shadow:0 0 0 4px var(--ring);
+    }
+    .container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 24px}
+    .skip-link{position:absolute;left:-999px;top:12px;background:#fff;color:var(--brand);padding:10px 12px;border-radius:12px;box-shadow:0 18px 60px rgba(0,0,0,.18);z-index:10000;text-decoration:none;font-weight:900}
+    .skip-link:focus{left:12px}
+
+    .header-bar{width:100%;background:var(--gradient);color:#fff;position:sticky;top:0;z-index:90;box-shadow:0 2px 20px rgba(0,0,0,.2)}
+    .ap-nav{max-width:100%;margin:0 auto;padding:16px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .ap-left{display:flex;align-items:center;gap:18px;min-width:0;flex:1}
+    .ap-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;white-space:nowrap;font-weight:800;font-size:1.25rem;flex:0 0 auto}
+    .ap-logo{width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.15);padding:2px}
+    .ap-nav-main{display:flex;align-items:center;gap:4px;flex:1;justify-content:center;overflow-x:auto}
+    .ap-nav-main::-webkit-scrollbar{height:0}
+    .ap-tab{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.85);text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;font-size:.9rem;background:transparent;transition:background .2s ease,opacity .2s ease;white-space:nowrap;opacity:.95}
+    .ap-tab:hover{background:rgba(255,255,255,.1);opacity:1;color:#fff}
+    .ap-tab.is-active{background:rgba(255,255,255,.2);color:#fff;opacity:1}
+    .ap-right{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+    .ap-nav-top{display:flex;justify-content:flex-end;gap:12px}
+    .ap-nav-top a.ap-toplink{color:rgba(255,255,255,.8);background:transparent;padding:8px 16px;border-radius:8px;font-size:.9rem;font-weight:600;display:inline-flex;align-items:center;gap:8px;transition:all .2s ease}
+    .ap-nav-top a.ap-toplink:hover{color:#fff;background:rgba(255,255,255,.1)}
+    .ap-nav-top a.ap-toplink.cta{background:rgba(255,255,255,.15);border:1px solid rgba(255,255,255,.3);font-weight:700}
+    .ap-nav-top a.ap-toplink.cta:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+    .ap-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1.1rem;cursor:pointer}
+
+    /* Auth dropdown (matches features.html / index.html) */
+    .user-dropdown{position:relative;display:none}
+    .user-dropdown.show{display:block}
+    .user-toggle{display:inline-flex;align-items:center;gap:8px;color:rgba(255,255,255,.9);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);border-radius:8px;padding:8px 12px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s ease}
+    .user-toggle:hover{background:rgba(255,255,255,.15);border-color:rgba(255,255,255,.3);color:#fff}
+    .user-toggle.open{background:rgba(255,255,255,.2);border-color:rgba(255,255,255,.4);color:#fff}
+    .user-name{max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .dropdown-arrow{font-size:.7rem;transition:transform .2s ease}
+    .user-toggle.open .dropdown-arrow{transform:rotate(180deg)}
+    .user-menu{position:absolute;top:calc(100% + 8px);right:0;min-width:220px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);z-index:1000;opacity:0;visibility:hidden;transform:translateY(-10px);transition:all .2s ease}
+    .user-menu.open{opacity:1;visibility:visible;transform:translateY(0)}
+    .user-menu::before{content:'';position:absolute;top:-6px;right:16px;width:12px;height:12px;background:#fff;border:1px solid var(--border);border-bottom:none;border-right:none;transform:rotate(45deg)}
+    .menu-header{padding:16px 20px 12px;border-bottom:1px solid var(--border)}
+    .menu-user-email{font-weight:600;color:var(--ink);margin-bottom:4px;font-size:.9rem}
+    .menu-user-plan{font-size:.8rem;color:var(--muted)}
+    .menu-section{padding:8px 0}
+    .menu-item{display:flex;align-items:center;gap:12px;padding:10px 20px;color:var(--ink);text-decoration:none;font-size:.9rem;font-weight:500;transition:all .2s ease;border:none;background:none;width:100%;text-align:left;cursor:pointer}
+    .menu-item:hover{background:rgba(11,79,138,.06);color:var(--ink)}
+    .menu-item-icon{font-size:1rem;width:20px;text-align:center}
+    .menu-divider{height:1px;background:var(--border);margin:4px 0}
+
+    #mobileMenu{display:none;position:fixed;top:64px;left:0;right:0;background:var(--brand-dark);color:#e5e7eb;z-index:80;box-shadow:0 10px 25px rgba(15,23,42,0.5)}
+    #mobileMenu[data-open="true"]{display:block}
+    .mobile-menu-panel{max-width:1200px;margin:0 auto;padding:10px 16px 14px;display:flex;flex-direction:column;gap:10px}
+    .mobile-main-links{display:flex;flex-direction:column;gap:6px}
+    .mobile-main-links a,.mobile-auth a{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:7px;background:transparent;color:#e5e7eb;text-decoration:none;font-size:.95rem}
+    .mobile-main-links a:hover,.mobile-auth a:hover{background:rgba(255,255,255,.08);color:#fff}
+    .mobile-divider{height:1px;background:rgba(255,255,255,0.18);margin:6px 0;width:100%}
+    .mobile-auth{display:flex;flex-direction:column;gap:6px}
+    @media (max-width:768px){.ap-nav-main,.ap-right{display:none}.ap-burger{display:inline-flex}}
+
+    .hero{
+      background:
+        radial-gradient(circle at 20% 50%,rgba(26,107,187,.1),transparent 55%),
+        radial-gradient(circle at 80% 20%,rgba(22,163,74,.08),transparent 50%),
+        linear-gradient(180deg,#fff,var(--bg));
+      border-bottom:1px solid rgba(229,231,235,.85);
+    }
+    .hero-inner{padding:30px 20px 20px}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:rgba(11,79,138,.08);border:2px solid rgba(11,79,138,.15);font-weight:800;font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;color:var(--brand)}
+    .hero h1{margin:16px 0 0;font-family:"Inter Tight",sans-serif;font-weight:900;font-size:clamp(28px,4.5vw,48px);letter-spacing:-.8px;line-height:1.1;color:var(--ink)}
+    .hero p{margin:16px 0 0;color:var(--muted);font-size:1.04rem;max-width:960px;line-height:1.65;font-weight:500}
+    .hero-actions{margin-top:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.55rem;border:none;border-radius:999px;padding:.72rem 1.08rem;font-weight:800;cursor:pointer;min-height:44px;transition:transform .08s ease, background .2s ease, box-shadow .2s ease, opacity .2s ease;text-decoration:none;white-space:nowrap}
+    .btn:active{transform:translateY(1px)}
+    .btn.primary{background:var(--blue);color:#fff}
+    .btn.primary:hover{background:var(--blue-700)}
+    .btn.secondary{background:#eef2ff;color:#1e3a8a;border:1px solid rgba(37,99,235,.18)}
+    .btn.secondary:hover{background:#e6edff}
+    .btn.ghost{background:#fff;color:#111827;border:1px solid var(--border)}
+
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:18px}
+    .stat{background:#fff;border:1px solid var(--border);border-radius:16px;padding:14px 16px;box-shadow:var(--shadow-soft)}
+    .stat strong{display:block;font-size:1.3rem;color:#0f172a}
+    .stat span{display:block;margin-top:4px;color:#64748b;font-weight:650}
+
+    .section{padding:22px 0 30px}
+    .section-head{display:flex;align-items:end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:14px}
+    .section-head h2{margin:0;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.55rem;color:#0f172a}
+    .section-head p{margin:6px 0 0;color:var(--muted);font-weight:650}
+    .section-meta{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:999px;background:#fff;border:1px solid var(--border);color:#475569;font-weight:800}
+
+    .agents-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .agent-card,.tool-card,.path-card{background:var(--panel);border:1px solid var(--border);border-radius:var(--r-lg);box-shadow:var(--shadow);padding:18px;transition:all .25s ease}
+    .agent-card:hover,.tool-card:hover,.path-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px);border-color:var(--brand)}
+    .agent-head,.tool-head{display:flex;gap:14px;align-items:flex-start;justify-content:space-between}
+    .agent-main,.tool-main{display:flex;gap:14px;align-items:flex-start}
+    .agent-icon,.tool-icon{width:56px;height:56px;border-radius:16px;display:flex;align-items:center;justify-content:center;font-size:26px;flex:0 0 auto}
+    .agent-icon{background:rgba(37,99,235,.10)}
+    .tool-icon{background:rgba(26,60,94,.08)}
+    .agent-card h3,.tool-card h3,.path-card h3{margin:0;font-size:1.18rem;color:#0f172a}
+    .agent-card p,.tool-card p,.path-card p{margin:8px 0 0;color:#516072;line-height:1.6;font-weight:600}
+    .chip{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;font-weight:900;padding:7px 10px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+    .chip.blue{background:rgba(37,99,235,.10);color:#1d4ed8;border-color:rgba(37,99,235,.16)}
+    .chip.green{background:rgba(22,163,74,.12);color:#15803d;border-color:rgba(22,163,74,.18)}
+    .chip.purple{background:rgba(124,58,237,.12);color:#6d28d9;border-color:rgba(124,58,237,.18)}
+    .chip.amber{background:rgba(217,119,6,.12);color:#b45309;border-color:rgba(217,119,6,.18)}
+    .open-link{display:inline-flex;align-items:center;gap:8px;margin-top:14px;font-weight:850;color:var(--brand-2)}
+
+    .paths{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+    .path-card{background:linear-gradient(180deg,#fff,#fbfdff)}
+    .path-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+    .tag{display:inline-flex;align-items:center;gap:6px;font-size:.82rem;font-weight:800;padding:7px 10px;border-radius:999px;background:rgba(2,29,54,.03);border:1px solid rgba(100,116,139,.16);color:#334155}
+
+    .catalog{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+    .tool-card{display:flex;flex-direction:column;min-height:100%}
+    .tool-card .tool-copy{flex:1}
+    .tool-card .meta-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+
+    .directory-note{margin-top:16px;background:#fff;border:1px dashed rgba(100,116,139,.32);border-radius:18px;padding:16px 18px;color:#475569;font-weight:650}
+
+    footer{margin-top:auto;background:var(--brand);color:#d7dae0;padding:22px 0}
+    footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    footer h4{margin:0 0 6px}
+    footer a{color:#b6c3d6}
+    footer ul{margin:0;padding-left:16px}
+    footer li{margin:0 0 6px}
+    .foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+
+    @media (max-width:1080px){
+      .catalog{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+    @media (max-width:860px){
+      .agents-grid,.paths{grid-template-columns:1fr}
+    }
+    @media (max-width:640px){
+      .catalog,.stats{grid-template-columns:1fr}
+      footer .cols{grid-template-columns:1fr}
+      .hero-inner{padding:22px 0 18px}
+    }
+
+    /* Command Center directory refresh */
+    :root{--brand:#071c33;--brand-2:#13b8d4;--brand-dark:#041321;--ink:#0b1828;--bg:#f3f7fa;--ring:rgba(19,184,212,.25);--border:#dbe5eb;--gradient:linear-gradient(120deg,#041321 0%,#092b49 62%,#07536a 100%)}
+    body{background:linear-gradient(180deg,#eef5f8 0,#f7f9fb 520px,#f3f7fa 100%)}
+    .container{max-width:1440px;padding-left:clamp(18px,3vw,44px);padding-right:clamp(18px,3vw,44px)}
+    .header-bar{background:rgba(4,19,33,.96);backdrop-filter:blur(16px);border-bottom:1px solid rgba(255,255,255,.09)}
+    .ap-nav{max-width:1440px;padding:12px clamp(18px,3vw,44px)}.ap-logo{border-radius:12px;background:rgba(255,255,255,.1)}.ap-tab{padding:9px 12px}.ap-tab.is-active{background:rgba(19,184,212,.16);box-shadow:inset 0 0 0 1px rgba(76,219,239,.26)}
+    .hero{color:#fff;background:var(--gradient);border:0;position:relative;overflow:hidden}.hero:after{content:"";position:absolute;width:540px;height:540px;border-radius:50%;right:-160px;top:-300px;background:radial-gradient(circle,rgba(65,214,232,.18),transparent 68%);pointer-events:none}.hero-inner{padding-top:58px;padding-bottom:46px;position:relative;z-index:1}
+    .eyebrow{color:#74e5f2;background:rgba(19,184,212,.12);border:1px solid rgba(116,229,242,.28);padding:7px 13px}.hero h1{color:#fff;max-width:850px;font-size:clamp(38px,5vw,68px);letter-spacing:-2px}.hero p{color:#b9cad7;max-width:790px;font-size:1.08rem}
+    .btn{border-radius:10px}.btn.primary{background:#20c6dc;color:#03131f}.btn.primary:hover{background:#67e4f1}.btn.secondary{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.18)}.btn.secondary:hover{background:rgba(255,255,255,.16)}.btn.ghost{background:transparent;color:#c9d8e1;border-color:rgba(255,255,255,.18)}
+    .stats{max-width:900px}.stat{background:rgba(255,255,255,.075);border-color:rgba(255,255,255,.13);box-shadow:none}.stat strong{color:#fff}.stat span{color:#a9becb}
+    .section{padding:34px 0}.section:nth-child(even){background:rgba(255,255,255,.42);border-block:1px solid rgba(219,229,235,.7)}.section-head h2{font-size:clamp(1.55rem,2.4vw,2.15rem)}
+    .agent-card,.tool-card,.path-card{border-radius:16px;box-shadow:0 8px 28px rgba(8,35,57,.055)}.agent-card:hover,.tool-card:hover,.path-card:hover{border-color:#55c9d8;box-shadow:0 16px 36px rgba(8,35,57,.11)}.open-link{color:#087e97}.tool-icon{background:#e8f5f7}
+    .catalog-toolbar{position:sticky;top:65px;z-index:50;background:rgba(243,247,250,.94);backdrop-filter:blur(14px);border-block:1px solid var(--border);padding:18px 0;box-shadow:0 8px 24px rgba(8,35,57,.05)}.search-shell{display:grid;grid-template-columns:minmax(260px,1fr) auto;gap:14px;align-items:center}.search-box{position:relative}.search-box>span{position:absolute;left:16px;top:50%;transform:translateY(-50%);font-size:1.1rem}.search-box input{width:100%;height:50px;border:1px solid #cbd9e1;border-radius:12px;background:#fff;padding:0 48px;font:600 1rem Inter,sans-serif;color:var(--ink);box-shadow:0 5px 18px rgba(8,35,57,.05)}.search-box input:focus{border-color:#17a9bf}.key-hint{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:.75rem;color:#6c7f8c;border:1px solid #d5e0e6;border-radius:6px;padding:3px 6px;background:#f6f9fa}.filter-row{display:flex;gap:7px;flex-wrap:wrap;justify-content:flex-end}.filter-btn{border:1px solid #d5e0e6;background:#fff;color:#445866;border-radius:9px;padding:9px 12px;font-weight:800;cursor:pointer}.filter-btn:hover,.filter-btn.is-active{background:#082943;color:#fff;border-color:#082943}.catalog-status{display:flex;justify-content:space-between;gap:12px;margin-top:11px;color:#627583;font-size:.88rem;font-weight:650}.clear-search{border:0;background:none;color:#087e97;font:inherit;font-weight:800;cursor:pointer;visibility:hidden}.clear-search.show{visibility:visible}.tool-card[hidden],.tool-section[hidden]{display:none!important}.empty-state{display:none;text-align:center;padding:54px 20px;background:#fff;border:1px dashed #bdccd5;border-radius:16px;margin:24px 0}.empty-state.show{display:block}.empty-state strong{display:block;font-size:1.15rem}.empty-state span{display:block;color:var(--muted);margin-top:7px}footer{background:#041321}
+    @media(max-width:900px){.search-shell{grid-template-columns:1fr}.filter-row{justify-content:flex-start}.catalog-toolbar{top:64px}}@media(max-width:640px){.hero-inner{padding-top:36px;padding-bottom:32px}.hero h1{letter-spacing:-1px}.stats{grid-template-columns:repeat(2,1fr)}.key-hint{display:none}.search-box input{padding-right:16px}.filter-row{flex-wrap:nowrap;overflow-x:auto;padding-bottom:4px}.filter-btn{white-space:nowrap}}
+
+    /* Exact alignment with the current Command Center and Secure Access pages */
+    :root{--navy-950:#061426;--navy-900:#071a2f;--navy-800:#0b2947;--brand:#0b6cae;--brand-2:#1d8bd1;--blue:#1d8bd1;--blue-700:#1171b4;--cyan:#35c3dc;--ink:#132437;--text:#132437;--muted:#607284;--dim:#8da0b1;--bg:#f3f6f9;--panel:#fff;--border:#dbe4ea;--success:#11a779;--shadow:0 12px 34px rgba(10,36,62,.10);--font:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+    html,body{font-family:var(--font);background:var(--bg);color:var(--text);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}
+    .container{max-width:1540px;padding-left:28px;padding-right:28px}
+    .header-bar{height:72px;background:rgba(6,20,38,.96);box-shadow:none;backdrop-filter:blur(18px)}
+    .ap-nav{height:72px;max-width:1540px;padding:0 28px;gap:28px}.ap-left{gap:28px}.ap-logo{width:39px;height:39px;border-radius:50%}.ap-brand{font-size:16px;font-weight:800;letter-spacing:-.02em}.ap-title small{display:block;color:#7fabc8;font:500 9px var(--mono);letter-spacing:.14em;text-transform:uppercase;margin-top:1px}.ap-tab{color:#a9c0d0;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:650;opacity:1}.ap-tab:hover,.ap-tab.is-active{color:#fff;background:rgba(255,255,255,.08);box-shadow:none}.ap-nav-top a.ap-toplink{color:#c5d5e1;padding:9px 10px;font-size:13px;font-weight:700}.ap-nav-top a.ap-toplink.cta{background:#fff;color:var(--navy-900);padding:9px 15px;border:0;border-radius:9px;font-weight:800}.ap-nav-top a.ap-toplink.cta:hover{background:#edf7fb;color:var(--navy-900)}
+    #mobileMenu{top:64px;background:#fff;color:var(--text);left:16px;right:16px;border-radius:14px;box-shadow:0 25px 60px rgba(0,0,0,.28)}.mobile-main-links a,.mobile-auth a{color:var(--text);font-weight:700}.mobile-main-links a:hover,.mobile-auth a:hover{background:#edf4f8;color:var(--text)}.mobile-divider{background:var(--border)}
+    .hero{background:radial-gradient(circle at 76% 20%,rgba(29,139,209,.25),transparent 33%),radial-gradient(circle at 24% 110%,rgba(53,195,220,.11),transparent 38%),linear-gradient(135deg,var(--navy-950),#0b3151)}.hero:after{display:none}.hero-inner{padding-top:60px;padding-bottom:54px}.eyebrow{padding:0;border:0;border-radius:0;background:none;color:#7ed8e8;font:600 11px var(--mono);letter-spacing:.14em}.eyebrow:before{content:'';width:22px;height:2px;background:var(--cyan)}.hero h1{font-family:var(--font);font-size:clamp(42px,5vw,68px);line-height:1.02;letter-spacing:-.055em;margin:17px 0 22px}.hero p{margin:0;color:#b7cbda;font-size:17px;line-height:1.75}.hero-actions{margin-top:28px}.btn{min-height:45px;padding:0 18px;border-radius:10px;font-size:13px}.btn.primary{background:linear-gradient(135deg,var(--blue),#1171b4);color:#fff;box-shadow:0 9px 24px rgba(18,127,192,.3)}.btn.primary:hover{background:linear-gradient(135deg,var(--blue),#1171b4);filter:brightness(1.08);transform:translateY(-1px)}.btn.secondary,.btn.ghost{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.18);color:#e9f5fb}.btn.secondary:hover,.btn.ghost:hover{background:rgba(255,255,255,.12)}
+    .stats{max-width:none;margin-top:32px;gap:0;border:1px solid rgba(255,255,255,.08);border-radius:14px;overflow:hidden}.stat{border:0;border-right:1px solid rgba(255,255,255,.08);border-radius:0;padding:20px 22px;background:rgba(5,18,33,.35)}.stat:last-child{border-right:0}.stat strong{font-size:22px;color:#66c9dc}.stat span{font:600 10px var(--mono);color:#809fb3;text-transform:uppercase;letter-spacing:.08em}
+    .section{padding:54px 0}.section:nth-child(even){background:#fff;border-block:1px solid var(--border)}.section-head{margin-bottom:24px}.section-head h2{font-family:var(--font);font-size:30px;letter-spacing:-.035em}.section-head p{font-weight:500}.section-meta{font:600 10px var(--mono);text-transform:uppercase;letter-spacing:.08em;color:var(--brand);border-radius:8px}
+    .agent-card,.tool-card,.path-card{border:1px solid var(--border);border-radius:14px;box-shadow:none;padding:20px;transition:.2s ease}.agent-card:hover,.tool-card:hover,.path-card:hover{transform:translateY(-4px);border-color:#8fcbdc;box-shadow:var(--shadow)}.agent-icon,.tool-icon{border-radius:13px;background:#eaf5f9;border:1px solid #d6ebf2}.agent-card h3,.tool-card h3,.path-card h3{font-size:17px;letter-spacing:-.025em}.agent-card p,.tool-card p,.path-card p{color:var(--muted);font-size:13px;line-height:1.65;font-weight:500}.open-link{font-size:12px;font-weight:800;color:var(--brand)}.chip,.tag{font:600 9px var(--mono);letter-spacing:.04em}.catalog{gap:16px}
+    .catalog-toolbar{top:72px;padding:16px 0;background:rgba(243,246,249,.95);border-color:var(--border)}.search-box input{height:47px;font:600 13px var(--font);border-color:#d7e1e8}.filter-btn{font:700 11px var(--font);border-color:#d7e1e8}.filter-btn:hover,.filter-btn.is-active{background:var(--navy-900);border-color:var(--navy-900)}.catalog-status{font-size:11px}.key-hint{font-family:var(--mono)}
+    footer{background:#04101e;color:#7f9aae;padding:36px 0}.foot-bottom{border-top:1px solid rgba(255,255,255,.07);padding-top:20px;color:#587589!important}
+    @media(max-width:720px){.container{padding-left:16px;padding-right:16px}.header-bar,.ap-nav{height:64px}.ap-nav{padding:0 16px}.ap-title small{display:none}.catalog-toolbar{top:64px}.hero-inner{padding-top:52px;padding-bottom:46px}.stats{grid-template-columns:1fr 1fr}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.08)}}
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="header-bar">
+    <div class="ap-nav">
+      <div class="ap-left">
+        <a class="ap-brand" href="index.html" aria-label="Arowana Profits Home">
+          <img src="images/arowanalogo.png" alt="Arowana Profits" class="ap-logo">
+          <span class="ap-title">Arowana Profits<small>Command Center</small></span>
+        </a>
+        <nav class="ap-nav-main" aria-label="Primary">
+          <a href="trading-command.html" class="ap-tab">⚡ <span>Trading</span></a>
+          <a href="portfolio-command.html" class="ap-tab">📈 <span>Portfolio</span></a>
+          <a href="analysis-central.html" class="ap-tab">⌁ <span>Analysis</span></a>
+          <a href="options-hub.html" class="ap-tab">◫ <span>Options</span></a>
+          <a href="market-intelligence.html" class="ap-tab">◎ <span>Market</span></a>
+          <a href="features-tools-directory.html" class="ap-tab is-active">🧰 <span>All Tools</span></a>
+        </nav>
+      </div>
+      <div class="ap-right">
+        <nav class="ap-nav-top" aria-label="Account actions">
+          <a class="ap-toplink" href="login.html" id="navSignIn">Login</a>
+          <a class="ap-toplink cta" href="signup.html" id="navSignUp">Get Started</a>
+        </nav>
+
+        <div class="user-dropdown" id="navUserDropdown">
+          <button class="user-toggle" id="navUserToggle">
+            <span class="user-name" id="navUserName">Account</span>
+            <span class="dropdown-arrow">▼</span>
+          </button>
+          <div class="user-menu">
+            <div class="menu-header">
+              <div class="menu-user-email" id="menuUserEmail"></div>
+              <div class="menu-user-plan">Free Plan</div>
+            </div>
+            <div class="menu-section">
+              <a href="account.html" class="menu-item"><span class="menu-item-icon">⚙️</span><span>Account Settings</span></a>
+              <a href="pricing.html" class="menu-item"><span class="menu-item-icon">⚡</span><span>Upgrade to Pro</span></a>
+            </div>
+            <div class="menu-divider"></div>
+            <div class="menu-section">
+              <button class="menu-item" onclick="signOut()"><span class="menu-item-icon">🚪</span><span>Sign Out</span></button>
+            </div>
+          </div>
+        </div>
+
+        <button class="ap-burger" id="apBurger" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <div id="mobileMenu" data-open="false" aria-hidden="true">
+    <div class="mobile-menu-panel">
+      <div class="mobile-main-links">
+        <a href="trading-command.html">⚡ Trading Command</a>
+        <a href="portfolio-command.html">📈 Portfolio Command</a>
+        <a href="analysis-central.html">⌁ Analysis Central</a>
+        <a href="options-hub.html">◫ Options Hub</a>
+        <a href="market-intelligence.html">◎ Market Intelligence</a>
+        <a href="features-tools-directory.html">🧰 All Tools</a>
+        <a href="pricing.html">💳 Plans</a>
+      </div>
+      <div class="mobile-divider"></div>
+      <div class="mobile-auth" id="mobileAuthLinks">
+        <a href="login.html">Login</a>
+        <a href="signup.html">Get Started</a>
+      </div>
+    </div>
+  </div>
+
+  <section class="hero" aria-label="All tools directory hero">
+    <div class="container hero-inner">
+      <span class="eyebrow">AROWANA TOOL DIRECTORY</span>
+      <h1>Find the right tool for the decision.</h1>
+      <p>
+        Search every scanner, research workflow, risk calculator, and portfolio utility across the platform—then move directly from an idea to action.
+      </p>
+      <div class="hero-actions">
+        <a class="btn primary" href="#toolSearch">Search all tools</a>
+        <a class="btn secondary" href="trading-command.html">Open Trading Command</a>
+        <a class="btn ghost" href="portfolio-command.html">Open Portfolio</a>
+      </div>
+      <div class="stats" aria-label="Tool overview stats">
+        <div class="stat"><strong>55+</strong><span>Tools & utilities</span></div>
+        <div class="stat"><strong>2</strong><span>Main AI agents</span></div>
+        <div class="stat"><strong>5</strong><span>Connected workspaces</span></div>
+        <div class="stat"><strong>1</strong><span>Single place to browse</span></div>
+      </div>
+    </div>
+  </section>
+
+  <main id="main">
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>AI Agents</h2>
+            <p>Your two top-level working hubs should stay prominent.</p>
+          </div>
+          <div class="section-meta">2 primary workspaces</div>
+        </div>
+        <div class="agents-grid">
+          <article class="agent-card">
+            <div class="agent-head">
+              <div class="agent-main">
+                <div class="agent-icon">⚡</div>
+                <div>
+                  <h3>Arowana Trader</h3>
+                  <p>Your personal AI trading agent for scalp, day, and swing workflows. Morning scan, setup review, chart analysis, options support, and risk tools in one dashboard.</p>
+                  <!-- Was pointing at trading-command.html, the same mix-up as the Portfolio
+                   Advisor card below. This description — an AI agent with a morning
+                   scan, setup review and chart analysis in one dashboard — is
+                   arowana-trader.html (the AI Trading Coach), not the Trading
+                   Command workspace. Neither AI agent was reachable from this
+                   directory at all. -->
+              <a class="open-link" href="arowana-trader.html">Open Arowana Trader →</a>
+                </div>
+              </div>
+              <span class="chip blue">AI Agent</span>
+            </div>
+          </article>
+
+          <article class="agent-card">
+            <div class="agent-head">
+              <div class="agent-main">
+                <div class="agent-icon">🏛️</div>
+                <div>
+                  <h3>Portfolio Advisor</h3>
+                  <p>Your personal AI investing advisor for portfolio health checks, valuation workflows, review cadence, and long-term decision support.</p>
+              <!-- Was pointing at portfolio-command.html, which is a different tool:
+                   Command answers "what do I hold and how is it doing", the Advisor
+                   answers "what should I do about it" — the foundation checks,
+                   contribution guidance and goals. The description here has always
+                   described the Advisor, so the link was simply wrong, and the
+                   Advisor was reachable from nowhere in this directory. -->
+              <a class="open-link" href="portfolio-advisor.html">Open Portfolio Advisor →</a>
+                </div>
+              </div>
+              <span class="chip blue">AI Agent</span>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Choose your path</h2>
+            <p>This keeps the catalog clear for new users before they dive into tool cards.</p>
+          </div>
+          <div class="section-meta">Short-term vs long-term</div>
+        </div>
+        <div class="paths">
+          <article class="path-card">
+            <h3>⚡ Short-Term Trading</h3>
+            <p>Built for scalp, day, and swing trading. Focuses on setup detection, entries, exits, stops, sizing, options support, and journaling.</p>
+            <div class="path-tags">
+              <span class="tag">Momentum scanners</span>
+              <span class="tag">Signal tools</span>
+              <span class="tag">Options planning</span>
+              <span class="tag">Risk control</span>
+            </div>
+            <a class="open-link" href="trading-command.html">Go to Trading Command →</a>
+          </article>
+
+          <article class="path-card">
+            <h3>📈 Long-Term Investing</h3>
+            <p>Built for portfolio reviews, valuation, discipline, and decision support. Focuses on intrinsic value, portfolio health, macro context, and structured review flows.</p>
+            <div class="path-tags">
+              <span class="tag">Portfolio review</span>
+              <span class="tag">Intrinsic value</span>
+              <span class="tag">Backtesting</span>
+              <span class="tag">Macro calendar</span>
+            </div>
+            <a class="open-link" href="portfolio-command.html">Go to Portfolio Command →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="catalog-toolbar" aria-label="Tool search and filters">
+      <div class="container">
+        <div class="search-shell">
+          <label class="search-box" for="toolSearch">
+            <span aria-hidden="true">⌕</span>
+            <input id="toolSearch" type="search" placeholder="Search tools, workflows, or capabilities…" autocomplete="off">
+            <kbd class="key-hint">/</kbd>
+          </label>
+          <div class="filter-row" role="group" aria-label="Filter tools by category">
+            <button class="filter-btn is-active" type="button" data-filter="all">All</button>
+            <button class="filter-btn" type="button" data-filter="trading">Trading &amp; Risk</button>
+            <button class="filter-btn" type="button" data-filter="investing">Portfolio</button>
+            <button class="filter-btn" type="button" data-filter="research">Research</button>
+          </div>
+        </div>
+        <div class="catalog-status">
+          <span id="toolResultCount" aria-live="polite">Loading tools…</span>
+          <button class="clear-search" id="clearSearch" type="button">Clear search</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section tool-section" id="scanners" data-category="trading">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Scanners, Signals &amp; Risk Sizing</h2>
+            <p>Everything for finding and sizing short-term and swing trades.</p>
+          </div>
+          <div class="section-meta">30 tools</div>
+        </div>
+
+        <div class="catalog">
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📊</div><div class="tool-copy"><h3>Live Scanner</h3><p>Real-time market scanning from the Trading Command hub.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Momentum</span></div>
+            <a class="open-link" href="trading-command.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🚀</div><div class="tool-copy"><h3>Momentum Hunter</h3><p>Find trending opportunities across the market.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Momentum</span></div>
+            <a class="open-link" href="momentum-hunter-complete.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">⚡</div><div class="tool-copy"><h3>Opening Range Breakout</h3><p>Scan for intraday opening range expansion setups.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Intraday</span></div>
+            <a class="open-link" href="orb-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🌅</div><div class="tool-copy"><h3>Gap & Go</h3><p>Screen for strong opening gaps with continuation potential.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Gap</span></div>
+            <a class="open-link" href="gap-and-go.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🕳️</div><div class="tool-copy"><h3>Gap Fade</h3><p>Evaluate stretched opening gaps for fade setups.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Mean Reversion</span></div>
+            <a class="open-link" href="gap-fade-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧭</div><div class="tool-copy"><h3>Short Entry Screener</h3><p>Find technically weak names for short setups.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Short</span></div>
+            <a class="open-link" href="short-entry-screener.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🔥</div><div class="tool-copy"><h3>Short Squeeze Scanner</h3><p>Spot high short-interest names showing squeeze potential.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Short Interest</span></div>
+            <a class="open-link" href="short-squeeze-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📉</div><div class="tool-copy"><h3>VWAP Pullback</h3><p>Locate pullback entries around VWAP after trend confirmation.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Intraday</span></div>
+            <a class="open-link" href="vwap-pullback.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📌</div><div class="tool-copy"><h3>EMA Snapback</h3><p>Detect stretched moves back toward key EMAs.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Mean Reversion</span></div>
+            <a class="open-link" href="ema-snapback.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🏔️</div><div class="tool-copy"><h3>HOD Scanner</h3><p>Track names breaking to new highs of day.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Momentum</span></div>
+            <a class="open-link" href="hod-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🔁</div><div class="tool-copy"><h3>RSI Reversal</h3><p>Spot stretched RSI conditions with reversal potential.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Reversal</span></div>
+            <a class="open-link" href="rsi-reversal-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🎯</div><div class="tool-copy"><h3>BB Snapback</h3><p>Bollinger Band overextension and snapback setups.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Mean Reversion</span></div>
+            <a class="open-link" href="bb-snapback.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">💹</div><div class="tool-copy"><h3>Scalp Trading Screener</h3><p>Fast-timeframe screener for scalp-style setups.</p></div></div>
+              <span class="chip blue">Pro</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Scalp</span></div>
+            <a class="open-link" href="scalp-trading-screener.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📈</div><div class="tool-copy"><h3>Post-Earnings Drift</h3><p>Continuation or fade opportunities after earnings moves.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Catalyst</span></div>
+            <a class="open-link" href="post-earnings-drift.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📊</div><div class="tool-copy"><h3>Relative Volume Surge</h3><p>Find names trading with abnormal participation.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Volume</span></div>
+            <a class="open-link" href="rvol-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📐</div><div class="tool-copy"><h3>50/200 SMA Cross</h3><p>Monitor major moving-average structure changes.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Trend</span></div>
+            <a class="open-link" href="sma-cross-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📊</div><div class="tool-copy"><h3>Daily Bias</h3><p>Get a quick directional read for the day ahead.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Signal</span><span class="chip amber">Bias</span></div>
+            <a class="open-link" href="daily-bias.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📏</div><div class="tool-copy"><h3>Trendline Break</h3><p>Flag names breaking key trendlines with confirmation.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Trend</span></div>
+            <a class="open-link" href="trendline-break.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🌄</div><div class="tool-copy"><h3>Intraday Breakout</h3><p>Scan for intraday range breakouts mid-session.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Breakout</span></div>
+            <a class="open-link" href="intraday-breakout.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🚪</div><div class="tool-copy"><h3>Opening Drive</h3><p>Track early-session directional drive strength.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Scanner</span><span class="chip amber">Open</span></div>
+            <a class="open-link" href="opening-drive.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧭</div><div class="tool-copy"><h3>Buy / Sell Signal</h3><p>Fast decision-support analyzer for directional bias.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Analyzer</span><span class="chip amber">AI</span></div>
+            <a class="open-link" href="buy-sell-signal.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">💸</div><div class="tool-copy"><h3>Money Flow Alert</h3><p>Institutional buy/sell pressure alerts.</p></div></div>
+              <span class="chip blue">Pro</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Signal</span><span class="chip amber">Flow</span></div>
+            <a class="open-link" href="money-flow-alert.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📰</div><div class="tool-copy"><h3>Weekly Swing Trade Post</h3><p>Auto-drafted weekly swing-trade idea summary.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Swing</span><span class="chip amber">Content</span></div>
+            <a class="open-link" href="weekly-swing-trade-post.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🚩</div><div class="tool-copy"><h3>Pattern Scanner</h3><p>Flags, triangles, and continuation structures.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Swing</span><span class="chip amber">Patterns</span></div>
+            <a class="open-link" href="pattern-scanner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📏</div><div class="tool-copy"><h3>ATR Stop Planner</h3><p>ATR-based volatility planning for consistent stops.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Risk</span><span class="chip amber">Stops</span></div>
+            <a class="open-link" href="atr-stop-planner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧠</div><div class="tool-copy"><h3>Kelly Calculator</h3><p>Position sizing logic through edge and odds.</p></div></div>
+              <span class="chip blue">Pro</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Risk</span><span class="chip amber">Math</span></div>
+            <a class="open-link" href="kelly-calculator.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📏</div><div class="tool-copy"><h3>Position Sizer</h3><p>Convert risk % and stop distance into share size.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Risk</span><span class="chip amber">Sizing</span></div>
+            <a class="open-link" href="position-sizer.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🎯</div><div class="tool-copy"><h3>R-Multiple Calculator</h3><p>Score trades by risk-multiple outcome.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Risk</span><span class="chip amber">Journal</span></div>
+            <a class="open-link" href="r-multiple.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📊</div><div class="tool-copy"><h3>Expectancy Matrix</h3><p>Model win rate vs. payoff to find your edge.</p></div></div>
+              <span class="chip blue">Pro</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Risk</span><span class="chip amber">Math</span></div>
+            <a class="open-link" href="expectancy-matrix.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🌊</div><div class="tool-copy"><h3>Volatility Guardrails</h3><p>Set exposure limits based on current volatility.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Risk</span><span class="chip amber">Volatility</span></div>
+            <a class="open-link" href="volatility-guardrails.html">Open tool →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section class="section tool-section" id="long-term-planning" data-category="investing">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Long-Term Planning Tools</h2>
+            <p>Valuation, allocation, tax, and retirement planning for buy-and-hold investors.</p>
+          </div>
+          <div class="section-meta">22 tools</div>
+        </div>
+
+        <div class="catalog">
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">👁️</div><div class="tool-copy"><h3>Long-Term Watchlist</h3><p>Stocks you're tracking to buy at the right price.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Watchlist</span></div>
+            <a class="open-link" href="long-term-watchlist.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">💼</div><div class="tool-copy"><h3>Long-Term Portfolio</h3><p>Deeper long-term holdings view and analysis.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Portfolio</span></div>
+            <a class="open-link" href="long-term-portfolio.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧮</div><div class="tool-copy"><h3>DCF Analyzer</h3><p>Discounted cash flow valuation workflow.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Valuation</span></div>
+            <a class="open-link" href="dcf-analyzer.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧮</div><div class="tool-copy"><h3>Intrinsic Value Calculator</h3><p>Estimate fair value and test upside vs. price.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Valuation</span></div>
+            <a class="open-link" href="intrinsic-value.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">💎</div><div class="tool-copy"><h3>Dividend Screener</h3><p>Screen for durable, well-covered dividend payers.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Dividends</span></div>
+            <a class="open-link" href="dividend-screener.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">💰</div><div class="tool-copy"><h3>Dividend Tracker</h3><p>Track dividend income and payout schedules.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Dividends</span></div>
+            <a class="open-link" href="dividend-tracker.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🛡️</div><div class="tool-copy"><h3>Quality Screener</h3><p>Piotroski F-Score, Altman Z-Score, and debt quality checks.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Quality</span></div>
+            <a class="open-link" href="quality-screener.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🏦</div><div class="tool-copy"><h3>Real Estate Analyzer</h3><p>Evaluate real estate as part of a long-term allocation.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Real Estate</span></div>
+            <a class="open-link" href="real-estate-analyzer.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🎓</div><div class="tool-copy"><h3>Education / 529 Planner</h3><p>Plan education savings and 529 contributions.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Planning</span></div>
+            <a class="open-link" href="education-529-planner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">💵</div><div class="tool-copy"><h3>Withdrawal Planner</h3><p>Compare 4 withdrawal-rate strategies (4%-rule, % of portfolio, guardrails, RMD-glide) with Monte Carlo and sequence-of-returns stress testing.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Retirement</span><span class="chip amber">Monte Carlo</span></div>
+            <a class="open-link" href="withdrawal-planner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧾</div><div class="tool-copy"><h3>Tax-Advantaged Guide</h3><p>Contribution priority, which asset types belong in which account (asset location), and a backdoor/mega-backdoor Roth checklist.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Tax</span><span class="chip amber">Asset Location</span></div>
+            <a class="open-link" href="tax-advantaged-guide.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧮</div><div class="tool-copy"><h3>Retirement Calculator</h3><p>Monte Carlo net-worth projection with a year-by-year accumulation and drawdown table, chart, and CSV export.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Retirement</span><span class="chip amber">Monte Carlo</span></div>
+            <a class="open-link" href="retirement-calculator.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧭</div><div class="tool-copy"><h3>Retirement Planner</h3><p>8 free tools in one place: roadmap, stress test, contribution waterfall, Social Security timing, portfolio picker, Roth vs. Traditional, withdrawal sequencing by account, and a 12-month action plan.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Retirement</span><span class="chip amber">All-in-one</span></div>
+            <a class="open-link" href="retirement-planner.html">Open tool →</a>
+          </article>
+
+          <div class="directory-note" style="grid-column:1 / -1;">
+            <strong>Four retirement tools, four different jobs</strong> — not sure which to open?
+            <strong>Retirement Calculator</strong> for a single Monte Carlo net-worth simulation with a full year-by-year table.
+            <strong>Withdrawal Planner</strong> for comparing safe withdrawal <em>rate</em> strategies (4%-rule vs. guardrails vs. RMD-glide).
+            <strong>Tax-Advantaged Guide</strong> for contribution order and which asset types belong in which account.
+            <strong>Retirement Planner</strong> for the broadest single session — roadmap through Social Security timing to a 12-month checklist — with 7 of its 8 tools free once signed in.
+          </div>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📉</div><div class="tool-copy"><h3>Tax-Loss Harvester</h3><p>Identify tax-loss harvesting opportunities.</p></div></div>
+              <span class="chip blue">Pro</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Tax</span></div>
+            <a class="open-link" href="tax-loss-harvester.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">⚖️</div><div class="tool-copy"><h3>Risk Tolerance Quiz</h3><p>Answer a few questions to get a suggested equity/bond mix.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Risk</span></div>
+            <a class="open-link" href="risk-quiz.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">⚖️</div><div class="tool-copy"><h3>Risk Comfort</h3><p>5-question risk questionnaire for allocation guidance.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Risk</span></div>
+            <a class="open-link" href="risk-comfort.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🧩</div><div class="tool-copy"><h3>Pick My Mix</h3><p>Age/horizon-based 3-fund ETF allocation suggestion.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Allocation</span></div>
+            <a class="open-link" href="pick-my-mix.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📝</div><div class="tool-copy"><h3>IPS Builder</h3><p>Build a printable Investment Policy Statement.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Planning</span></div>
+            <a class="open-link" href="ips-builder.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">✅</div><div class="tool-copy"><h3>My Rules — Long-Term</h3><p>Your written long-term investing principles.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Rules</span></div>
+            <a class="open-link" href="my-rules-long.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🎓</div><div class="tool-copy"><h3>College Savings</h3><p>Project college savings growth over time.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Education</span></div>
+            <a class="open-link" href="college-savings.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📆</div><div class="tool-copy"><h3>DCA Planner</h3><p>Plan dollar-cost-averaging contribution schedules.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Planning</span></div>
+            <a class="open-link" href="dca-planner.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🏠</div><div class="tool-copy"><h3>Buy a Home</h3><p>Model affordability and timing for a home purchase.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Long-Term</span><span class="chip amber">Real Estate</span></div>
+            <a class="open-link" href="buy-a-home.html">Open tool →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+    <section class="section tool-section" id="screeners" data-category="research">
+      <div class="container">
+        <div class="section-head">
+          <div>
+            <h2>Screeners &amp; Research</h2>
+            <p>Deeper research and screening tools that live alongside Analysis Central.</p>
+          </div>
+          <div class="section-meta">3 tools</div>
+        </div>
+
+        <div class="catalog">
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🔎</div><div class="tool-copy"><h3>Stock Analyzer</h3><p>Blend technical, fundamental, and market context into one view.</p></div></div>
+              <span class="chip green">Free</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Research</span><span class="chip amber">Analysis</span></div>
+            <a class="open-link" href="stock-analyzer.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">📊</div><div class="tool-copy"><h3>Options Analyzer</h3><p>Review Greeks, P&L structure, and strategy suggestions.</p></div></div>
+              <span class="chip blue">Pro</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Options</span><span class="chip amber">Analysis</span></div>
+            <a class="open-link" href="options-analyzer.html">Open tool →</a>
+          </article>
+
+          <article class="tool-card">
+            <div class="tool-head">
+              <div class="tool-main"><div class="tool-icon">🎯</div><div class="tool-copy"><h3>AI Moat Finder</h3><p>Identify companies with durable competitive advantages.</p></div></div>
+              <span class="chip blue">Pro</span>
+            </div>
+            <div class="meta-row"><span class="chip purple">Research</span><span class="chip amber">Quality</span></div>
+            <a class="open-link" href="ai-moat-finder.html">Open tool →</a>
+          </article>
+        </div>
+      </div>
+    </section>
+    <div class="container">
+      <div class="empty-state" id="emptyState" role="status">
+        <strong>No tools match that search.</strong>
+        <span>Try a broader term or choose a different category.</span>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container cols">
+      <div>
+        <h4>Arowana Profits</h4>
+        <p style="margin:0;color:#d7dae0">Simple AI-assisted tools for disciplined trading and investing.</p>
+      </div>
+      <div>
+        <h4>Dashboards</h4>
+        <ul>
+          <li><a href="short-term-dashboard.html">Short-Term Dashboard</a></li>
+          <li><a href="long-term-dashboard.html">Long-Term Dashboard</a></li>
+          <li><a href="learn-investing.html">Learning Center</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Tools</h4>
+        <ul>
+          <li><a href="options-analyzer.html">Options Analyzer</a></li>
+          <li><a href="trade-journal-pro.html">Trade Journal Pro</a></li>
+          <li><a href="features-tools-directory.html">All Tools</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="pricing.html">Plans</a></li>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="container foot-bottom">Educational tools only. Not financial advice.</div>
+  </footer>
+
+  <script>
+    const burger = document.getElementById('apBurger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    if (burger && mobileMenu) {
+      burger.addEventListener('click', () => {
+        const isOpen = mobileMenu.getAttribute('data-open') === 'true';
+        mobileMenu.setAttribute('data-open', String(!isOpen));
+        mobileMenu.setAttribute('aria-hidden', String(isOpen));
+        burger.setAttribute('aria-expanded', String(!isOpen));
+      });
+    }
+
+    /* Auth detection — same gs_auth_user_v1 key and pattern used across
+       index.html and features.html, so sign-in state is consistent. */
+    function initAuthDropdown() {
+      const authUser = localStorage.getItem('gs_auth_user_v1');
+      if (authUser) {
+        try { showUserDropdown(JSON.parse(authUser)); }
+        catch (e) { showAuthButtons(); }
+      } else {
+        showAuthButtons();
+      }
+    }
+
+    function getNameFromEmail(email) {
+      if (!email) return null;
+      const username = email.split('@')[0];
+      return username.charAt(0).toUpperCase() + username.slice(1);
+    }
+
+    function showUserDropdown(user) {
+      const signIn = document.getElementById('navSignIn');
+      const signUp = document.getElementById('navSignUp');
+      if (signIn) signIn.style.display = 'none';
+      if (signUp) signUp.style.display = 'none';
+
+      const dropdown = document.getElementById('navUserDropdown');
+      if (dropdown) dropdown.classList.add('show');
+
+      const userName = user.name || user.username || getNameFromEmail(user.email) || 'User';
+      const userEmail = user.email || '';
+      const nameEl = document.getElementById('navUserName');
+      const emailEl = document.getElementById('menuUserEmail');
+      if (nameEl) nameEl.textContent = userName;
+      if (emailEl) emailEl.textContent = userEmail;
+
+      const mobileAuth = document.getElementById('mobileAuthLinks');
+      if (mobileAuth) {
+        mobileAuth.innerHTML = '<a href="account.html">My Account</a><a href="#" id="mobSignOut">Sign Out</a>';
+        const mobSignOut = document.getElementById('mobSignOut');
+        if (mobSignOut) mobSignOut.addEventListener('click', (e) => { e.preventDefault(); signOut(); });
+      }
+    }
+
+    function showAuthButtons() {
+      const signIn = document.getElementById('navSignIn');
+      const signUp = document.getElementById('navSignUp');
+      if (signIn) signIn.style.display = 'inline-flex';
+      if (signUp) signUp.style.display = 'inline-flex';
+      const dropdown = document.getElementById('navUserDropdown');
+      if (dropdown) dropdown.classList.remove('show');
+      const mobileAuth = document.getElementById('mobileAuthLinks');
+      if (mobileAuth) mobileAuth.innerHTML = '<a href="login.html">Login</a><a href="signup.html">Get Started</a>';
+    }
+
+    function initUserDropdown() {
+      const toggle = document.getElementById('navUserToggle');
+      const dropdown = document.getElementById('navUserDropdown');
+      if (!toggle || !dropdown) return;
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const menu = dropdown.querySelector('.user-menu');
+        dropdown.classList.toggle('open');
+        if (menu) menu.classList.toggle('open');
+      });
+      document.addEventListener('click', (e) => {
+        if (!toggle.contains(e.target) && !dropdown.contains(e.target)) {
+          dropdown.classList.remove('open');
+          const menu = dropdown.querySelector('.user-menu');
+          if (menu) menu.classList.remove('open');
+        }
+      });
+    }
+
+    function signOut() {
+      ['gs_auth_user_v1', 'gs_session', 'ap_session', 'sb-access-token'].forEach((k) => {
+        try { localStorage.removeItem(k); } catch (_) {}
+      });
+      setTimeout(() => { window.location.href = 'index.html'; }, 500);
+    }
+
+    function initToolDirectory() {
+      const search = document.getElementById('toolSearch');
+      const buttons = [...document.querySelectorAll('.filter-btn')];
+      const sections = [...document.querySelectorAll('.tool-section')];
+      const cards = [...document.querySelectorAll('.tool-section .tool-card')];
+      const resultCount = document.getElementById('toolResultCount');
+      const clearButton = document.getElementById('clearSearch');
+      const emptyState = document.getElementById('emptyState');
+      if (!search || !cards.length) return;
+
+      let activeFilter = 'all';
+      cards.forEach((card) => {
+        card.dataset.search = card.textContent.replace(/\s+/g, ' ').trim().toLowerCase();
+      });
+
+      function updateDirectory() {
+        const query = search.value.trim().toLowerCase();
+        let visible = 0;
+        sections.forEach((section) => {
+          const categoryMatch = activeFilter === 'all' || section.dataset.category === activeFilter;
+          let sectionVisible = 0;
+          section.querySelectorAll('.tool-card').forEach((card) => {
+            const matches = categoryMatch && (!query || card.dataset.search.includes(query));
+            card.hidden = !matches;
+            if (matches) { visible += 1; sectionVisible += 1; }
+          });
+          section.hidden = sectionVisible === 0;
+        });
+        resultCount.textContent = visible === cards.length
+          ? `${cards.length} tools available`
+          : `${visible} of ${cards.length} tools shown`;
+        clearButton.classList.toggle('show', Boolean(query) || activeFilter !== 'all');
+        emptyState.classList.toggle('show', visible === 0);
+      }
+
+      search.addEventListener('input', updateDirectory);
+      buttons.forEach((button) => button.addEventListener('click', () => {
+        activeFilter = button.dataset.filter;
+        buttons.forEach((item) => item.classList.toggle('is-active', item === button));
+        updateDirectory();
+      }));
+      clearButton.addEventListener('click', () => {
+        search.value = '';
+        activeFilter = 'all';
+        buttons.forEach((item) => item.classList.toggle('is-active', item.dataset.filter === 'all'));
+        updateDirectory();
+        search.focus();
+      });
+      document.addEventListener('keydown', (event) => {
+        const tag = document.activeElement && document.activeElement.tagName;
+        if (event.key === '/' && !['INPUT','TEXTAREA','SELECT'].includes(tag)) {
+          event.preventDefault(); search.focus();
+        }
+        if (event.key === 'Escape' && document.activeElement === search) {
+          search.value = ''; updateDirectory(); search.blur();
+        }
+      });
+      updateDirectory();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      try { initAuthDropdown(); initUserDropdown(); } catch (e) { showAuthButtons(); }
+      initToolDirectory();
+    });
+  </script>
+</body>
+</html>

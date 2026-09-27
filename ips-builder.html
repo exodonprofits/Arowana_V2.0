@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>📝 IPS Builder (Investment Policy Statement)</title>
+  <style>
+    :root{
+      --bg:#f9fafb; --card:#fff; --text:#111827; --muted:#4b5563; --shadow:0 4px 12px rgba(0,0,0,.1);
+      --blue:#2563eb; --blue-dark:#1d4ed8; --green:#16a34a; --green-dark:#15803d; --red:#dc2626; --gray:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:1.25rem;display:flex;flex-direction:column;align-items:center}
+    header{text-align:center;margin-top:2.25rem}
+    header h1{font-size:2rem;margin:0 0 .5rem}
+    header p{margin:0;color:var(--muted);max-width:860px}
+
+    /* TOP-BOTTOM layout */
+    .wrap{width:100%;max-width:1200px;margin:1.25rem auto 2rem;display:flex;flex-direction:column;gap:1rem}
+
+    .panel{background:var(--card);border-radius:1.25rem;box-shadow:var(--shadow);padding:1rem}
+    h2{font-size:1.1rem;margin:.25rem 0 .65rem}
+    .sub{color:var(--muted);font-size:.9rem}
+
+    label{font-weight:600}
+    input[type="number"],input[type="text"],input[type="date"],textarea,select{width:100%;padding:.5rem .6rem;border-radius:.6rem;border:1px solid #e5e7eb}
+    textarea{min-height:90px}
+    .row{margin:.65rem 0}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+    .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+
+    /* Buttons */
+    .btn{border:none;cursor:pointer;font-weight:600;padding:.55rem .9rem;border-radius:9999px;transition:.2s ease;display:inline-flex;align-items:center;gap:.5rem}
+    .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green-dark)}
+    .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue-dark)}
+    .btn-gray{background:var(--gray);color:#111827}
+    .btn-red{background:var(--red);color:#fff}
+    .btns{display:flex;flex-wrap:wrap;gap:.5rem}
+
+    .table-wrap{overflow:auto;border-radius:1rem;border:1px solid #eee;margin-top:.75rem}
+    .note{background:#eef2ff;border-left:6px solid var(--blue);padding:.75rem 1rem;border-radius:.75rem;color:#0f172a}
+
+    .footer-nav{margin:1rem 0;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+    a{color:var(--blue);text-decoration:none}
+    a:hover{color:var(--blue-dark)}
+
+    .preview{white-space:pre-wrap;line-height:1.35}
+    .muted{color:var(--muted)}
+    .pill{background:#111827;color:#fff;border-radius:9999px;padding:.1rem .5rem;font-size:.78rem}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>📝 Investment Policy Statement (IPS) Builder</h1>
+    <p>Create a clear, printable policy you can stick to. Import your target allocation from the Allocation Builder and define rules for contributions, rebalancing, and behavior.</p>
+  </header>
+
+  <div class="wrap">
+    <!-- TOP: Scenario Inputs -->
+    <section class="panel" aria-label="Inputs">
+      <h2>Investor Profile</h2>
+      <div class="grid2 row">
+        <div>
+          <label>Investor Name</label>
+          <input type="text" id="name" placeholder="e.g., Alex Investor">
+        </div>
+        <div>
+          <label>Date</label>
+          <input type="date" id="date">
+        </div>
+      </div>
+      <div class="grid2 row">
+        <div>
+          <label>Investment Horizon (years)</label>
+          <input type="number" id="horizon" min="1" max="60" value="25">
+        </div>
+        <div>
+          <label>Risk Tolerance</label>
+          <select id="risk">
+            <option>Conservative</option>
+            <option>Moderate</option>
+            <option selected>Growth</option>
+            <option>Aggressive</option>
+          </select>
+        </div>
+      </div>
+      <div class="row">
+        <label>Primary Goals</label>
+        <textarea id="goals" placeholder="Retirement at 60, college for two kids, down payment in 5 years..."></textarea>
+      </div>
+
+      <h2>Target Allocation <span class="pill">Import from Allocation Builder</span></h2>
+      <div class="grid3 row">
+        <div><label>Stocks %</label><input type="number" id="st" value="60" min="0" max="100"></div>
+        <div><label>Bonds %</label><input type="number" id="bd" value="30" min="0" max="100"></div>
+        <div><label>Cash %</label><input type="number" id="cs" value="10" min="0" max="100"></div>
+      </div>
+      <div class="grid3 row">
+        <div><label>US Core % of Stocks</label><input type="number" id="usCore" value="40" min="0" max="100"></div>
+        <div><label>Intl Dev % of Stocks</label><input type="number" id="intlDev" value="25" min="0" max="100"></div>
+        <div><label>EM % of Stocks</label><input type="number" id="em" value="10" min="0" max="100"></div>
+      </div>
+      <div class="grid3 row">
+        <div><label>Small Value % of Stocks</label><input type="number" id="sv" value="15" min="0" max="100"></div>
+        <div><label>Quality % of Stocks</label><input type="number" id="quality" value="10" min="0" max="100"></div>
+        <div><label>Bond Mix (Agg/TIPS/Intl)</label><input type="text" id="bondMix" placeholder="70 / 15 / 15"></div>
+      </div>
+      <div class="btns row">
+        <button class="btn btn-gray" onclick="importAllocation()">📥 Import Saved Allocation</button>
+        <button class="btn btn-gray" onclick="loadETFPlan()">🧩 Load ETF Plan (from Screener)</button>
+      </div>
+
+      <h2>Contribution & Rebalancing Rules</h2>
+      <div class="grid2 row">
+        <div>
+          <label>Contribution Plan</label>
+          <textarea id="contribPlan" placeholder="Automatic monthly contributions of $X. Direct new money to most underweight sleeve."></textarea>
+        </div>
+        <div>
+          <label>Rebalancing Policy</label>
+          <textarea id="rebalPlan" placeholder="Rebalance every 6–12 months or when a sleeve drifts ±5% from target."></textarea>
+        </div>
+      </div>
+      <div class="grid2 row">
+        <div>
+          <label>Tax Location</label>
+          <textarea id="taxLoc" placeholder="Prioritize bonds in tax-deferred, stocks in taxable. Use ETFs for tax efficiency."></textarea>
+        </div>
+        <div>
+          <label>Withdrawal / Drawdown (if applicable)</label>
+          <textarea id="withdrawal" placeholder="Target X% withdrawal with guardrails; fund from cash buffer first."></textarea>
+        </div>
+      </div>
+
+      <h2>Behavioral Guardrails</h2>
+      <div class="row">
+        <textarea id="guardrails" placeholder="I will not react to market headlines. I will place trades only on scheduled rebalance dates. I will review this IPS annually."></textarea>
+      </div>
+
+      <div class="btns row">
+        <button class="btn btn-green" onclick="preview()">👀 Generate Preview</button>
+        <button class="btn btn-gray" onclick="saveIPS()">💾 Save</button>
+        <button class="btn btn-gray" onclick="loadIPS()">📥 Load</button>
+        <button class="btn btn-gray" onclick="exportMarkdown()">⬇️ Export Markdown</button>
+        <button class="btn btn-gray" onclick="printDoc()">🖨️ Print</button>
+        <a class="btn btn-blue" href="long-term-dashboard.html">⬅️ Back to Long‑Term Dashboard</a>
+      </div>
+
+      <div class="note mt-2">Educational template only; not legal or financial advice. Customize to your situation.</div>
+    </section>
+
+    <!-- BOTTOM: Live Preview -->
+    <section class="panel" aria-label="Preview">
+      <h2>IPS Preview</h2>
+      <div id="out" class="preview muted">No preview yet. Click <b>Generate Preview</b> to render your policy.</div>
+    </section>
+  </div>
+
+  <script>
+    function importAllocation(){
+      try{
+        const s = JSON.parse(localStorage.getItem('asset_allocation_builder_v1')||'null');
+        if(!s || !s.targets){ alert('No saved allocation found. Open the Allocation Builder and save.'); return; }
+        document.getElementById('st').value = s.targets.stocks||0;
+        document.getElementById('bd').value = s.targets.bonds||0;
+        document.getElementById('cs').value = s.targets.cash||0;
+        const t = s.stock_tilts_pct_of_equity||{};
+        document.getElementById('usCore').value = t.usCore||0;
+        document.getElementById('intlDev').value = t.intlDev||0;
+        document.getElementById('em').value = t.em||0;
+        document.getElementById('sv').value = t.sv||0;
+        document.getElementById('quality').value = t.quality||0;
+        const b = s.bond_breakdown_pct_of_bonds||{};
+        document.getElementById('bondMix').value = `${b.agg??'-'} / ${b.tips??'-'} / ${b.intlBond??'-'}`;
+      }catch(e){ alert('Import failed.'); }
+    }
+
+    function loadETFPlan(){
+      // read from etf-core-screener plan if present
+      try{
+        const plan = JSON.parse(localStorage.getItem('etf_core_plan_v1')||'null');
+        if(!plan){ return alert('No ETF plan found. Build one in the ETF Core Screener.'); }
+        // attach to note section in preview later
+        window._etfPlan = plan; alert('ETF plan loaded. It will appear in the preview.');
+      }catch(e){ alert('Could not load ETF plan.'); }
+    }
+
+    function saveIPS(){
+      const data = collect();
+      localStorage.setItem('ips_builder_v1', JSON.stringify(data));
+      alert('IPS saved to this browser.');
+    }
+    function loadIPS(){
+      try{
+        const data = JSON.parse(localStorage.getItem('ips_builder_v1')||'null');
+        if(!data) return alert('No saved IPS.');
+        setFields(data);
+        preview();
+      }catch(e){ alert('Load failed.'); }
+    }
+
+    function collect(){
+      return {
+        name: val('name'), date: val('date'), horizon: val('horizon'), risk: val('risk'), goals: val('goals'),
+        st: val('st'), bd: val('bd'), cs: val('cs'), usCore: val('usCore'), intlDev: val('intlDev'), em: val('em'), sv: val('sv'), quality: val('quality'), bondMix: val('bondMix'),
+        contribPlan: val('contribPlan'), rebalPlan: val('rebalPlan'), taxLoc: val('taxLoc'), withdrawal: val('withdrawal'), guardrails: val('guardrails')
+      };
+    }
+    function setFields(d){
+      for(const k of Object.keys(d)){
+        const el = document.getElementById(k);
+        if(el) el.value = d[k];
+      }
+    }
+    function val(id){ return (document.getElementById(id)?.value||'').trim(); }
+
+    function preview(){
+      const d = collect();
+      const name = d.name||'Investor';
+      const date = d.date||new Date().toISOString().slice(0,10);
+      const etf = window._etfPlan?`\n\n**ETF Lineup (Targets)**\n\nTicker | Sleeve | Target %\n---|---|---\n${window._etfPlan.map(p=>`${p.ticker}|${p.sleeve}|${p.target_pct}`).join('\n')}`:'';
+
+      const md = `# Investment Policy Statement\n\n**Name:** ${name}   \n**Date:** ${date}   \n**Horizon:** ${d.horizon} years   \n**Risk Tolerance:** ${d.risk}\n\n---\n\n## Goals\n${d.goals||'—'}\n\n## Target Allocation\n- Stocks: ${d.st}%\n  - US Core: ${d.usCore}% of stocks\n  - International Developed: ${d.intlDev}% of stocks\n  - Emerging Markets: ${d.em}% of stocks\n  - Small Value: ${d.sv}% of stocks\n  - Quality/Profitability: ${d.quality}% of stocks\n- Bonds: ${d.bd}% (Mix: ${d.bondMix||'—'})\n- Cash: ${d.cs}%\n\n## Contribution Plan\n${d.contribPlan||'—'}\n\n## Rebalancing Policy\n${d.rebalPlan||'—'}\n\n## Tax Location\n${d.taxLoc||'—'}\n\n## Withdrawal / Drawdown\n${d.withdrawal||'—'}\n\n## Behavioral Guardrails\n${d.guardrails||'—'}${etf}\n\n---\n\n*This IPS is an educational template and not financial advice.*`;
+
+      // render markdown-ish -> simple formatting
+      document.getElementById('out').classList.remove('muted');
+      document.getElementById('out').textContent = md;
+    }
+
+    function exportMarkdown(){
+      const d = document.getElementById('out').textContent || '';
+      if(!d){ return alert('Generate a preview first.'); }
+      const blob = new Blob([d], {type:'text/markdown'});
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a'); a.href = url; a.download = 'investment-policy-statement.md'; a.click(); URL.revokeObjectURL(url);
+    }
+    function printDoc(){ window.print(); }
+
+    // Optional convenience: auto-fill today
+    document.getElementById('date').valueAsDate = new Date();
+  </script>
+</body>
+</html>

@@ -1,0 +1,1766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Settings — Salon Genie</title>
+<meta name="gs-config" content="/shared/config.json"/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet"/>
+<script type="module">
+import { requireAuth } from "/shared/js/core/auth.js";
+window.__requireAuth = requireAuth;
+</script>
+<style>
+:root{
+  --bg:#FDFAF6;--s1:#FFFFFF;--s2:#F5F0E8;--s3:#EDE6D8;
+  --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.11);
+  --ink:#1C1814;--mid:#6A6058;--muted:#A89A8E;
+  --blush:#C4856A;--blush-dim:rgba(196,133,106,0.12);
+  --amber:#C4993A;--teal:#3D7A72;--teal-dim:rgba(61,122,114,0.12);
+  --rose:#C45A4A;--rose-dim:rgba(196,90,74,0.1);
+  --shadow:0 2px 14px rgba(28,24,20,0.07);
+  --r:10px;--r2:14px;--header-h:58px;--bnav-h:0px;
+  /* --surface was referenced by the integration status boxes but never defined */
+  --surface:#F5F0E8;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
+a{text-decoration:none;color:inherit;}
+
+/* NAV — identical to salon-dashboard.html */
+header{position:sticky;top:0;z-index:100;height:var(--header-h);background:var(--s1);border-bottom:1px solid var(--border);box-shadow:0 1px 8px rgba(28,24,20,0.06);}
+.ap-header{max-width:1280px;margin:0 auto;display:flex;align-items:center;height:100%;padding:0 28px;gap:16px;}
+.ap-brand{display:flex;align-items:center;gap:10px;flex-shrink:0;}
+.ap-logo-gem{width:30px;height:30px;background:linear-gradient(135deg,var(--blush),var(--amber));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;}
+.ap-brandname{font-family:'DM Serif Display',serif;font-size:20px;color:var(--ink);letter-spacing:0.3px;}
+.ap-brandname span{color:var(--blush);}
+.ap-brandtag{font-size:10px;color:var(--muted);margin-top:1px;letter-spacing:0.5px;}
+.ap-nav{display:flex;margin-left:8px;}
+.ap-header{max-width:1280px;margin:0 auto;display:flex;align-items:center;height:100%;padding:0 28px;gap:16px;}
+.nav-item{padding:0 16px;height:var(--header-h);display:flex;align-items:center;font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.2s;white-space:nowrap;}
+.nav-item.active{color:var(--blush);border-bottom-color:var(--blush);font-weight:600;}
+.nav-item:hover:not(.active){color:var(--mid);}
+.ap-right{display:flex;align-items:center;gap:10px;flex-shrink:0;margin-left:auto;}
+.ap-user-btn{display:flex;align-items:center;gap:8px;background:var(--s1);border:1px solid var(--border2);border-radius:10px;padding:7px 13px;font-size:12px;font-weight:500;color:var(--ink);cursor:pointer;transition:all .2s;position:relative;font-family:'DM Sans',sans-serif;}
+.ap-user-btn:hover{border-color:var(--blush);}
+.ap-user-avatar{width:26px;height:26px;border-radius:7px;background:linear-gradient(135deg,var(--blush),var(--amber));display:flex;align-items:center;justify-content:center;font-size:11px;color:white;font-weight:700;flex-shrink:0;}
+.ap-user-chevron{color:var(--muted);font-size:10px;}
+.ap-user-dropdown{display:none;position:absolute;top:calc(100% + 6px);right:0;background:var(--s1);border:1px solid var(--border2);border-radius:10px;width:220px;box-shadow:0 8px 24px rgba(28,24,20,0.12);z-index:200;overflow:hidden;padding:4px;}
+.ap-user-dropdown.open{display:block;}
+.ap-dd-header{padding:10px 12px 8px;border-bottom:1px solid var(--border);background:var(--s2);margin:-4px -4px 4px;border-radius:7px 7px 0 0;}
+.ap-dd-name{font-size:13px;font-weight:600;color:var(--ink);}
+.ap-dd-email{font-size:11px;color:var(--muted);margin-top:2px;}
+.ap-dd-item{display:flex;align-items:center;gap:9px;padding:7px 10px;font-size:12px;font-weight:500;color:var(--mid);cursor:pointer;transition:background .15s;text-decoration:none;border:none;background:none;width:100%;text-align:left;font-family:'DM Sans',sans-serif;}
+.ap-dd-item:hover{background:var(--blush-dim);color:var(--blush);}
+.ap-dd-item.danger{color:var(--rose);}
+.ap-dd-item.danger:hover{background:rgba(196,90,74,0.08);color:var(--rose);}
+.ap-dd-divider{height:1px;background:var(--border);margin:3px 0;}
+
+/* LAYOUT */
+.page{max-width:900px;margin:0 auto;padding:32px 20px 80px;display:flex;gap:28px;align-items:flex-start;}
+.sidebar{width:200px;flex-shrink:0;position:sticky;top:calc(var(--header-h) + 16px);}
+.main{flex:1;min-width:0;}
+
+/* SIDEBAR TABS */
+.stab-label{font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;padding:0 4px;}
+.stab{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--r);
+  font-size:13px;font-weight:500;color:var(--mid);cursor:pointer;transition:all .15s;
+  border:none;background:none;width:100%;text-align:left;
+}
+.stab:hover{background:var(--s2);color:var(--ink);}
+.stab.active{background:var(--blush-dim);color:var(--blush);font-weight:600;}
+.stab-icon{font-size:15px;flex-shrink:0;}
+
+/* PANELS */
+.panel{display:none;}
+.panel.active{display:block;}
+.panel-title{font-family:'DM Serif Display',serif;font-size:24px;margin-bottom:4px;}
+.panel-sub{font-size:13px;color:var(--muted);margin-bottom:24px;}
+
+/* CARDS */
+.card{background:var(--s1);border:1px solid var(--border);border-radius:var(--r2);
+  padding:22px;margin-bottom:16px;}
+.card-title{font-weight:700;font-size:14px;margin-bottom:4px;}
+.card-desc{font-size:12px;color:var(--muted);margin-bottom:18px;}
+
+/* FORM */
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:12px;font-weight:600;color:var(--mid);margin-bottom:5px;}
+.field input,.field select,.field textarea{
+  width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:var(--r);
+  font-size:14px;font-family:'DM Sans',sans-serif;color:var(--ink);background:var(--s1);
+  transition:border-color .15s;
+}
+.field input:focus,.field select:focus,.field textarea:focus{
+  outline:none;border-color:var(--blush);}
+.field textarea{resize:vertical;min-height:80px;line-height:1.5;}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.field-hint{font-size:11px;color:var(--muted);margin-top:4px;}
+
+/* TOGGLE */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 0;
+  border-bottom:1px solid var(--border);}
+.toggle-row:last-child{border-bottom:none;}
+.toggle-info .toggle-name{font-size:13px;font-weight:600;}
+.toggle-info .toggle-desc{font-size:12px;color:var(--muted);margin-top:2px;}
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;}
+.toggle-track{position:absolute;inset:0;background:var(--s3);border-radius:999px;cursor:pointer;transition:.2s;}
+.toggle input:checked + .toggle-track{background:var(--teal);}
+.toggle-track::after{content:'';position:absolute;width:16px;height:16px;border-radius:50%;
+  background:white;top:3px;left:3px;transition:.2s;}
+.toggle input:checked + .toggle-track::after{left:21px;}
+
+/* BUTTONS */
+.save-btn{
+  padding:10px 24px;background:var(--blush);color:white;border:none;border-radius:999px;
+  font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;
+  transition:background .18s;
+}
+.save-btn:hover{background:#B5745A;}
+.save-btn:disabled{opacity:.5;cursor:not-allowed;}
+.btn-row{display:flex;gap:10px;align-items:center;margin-top:20px;}
+.ghost-btn{
+  padding:10px 20px;background:var(--s1);color:var(--mid);
+  border:1px solid var(--border2);border-radius:999px;
+  font-size:13px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;
+}
+.ghost-btn:hover{border-color:var(--blush);color:var(--blush);}
+
+/* COPY BOX */
+.copy-box{
+  display:flex;align-items:center;gap:8px;background:var(--s2);
+  border:1px solid var(--border2);border-radius:var(--r);padding:10px 12px;
+}
+.copy-val{flex:1;font-size:13px;font-family:monospace;color:var(--ink);word-break:break-all;}
+.copy-btn{padding:5px 10px;border-radius:8px;font-size:11px;font-weight:600;
+  background:var(--s1);border:1px solid var(--border2);color:var(--mid);cursor:pointer;}
+.copy-btn:hover{border-color:var(--blush);color:var(--blush);}
+
+/* STATUS */
+.save-status{font-size:13px;font-weight:600;}
+.save-status.ok{color:var(--teal);}
+.save-status.err{color:var(--rose);}
+
+/* DISCOUNT ROWS */
+.disc-row{display:grid;grid-template-columns:minmax(0,1.6fr) 110px 110px auto auto;gap:8px;align-items:center;padding:10px;background:var(--s2);border:1px solid var(--border);border-radius:var(--r);}
+.disc-row input[type="text"],.disc-row input[type="number"],.disc-row select{padding:8px 10px;border:1px solid var(--border2);border-radius:8px;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--ink);background:var(--s1);width:100%;min-width:0;}
+.disc-row input[type="text"]:focus,.disc-row input[type="number"]:focus,.disc-row select:focus{outline:none;border-color:var(--blush);}
+.disc-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--mid);font-weight:600;text-transform:uppercase;letter-spacing:0.05em;}
+.disc-toggle input{width:16px;height:16px;accent-color:var(--blush);cursor:pointer;}
+.disc-del{width:32px;height:32px;border:1px solid var(--border2);background:var(--s1);border-radius:8px;color:var(--rose);font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .15s;}
+.disc-del:hover{background:var(--rose-dim);border-color:var(--rose);}
+
+/* DANGER ZONE */
+.danger-card{border-color:rgba(196,90,74,.3);background:var(--rose-dim);}
+.danger-title{color:var(--rose);font-weight:700;font-size:14px;margin-bottom:4px;}
+.danger-desc{font-size:12px;color:var(--mid);margin-bottom:16px;}
+.danger-btn{
+  padding:9px 18px;background:var(--rose);color:white;border:none;border-radius:999px;
+  font-size:13px;font-weight:600;cursor:pointer;
+}
+
+/* TOAST */
+#toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  background:#1C1814;color:white;padding:10px 20px;border-radius:999px;
+  font-size:13px;font-weight:600;z-index:9999;opacity:0;transition:opacity .25s;
+  pointer-events:none;white-space:nowrap;}
+#toast.show{opacity:1;}
+
+/* The shared bottom-nav component pads the body at every width; this page
+   reserves the nav's real height itself, so don't double-count it on desktop. */
+body.sg-bnav-padded{padding-bottom:0 !important;}
+
+/* ── Mobile Nav picker ── */
+.nav-preview{display:flex;gap:2px;justify-content:space-around;background:var(--s2);
+  border:1px solid var(--border);border-radius:12px;padding:8px 6px;margin:14px 0 20px;min-height:58px;}
+.nav-preview-item{display:flex;flex-direction:column;align-items:center;gap:3px;flex:1;
+  padding:5px 3px;border-radius:9px;font-size:10px;font-weight:500;color:var(--blush);
+  background:rgba(196,133,106,0.12);}
+.nav-preview-ico{font-size:18px;line-height:1;}
+.nav-preview-empty{display:flex;align-items:center;justify-content:center;flex:1;
+  font-size:12px;color:var(--muted);}
+.nav-pool-label{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;
+  color:var(--muted);margin-bottom:9px;}
+.nav-pool{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px;}
+.nav-chip{display:inline-flex;align-items:center;gap:7px;padding:8px 13px;border-radius:999px;
+  border:1px solid var(--border2);background:var(--s1);font-size:13px;color:var(--ink);
+  cursor:pointer;transition:all .15s;font-family:inherit;}
+.nav-chip:hover{border-color:var(--blush);}
+.nav-chip.picked{background:var(--blush);border-color:var(--blush);color:#fff;}
+.nav-chip-num{display:inline-flex;align-items:center;justify-content:center;width:17px;height:17px;
+  border-radius:50%;background:rgba(255,255,255,.25);font-size:10px;font-weight:700;}
+.nav-note{font-size:12px;color:var(--muted);margin-bottom:16px;}
+
+/* ══════════════════════════════════════════════════════════════════
+   MOBILE  — [SG settings mobile v1]
+   ≤860px: top nav collapses into the user dropdown + bottom nav
+   ≤680px: single column, tab pills, stacked forms
+   --bnav-h is measured at runtime from #sgBottomNav (0 when absent)
+   ══════════════════════════════════════════════════════════════════ */
+@media(max-width:860px){
+  /* The 7-link top nav can't fit — navigation moves to the user
+     dropdown (which already lists every destination) + bottom nav */
+  .ap-nav{display:none;}
+  .ap-header{padding:0 12px;gap:10px;}
+  .ap-brandtag{display:none;}
+  .ap-brandname{font-size:18px;}
+  .ap-logo-gem{width:27px;height:27px;font-size:13px;}
+  .ap-user-btn{padding:5px !important;gap:0 !important;}
+  /* the name block carries an inline display:flex — needs !important */
+  .ap-user-btn > div:not(.ap-user-avatar){display:none !important;}
+  .ap-user-chevron{display:none;}
+  .ap-user-dropdown{width:min(240px,calc(100vw - 24px));}
+
+  /* Reserve room for the shared bottom nav */
+  body.sg-bnav-padded{padding-bottom:0 !important;}
+  .page{padding-bottom:calc(40px + var(--bnav-h)) !important;}
+  #toast{bottom:calc(18px + var(--bnav-h));max-width:calc(100vw - 32px);white-space:normal;text-align:center;}
+}
+
+@media(max-width:680px){
+  .page{flex-direction:column;padding:16px 14px 60px;gap:16px;}
+  .field-row{grid-template-columns:1fr;}
+  .stab-label{display:none;}
+
+  /* Section tabs: one scrollable row, pinned under the header so you can
+     switch panels without scrolling back to the top */
+  .sidebar{
+    width:100%;position:sticky;top:var(--header-h);z-index:90;
+    display:flex;flex-wrap:nowrap;gap:6px;overflow-x:auto;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+    padding:10px 14px;margin:-16px -14px 0;background:var(--bg);
+    border-bottom:1px solid var(--border);
+  }
+  .sidebar::-webkit-scrollbar{display:none;}
+  .stab{flex:0 0 auto;width:auto;padding:7px 13px;background:var(--s1);
+    border:1px solid var(--border2);border-radius:999px;font-size:12px;white-space:nowrap;}
+  .stab.active{background:var(--blush);color:white;border-color:var(--blush);}
+
+  /* Density */
+  .card{padding:16px;border-radius:12px;}
+  .panel-title{font-size:21px;}
+  .panel-sub{margin-bottom:18px;}
+
+  /* 16px inputs stop iOS from zooming the page on focus */
+  .field input,.field select,.field textarea,
+  .disc-row input,.disc-row select,
+  #hoursCard input[type="time"]{font-size:16px !important;}
+
+  /* Buttons: fill the row instead of squeezing */
+  .btn-row{flex-wrap:wrap;gap:8px;}
+  .save-btn,.ghost-btn,.danger-btn{flex:1 1 auto;min-width:140px;text-align:center;padding:11px 16px;}
+  .save-status{flex:1 1 100%;}
+
+  /* Hours: let the time pair use the full width under the day name */
+  #hoursCard .hrs-times{flex:1 1 100%;min-width:0;}
+  #hoursCard input[type="time"]{flex:1;min-width:0;}
+
+  /* Discounts: 5-across grid → label / type+value / on+delete */
+  .disc-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;}
+  .disc-row .disc-label{grid-column:1 / -1;}
+  .disc-row .disc-toggle{justify-self:start;}
+  .disc-row .disc-del{justify-self:end;width:38px;height:38px;}
+
+  /* Copy box: long IDs wrap instead of shoving the button off-screen */
+  .copy-box{flex-wrap:wrap;}
+  .copy-val{flex:1 1 100%;font-size:12px;}
+  .copy-btn{padding:7px 14px;}
+
+  .toggle-row{gap:10px;}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="ap-header">
+    <a class="ap-brand" href="salon-dashboard.html">
+      <div class="ap-logo-gem">✦</div>
+      <div>
+        <div class="ap-brandname">Salon <span>Genie</span></div>
+        <div class="ap-brandtag">Owner · Staff · AI Agents</div>
+      </div>
+    </a>
+    <nav class="ap-nav" aria-label="Primary">
+      <a class="nav-item" href="salon-dashboard.html">Dashboard</a>
+      <a class="nav-item" href="salon-briefing-agent.html">Briefing</a>
+      <a class="nav-item" href="salon-booking-agent.html">Bookings</a>
+      <a class="nav-item" href="salon-reception-agent.html">Reception</a>
+      <a class="nav-item" href="manage-employees.html">Staff</a>
+      <a class="nav-item" href="salon-payroll-agent.html">Payroll</a>
+      <a class="nav-item active" href="settings.html">Settings</a>
+    </nav>
+    <div class="ap-right" id="apRight"></div>
+  </div>
+</header>
+
+<div class="page">
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="stab-label">Settings</div>
+    <button class="stab active" onclick="showPanel('business',this)">
+      <span class="stab-icon">🏠</span> Business
+    </button>
+    <button class="stab" onclick="showPanel('hours',this)">
+      <span class="stab-icon">🕐</span> Hours
+    </button>
+    <button class="stab" onclick="showPanel('pos',this)">
+      <span class="stab-icon">💳</span> POS
+    </button>
+    <button class="stab" onclick="showPanel('discounts',this)">
+      <span class="stab-icon">🏷️</span> Discounts
+    </button>
+    <button class="stab" onclick="showPanel('notifications',this)">
+      <span class="stab-icon">🔔</span> Notifications
+    </button>
+    <button class="stab" onclick="showPanel('integrations',this)">
+      <span class="stab-icon">🔗</span> Integrations
+    </button>
+    <button class="stab" onclick="showPanel('kiosk',this)">
+      <span class="stab-icon">📱</span> Kiosk
+    </button>
+    <button class="stab" onclick="showPanel('mobilenav',this)">
+      <span class="stab-icon">📲</span> Mobile Nav
+    </button>
+    <button class="stab" onclick="showPanel('danger',this)">
+      <span class="stab-icon">⚠️</span> Danger Zone
+    </button>
+  </div>
+
+  <!-- Main -->
+  <div class="main">
+
+    <!-- ── Business Info ── -->
+    <div class="panel active" id="panel-business">
+      <div class="panel-title">Business Info</div>
+      <div class="panel-sub">Your salon's public details, displayed on the kiosk and booking pages.</div>
+
+      <div class="card">
+        <div class="card-title">Salon Details</div>
+        <div class="card-desc">Basic information about your location.</div>
+        <div class="field-row">
+          <div class="field">
+            <label>Salon Name *</label>
+            <input type="text" id="biz-name" placeholder="Victoria Nails"/>
+          </div>
+          <div class="field">
+            <label>Phone Number</label>
+            <input type="tel" id="biz-phone" placeholder="(555) 000-0000"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Address</label>
+          <input type="text" id="biz-address" placeholder="349 Randal Rd, South Elgin, IL 60177"/>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label>Email</label>
+            <input type="email" id="biz-email" placeholder="info@yoursalon.com"/>
+          </div>
+          <div class="field">
+            <label>Website</label>
+            <input type="url" id="biz-website" placeholder="https://yoursalon.com"/>
+          </div>
+        </div>
+        <div class="field">
+          <label>Short Description (shown on kiosk welcome screen)</label>
+          <textarea id="biz-desc" placeholder="Welcome! We specialize in nail care and beauty services."></textarea>
+        </div>
+        <div class="btn-row">
+          <button class="save-btn" onclick="saveSection('business')">Save Business Info</button>
+          <span class="save-status" id="status-business"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Business ID</div>
+        <div class="card-desc">Used to configure the kiosk and connect staff accounts.</div>
+        <div class="copy-box">
+          <span class="copy-val" id="bizIdDisplay">Loading…</span>
+          <button class="copy-btn" onclick="copyBizId()">Copy</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Hours ── -->
+    <div class="panel" id="panel-hours">
+      <div class="panel-title">Business Hours</div>
+      <div class="panel-sub">Set your regular operating hours. These inform the booking system and AI agents.</div>
+      <div class="card" id="hoursCard">
+        <!-- Rendered by JS -->
+        <div style="color:var(--muted);font-size:13px;">Loading hours…</div>
+      </div>
+      <div class="btn-row">
+        <button class="save-btn" onclick="saveSection('hours')">Save Hours</button>
+        <span class="save-status" id="status-hours"></span>
+      </div>
+    </div>
+
+    <!-- ── POS ── -->
+    <div class="panel" id="panel-pos">
+      <div class="panel-title">POS Settings</div>
+      <div class="panel-sub">Configure how the point-of-sale system behaves.</div>
+
+      <div class="card">
+        <div class="card-title">Turn System</div>
+        <div class="card-desc">Controls how technician turn credits are calculated.</div>
+        <div class="field">
+          <label>Turn Value — Walk-in multiplier</label>
+          <input type="number" id="pos-walkin-turn" min="0.5" max="3" step="0.1" value="1.0"/>
+          <div class="field-hint">Walk-in clients earn more turn credit than appointments (default 1.0).</div>
+        </div>
+        <div class="field">
+          <label>Turn Value — Appointment multiplier</label>
+          <input type="number" id="pos-appt-turn" min="0.5" max="3" step="0.1" value="0.8"/>
+        </div>
+        <div class="field">
+          <label>Turn Value — Requested tech multiplier</label>
+          <input type="number" id="pos-request-turn" min="0.5" max="3" step="0.1" value="1.2"/>
+          <div class="field-hint">When a client specifically requests a technician, they earn extra credit.</div>
+        </div>
+        <div class="btn-row">
+          <button class="save-btn" onclick="saveSection('pos')">Save POS Settings</button>
+          <span class="save-status" id="status-pos"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Payment Options</div>
+        <div class="card-desc">Choose which payment methods are available at checkout.</div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Cash</div>
+            <div class="toggle-desc">Accept cash payments with change calculation</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="pay-cash" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Card</div>
+            <div class="toggle-desc">Credit / debit card via Stripe terminal</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="pay-card" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Zelle</div>
+            <div class="toggle-desc">Digital transfer via Zelle</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="pay-zelle" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Venmo</div>
+            <div class="toggle-desc">Digital transfer via Venmo</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="pay-venmo" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Split Payment</div>
+            <div class="toggle-desc">Allow clients to split between multiple methods</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="pay-split" checked/><div class="toggle-track"></div></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Discounts ── -->
+    <div class="panel" id="panel-discounts">
+      <div class="panel-title">Discounts</div>
+      <div class="panel-sub">Pre-configured discounts that staff can apply at the item level during checkout.</div>
+
+      <div class="card">
+        <div class="card-title">Discount Presets</div>
+        <div class="card-desc">These appear as tappable options in the POS when staff tap the Discount button on a service line.</div>
+
+        <div id="discount-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;">
+          <!-- Rows rendered by JS -->
+        </div>
+
+        <div id="discount-empty" style="display:none;padding:20px;text-align:center;color:var(--muted);font-size:13px;background:var(--s2);border-radius:var(--r);border:1px dashed var(--border2);margin-bottom:14px;">
+          No discounts yet — tap below to add your first one.
+        </div>
+
+        <button type="button" class="save-btn" onclick="addDiscountRow()" style="background:var(--s2);color:var(--ink);border:1px dashed var(--border2);font-weight:600;">+ Add Discount</button>
+
+        <div class="btn-row" style="margin-top:16px;">
+          <button class="save-btn" onclick="saveSection('discounts')">Save Discounts</button>
+          <span class="save-status" id="status-discounts"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Notifications ── -->
+    <div class="panel" id="panel-notifications">
+      <div class="panel-title">Notifications</div>
+      <div class="panel-sub">Control what alerts the system sends to staff and clients.</div>
+      <div class="card">
+        <div class="card-title">Staff Alerts</div>
+        <div class="card-desc">In-app and browser notifications for staff.</div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">New check-in alert</div>
+            <div class="toggle-desc">Notify when a client checks in via kiosk</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="notif-checkin" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Long wait alert</div>
+            <div class="toggle-desc">Notify when a client has waited over 30 minutes</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="notif-wait" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Shift reminders</div>
+            <div class="toggle-desc">Remind staff 1 hour before their shift starts</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="notif-shift"/><div class="toggle-track"></div></label>
+        </div>
+        <div class="btn-row">
+          <button class="save-btn" onclick="saveSection('notifications')">Save Notifications</button>
+          <span class="save-status" id="status-notifications"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Integrations ── -->
+    <div class="panel" id="panel-integrations">
+      <div class="panel-title">Integrations</div>
+      <div class="panel-sub">Connect external services to extend Salon Genie.</div>
+
+      <div class="card">
+        <div class="card-title">OpenAI</div>
+        <div class="card-desc">Powers all AI agent features. Uses your API key for billing.</div>
+        <div class="field">
+          <label>OpenAI API Key</label>
+          <input type="password" id="int-openai" placeholder="sk-…" autocomplete="off"/>
+          <div class="field-hint">Your key is stored encrypted. Leave blank to use the shared Salon Genie key.</div>
+        </div>
+        <div class="btn-row">
+          <button class="save-btn" onclick="saveSection('integrations')">Save Keys</button>
+          <span class="save-status" id="status-integrations"></span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Google Business Profile</div>
+        <div class="card-desc">Sync reviews and respond from within Salon Genie.</div>
+
+        <!-- Connection status — populated by loadGoogleStatus() -->
+        <div id="google-status" class="google-status" style="margin:12px 0;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted)">
+          Checking connection…
+        </div>
+
+        <!-- Client ID field. Stored in localStorage('sg_google_client_id') so it
+             persists across page loads. Required before Connect Google works. -->
+        <div class="field" style="margin-top:10px">
+          <label>Google OAuth Client ID</label>
+          <input type="text" id="int-google-client-id"
+            placeholder="123456789-abc123.apps.googleusercontent.com"
+            autocomplete="off" style="font-family:monospace;font-size:12px"/>
+          <div class="field-hint">From Google Cloud Console → APIs &amp; Services → Credentials. Stored locally on this device only.</div>
+        </div>
+
+        <!-- Place ID field. Required by the Places-API path of sync-google-reviews
+             (the interim path while Google's Business Profile API approval is
+             pending). Stored in BOTH the DB (business_profiles.google_place_id)
+             and localStorage (sg_google_<business_id>) for cross-device sync
+             with localStorage as a fallback when offline / DB unreachable. -->
+        <div class="field" style="margin-top:10px">
+          <label>Google Place ID</label>
+          <input type="text" id="int-google-place-id"
+            placeholder="ChIJN1t_tDeuEmsRUsoyG83frY4"
+            autocomplete="off" style="font-family:monospace;font-size:12px"/>
+          <div class="field-hint">From <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noopener">Google's Place ID Finder</a> — search your salon and copy the ID (starts with <code>ChIJ</code>). Used by review sync until full Business Profile API access is granted.</div>
+        </div>
+
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Google Reviews Sync</div>
+            <div class="toggle-desc">Automatically import new reviews daily</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="int-google-reviews"/><div class="toggle-track"></div></label>
+        </div>
+
+        <div class="btn-row" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="ghost-btn" id="btn-connect-google" onclick="connectGoogle()">Connect Google Account →</button>
+          <button class="ghost-btn" id="btn-disconnect-google" onclick="disconnectGoogle()" style="display:none;color:var(--rose);border-color:var(--rose)">Disconnect</button>
+          <button class="ghost-btn" id="btn-save-google-client" onclick="saveGoogleClientId()">Save Client ID</button>
+          <button class="ghost-btn" id="btn-save-google-place-id" onclick="saveGooglePlaceId()">Save Place ID</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Instagram</div>
+        <div class="card-desc">Publish posts from the Marketing agent directly to your salon's Instagram.</div>
+
+        <!-- Connection status — populated by loadMetaStatus() -->
+        <div id="meta-status" class="google-status" style="margin:12px 0;padding:10px 12px;background:var(--surface);border:1px solid var(--border);border-radius:8px;font-size:13px;color:var(--muted)">
+          Checking connection…
+        </div>
+
+        <!-- Meta App ID field. Stored in localStorage('sg_meta_app_id') the
+             same way the Google Client ID is — required before Connect
+             Instagram works. The App Secret is never entered here; it lives
+             server-side only as the GRAPH_APP_SECRET Edge Function secret. -->
+        <div class="field" style="margin-top:10px">
+          <label>Meta App ID</label>
+          <input type="text" id="int-meta-app-id"
+            placeholder="1234567890123456"
+            autocomplete="off" style="font-family:monospace;font-size:12px"/>
+          <div class="field-hint">From <a href="https://developers.facebook.com/apps" target="_blank" rel="noopener">Meta for Developers</a> → your app → App Settings → Basic. Requires a Facebook Page with a linked Instagram Business or Creator account.</div>
+        </div>
+
+        <div class="btn-row" style="margin-top:14px;display:flex;gap:8px;flex-wrap:wrap">
+          <button class="ghost-btn" id="btn-connect-meta" onclick="connectInstagram()">Connect Instagram →</button>
+          <button class="ghost-btn" id="btn-disconnect-meta" onclick="disconnectInstagram()" style="display:none;color:var(--rose);border-color:var(--rose)">Disconnect</button>
+          <button class="ghost-btn" id="btn-save-meta-app-id" onclick="saveMetaAppId()">Save App ID</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Stripe Payments</div>
+        <div class="card-desc">Enable card payments via Stripe terminal or online.</div>
+        <div class="field">
+          <label>Stripe Publishable Key</label>
+          <input type="text" id="int-stripe-pk" placeholder="pk_live_…"/>
+        </div>
+        <div class="field">
+          <label>Stripe Secret Key</label>
+          <input type="password" id="int-stripe-sk" placeholder="sk_live_…" autocomplete="off"/>
+          <div class="field-hint">Secret key is stored server-side only and never exposed to the client.</div>
+        </div>
+        <div class="btn-row">
+          <button class="save-btn" onclick="saveSection('stripe')">Save Stripe Keys</button>
+          <span class="save-status" id="status-stripe"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Kiosk ── -->
+    <div class="panel" id="panel-kiosk">
+      <div class="panel-title">Kiosk Settings</div>
+      <div class="panel-sub">Configure the self-check-in tablet. Open <a href="checkin-kiosk.html" style="color:var(--blush)">the kiosk page</a> on your tablet device.</div>
+
+      <div class="card">
+        <div class="card-title">Business ID for Kiosk</div>
+        <div class="card-desc">Enter this ID on the kiosk setup screen to link it to your salon.</div>
+        <div class="copy-box">
+          <span class="copy-val" id="kioskBizId">Loading…</span>
+          <button class="copy-btn" onclick="copyBizId('kioskBizId')">Copy</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Kiosk Display</div>
+        <div class="card-desc">Customize what clients see on the check-in screen.</div>
+        <div class="field">
+          <label>Welcome Message</label>
+          <input type="text" id="kiosk-welcome" placeholder="Welcome! Please check in below."/>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Show tech selection</div>
+            <div class="toggle-desc">Allow clients to request a specific technician</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="kiosk-show-tech" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Show phone field</div>
+            <div class="toggle-desc">Ask for phone number to look up client history</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="kiosk-show-phone" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="toggle-row">
+          <div class="toggle-info">
+            <div class="toggle-name">Auto-advance after check-in</div>
+            <div class="toggle-desc">Return to welcome screen after 10 seconds</div>
+          </div>
+          <label class="toggle"><input type="checkbox" id="kiosk-auto-advance" checked/><div class="toggle-track"></div></label>
+        </div>
+        <div class="btn-row">
+          <button class="save-btn" onclick="saveSection('kiosk')">Save Kiosk Settings</button>
+          <span class="save-status" id="status-kiosk"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Mobile Nav ── -->
+    <div class="panel" id="panel-mobilenav">
+      <div class="panel-title">Mobile Nav</div>
+      <div class="panel-sub">Choose the five shortcuts in the bottom bar on your phone.</div>
+
+      <div class="card">
+        <div class="card-title">Your bottom bar</div>
+        <div class="card-sub">Tap a shortcut below to add or remove it. The order you
+          add them is the order they appear. This is personal to your login — other
+          staff keep their own.</div>
+
+        <div class="nav-preview" id="navPreview"></div>
+
+        <div class="nav-pool-label">Available shortcuts <span id="navCount"></span></div>
+        <div class="nav-pool" id="navPool"></div>
+
+        <div class="btn-row">
+          <button class="save-btn" onclick="saveNavPrefs()">Save Bottom Bar</button>
+          <button class="ghost-btn" onclick="resetNavPrefs()">Reset to default</button>
+          <span class="save-status" id="status-mobilenav"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Danger Zone ── -->
+    <div class="panel" id="panel-danger">
+      <div class="panel-title">Danger Zone</div>
+      <div class="panel-sub">Irreversible actions. Proceed with caution.</div>
+
+      <div class="card danger-card">
+        <div class="danger-title">Clear Today's Queue</div>
+        <div class="danger-desc">Mark all waiting check-ins as cancelled. This cannot be undone.</div>
+        <button class="danger-btn" onclick="confirmDanger('clear-queue')">Clear Queue</button>
+      </div>
+
+      <div class="card danger-card">
+        <div class="danger-title">Export All Data</div>
+        <div class="danger-desc">Download a full export of your salon data including clients, appointments, and tickets.</div>
+        <button class="danger-btn" style="background:var(--mid);" onclick="toast('Data export — contact support@salongenie.ai')">Request Export</button>
+      </div>
+
+      <div class="card danger-card">
+        <div class="danger-title">Delete Account</div>
+        <div class="danger-desc">Permanently delete your Salon Genie account and all associated data. This action is irreversible.</div>
+        <button class="danger-btn" onclick="confirmDanger('delete-account')">Delete Account</button>
+      </div>
+    </div>
+
+  </div><!-- /main -->
+</div><!-- /page -->
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════
+// SALON GENIE — SETTINGS
+// Auth: requireAuth | Role: owner / manager only
+// ═══════════════════════════════════════════════════════════════
+
+let sg = null, BUSINESS_ID = null, CURRENT_USER = null;
+// Which bottom-nav tab pool this user picks from ('owner' | 'manager')
+let NAV_ROLE = 'owner', navSelected = [];
+
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+const DEFAULT_HOURS = {
+  Monday:    { open: true,  from: '09:00', to: '19:00' },
+  Tuesday:   { open: true,  from: '09:00', to: '19:00' },
+  Wednesday: { open: true,  from: '09:00', to: '19:00' },
+  Thursday:  { open: true,  from: '09:00', to: '19:00' },
+  Friday:    { open: true,  from: '09:00', to: '19:00' },
+  Saturday:  { open: true,  from: '09:00', to: '18:00' },
+  Sunday:    { open: false, from: '10:00', to: '17:00' },
+};
+
+async function waitForAuth(ms){
+  const end = Date.now() + ms;
+  return new Promise(res => {
+    const t = setInterval(()=>{
+      if(window.__requireAuth){ clearInterval(t); res(window.__requireAuth); }
+      else if(Date.now() > end){ clearInterval(t); res(null); }
+    }, 80);
+  });
+}
+
+async function boot(){
+  const requireAuth = await waitForAuth(5000);
+  if(!requireAuth){ location.replace('/login.html'); return; }
+
+  let user;
+  try{
+    const r = await requireAuth({ agent:'salon' });
+    sg = r.client; user = r.user; CURRENT_USER = user;
+  } catch(_){ location.replace('/login.html'); return; }
+
+  try{
+    const { data: pref } = await sg.from('user_preferences')
+      .select('selected_business_id,active_business_id,role,display_name')
+      .eq('user_id', user.id).maybeSingle();
+
+    BUSINESS_ID = pref?.selected_business_id || pref?.active_business_id || null;
+    if(!BUSINESS_ID){
+      try{ BUSINESS_ID = localStorage.getItem('sg.active_business_id') || localStorage.getItem('gs.active_business_id') || null; }catch(_){}
+    }
+
+    // Role gate — only owners and managers
+    const role = String(pref?.role || '').toLowerCase();
+    if(role && !['owner','manager','admin'].includes(role)){
+      document.querySelector('.main').innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted);">
+        <div style="font-size:40px;margin-bottom:12px;">⛔</div>
+        <p style="font-size:15px;font-weight:600;color:var(--ink);">Owner access only</p>
+        <p style="margin-top:6px;font-size:13px;">Settings can only be changed by owners and managers.</p>
+        <a href="staff-dashboard.html" style="display:inline-block;margin-top:16px;padding:9px 20px;background:var(--blush);color:white;border-radius:999px;font-size:13px;font-weight:600;">← My Dashboard</a>
+      </div>`;
+      return;
+    }
+
+    // Bottom-nav pools differ by role; owners and admins share the owner pool
+    NAV_ROLE = (role === 'manager') ? 'manager' : 'owner';
+
+    const name = pref?.display_name || user.email?.split('@')[0] || 'Owner';
+    const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2) || 'O';
+    const apRight = document.getElementById('apRight');
+    if(apRight){
+      const userWrap = document.createElement('div');
+      userWrap.style.position = 'relative';
+      userWrap.innerHTML = `
+        <button class="ap-user-btn" id="apUserBtn" style="gap:10px;padding:6px 10px 6px 8px;">
+          <div class="ap-user-avatar">${initials}</div>
+          <div style="display:flex;flex-direction:column;align-items:flex-start;gap:1px;">
+            <div style="font-size:12px;font-weight:600;color:var(--ink);line-height:1.2;white-space:nowrap;">${name.split(' ')[0]}</div>
+          </div>
+          <span class="ap-user-chevron">▾</span>
+        </button>
+        <div class="ap-user-dropdown" id="apUserDropdown">
+          <div class="ap-dd-header">
+            <div class="ap-dd-name">${name}</div>
+            <div class="ap-dd-email">${user.email || ''}</div>
+          </div>
+          <a class="ap-dd-item" href="salon-dashboard.html">🏠 Dashboard</a>
+          <a class="ap-dd-item" href="salon-briefing-agent.html">🌅 Daily Briefing</a>
+          <a class="ap-dd-item" href="manage-employees.html">👥 Manage Employees</a>
+          <a class="ap-dd-item" href="salon-staff-agent.html">📅 Staff Agent</a>
+          <a class="ap-dd-item" href="salon-payroll-agent.html">💵 Payroll Agent</a>
+          <div class="ap-dd-divider"></div>
+          <a class="ap-dd-item" href="account.html">👤 My Account</a>
+          <a class="ap-dd-item" href="business-profile.html">🏪  Business Profile</a>
+          <a class="ap-dd-item" href="settings.html">⚙️ Settings</a>
+          <div class="ap-dd-divider"></div>
+          <button class="ap-dd-item danger" id="apSignOutBtn">🚪 Sign out</button>
+        </div>`;
+      apRight.appendChild(userWrap);
+      document.getElementById('apUserBtn').addEventListener('click', e => {
+        e.stopPropagation();
+        document.getElementById('apUserDropdown').classList.toggle('open');
+      });
+      document.getElementById('apSignOutBtn').addEventListener('click', async () => {
+        try{ if(sg) await sg.auth.signOut(); }catch(_){}
+        localStorage.clear();
+        window.location.href = '/index.html';
+      });
+      document.addEventListener('click', () => {
+        document.getElementById('apUserDropdown')?.classList.remove('open');
+      });
+    }
+  } catch(_){}
+
+  if(BUSINESS_ID){
+    document.getElementById('bizIdDisplay').textContent = BUSINESS_ID;
+    document.getElementById('kioskBizId').textContent = BUSINESS_ID;
+  }
+
+  buildHoursForm();
+  await loadSettings();
+  // Google OAuth status — runs after loadSettings so BUSINESS_ID is resolved.
+  // handleGoogleRedirect first, in case we just got bounced back from the
+  // callback with ?google=connected — toast happens before status renders.
+  handleGoogleRedirect();
+  loadGoogleStatus();
+  loadGooglePlaceId();
+  // Instagram (Meta) connection — same pattern as Google, own status block.
+  handleMetaRedirect();
+  loadMetaStatus();
+  initNavPicker();
+}
+
+// ── Hours form ──────────────────────────────────────────────────
+function buildHoursForm(){
+  const card = document.getElementById('hoursCard');
+  card.innerHTML = DAYS.map(day => {
+    const h = DEFAULT_HOURS[day];
+    return `<div class="toggle-row" style="flex-wrap:wrap;gap:10px;">
+      <div style="display:flex;align-items:center;gap:10px;flex:1;min-width:160px;">
+        <label class="toggle" style="flex-shrink:0;">
+          <input type="checkbox" id="hrs-open-${day}" ${h.open?'checked':''}
+            onchange="document.getElementById('hrs-times-${day}').style.opacity=this.checked?'1':'.3'"/>
+          <div class="toggle-track"></div>
+        </label>
+        <span style="font-size:13px;font-weight:600;width:90px;">${day}</span>
+      </div>
+      <div class="hrs-times" id="hrs-times-${day}" style="display:flex;gap:8px;align-items:center;opacity:${h.open?1:.3};">
+        <input type="time" id="hrs-from-${day}" value="${h.from}"
+          style="padding:6px 8px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;"/>
+        <span style="color:var(--muted);font-size:12px;">to</span>
+        <input type="time" id="hrs-to-${day}" value="${h.to}"
+          style="padding:6px 8px;border:1px solid var(--border2);border-radius:8px;font-size:13px;font-family:'DM Sans',sans-serif;"/>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── Load settings from DB ───────────────────────────────────────
+async function loadSettings(){
+  if(!sg || !BUSINESS_ID) {
+    renderDiscountRows(DEFAULT_DISCOUNTS);
+    return;
+  }
+  try{
+    const { data } = await sg.schema('salon').from('business_settings')
+      .select('setting_key,settings_json')
+      .eq('business_id', BUSINESS_ID);
+
+    const map = data?.length
+      ? Object.fromEntries(data.map(r => [r.setting_key, r.settings_json]))
+      : {};
+
+    // Business info
+    if(map.business_info){
+      const b = map.business_info;
+      setValue('biz-name', b.name);
+      setValue('biz-phone', b.phone);
+      setValue('biz-address', b.address);
+      setValue('biz-email', b.email);
+      setValue('biz-website', b.website);
+      setValue('biz-desc', b.description);
+    }
+
+    // Hours
+    if(map.hours){
+      DAYS.forEach(day => {
+        const h = map.hours[day];
+        if(!h) return;
+        const cb = document.getElementById(`hrs-open-${day}`);
+        if(cb){ cb.checked = h.open; document.getElementById(`hrs-times-${day}`).style.opacity = h.open?'1':'.3'; }
+        setValue(`hrs-from-${day}`, h.from);
+        setValue(`hrs-to-${day}`, h.to);
+      });
+    }
+
+    // POS
+    if(map.pos){
+      setValue('pos-walkin-turn', map.pos.walkin_turn ?? 1.0);
+      setValue('pos-appt-turn', map.pos.appt_turn ?? 0.8);
+      setValue('pos-request-turn', map.pos.request_turn ?? 1.2);
+    }
+
+    // Discounts
+    renderDiscountRows(Array.isArray(map.discounts) ? map.discounts : DEFAULT_DISCOUNTS);
+
+    // Kiosk
+    if(map.kiosk){
+      setValue('kiosk-welcome', map.kiosk.welcome_message);
+      setCheck('kiosk-show-tech', map.kiosk.show_tech !== false);
+      setCheck('kiosk-show-phone', map.kiosk.show_phone !== false);
+      setCheck('kiosk-auto-advance', map.kiosk.auto_advance !== false);
+    }
+
+  } catch(e){ console.warn('[Settings] load failed:', e); }
+}
+
+function setValue(id, v){ const el = document.getElementById(id); if(el && v != null) el.value = v; }
+function setCheck(id, v){ const el = document.getElementById(id); if(el) el.checked = !!v; }
+
+// ── Save section ────────────────────────────────────────────────
+async function saveSection(section){
+  if(!sg || !BUSINESS_ID){ showStatus(section,'err','Not connected'); return; }
+
+  let key, value;
+  try{
+    switch(section){
+      case 'business':
+        key = 'business_info';
+        value = {
+          name:        document.getElementById('biz-name').value.trim(),
+          phone:       document.getElementById('biz-phone').value.trim(),
+          address:     document.getElementById('biz-address').value.trim(),
+          email:       document.getElementById('biz-email').value.trim(),
+          website:     document.getElementById('biz-website').value.trim(),
+          description: document.getElementById('biz-desc').value.trim(),
+        };
+        break;
+      case 'hours':
+        key = 'hours';
+        value = Object.fromEntries(DAYS.map(day => [day, {
+          open: document.getElementById(`hrs-open-${day}`)?.checked ?? true,
+          from: document.getElementById(`hrs-from-${day}`)?.value || '09:00',
+          to:   document.getElementById(`hrs-to-${day}`)?.value   || '18:00',
+        }]));
+        break;
+      case 'pos':
+        key = 'pos';
+        value = {
+          walkin_turn:  parseFloat(document.getElementById('pos-walkin-turn').value)  || 1.0,
+          appt_turn:    parseFloat(document.getElementById('pos-appt-turn').value)    || 0.8,
+          request_turn: parseFloat(document.getElementById('pos-request-turn').value) || 1.2,
+        };
+        break;
+      case 'discounts':
+        key = 'discounts';
+        value = collectDiscountRows();
+        break;
+      case 'kiosk':
+        key = 'kiosk';
+        value = {
+          welcome_message: document.getElementById('kiosk-welcome').value.trim(),
+          show_tech:       document.getElementById('kiosk-show-tech').checked,
+          show_phone:      document.getElementById('kiosk-show-phone').checked,
+          auto_advance:    document.getElementById('kiosk-auto-advance').checked,
+        };
+        break;
+      case 'notifications':
+        key = 'notifications';
+        value = {
+          checkin: document.getElementById('notif-checkin').checked,
+          long_wait: document.getElementById('notif-wait').checked,
+          shift_reminder: document.getElementById('notif-shift').checked,
+        };
+        break;
+      case 'integrations':
+        key = 'integrations';
+        value = {
+          openai_key:       document.getElementById('int-openai').value.trim() || null,
+          google_reviews:   document.getElementById('int-google-reviews').checked,
+        };
+        break;
+      case 'stripe':
+        key = 'stripe';
+        value = {
+          publishable_key: document.getElementById('int-stripe-pk').value.trim() || null,
+          secret_key:      document.getElementById('int-stripe-sk').value.trim() || null,
+        };
+        break;
+      default: return;
+    }
+
+    const { error } = await sg.schema('salon').from('business_settings').upsert({
+      business_id:   BUSINESS_ID,
+      setting_key:   key,
+      settings_json: value,
+      updated_at:    new Date().toISOString(),
+    }, { onConflict: 'business_id,setting_key' });
+
+    if(error) throw error;
+    showStatus(section, 'ok', '✓ Saved');
+    toast('Settings saved');
+  } catch(e){
+    console.error('[Settings] save failed:', e);
+    showStatus(section, 'err', '✗ ' + (e?.message || 'Save failed'));
+  }
+}
+
+function showStatus(section, type, msg){
+  const el = document.getElementById('status-' + section);
+  if(!el) return;
+  el.className = 'save-status ' + type;
+  el.textContent = msg;
+  setTimeout(()=>{ el.textContent = ''; }, 4000);
+}
+
+// ── Discounts ──────────────────────────────────────────────────
+// A discount: { id, label, type: 'percent'|'fixed', value, enabled }
+const DEFAULT_DISCOUNTS = [
+  { id: 'new-client',    label: 'New Client 10% Off', type: 'percent', value: 10,  enabled: true },
+  { id: 'senior',        label: 'Senior 15% Off',     type: 'percent', value: 15,  enabled: true },
+  { id: 'five-dollar',   label: '$5 Off',             type: 'fixed',   value: 5,   enabled: true },
+  { id: 'ten-dollar',    label: '$10 Off',            type: 'fixed',   value: 10,  enabled: true },
+];
+
+function discountRowHTML(d) {
+  const pctSel   = d.type === 'percent' ? 'selected' : '';
+  const fixedSel = d.type === 'fixed'   ? 'selected' : '';
+  const checked  = d.enabled !== false ? 'checked' : '';
+  return `
+    <div class="disc-row" data-id="${escapeAttr(d.id || '')}">
+      <input type="text" class="disc-label" placeholder="Discount label (e.g. Senior 15% Off)" value="${escapeAttr(d.label || '')}" />
+      <select class="disc-type">
+        <option value="percent" ${pctSel}>Percent %</option>
+        <option value="fixed" ${fixedSel}>Fixed $</option>
+      </select>
+      <input type="number" class="disc-value" min="0" step="0.01" placeholder="Value" value="${escapeAttr(String(d.value ?? ''))}" />
+      <label class="disc-toggle"><input type="checkbox" class="disc-enabled" ${checked} /> On</label>
+      <button type="button" class="disc-del" onclick="removeDiscountRow(this)" title="Remove">✕</button>
+    </div>
+  `;
+}
+
+function escapeAttr(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function renderDiscountRows(list) {
+  const container = document.getElementById('discount-list');
+  const empty     = document.getElementById('discount-empty');
+  if (!container) return;
+  const arr = Array.isArray(list) ? list : [];
+  container.innerHTML = arr.map(discountRowHTML).join('');
+  if (empty) empty.style.display = arr.length ? 'none' : 'block';
+}
+
+function addDiscountRow() {
+  const container = document.getElementById('discount-list');
+  const empty     = document.getElementById('discount-empty');
+  if (!container) return;
+  const fresh = { id: 'disc-' + Date.now().toString(36), label: '', type: 'percent', value: '', enabled: true };
+  container.insertAdjacentHTML('beforeend', discountRowHTML(fresh));
+  if (empty) empty.style.display = 'none';
+}
+
+function removeDiscountRow(btn) {
+  const row = btn.closest('.disc-row');
+  if (!row) return;
+  row.remove();
+  const container = document.getElementById('discount-list');
+  const empty     = document.getElementById('discount-empty');
+  if (container && empty) empty.style.display = container.children.length ? 'none' : 'block';
+}
+
+function collectDiscountRows() {
+  const rows = document.querySelectorAll('#discount-list .disc-row');
+  const out = [];
+  rows.forEach(r => {
+    const label = r.querySelector('.disc-label').value.trim();
+    const type  = r.querySelector('.disc-type').value;
+    const valueRaw = r.querySelector('.disc-value').value;
+    const enabled = r.querySelector('.disc-enabled').checked;
+    if (!label) return;                   // skip rows with no label
+    const value = parseFloat(valueRaw);
+    if (!isFinite(value) || value < 0) return;
+    if (type === 'percent' && value > 100) return;  // guard against >100%
+    out.push({
+      id: r.dataset.id || ('disc-' + Math.random().toString(36).slice(2, 8)),
+      label, type, value, enabled
+    });
+  });
+  return out;
+}
+
+// ── Danger zone ────────────────────────────────────────────────
+async function confirmDanger(action){
+  if(action === 'clear-queue'){
+    if(!confirm('Mark all waiting clients as cancelled? This cannot be undone.')) return;
+    try{
+      const { error } = await sg.schema('salon').from('check_ins')
+        .update({ status:'cancelled' })
+        .eq('business_id', BUSINESS_ID)
+        .eq('status','waiting');
+      if(error) throw error;
+      toast('Queue cleared');
+    } catch(e){ toast('Failed: ' + e.message); }
+  } else if(action === 'delete-account'){
+    const confirm1 = prompt('Type DELETE to confirm account deletion:');
+    if(confirm1 !== 'DELETE'){ toast('Cancelled'); return; }
+    toast('Please contact support@salongenie.ai to complete deletion.');
+  }
+}
+
+// ── Panel nav ──────────────────────────────────────────────────
+/* ── Mobile Nav picker ───────────────────────────────────────────
+   Drives SGBottomNav's customization API, which was fully built but had no
+   UI anywhere. Prefs live in auth.user_metadata.bottom_nav.salon, so a
+   choice made here follows the user to any device they log in on.
+─────────────────────────────────────────────────────────────── */
+function initNavPicker(){
+  const pool = document.getElementById('navPool');
+  if(!pool) return;
+  if(!window.SGBottomNav || typeof SGBottomNav.getPool !== 'function'){
+    pool.innerHTML = '<div class="nav-note">Bottom nav component not loaded on this page.</div>';
+    return;
+  }
+  (async () => {
+    let saved = null;
+    try{ saved = await SGBottomNav.loadPrefs(sg, 'salon'); }catch(_){}
+    // A saved list can reference tabs retired from the pool — drop those
+    const valid = new Set(SGBottomNav.getPool(NAV_ROLE).map(t => t.key));
+    if(saved) saved = saved.filter(k => valid.has(k));
+    navSelected = (saved && saved.length === SGBottomNav.MAX_TABS)
+      ? saved
+      : SGBottomNav.getDefaultOrder(NAV_ROLE);
+    renderNavPicker();
+  })();
+}
+
+function renderNavPicker(){
+  const max = SGBottomNav.MAX_TABS;
+  const pool = SGBottomNav.getPool(NAV_ROLE);
+  const byKey = Object.fromEntries(pool.map(t => [t.key, t]));
+
+  // Preview strip — mirrors how the real bar will look
+  const prev = document.getElementById('navPreview');
+  prev.innerHTML = navSelected.length
+    ? navSelected.map(k => {
+        const t = byKey[k]; if(!t) return '';
+        return `<div class="nav-preview-item">
+                  <div class="nav-preview-ico">${t.icon || '•'}</div>
+                  <div>${t.label || ''}</div>
+                </div>`;
+      }).join('')
+    : '<div class="nav-preview-empty">Pick five shortcuts below</div>';
+
+  // Chips
+  document.getElementById('navPool').innerHTML = pool.map(t => {
+    const i = navSelected.indexOf(t.key);
+    const picked = i > -1;
+    return `<button type="button" class="nav-chip${picked ? ' picked' : ''}"
+              onclick="toggleNavTab('${t.key}')" aria-pressed="${picked}">
+              ${picked ? `<span class="nav-chip-num">${i + 1}</span>` : ''}
+              <span>${t.icon || '•'}</span><span>${t.label || t.key}</span>
+            </button>`;
+  }).join('');
+
+  const count = document.getElementById('navCount');
+  if(count) count.textContent = `— ${navSelected.length} of ${max} chosen`;
+}
+
+function toggleNavTab(key){
+  const i = navSelected.indexOf(key);
+  if(i > -1){
+    navSelected.splice(i, 1);
+  } else if(navSelected.length >= SGBottomNav.MAX_TABS){
+    toast(`The bar holds exactly ${SGBottomNav.MAX_TABS} — remove one first`);
+    return;
+  } else {
+    navSelected.push(key);
+  }
+  renderNavPicker();
+}
+
+async function saveNavPrefs(){
+  const st = document.getElementById('status-mobilenav');
+  const res = await SGBottomNav.savePrefs(sg, 'salon', NAV_ROLE, navSelected);
+  if(!res.ok){
+    if(st){ st.textContent = res.error || 'Could not save'; st.style.color = 'var(--rose)'; }
+    return;
+  }
+  if(st){ st.textContent = 'Saved'; st.style.color = 'var(--teal)'; setTimeout(()=>{ st.textContent=''; }, 2500); }
+  toast('Bottom bar updated');
+  try{ SGBottomNav.render(NAV_ROLE, { sg }); }catch(_){}          // reflect it immediately
+  if(typeof window.sgMeasureBottomNav === 'function') setTimeout(window.sgMeasureBottomNav, 60);
+}
+
+function resetNavPrefs(){
+  navSelected = SGBottomNav.getDefaultOrder(NAV_ROLE);
+  renderNavPicker();
+  toast('Reset — press Save to keep it');
+}
+
+function showPanel(id, btn){
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + id).classList.add('active');
+  document.querySelectorAll('.stab').forEach(b => b.classList.remove('active'));
+  if(btn) btn.classList.add('active');
+}
+
+// ── Copy biz ID ────────────────────────────────────────────────
+function copyBizId(elId){
+  const val = document.getElementById(elId || 'bizIdDisplay').textContent;
+  navigator.clipboard?.writeText(val).then(()=>toast('Copied!')).catch(()=>{});
+}
+
+// ── Google Business Profile OAuth ──────────────────────────────
+//
+// Three-step flow:
+//   1. User pastes their GCP OAuth Client ID into #int-google-client-id and
+//      clicks "Save Client ID" → stored in localStorage.
+//   2. User clicks "Connect Google" → we redirect to Google's authorize URL
+//      with the right scopes. Google redirects to /oauth-callback.html with
+//      a `code` param.
+//   3. /oauth-callback.html exchanges the code for tokens via the
+//      `oauth-callback-google` Edge Function, which writes to
+//      salon.google_oauth_tokens and redirects back here with ?google=connected.
+//
+// Required setup (must be done in Google Cloud Console — see SKILL/past chats):
+//   - OAuth 2.0 Client ID created with Web application type
+//   - Authorized redirect URIs include: <your-domain>/oauth-callback.html
+//   - OAuth consent screen configured with business.manage scope
+//   - Test users include the salon's Google account
+//   - Edge Function `oauth-callback-google` deployed to Supabase
+//   - `salon.google_oauth_tokens` table exists with refresh_token storage
+//
+// Without those server-side pieces the redirect will fire but the round-trip
+// won't complete. Symptoms: Google consent screen shows, then callback page
+// errors. Check Supabase Edge Function logs to debug.
+
+const GOOGLE_OAUTH_SCOPES = [
+  'https://www.googleapis.com/auth/business.manage',
+  'https://www.googleapis.com/auth/userinfo.email',
+  'https://www.googleapis.com/auth/userinfo.profile',
+].join(' ');
+
+function getGoogleClientId(){
+  try { return localStorage.getItem('sg_google_client_id') || ''; }
+  catch(_) { return ''; }
+}
+
+window.saveGoogleClientId = function(){
+  const input = document.getElementById('int-google-client-id');
+  const v = String(input?.value || '').trim();
+  if(!v){
+    toast('Paste your OAuth Client ID first');
+    return;
+  }
+  // Light validation — real Client IDs end with .apps.googleusercontent.com
+  // but we don't hard-require it in case Google ever changes the format.
+  if(!v.includes('.apps.googleusercontent.com')){
+    if(!confirm('That doesn\'t look like a typical Google Client ID. Save anyway?')) return;
+  }
+  try { localStorage.setItem('sg_google_client_id', v); }
+  catch(e){ toast('Could not save (localStorage blocked?)'); return; }
+  toast('Client ID saved');
+  // Refresh the connection-state UI so the Connect button stops being a no-op.
+  loadGoogleStatus();
+};
+
+// ── Place ID save / load ─────────────────────────────────────────────
+//
+// Place ID is stored in two locations for resilience:
+//   1. business_profiles.google_place_id  — DB, syncs across devices
+//   2. localStorage('sg_google_' + BUSINESS_ID) — per-device cache, used
+//      as fallback when the DB is unreachable or the user is offline.
+//      Stored as a JSON blob to match the existing format that
+//      salon-reviews-agent.html reads.
+//
+// On save we write to BOTH. On load we try DB first, then fall back to
+// localStorage if the DB read returned nothing or failed.
+
+function getGooglePlaceIdFromLocal(){
+  if(!BUSINESS_ID) return '';
+  try {
+    const stored = JSON.parse(localStorage.getItem('sg_google_' + BUSINESS_ID) || 'null');
+    return stored?.place_id || '';
+  } catch(_){ return ''; }
+}
+
+function setGooglePlaceIdInLocal(placeId, name){
+  if(!BUSINESS_ID) return;
+  try {
+    localStorage.setItem('sg_google_' + BUSINESS_ID, JSON.stringify({
+      place_id: placeId,
+      name:     name || 'Google Business Connected',
+      saved_at: new Date().toISOString(),
+    }));
+  } catch(_){}
+}
+
+window.saveGooglePlaceId = async function(){
+  const input = document.getElementById('int-google-place-id');
+  const v = String(input?.value || '').trim();
+  if(!v){
+    toast('Paste your Place ID first');
+    return;
+  }
+  // Light validation — Google Place IDs typically start with ChIJ (Foursquare-
+  // legacy ones can start with other letters but ChIJ is overwhelmingly common).
+  // Warn rather than block in case the format ever changes.
+  if(!v.startsWith('ChIJ')){
+    if(!confirm("That doesn't look like a typical Google Place ID (usually starts with ChIJ). Save anyway?")) return;
+  }
+
+  // Step 1: write to DB. Most important — survives across devices.
+  if(sg && BUSINESS_ID){
+    try {
+      const { error } = await sg.from('business_profiles')
+        .update({ google_place_id: v }).eq('id', BUSINESS_ID);
+      if(error) throw error;
+    } catch(e){
+      console.warn('[Settings] Could not save Place ID to DB:', e);
+      toast('Saved locally only — DB write failed (see console)');
+      // Still write to localStorage below as a fallback.
+    }
+  }
+
+  // Step 2: write to localStorage too. Used by salon-reviews-agent.html when
+  // the DB read fails or the user is offline.
+  setGooglePlaceIdInLocal(v);
+
+  toast('Place ID saved');
+};
+
+// Loads the current Place ID into the input field. Tries DB first,
+// falls back to localStorage. Called from loadSettings().
+async function loadGooglePlaceId(){
+  const input = document.getElementById('int-google-place-id');
+  if(!input) return;
+
+  let pid = '';
+
+  // Try DB first.
+  if(sg && BUSINESS_ID){
+    try {
+      const { data } = await sg.from('business_profiles')
+        .select('google_place_id').eq('id', BUSINESS_ID).maybeSingle();
+      if(data?.google_place_id) pid = data.google_place_id;
+    } catch(e){
+      console.warn('[Settings] DB read of google_place_id failed:', e);
+    }
+  }
+
+  // Fall back to localStorage if DB returned nothing.
+  if(!pid) pid = getGooglePlaceIdFromLocal();
+
+  if(pid) input.value = pid;
+}
+
+window.connectGoogle = function(){
+  const clientId = getGoogleClientId();
+  if(!clientId){
+    alert('Google OAuth is not configured yet.\n\n' +
+      'Steps:\n' +
+      '1. Go to Google Cloud Console → APIs & Services → Credentials\n' +
+      '2. Create an OAuth 2.0 Client ID (Web application)\n' +
+      '3. Add ' + window.location.origin + '/oauth-callback.html as an authorized redirect URI\n' +
+      '4. Paste the Client ID into the field above and click Save Client ID');
+    return;
+  }
+  if(!BUSINESS_ID){
+    toast('No business selected');
+    return;
+  }
+
+  // State token — opaque blob that Google echoes back on redirect. We use it
+  // to (a) verify the callback isn't forged and (b) carry the business_id
+  // through the round-trip so the callback knows which salon to attach
+  // tokens to. Stored in localStorage so oauth-callback.html can validate it.
+  const stateObj = {
+    business_id: BUSINESS_ID,
+    user_id:     window._sgCurrentUser?.id || null,
+    next:        'settings.html#integrations',
+    ts:          Date.now(),
+    nonce:       Math.random().toString(36).slice(2),
+  };
+  const state = btoa(JSON.stringify(stateObj));
+  try { localStorage.setItem('google_oauth_state', state); } catch(_){}
+  try { localStorage.setItem('google_oauth_return', 'settings.html#integrations'); } catch(_){}
+
+  const redirectUri = window.location.origin + '/oauth-callback.html';
+
+  // access_type=offline + prompt=consent ensures Google issues a refresh_token
+  // even on subsequent connects. Without these flags, Google omits the
+  // refresh_token after the first grant, which breaks long-term sync.
+  const params = new URLSearchParams({
+    client_id:     clientId,
+    redirect_uri:  redirectUri,
+    response_type: 'code',
+    scope:         GOOGLE_OAUTH_SCOPES,
+    access_type:   'offline',
+    prompt:        'consent',
+    state:         state,
+  });
+  window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
+};
+
+window.disconnectGoogle = async function(){
+  if(!sg || !BUSINESS_ID){ toast('Not connected'); return; }
+  if(!confirm('Disconnect Google Business Profile? You\'ll need to reconnect to sync new reviews.')) return;
+
+  try {
+    // Delete the token row. The Edge Function should also revoke the token
+    // on Google's side, but we don't strictly need that here — removing the
+    // refresh_token means we can't make further API calls anyway.
+    const { error } = await sg.schema('salon').from('google_oauth_tokens')
+      .delete().eq('business_id', BUSINESS_ID);
+    if(error) throw error;
+    toast('Disconnected');
+    loadGoogleStatus();
+  } catch(e){
+    console.warn('[Settings] disconnectGoogle failed:', e);
+    toast('Disconnect failed — check console');
+  }
+};
+
+// Loads connection state from salon.google_oauth_tokens and updates the
+// status indicator + which button is shown. Safe to call any time.
+async function loadGoogleStatus(){
+  const statusEl = document.getElementById('google-status');
+  const connectBtn = document.getElementById('btn-connect-google');
+  const disconnectBtn = document.getElementById('btn-disconnect-google');
+  const clientIdField = document.getElementById('int-google-client-id');
+  if(!statusEl) return;
+
+  // Hydrate Client ID field from localStorage.
+  if(clientIdField){ clientIdField.value = getGoogleClientId(); }
+
+  if(!sg || !BUSINESS_ID){
+    statusEl.textContent = '⚠️ Not signed in or no business selected.';
+    return;
+  }
+
+  try {
+    const { data, error } = await sg.schema('salon').from('google_oauth_tokens')
+      .select('expires_at,scope,updated_at')
+      .eq('business_id', BUSINESS_ID)
+      .maybeSingle();
+
+    if(error && error.code !== 'PGRST116'){
+      // PGRST116 = no rows, which is normal-not-connected. Anything else is
+      // probably an RLS/permission issue worth surfacing.
+      console.warn('[Settings] google_oauth_tokens query failed:', error);
+      statusEl.innerHTML = '<span style="color:var(--rose)">⚠️ Could not check connection — see console</span>';
+      return;
+    }
+
+    if(data){
+      // Connected. Show when last refreshed and the scopes granted.
+      const updated = data.updated_at ? new Date(data.updated_at).toLocaleString() : 'unknown';
+      const expires = data.expires_at ? new Date(data.expires_at).toLocaleString() : 'unknown';
+      statusEl.innerHTML = '<span style="color:var(--teal)">✅ Connected</span> · Last refreshed ' + updated + ' · Token expires ' + expires;
+      if(connectBtn)    connectBtn.style.display    = 'none';
+      if(disconnectBtn) disconnectBtn.style.display = 'inline-flex';
+    } else {
+      // Not connected.
+      const hasClientId = !!getGoogleClientId();
+      statusEl.innerHTML = hasClientId
+        ? '<span style="color:var(--mid)">○ Not connected.</span> Click Connect Google Account to grant access.'
+        : '<span style="color:var(--amber)">⚠️ Setup required.</span> Paste your OAuth Client ID below first, then click Save Client ID.';
+      if(connectBtn)    connectBtn.style.display    = 'inline-flex';
+      if(disconnectBtn) disconnectBtn.style.display = 'none';
+    }
+  } catch(e){
+    console.warn('[Settings] loadGoogleStatus failed:', e);
+    statusEl.innerHTML = '<span style="color:var(--rose)">⚠️ Could not check connection</span>';
+  }
+}
+
+// Detect post-OAuth redirect — when oauth-callback.html bounces the user
+// back here with ?google=connected, surface a toast and refresh the status.
+function handleGoogleRedirect(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('google') === 'connected'){
+    toast('Google connected ✅');
+    // Clean the query param out of the URL so refreshes don't re-toast.
+    history.replaceState({}, '', window.location.pathname + window.location.hash);
+  } else if(params.get('google') === 'error'){
+    const reason = params.get('reason') || 'unknown';
+    toast('Google connection failed: ' + reason);
+    history.replaceState({}, '', window.location.pathname + window.location.hash);
+  }
+}
+
+// ── Instagram (Meta) connection ──────────────────────────────────────────
+//
+// Mirrors the Google OAuth flow above, but via Facebook Login: the App ID
+// (public, safe to store client-side) builds the authorize URL; the App
+// Secret never leaves the server (GRAPH_APP_SECRET Edge Function secret).
+// oauth-callback.html tells the two flows apart by a `provider` field
+// packed into the same base64-JSON `state` blob used for `next`.
+//
+// Setup this depends on, done outside this file:
+//   - A Meta app created at developers.facebook.com (Business type)
+//   - Facebook Login product added, with this domain's
+//     <origin>/oauth-callback.html as a valid OAuth redirect URI
+//   - A Facebook Page for the salon, with its Instagram account switched to
+//     Business/Creator and linked to that Page
+//   - GRAPH_APP_ID / GRAPH_APP_SECRET set as Supabase Edge Function secrets
+//   - Edge Functions `meta-oauth-exchange` and `meta-post-create` deployed
+//
+// Until the app clears Meta's App Review for instagram_content_publish,
+// this only works for accounts added as Admins/Developers/Testers on the
+// Meta app itself (Meta's "Development Mode") — no approval wait like
+// Google's Business Profile API, but also not usable by other salons yet.
+
+const META_OAUTH_SCOPES = [
+  'pages_show_list',
+  'pages_read_engagement',
+  'instagram_basic',
+  'instagram_content_publish',
+].join(',');
+
+function getMetaAppId(){
+  try { return localStorage.getItem('sg_meta_app_id') || ''; }
+  catch(_) { return ''; }
+}
+
+window.saveMetaAppId = function(){
+  const input = document.getElementById('int-meta-app-id');
+  const v = String(input?.value || '').trim();
+  if(!v){
+    toast('Paste your Meta App ID first');
+    return;
+  }
+  if(!/^\d+$/.test(v)){
+    if(!confirm('Meta App IDs are normally all digits. Save anyway?')) return;
+  }
+  try { localStorage.setItem('sg_meta_app_id', v); }
+  catch(e){ toast('Could not save (localStorage blocked?)'); return; }
+  toast('App ID saved');
+  loadMetaStatus();
+};
+
+window.connectInstagram = function(){
+  const appId = getMetaAppId();
+  if(!appId){
+    alert('Instagram is not configured yet.\n\n' +
+      'Steps:\n' +
+      '1. Go to developers.facebook.com/apps and create a Business app\n' +
+      '2. Add the "Facebook Login" product\n' +
+      '3. Add ' + window.location.origin + '/oauth-callback.html as a valid OAuth redirect URI\n' +
+      '4. Paste the App ID into the field above and click Save App ID\n' +
+      '5. Set GRAPH_APP_ID / GRAPH_APP_SECRET as Supabase Edge Function secrets (App Secret is never entered here)');
+    return;
+  }
+  if(!BUSINESS_ID){
+    toast('No business selected');
+    return;
+  }
+
+  const stateObj = {
+    business_id: BUSINESS_ID,
+    user_id:     CURRENT_USER?.id || null,
+    next:        'settings.html#integrations',
+    provider:    'meta',
+    ts:          Date.now(),
+    nonce:       Math.random().toString(36).slice(2),
+  };
+  const state = btoa(JSON.stringify(stateObj));
+
+  const redirectUri = window.location.origin + '/oauth-callback.html';
+  const params = new URLSearchParams({
+    client_id:     appId,
+    redirect_uri:  redirectUri,
+    response_type: 'code',
+    scope:         META_OAUTH_SCOPES,
+    state:         state,
+  });
+  window.location.href = 'https://www.facebook.com/v23.0/dialog/oauth?' + params.toString();
+};
+
+window.disconnectInstagram = async function(){
+  if(!sg || !BUSINESS_ID){ toast('Not connected'); return; }
+  if(!confirm('Disconnect Instagram? You\'ll need to reconnect to publish posts again.')) return;
+
+  try {
+    const { error } = await sg.schema('salon').from('meta_oauth_tokens')
+      .delete().eq('business_id', BUSINESS_ID);
+    if(error) throw error;
+    toast('Disconnected');
+    loadMetaStatus();
+  } catch(e){
+    console.warn('[Settings] disconnectInstagram failed:', e);
+    toast('Disconnect failed — check console');
+  }
+};
+
+async function loadMetaStatus(){
+  const statusEl = document.getElementById('meta-status');
+  const connectBtn = document.getElementById('btn-connect-meta');
+  const disconnectBtn = document.getElementById('btn-disconnect-meta');
+  const appIdField = document.getElementById('int-meta-app-id');
+  if(!statusEl) return;
+
+  if(appIdField){ appIdField.value = getMetaAppId(); }
+
+  if(!sg || !BUSINESS_ID){
+    statusEl.textContent = '⚠️ Not signed in or no business selected.';
+    return;
+  }
+
+  try {
+    const { data, error } = await sg.schema('salon').from('meta_oauth_tokens')
+      .select('ig_username,fb_page_name,token_refreshed_at')
+      .eq('business_id', BUSINESS_ID)
+      .maybeSingle();
+
+    if(error && error.code !== 'PGRST116'){
+      console.warn('[Settings] meta_oauth_tokens query failed:', error);
+      statusEl.innerHTML = '<span style="color:var(--rose)">⚠️ Could not check connection — see console</span>';
+      return;
+    }
+
+    if(data){
+      const refreshed = data.token_refreshed_at ? new Date(data.token_refreshed_at).toLocaleString() : 'unknown';
+      statusEl.innerHTML = '<span style="color:var(--teal)">✅ Connected</span> · @' + (data.ig_username || 'unknown') + ' via "' + (data.fb_page_name || 'Facebook Page') + '" · Connected ' + refreshed;
+      if(connectBtn)    connectBtn.style.display    = 'none';
+      if(disconnectBtn) disconnectBtn.style.display = 'inline-flex';
+    } else {
+      const hasAppId = !!getMetaAppId();
+      statusEl.innerHTML = hasAppId
+        ? '<span style="color:var(--mid)">○ Not connected.</span> Click Connect Instagram to grant access.'
+        : '<span style="color:var(--amber)">⚠️ Setup required.</span> Paste your Meta App ID below first, then click Save App ID.';
+      if(connectBtn)    connectBtn.style.display    = 'inline-flex';
+      if(disconnectBtn) disconnectBtn.style.display = 'none';
+    }
+  } catch(e){
+    console.warn('[Settings] loadMetaStatus failed:', e);
+    statusEl.innerHTML = '<span style="color:var(--rose)">⚠️ Could not check connection</span>';
+  }
+}
+
+// Detect post-OAuth redirect back from oauth-callback.html. Reuses the same
+// ?google=connected|error convention but under a `meta` key, since
+// oauth-callback.html's redirect back here doesn't add a query param at all
+// today (it just navigates to `next`) — this only fires if a future version
+// of that page starts adding one, kept for parity with handleGoogleRedirect.
+function handleMetaRedirect(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('meta') === 'connected'){
+    toast('Instagram connected ✅');
+    history.replaceState({}, '', window.location.pathname + window.location.hash);
+  } else if(params.get('meta') === 'error'){
+    const reason = params.get('reason') || 'unknown';
+    toast('Instagram connection failed: ' + reason);
+    history.replaceState({}, '', window.location.pathname + window.location.hash);
+  }
+}
+
+// ── Toast ──────────────────────────────────────────────────────
+function toast(msg, ms=2500){
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(()=>el.classList.remove('show'), ms);
+}
+
+boot().catch(e => console.error('[Settings] boot failed:', e));
+</script>
+
+<!-- ══ Mobile bottom nav (shared component) ══ -->
+<script src="/shared/js/bottom-nav.js"></script>
+<script>
+(function(){
+  'use strict';
+  // Owner/manager tab set. If the shared component doesn't know the 'owner'
+  // preset (older build), fall back to an explicit list so the nav still
+  // renders instead of silently doing nothing.
+  var FALLBACK_TABS = { tabs:[
+    { icon:'🏠', label:'Dashboard', href:'salon-dashboard.html' },
+    { icon:'📅', label:'Booking',   href:'salon-booking-agent.html' },
+    { icon:'👥', label:'Staff',     href:'salon-staff-agent.html' },
+    { icon:'📣', label:'Marketing', href:'salon-marketing-agent.html' },
+    { icon:'⚙️', label:'Settings',  href:'settings.html' }
+  ]};
+
+  function measureBnav(){
+    var n = document.getElementById('sgBottomNav');
+    var h = (n && getComputedStyle(n).display !== 'none') ? n.offsetHeight : 0;
+    document.documentElement.style.setProperty('--bnav-h', h + 'px');
+  }
+  window.sgMeasureBottomNav = measureBnav;
+
+  function mount(){
+    if(!window.SGBottomNav || typeof SGBottomNav.render !== 'function') return;
+    var result;
+    try{ result = SGBottomNav.render('owner'); }catch(_){}
+    Promise.resolve(result).then(function(){
+      if(!document.getElementById('sgBottomNav')){
+        try{ SGBottomNav.render(FALLBACK_TABS); }catch(_){}
+      }
+    }).catch(function(){
+      try{ SGBottomNav.render(FALLBACK_TABS); }catch(_){}
+    }).then(function(){
+      measureBnav();
+      setTimeout(measureBnav, 300);
+    });
+  }
+
+  if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mount, {once:true});
+  else mount();
+
+  window.addEventListener('resize', measureBnav);
+  window.addEventListener('orientationchange', function(){ setTimeout(measureBnav, 200); });
+})();
+</script>
+</body>
+</html>

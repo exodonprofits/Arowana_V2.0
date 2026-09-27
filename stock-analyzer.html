@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>📊</text></svg>">
+<title>Stock Analyzer — Arowana Profits</title>
+
+<style>
+/* ============================================================
+   TOKENS & BASE — exact match to short-term-dashboard.html
+   ============================================================ */
+:root{
+  --brand:#0b4f8a;--bg:#f6f8fb;--panel:#ffffff;--ink:#0f172a;--text:#111827;
+  --muted:#64748b;--ring:rgba(11,79,138,0.22);--page-width:min(1200px,92vw);
+  --border:#e5e7eb;--radius:14px;--shadow:0 8px 30px rgba(0,0,0,.06);
+  --blue:#0b4f8a;--blue-700:#083c69;--green:#16a34a;--green-700:#15803d;
+  --amber:#f59e0b;--red:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+.muted{color:var(--muted)}
+
+/* ── Header & Nav ── */
+.header-bar{width:100%;background:var(--brand);color:#fff;position:relative;z-index:40;}
+.ap-nav{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.ap-left{display:flex;align-items:center;gap:18px;min-width:0;}
+.ap-right{display:flex;align-items:center;gap:18px}
+.ap-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;white-space:nowrap;}
+.ap-logo{width:44px;height:44px;border-radius:999px;object-fit:contain;}
+.ap-title{font-weight:800;font-size:1.35rem;letter-spacing:.2px}
+.ap-nav-main{display:flex;align-items:center;gap:10px;}
+.ap-tab{position:relative;display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none;padding:10px;border-radius:7px;background:rgba(255,255,255,.10);transition:background .2s,opacity .2s;opacity:.95;font-weight:700;}
+.ap-tab:hover{background:rgba(255,255,255,.16);opacity:1}.ap-tab.is-active{background:rgba(255,255,255,.22);}
+.dropdown{position:relative;display:inline-flex;align-items:center;}
+.ap-tab.dropdown-toggle{padding-right:22px;cursor:pointer;}
+.ap-tab.dropdown-toggle::after{content:'▼';font-size:8px;position:absolute;right:7px;top:50%;transform:translateY(-50%);opacity:.8;}
+.dropdown-content{display:none;position:absolute;min-width:300px;z-index:100;top:100%;left:0;background:#063f73;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 0;box-shadow:0 8px 16px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto;}
+.dropdown-content a{color:#eaf1f9;padding:10px 16px;display:block;white-space:nowrap;font-weight:400;}
+.dropdown-content a:hover{background:rgba(255,255,255,.1)}
+.dropdown-header{color:#fff;font-size:.72rem;font-weight:700;padding:10px 16px 5px;text-transform:uppercase;pointer-events:none;}
+.dropdown-separator{height:1px;background:rgba(255,255,255,.1);margin:5px 0;}
+@media(hover:hover) and (pointer:fine){.dropdown:hover>.dropdown-content,.dropdown:focus-within>.dropdown-content{display:block;}}
+.user-menu{position:relative;}
+.user-menu-toggle{display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;padding:7px 10px;border-radius:7px;cursor:pointer;font-weight:700;line-height:1;font-family:inherit;}
+.user-menu-toggle:hover{background:rgba(255,255,255,.16);}.user-menu-toggle::after{content:'▼';font-size:8px;margin-left:6px;opacity:.85;}
+.user-menu-dropdown{position:absolute;right:0;top:calc(100% + 10px);min-width:220px;background:#063f73;color:#eaf1f9;border:1px solid rgba(255,255,255,.10);border-radius:7px;box-shadow:0 18px 40px rgba(0,0,0,.35);padding:8px;display:none;z-index:2000;}
+.user-menu-dropdown button{width:100%;display:flex;align-items:center;gap:10px;padding:10px;background:transparent;border:0;color:#eaf1f9;cursor:pointer;font-weight:700;border-radius:7px;text-align:left;font-family:inherit;}
+.user-menu-dropdown button:hover{background:rgba(255,255,255,.10);}
+.user-menu-dropdown .user-sep{height:1px;background:rgba(255,255,255,.12);margin:6px 0;}
+.ap-emoji{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.16);font-size:14px;line-height:1;}
+.ap-burger{display:none;border:none;background:rgba(255,255,255,.08);color:#f9fafb;border-radius:7px;padding:6px 10px;font-size:1.1rem;cursor:pointer;}
+#mobileMenu{display:none;position:fixed;top:64px;left:0;right:0;z-index:35;background:#063f73;border-top:1px solid rgba(255,255,255,.12);box-shadow:0 18px 40px rgba(0,0,0,.35);}
+#mobileMenu[data-open="true"]{display:block;}
+.mobile-menu-panel{max-width:1200px;margin:0 auto;padding:8px 12px 16px;display:flex;flex-direction:column;gap:8px;}
+.mobile-main-links{display:flex;flex-direction:column;}
+.mobile-main-links a{display:flex;align-items:center;gap:10px;padding:10px 14px;background:transparent;color:#eaf1f9;text-decoration:none;font-size:.95rem;font-weight:600;}
+.mobile-main-links a:hover{background:rgba(255,255,255,.10);}
+.mobile-divider{height:1px;background:rgba(255,255,255,.12);margin:6px 0;}
+.mobile-auth-link{width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;background:transparent;text-decoration:none;color:#eaf1f9;font-size:.95rem;font-weight:700;}
+.mobile-auth-link:hover{background:rgba(255,255,255,.12);}
+@media(max-width:900px){#navMain{display:none;}#navTop{display:none;}.ap-burger{display:inline-flex;align-items:center;justify-content:center;}}
+
+/* ── Footer ── */
+footer{background:var(--brand);color:#d7dae0;padding:20px 0;margin-top:auto}
+footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+footer h4{margin:0 0 6px}footer a{color:#b6c3d6}
+.foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+@media(max-width:640px){footer .cols{grid-template-columns:1fr}footer .cols>div:nth-child(2),footer .cols>div:nth-child(3){display:none}}
+
+/* ── Cards & Layout ── */
+.card{background:var(--panel);box-shadow:var(--shadow);width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.section{margin:1rem 0}
+.row{display:grid;gap:1rem}.row.two{grid-template-columns:repeat(2,minmax(0,1fr))}
+@media(max-width:980px){.row.two{grid-template-columns:1fr}}
+.btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:7px;padding:.6rem 1rem;font-weight:600;cursor:pointer;font-size:.95rem;font-family:inherit;}
+.btn.blue{background:var(--blue);color:#fff}.btn.blue:hover{background:var(--blue-700)}
+.btn.ghost{background:#fff;border:1px solid var(--border);color:#1f2937}.btn.ghost:hover{background:#f9fafb}
+.input{padding:.65rem 1rem;border:1px solid var(--border);border-radius:7px;font-size:.95rem;font-family:inherit;color:var(--text);background:#fff;width:100%;}
+.input:focus{outline:none;box-shadow:0 0 0 3px var(--ring);}
+select.input{cursor:pointer}textarea.input{resize:vertical;}
+.field-label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:.35rem;}
+.note{background:#ecfeff;border-left:4px solid var(--blue);padding:.75rem .9rem;border-radius:7px;}
+.success{background:#ecfdf5;border-left:4px solid #22c55e;padding:.75rem .9rem;border-radius:7px;color:#065f46}
+.error-box{background:#fee2e2;border-left:4px solid #ef4444;padding:.75rem .9rem;border-radius:7px;color:#991b1b}
+
+/* ── qg-grid (matches dashboard split layout) ── */
+.qg-grid{display:grid;gap:14px;align-items:start;}
+@media(min-width:900px){.qg-grid{grid-template-columns:1fr 1fr;}}
+
+/* ── Score cards & progress bars ── */
+.score-card{background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:12px 14px;margin-bottom:.5rem;}
+.score-card:last-child{margin-bottom:0;}
+.score-card-header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:.3rem;}
+.score-label{font-size:.88rem;font-weight:700;color:#374151;}
+.score-value{font-size:1.25rem;font-weight:800;color:#0f172a;}
+.prog-track{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-bottom:.3rem;}
+.prog-bar{height:100%;border-radius:999px;transition:width .5s ease;}
+.prog-good{background:#16a34a}.prog-ok{background:#f59e0b}.prog-bad{background:#dc2626}.prog-neutral{background:#0b4f8a}
+
+/* ── Grade pill ── */
+.grade-pill{display:inline-flex;align-items:center;padding:.35rem .85rem;border-radius:999px;font-size:.88rem;font-weight:800;white-space:nowrap;}
+.grade-strong{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.grade-neutral{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+.grade-avoid{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+
+/* ── Signal badges ── */
+.signal-badge{display:inline-flex;align-items:center;padding:.2rem .55rem;border-radius:7px;font-size:.8rem;font-weight:700;}
+.signal-good{background:#dcfce7;color:#166534;border:1px solid #bbf7d0;}
+.signal-neutral{background:#f3f4f6;color:#374151;border:1px solid #e5e7eb;}
+.signal-bad{background:#fee2e2;color:#991b1b;border:1px solid #fecaca;}
+
+/* ── Summary & insights ── */
+.summary-box{background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:12px 14px;font-size:.9rem;line-height:1.65;color:#374151;margin-top:.75rem;}
+.insight-item{display:flex;align-items:flex-start;gap:.5rem;padding:.45rem 0;border-bottom:1px dashed var(--border);font-size:.88rem;color:#374151;}
+.insight-item:last-child{border-bottom:none;}
+.insight-item::before{content:"→";color:var(--brand);font-weight:700;flex-shrink:0;margin-top:1px;}
+
+/* ── Watchlist table ── */
+.wl-table{width:100%;border-collapse:collapse;font-size:.9rem;}
+.wl-table th{padding:9px 10px;text-align:left;font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);border-bottom:2px solid var(--border);}
+.wl-table td{padding:9px 10px;border-bottom:1px solid #f1f5f9;vertical-align:middle;}
+.wl-table tbody tr:last-child td{border-bottom:none;}
+.wl-table tbody tr:hover{background:#f8fafc;}
+
+/* ── History list ── */
+.history-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border-radius:7px;border:1px solid var(--border);background:#fff;margin-bottom:.5rem;cursor:pointer;transition:.15s;}
+.history-item:hover{background:#f8fafc;border-color:#cbd5e1;transform:translateY(-1px);}
+.history-item.active-history{border-color:var(--brand);background:#eff6ff;}
+.history-item:last-child{margin-bottom:0;}
+.history-item strong{display:block;font-size:.95rem;font-weight:800;color:#0f172a;}
+.history-item span{font-size:.82rem;color:var(--muted);}
+.history-item small{font-size:.75rem;color:#94a3b8;display:block;margin-top:2px;}
+.history-empty{text-align:center;padding:28px 12px;color:var(--muted);}
+
+/* ── Quick ticker chips ── */
+.ticker-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.5rem;}
+.ticker-chip{background:#fff;border:1px solid var(--border);border-radius:7px;padding:.3rem .65rem;font-size:.84rem;font-weight:700;cursor:pointer;font-family:inherit;color:#374151;transition:.15s;}
+.ticker-chip:hover{background:#eff6ff;border-color:var(--brand);color:var(--brand);}
+
+/* ── Webhook status ── */
+.wh-status{font-size:.83rem;color:var(--muted);display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;margin-top:.4rem;}
+.wh-dot{width:8px;height:8px;border-radius:50%;background:#6b7280;display:inline-block;flex-shrink:0;}
+.wh-dot.ok{background:#16a34a}.wh-dot.err{background:#dc2626}.wh-dot.spin{background:#f59e0b;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Result loading spinner ── */
+.result-loading{display:none;text-align:center;padding:40px 20px;color:var(--muted);}
+.result-loading.show{display:block;}
+.spinner{display:inline-block;width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--brand);border-radius:50%;animation:spin .75s linear infinite;margin-bottom:.5rem;}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ── Toast ── */
+.toast-stack{position:fixed;right:16px;bottom:16px;display:grid;gap:.5rem;z-index:1000;}
+.toast{background:#111827;color:#fff;padding:.6rem .8rem;border-radius:7px;box-shadow:0 8px 22px rgba(0,0,0,.25);display:flex;align-items:center;gap:.6rem;max-width:340px;font-size:.9rem;}
+
+/* ── Page head ── */
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin:20px 0 1rem;}
+.page-head h1{margin:0;font-size:1.75rem;}
+
+/* ── Responsive ── */
+@supports(padding:max(0px)){@media(max-width:640px){body{padding-bottom:max(16px,env(safe-area-inset-bottom))}}}
+@media(max-width:640px){.page-head{flex-direction:column;align-items:flex-start;}}
+
+/* ── V1 Nav ── */
+.nav-wrap{position:sticky;top:0;z-index:90;background:#0b4f8a;box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1280px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;text-decoration:none}
+.logo img{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);padding:2px}
+.nav-links{display:flex;align-items:center;gap:3px;flex:1;justify-content:center}
+.nav-links a{color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none;transition:background .15s}
+.nav-links a:hover{background:rgba(255,255,255,.13)}
+.nav-links a.active{background:rgba(255,255,255,.18);color:#fff}
+.nav-links .agent{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.nav-div{width:1px;height:16px;background:rgba(255,255,255,.18);margin:0 4px;flex-shrink:0}
+.nav-auth{display:flex;align-items:center;gap:7px}
+.nbtn{padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;text-decoration:none;transition:all .15s}
+.nbtn-g{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.nbtn-s{background:#fff;color:#0b4f8a;font-weight:700}
+.nav-user{position:relative;display:none}.nav-user.show{display:block}
+.nav-user-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600}
+.nav-user-menu{position:absolute;right:0;top:calc(100%+8px);min-width:195px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:6px;display:none;z-index:200}
+.nav-user.open .nav-user-menu{display:block}
+.nav-user-menu a,.nav-user-menu button{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:#64748b;font-size:.82rem;font-weight:500;background:none;border:none;width:100%;text-align:left;text-decoration:none;cursor:pointer;transition:all .12s;font-family:inherit}
+.nav-user-menu a:hover,.nav-user-menu button:hover{color:#0d1b2a;background:rgba(11,79,138,.06)}
+.menu-sep{height:1px;background:#e2e8f0;margin:3px 0}
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer}
+.mob-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:#083c69;border-top:1px solid rgba(255,255,255,.12)}
+.mob-menu[data-open="true"]{display:block}
+.mob-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mob-link{padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none;display:block}
+.mob-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:700px){.nav-links{display:none}.nbtn-s{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* ── V1 Footer ── */
+.site-footer{background:#083c69;color:#94a3b8;padding:36px 0 22px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:4px}
+.footer-tag{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6}
+.fc-title{font-weight:700;color:rgba(255,255,255,.7);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.fl{display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none}
+.fl:hover{color:rgba(255,255,255,.8)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.73rem;color:rgba(255,255,255,.3);margin-bottom:8px}
+.fpill{background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35);margin-left:4px}
+.fdis{font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.6}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     HEADER — exact pattern from short-term-dashboard.html
+     ============================================================ -->
+<header class="header-bar">
+  <div class="nav-wrap">
+<nav class="nav">
+  <a href="index.html" class="logo"><img src="images/arowanalogo.png?v=20260117" alt="" onerror="this.style.display='none'">Arowana Profits</a>
+  <div class="nav-links" id="navLinks">
+    <a href="arowana-trader.html" class="agent">&#9889; Arowana Trader</a>
+    <a href="portfolio-advisor.html" class="agent">&#127974; Portfolio Advisor</a>
+    <div class="nav-div"></div>
+    <a href="short-term-dashboard.html" class='active'>&#9889; Short-Term</a>
+    <a href="long-term-dashboard.html">&#128200; Long-Term</a>
+    <a href="learn-investing.html">&#128218; Learn</a>
+    <a href="features.html">&#128296; Features</a>
+    <a href="pricing.html">&#128179; Plans</a>
+  </div>
+  <button class="nav-burger" id="navBurger">&#9776;</button>
+  <div class="nav-auth">
+    <a href="login.html" id="navSignIn" class="nbtn nbtn-g">Sign In</a>
+    <a href="signup.html" id="navSignUp" class="nbtn nbtn-s">&#128640; Start Free</a>
+    <div class="nav-user" id="navUserDrop">
+      <button class="nav-user-btn" id="navUserBtn">&#128100; <span id="navUserName">Account</span></button>
+      <div class="nav-user-menu" id="navUserMenu">
+        <a href="account.html">&#128282; My Account</a>
+        <div class="menu-sep"></div>
+        <a href="arowana-trader.html">&#9889; Arowana Trader</a>
+        <a href="portfolio-advisor.html">&#127974; Portfolio Advisor</a>
+        <div class="menu-sep"></div>
+        <a href="short-term-dashboard.html">&#9889; Short-Term Dashboard</a>
+        <a href="long-term-dashboard.html">&#128200; Long-Term Dashboard</a>
+        <div class="menu-sep"></div>
+        <button id="navSignOutBtn">&#128682; Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</div>
+<div class="mob-menu" id="mobMenu" data-open="false">
+  <div class="mob-panel">
+    <a class="mob-link" href="arowana-trader.html">&#9889; Arowana Trader</a>
+    <a class="mob-link" href="portfolio-advisor.html">&#127974; Portfolio Advisor</a>
+    <a class="mob-link" href="short-term-dashboard.html">&#9889; Short-Term</a>
+    <a class="mob-link" href="long-term-dashboard.html">&#128200; Long-Term</a>
+    <div class="mob-div"></div>
+    <a class="mob-link" href="learn-investing.html">&#128218; Learn</a>
+    <a class="mob-link" href="features.html">&#128296; Features</a>
+    <a class="mob-link" href="pricing.html">&#128179; Plans</a>
+    <div class="mob-div"></div>
+    <div id="mobAuthLinks"></div>
+  </div>
+</div>
+
+
+    </div>
+    <div class="ap-right">
+      <nav class="ap-nav-top" id="navTop" aria-label="Account actions">
+        <div class="user-menu">
+          <button id="user-menu-toggle" class="user-menu-toggle" type="button" aria-haspopup="menu" aria-expanded="false">
+            <span class="ap-emoji">🪪</span>
+            <span id="user-name-label">Log in</span>
+          </button>
+          <div id="user-menu-dropdown" class="user-menu-dropdown" role="menu" aria-hidden="true">
+            <button id="user-auth-action" type="button">Log in / Sign up</button>
+            <div class="user-sep"></div>
+            <button id="user-signout-btn" type="button" style="display:none">Sign out</button>
+          </div>
+        </div>
+      </nav>
+      <button class="ap-burger" id="apBurger" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div id="mobileMenu" data-open="false" aria-hidden="true">
+  <div class="mobile-menu-panel">
+    <div class="mobile-main-links">
+      <a href="short-term-dashboard.html"><span class="ap-emoji" aria-hidden="true">⚡</span><span>Short-Term</span></a>
+      <a href="long-term-dashboard.html"><span class="ap-emoji" aria-hidden="true">💰</span><span>Long-Term</span></a>
+      <a href="stock-analyzer.html" aria-current="page"><span class="ap-emoji" aria-hidden="true">📈</span><span>Stock Analyzer</span></a>
+      <a href="trade-journal-pro.html"><span class="ap-emoji" aria-hidden="true">📓</span><span>Trade Journal</span></a>
+      <a href="position-sizer.html"><span class="ap-emoji" aria-hidden="true">🧮</span><span>Position Sizer</span></a>
+    </div>
+    <div class="mobile-divider"></div>
+    <div id="mobileAuthGrid"></div>
+  </div>
+</div>
+
+<!-- ============================================================
+     MAIN
+     ============================================================ -->
+<main class="container">
+
+  <div class="page-head">
+    <div>
+      <h1>📈 Stock Analyzer</h1>
+      <p class="muted" style="margin:.25rem 0 0;">Enter a ticker, choose your analysis lens, and get AI-powered scores — fundamentals, valuation, technical, and market context.</p>
+    </div>
+    <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+      <a class="btn ghost" href="#watchlist-section">📋 Watchlist</a>
+      <a class="btn ghost" href="#history-section">🕘 History</a>
+    </div>
+  </div>
+
+  <!-- ── Analyzer + Results ── -->
+  <section class="section" id="analyzerSection">
+    <div class="card">
+      <h2 style="margin:0 0 4px;font-size:1.1rem;">🔍 Run a Stock Analysis</h2>
+      <div class="muted" style="font-size:.88rem;margin-bottom:1rem;">Results are powered by your n8n workflow + AI. Paste your webhook URL below to connect.</div>
+
+      <div class="qg-grid">
+
+        <!-- LEFT: Input form -->
+        <div>
+          <form id="analyzer-form">
+
+            <div style="margin-bottom:.75rem;">
+              <label class="field-label" for="ticker">📌 Stock Ticker</label>
+              <input id="ticker" class="input" type="text" maxlength="10" placeholder="e.g. NVDA, AMD, TSLA" value="NVDA"
+                style="text-transform:uppercase;font-weight:700;font-size:1.05rem;"
+                oninput="this.value=this.value.toUpperCase()">
+              <div class="ticker-chips" id="tickerChips">
+                <button class="ticker-chip" type="button" data-ticker="NVDA">NVDA</button>
+                <button class="ticker-chip" type="button" data-ticker="AMD">AMD</button>
+                <button class="ticker-chip" type="button" data-ticker="MU">MU</button>
+                <button class="ticker-chip" type="button" data-ticker="AVGO">AVGO</button>
+                <button class="ticker-chip" type="button" data-ticker="TSLA">TSLA</button>
+                <button class="ticker-chip" type="button" data-ticker="PLTR">PLTR</button>
+                <button class="ticker-chip" type="button" data-ticker="GEV">GEV</button>
+                <button class="ticker-chip" type="button" data-ticker="AAPL">AAPL</button>
+                <button class="ticker-chip" type="button" data-ticker="MSFT">MSFT</button>
+              </div>
+            </div>
+
+            <div class="row two" style="margin-bottom:.75rem;">
+              <div>
+                <label class="field-label" for="mode">🧭 Analysis Mode</label>
+                <select id="mode" class="input">
+                  <option value="balanced">Balanced View</option>
+                  <option value="longterm">Long-Term Investing</option>
+                  <option value="trading">Trading Setup</option>
+                  <option value="options">Options Income</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label" for="timeframe">⏳ Time Horizon</label>
+                <select id="timeframe" class="input">
+                  <option value="1-3y">1–3 Years</option>
+                  <option value="3-5y">3–5 Years</option>
+                  <option value="swing">Swing Trade</option>
+                  <option value="30-45d">30–45 DTE Options</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="margin-bottom:.75rem;">
+              <label class="field-label" for="notes">📝 Investor Notes <span class="muted" style="font-weight:400;">(optional)</span></label>
+              <textarea id="notes" class="input" rows="2" placeholder="e.g. I own 100 shares and want covered call ideas, or I want a safer long-term entry…"></textarea>
+            </div>
+
+            <div style="margin-bottom:.75rem;">
+              <label class="field-label" for="webhook-url">🔗 n8n Webhook URL</label>
+              <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+                <input id="webhook-url" class="input" type="url" placeholder="Paste your n8n production webhook URL here" style="flex:1;min-width:180px;">
+                <button class="btn ghost" type="button" id="save-webhook" style="white-space:nowrap;">💾 Save</button>
+              </div>
+              <div class="wh-status">
+                <span class="wh-dot" id="whDot"></span>
+                <span id="whStatus">Webhook not configured yet.</span>
+              </div>
+              <div class="muted" style="font-size:.78rem;margin-top:.2rem;">Expected keys: <code>ticker, fundamentals, valuation, technical, market, overall, strategy, summary, insights</code></div>
+            </div>
+
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;">
+              <button class="btn blue" type="submit">🔍 Analyze with n8n</button>
+              <button class="btn ghost" type="button" id="load-demo">✨ Load Demo</button>
+            </div>
+
+          </form>
+        </div>
+
+        <!-- RIGHT: Results -->
+        <div>
+          <div class="result-loading" id="resultLoading">
+            <div class="spinner"></div>
+            <div style="font-size:.9rem;font-weight:600;">Calling n8n workflow…</div>
+            <div class="muted" style="font-size:.82rem;margin-top:.25rem;">Fetching market data + AI scoring</div>
+          </div>
+
+          <div id="resultPanel">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;margin-bottom:.85rem;flex-wrap:wrap;">
+              <div>
+                <div class="muted" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">Result</div>
+                <h3 id="result-title" style="margin:0;font-size:1.1rem;font-weight:800;">NVDA — Balanced View</h3>
+                <p id="result-strategy" style="margin:.3rem 0 0;font-size:.86rem;color:var(--muted);">Suggested strategy: Wait for pullback or sell put on strength.</p>
+              </div>
+              <span class="grade-pill grade-strong" id="result-rating">⭐ Strong</span>
+            </div>
+
+            <div class="score-card">
+              <div class="score-card-header"><span class="score-label">✅ Fundamentals</span><span class="score-value" id="fundamental-score">8.7</span></div>
+              <div class="prog-track"><div class="prog-bar prog-good" id="fundamental-bar" style="width:87%"></div></div>
+              <small class="muted" style="font-size:.78rem;">Revenue trend, EPS growth, margins, debt, cash flow quality.</small>
+            </div>
+
+            <div class="score-card">
+              <div class="score-card-header"><span class="score-label">💰 Valuation</span><span class="score-value" id="valuation-score">6.8</span></div>
+              <div class="prog-track"><div class="prog-bar prog-ok" id="valuation-bar" style="width:68%"></div></div>
+              <small class="muted" style="font-size:.78rem;">P/E, forward valuation, growth-adjusted pricing.</small>
+            </div>
+
+            <div class="score-card">
+              <div class="score-card-header"><span class="score-label">📊 Technical</span><span class="score-value" id="technical-score">7.4</span></div>
+              <div class="prog-track"><div class="prog-bar prog-neutral" id="technical-bar" style="width:74%"></div></div>
+              <small class="muted" style="font-size:.78rem;">Trend, RSI, support/resistance, volume, momentum.</small>
+            </div>
+
+            <div class="score-card">
+              <div class="score-card-header"><span class="score-label">🌍 Market Context</span><span class="score-value" id="market-score">7.9</span></div>
+              <div class="prog-track"><div class="prog-bar prog-neutral" id="market-bar" style="width:79%"></div></div>
+              <small class="muted" style="font-size:.78rem;">Sector strength, macro backdrop, event risk.</small>
+            </div>
+
+            <div class="summary-box" id="summary-card">
+              NVDA shows strong business quality and market leadership, but valuation remains elevated. For a patient investor, this looks more attractive on a pullback than on a chase.
+            </div>
+
+            <div style="margin-top:.75rem;" id="insight-list">
+              <div class="insight-item">Growth profile remains strong compared with many large-cap peers.</div>
+              <div class="insight-item">Valuation is not cheap, so entry timing still matters.</div>
+              <div class="insight-item">Technical trend is healthy, but waiting near support may improve risk/reward.</div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /qg-grid -->
+    </div>
+  </section>
+
+  <!-- ── Watchlist ── -->
+  <section class="section" id="watchlist-section">
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;">
+        <div>
+          <h2 style="margin:0;font-size:1.1rem;">📋 Watchlist</h2>
+          <div class="muted" style="font-size:.85rem;margin-top:3px;">From your Supabase <code>watchlist</code> table. Add or remove the currently entered ticker.</div>
+        </div>
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+          <span id="watchlist-toolbar-note" class="muted" style="font-size:.82rem;">Manage directly from this analyzer.</span>
+          <button class="btn ghost" type="button" id="add-watchlist-btn" style="font-size:.85rem;padding:.4rem .85rem;">+ Add Ticker</button>
+          <button class="btn ghost" type="button" id="remove-watchlist-btn" style="font-size:.85rem;padding:.4rem .85rem;">− Remove</button>
+        </div>
+      </div>
+      <div id="watchlist-helper" class="muted" style="font-size:.82rem;margin-bottom:.5rem;min-height:1em;"></div>
+      <div style="overflow-x:auto;">
+        <table class="wl-table">
+          <thead><tr><th>Ticker</th><th>Mode</th><th>Overall View</th><th>Signal</th></tr></thead>
+          <tbody id="watchlist-body">
+            <tr><td colspan="4" style="text-align:center;color:var(--muted);padding:18px;">Loading watchlist…</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Recent Analyses ── -->
+  <section class="section" id="history-section">
+    <div class="card">
+      <div style="margin-bottom:1rem;">
+        <h2 style="margin:0;font-size:1.1rem;">🕘 Recent Analyses</h2>
+        <div class="muted" style="font-size:.85rem;margin-top:3px;">Saved records from your <code>stock_analysis</code> Supabase table. Click any row to reload it into the panel.</div>
+      </div>
+      <div id="history-list"><div class="history-empty">Loading recent analyses…</div></div>
+    </div>
+  </section>
+
+</main>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer>
+  <div class="container">
+    <div class="cols">
+      <div><h4>Arowana Profits</h4><p>AI-powered tools and education for traders and investors.</p></div>
+      <div><h4>Solutions</h4><ul>
+        <li><a href="short-term-dashboard.html">Trading Dashboard</a></li>
+        <li><a href="long-term-dashboard.html">Long-Term Dashboard</a></li>
+        <li><a href="learn-investing.html">Learning Center</a></li>
+      </ul></div>
+      <div><h4>Company</h4><ul>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="careers.html">Careers</a></li>
+      </ul></div>
+      <div><h4>Legal</h4><p><strong>Disclaimer:</strong> We do not provide investment advice. Investing involves risk, including loss of principal.</p></div>
+    </div>
+    <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
+  </div>
+</footer>
+
+<!-- ============================================================
+     AUTH SCRIPTS — exact load order from short-term-dashboard.html
+     ============================================================ -->
+<script src="/js/supabase.min.js"></script>
+<script>window.GS_CONFIG_URL="/js/config.json";window.GS_CONFIG_PATH="/js/config.json";</script>
+<script src="/js/app-config.js"></script>
+<script src="/js/auth-header.js"></script>
+<script>window.GSAuthHeader&&window.GSAuthHeader.init({loginUrl:"./login.html",afterLogoutUrl:"./index.html"});</script>
+
+<!-- Mobile burger — exact pattern from short-term-dashboard.html -->
+<script>
+(function(){
+  const KEY_USER="gs_auth_user_v1",burger=document.getElementById("apBurger"),menu=document.getElementById("mobileMenu"),grid=document.getElementById("mobileAuthGrid");
+  if(!burger||!menu)return;
+  function readUser(){try{return JSON.parse(localStorage.getItem(KEY_USER)||"null");}catch(_){return null;}}
+  function syncAuth(){
+    if(!grid)return; grid.innerHTML="";
+    const u=readUser();
+    if(u&&(u.email||u.name)){
+      const a1=document.createElement("a");a1.href="account.html";a1.className="mobile-auth-link";a1.innerHTML='<span class="ap-emoji">🧑‍💼</span> Account';grid.appendChild(a1);
+      const a2=document.createElement("a");a2.href="#";a2.className="mobile-auth-link";a2.innerHTML='<span class="ap-emoji">🚪</span> Log out';
+      a2.addEventListener("click",e=>{e.preventDefault();const b=document.getElementById("user-signout-btn");if(b)b.click();else{try{localStorage.removeItem(KEY_USER);}catch(_){}window.location.href="index.html";}});grid.appendChild(a2);
+    }else{const a=document.createElement("a");a.href="login.html";a.className="mobile-auth-link";a.innerHTML='<span class="ap-emoji">🪪</span> Log in';grid.appendChild(a);}
+  }
+  function setOpen(o){menu.setAttribute("data-open",o?"true":"false");menu.setAttribute("aria-hidden",o?"false":"true");burger.setAttribute("aria-expanded",o?"true":"false");if(o)syncAuth();}
+  burger.addEventListener("click",()=>setOpen(menu.getAttribute("data-open")!=="true"));
+  window.addEventListener("storage",e=>{if(e.key===KEY_USER)syncAuth();});
+  const mq=window.matchMedia("(min-width:769px)");if(mq?.addEventListener)mq.addEventListener("change",e=>{if(e.matches)setOpen(false);});
+})();
+(function(){
+  const t=document.getElementById("user-menu-toggle"),d=document.getElementById("user-menu-dropdown");
+  if(!t||!d)return;
+  t.addEventListener("click",()=>{const o=d.style.display==="block";d.style.display=o?"none":"block";t.setAttribute("aria-expanded",String(!o));});
+  document.addEventListener("click",e=>{if(!t.contains(e.target)&&!d.contains(e.target)){d.style.display="none";t.setAttribute("aria-expanded","false");}});
+})();
+</script>
+
+<!-- ============================================================
+     SUPABASE + ANALYZER LOGIC
+     ============================================================ -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ── Config ── */
+const SUPABASE_URL      = 'https://pbojacnagutipfhcxltj.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBib2phY25hZ3V0aXBmaGN4bHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDkwODAsImV4cCI6MjA2MzU4NTA4MH0.ZLCcAzTYljoZycpBGwMtthP5VyAJ4schuIvt4HibGc0';
+const WATCHLIST_TABLE       = 'watchlist';
+const STOCK_ANALYSIS_TABLE  = 'stock_analysis';
+const WATCHLIST_LIMIT       = 8;
+const HISTORY_LIMIT         = 8;
+const LS_WEBHOOK_KEY        = 'arowana_analyzer_webhook_url';
+
+const db = (window.supabase && !SUPABASE_URL.includes('YOUR_PROJECT'))
+  ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+/* ── DOM refs ── */
+const tickerInput  = document.getElementById('ticker');
+const modeSelect   = document.getElementById('mode');
+const timeframeSel = document.getElementById('timeframe');
+const notesInput   = document.getElementById('notes');
+const webhookInput = document.getElementById('webhook-url');
+const whDot        = document.getElementById('whDot');
+const whStatus     = document.getElementById('whStatus');
+const resultTitle  = document.getElementById('result-title');
+const resultStrat  = document.getElementById('result-strategy');
+const resultRating = document.getElementById('result-rating');
+const summaryEl    = document.getElementById('summary-card');
+const insightEl    = document.getElementById('insight-list');
+const wlBody       = document.getElementById('watchlist-body');
+const historyList  = document.getElementById('history-list');
+const resultLoad   = document.getElementById('resultLoading');
+const resultPanel  = document.getElementById('resultPanel');
+const wlHelper     = document.getElementById('watchlist-helper');
+const wlNote       = document.getElementById('watchlist-toolbar-note');
+const addWlBtn     = document.getElementById('add-watchlist-btn');
+const rmWlBtn      = document.getElementById('remove-watchlist-btn');
+let cachedHistory  = [];
+
+/* ── Helpers ── */
+function toast(msg,type='ok'){
+  const el=document.createElement('div');el.className='toast';
+  el.style.borderLeft=`4px solid ${{ok:'#16a34a',err:'#ef4444',warn:'#f59e0b'}[type]||'#16a34a'}`;
+  el.textContent=msg;document.getElementById('toastStack').appendChild(el);setTimeout(()=>el.remove(),4200);
+}
+function esc(v){const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML;}
+function clamp(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.min(10,n)):5;}
+function setWhStatus(msg,state=''){whDot.className='wh-dot'+(state?' '+state:'');whStatus.textContent=msg;}
+function setWlMsg(msg,err=false){if(wlHelper){wlHelper.textContent=msg;wlHelper.style.color=err?'#dc2626':''}}
+function setWlBusy(b,t='Working…'){if(addWlBtn)addWlBtn.disabled=b;if(rmWlBtn)rmWlBtn.disabled=b;if(wlNote)wlNote.textContent=b?t:'Manage directly from this analyzer.';}
+function barCls(s){return s>=7.5?'prog-good':s>=5.5?'prog-ok':'prog-bad';}
+function setBar(id,score){const el=document.getElementById(id);if(!el)return;el.style.width=`${clamp(score)*10}%`;el.className=`prog-bar ${barCls(score)}`;}
+function ratingInfo(s){if(s>=8)return{text:'⭐ Strong',cls:'grade-strong'};if(s>=6)return{text:'⚠️ Neutral',cls:'grade-neutral'};return{text:'❌ Avoid',cls:'grade-avoid'};}
+function signalHtml(label){const n=(label||'').toLowerCase();let c='signal-neutral';if(n.includes('strong')||n.includes('good')||n.includes('buy'))c='signal-good';else if(n.includes('avoid')||n.includes('risk')||n.includes('weak'))c='signal-bad';return`<span class="signal-badge ${c}">${esc(label||'Neutral')}</span>`;}
+function relDate(d){if(!d)return'Recently';const dt=new Date(d);if(isNaN(dt))return'Recently';const h=Math.floor((Date.now()-dt)/3600000),days=Math.floor(h/24);if(h<1)return'Just now';if(h<24)return`${h}h ago`;if(days===1)return'Yesterday';if(days<7)return`${days}d ago`;return dt.toLocaleDateString();}
+function currentTicker(){return(tickerInput.value||'').trim().toUpperCase();}
+function currentModeLabel(){return modeSelect.options[modeSelect.selectedIndex]?.text||'Balanced View';}
+function currentSignal(){const t=resultRating.textContent||'';if(t.includes('Strong'))return'Strong';if(t.includes('Avoid'))return'Avoid';return'Neutral';}
+
+/* ── Render result ── */
+function renderAnalysis(data){
+  const overall=clamp(data.overall);
+  const r=ratingInfo(overall);
+  resultTitle.textContent=`${data.ticker||'—'} — ${data.modeLabel||''}`;
+  resultStrat.textContent=data.strategy||'';
+  resultRating.textContent=r.text; resultRating.className=`grade-pill ${r.cls}`;
+  summaryEl.textContent=data.summary||'';
+  document.getElementById('fundamental-score').textContent=clamp(data.fundamentals).toFixed(1);
+  document.getElementById('valuation-score').textContent=clamp(data.valuation).toFixed(1);
+  document.getElementById('technical-score').textContent=clamp(data.technical).toFixed(1);
+  document.getElementById('market-score').textContent=clamp(data.market).toFixed(1);
+  setBar('fundamental-bar',data.fundamentals); setBar('valuation-bar',data.valuation);
+  setBar('technical-bar',data.technical);       setBar('market-bar',data.market);
+  const ins=Array.isArray(data.insights)?data.insights:[];
+  insightEl.innerHTML=ins.map(i=>`<div class="insight-item">${esc(i)}</div>`).join('');
+  resultLoad.classList.remove('show'); resultPanel.style.display='';
+}
+
+/* ── Demo fallback ── */
+function demoAnalysis(){
+  const ticker=currentTicker()||'NVDA', mode=modeSelect.value;
+  const p={balanced:{f:8.2,v:6.7,t:7.1,m:7.6,s:'balanced accumulation or sell put on a pullback'},longterm:{f:8.8,v:6.5,t:6.8,m:7.4,s:'buy in stages and avoid chasing extended moves'},trading:{f:7.6,v:6.2,t:8.1,m:7.2,s:'focus on trend, support, and tight risk control'},options:{f:8.0,v:6.6,t:7.0,m:7.9,s:'prioritize covered calls or puts when IV and support align'}}[mode]||{f:8.2,v:6.7,t:7.1,m:7.6,s:'balanced accumulation or sell put on a pullback'};
+  return{ticker,modeLabel:currentModeLabel(),timeframeLabel:timeframeSel.options[timeframeSel.selectedIndex]?.text||'',fundamentals:p.f,valuation:p.v,technical:p.t,market:p.m,overall:((p.f+p.v+p.t+p.m)/4),strategy:`Suggested strategy: ${p.s}.`,summary:`${ticker} fits a ${currentModeLabel().toLowerCase()} approach. Entry timing and valuation should guide the next move.`,insights:[`${ticker} reviewed across four dimensions: fundamentals, valuation, technicals, and market context.`,`The selected horizon of ${timeframeSel.options[timeframeSel.selectedIndex]?.text||''} should shape your entry.`,`This is demo data — paste your n8n webhook URL above and click Analyze to get live AI results.`]};
+}
+
+/* ── Webhook URL persistence ── */
+function getWebhookUrl(){return(webhookInput&&webhookInput.value.trim())||localStorage.getItem(LS_WEBHOOK_KEY)||'';}
+function loadSavedWebhook(){const s=localStorage.getItem(LS_WEBHOOK_KEY)||'';if(webhookInput)webhookInput.value=s;if(s)setWhStatus('Webhook loaded from storage.','ok');}
+document.getElementById('save-webhook').addEventListener('click',()=>{
+  const url=webhookInput?webhookInput.value.trim():'';
+  if(!url){setWhStatus('Paste a URL first.','err');return;}
+  localStorage.setItem(LS_WEBHOOK_KEY,url);setWhStatus('Webhook URL saved!','ok');toast('Webhook saved ✓');
+});
+
+/* ── Core: run analysis via n8n ── */
+async function runAnalysis(){
+  const ticker=currentTicker();
+  if(!ticker){toast('Enter a ticker first','err');return;}
+  const url=getWebhookUrl();
+  if(!url){setWhStatus('No webhook — showing demo data. Paste your n8n URL above.','err');renderAnalysis(demoAnalysis());refreshSupabasePanels();return;}
+  resultLoad.classList.add('show');resultPanel.style.display='none';
+  setWhStatus('Calling n8n workflow…','spin');
+  const payload={ticker,mode:modeSelect.value||'balanced',timeframe:timeframeSel.value||'1-3y',notes:(notesInput.value||'').trim()};
+  try{
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok)throw new Error(`Webhook returned HTTP ${res.status} ${res.statusText}`);
+    const text=await res.text();
+    let data;try{data=JSON.parse(text);}catch(e){throw new Error('n8n returned non-JSON. Check your Respond to Webhook node.');}
+    if(Array.isArray(data)&&data[0]?.json)data=data[0].json;
+    if(data?.data&&typeof data.data==='object')data=data.data;
+    if(!data.ticker&&data.fundamentals===undefined)throw new Error('Response missing expected keys. Check your Format Response node.');
+    setWhStatus(`✅ Analysis complete for ${data.ticker||ticker}`,'ok');
+    renderAnalysis(data);refreshSupabasePanels();toast(`Analysis ready for ${data.ticker||ticker} ✓`);
+  }catch(err){
+    console.error('Analyzer error:',err);
+    setWhStatus(`❌ ${err.message} — showing demo fallback.`,'err');
+    toast(err.message,'err');renderAnalysis(demoAnalysis());
+  }
+}
+
+/* ── Supabase: watchlist ── */
+async function loadWatchlist(){
+  if(!db){wlBody.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px;">Supabase not configured.</td></tr>`;return;}
+  const{data,error}=await db.from(WATCHLIST_TABLE).select('ticker,mode,mode_label,overall_view,note,description,signal,rating,sort_order').eq('is_active',true).order('sort_order',{ascending:true,nullsFirst:false}).order('ticker',{ascending:true}).limit(WATCHLIST_LIMIT);
+  if(error){wlBody.innerHTML=`<tr><td colspan="4" style="text-align:center;color:#dc2626;padding:16px;">Error: ${esc(error.message)}</td></tr>`;return;}
+  if(!data?.length){wlBody.innerHTML=`<tr><td colspan="4" style="text-align:center;color:var(--muted);padding:16px;">No watchlist entries yet.</td></tr>`;return;}
+  wlBody.innerHTML=data.map(r=>`<tr><td><strong>${esc((r.ticker||'').toUpperCase())}</strong></td><td>${esc(r.mode_label||r.mode||'Balanced')}</td><td>${esc(r.overall_view||r.note||r.description||'—')}</td><td>${signalHtml(r.signal||r.rating||'Neutral')}</td></tr>`).join('');
+}
+async function addToWatchlist(){
+  const ticker=currentTicker();if(!ticker){setWlMsg('Enter a ticker first.',true);return;}if(!db){setWlMsg('Supabase not configured.',true);return;}
+  setWlBusy(true,`Adding ${ticker}…`);setWlMsg(`Saving ${ticker}…`);
+  const{error}=await db.from(WATCHLIST_TABLE).upsert({ticker,mode:modeSelect.value||null,mode_label:currentModeLabel(),overall_view:(notesInput.value||'').trim()||`${currentModeLabel()} focus`,signal:currentSignal(),is_active:true},{onConflict:'ticker'});
+  if(error){setWlBusy(false);setWlMsg(`Could not add ${ticker}: ${error.message}`,true);return;}
+  await loadWatchlist();setWlBusy(false);setWlMsg(`${ticker} added.`);toast(`${ticker} added to watchlist ✓`);
+}
+async function removeFromWatchlist(){
+  const ticker=currentTicker();if(!ticker){setWlMsg('Enter a ticker first.',true);return;}if(!db){setWlMsg('Supabase not configured.',true);return;}
+  setWlBusy(true,`Removing ${ticker}…`);setWlMsg(`Removing ${ticker}…`);
+  const{error}=await db.from(WATCHLIST_TABLE).delete().eq('ticker',ticker);
+  if(error){setWlBusy(false);setWlMsg(`Could not remove ${ticker}: ${error.message}`,true);return;}
+  await loadWatchlist();setWlBusy(false);setWlMsg(`${ticker} removed.`);toast(`${ticker} removed`,'warn');
+}
+
+/* ── Supabase: history ── */
+async function loadHistory(){
+  if(!db){historyList.innerHTML='<div class="history-empty">Supabase not configured.</div>';return;}
+  const{data,error}=await db.from(STOCK_ANALYSIS_TABLE).select('ticker,mode_label,timeframe_label,fundamentals,valuation,technical,market,overall_score,overall,strategy,summary,insights,created_at').order('created_at',{ascending:false}).limit(HISTORY_LIMIT);
+  if(error){historyList.innerHTML=`<div class="history-empty" style="color:#dc2626;">Error: ${esc(error.message)}</div>`;return;}
+  if(!data?.length){historyList.innerHTML='<div class="history-empty">No saved analyses yet.</div>';return;}
+  cachedHistory=data;
+  historyList.innerHTML=data.map((row,i)=>{
+    const ov=clamp(row.overall_score??row.overall??0);
+    const bc=ov>=8?'signal-good':ov<6?'signal-bad':'signal-neutral';
+    return`<div class="history-item${i===0?' active-history':''}" data-idx="${i}"><div><strong>${esc((row.ticker||'').toUpperCase())}</strong><span>${esc(row.mode_label||'Balanced View')}</span><small>${relDate(row.created_at)}</small></div><span class="signal-badge ${bc}">Overall ${ov.toFixed(1)}</span></div>`;
+  }).join('');
+  historyList.querySelectorAll('.history-item').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const row=cachedHistory[Number(el.dataset.idx)];if(!row)return;
+      historyList.querySelectorAll('.history-item').forEach(x=>x.classList.remove('active-history'));
+      el.classList.add('active-history');
+      let ins=[];if(Array.isArray(row.insights))ins=row.insights;else if(typeof row.insights==='string'){try{ins=JSON.parse(row.insights);}catch(_){}}
+      renderAnalysis({ticker:(row.ticker||'').toUpperCase(),modeLabel:row.mode_label||'Balanced View',timeframeLabel:row.timeframe_label||'',fundamentals:row.fundamentals??0,valuation:row.valuation??0,technical:row.technical??0,market:row.market??0,overall:row.overall_score??row.overall??0,strategy:row.strategy||'Review before acting.',summary:row.summary||'Loaded from Supabase history.',insights:ins});
+      tickerInput.value=(row.ticker||'').toUpperCase();
+    });
+  });
+  if(data[0])historyList.querySelector('.history-item')?.click();
+}
+
+async function refreshSupabasePanels(){await Promise.all([loadWatchlist(),loadHistory()]);}
+
+/* ── Bindings ── */
+document.getElementById('analyzer-form').addEventListener('submit',e=>{e.preventDefault();runAnalysis();});
+document.getElementById('load-demo').addEventListener('click',()=>{renderAnalysis(demoAnalysis());refreshSupabasePanels();});
+if(addWlBtn)addWlBtn.addEventListener('click',addToWatchlist);
+if(rmWlBtn)rmWlBtn.addEventListener('click',removeFromWatchlist);
+document.querySelectorAll('.ticker-chip').forEach(btn=>btn.addEventListener('click',()=>{tickerInput.value=btn.dataset.ticker||'';tickerInput.focus();}));
+
+/* ── Init ── */
+loadSavedWebhook();
+renderAnalysis({ticker:'NVDA',modeLabel:'Balanced View',timeframeLabel:'1–3 Years',fundamentals:8.7,valuation:6.8,technical:7.4,market:7.9,overall:7.7,strategy:'Suggested strategy: Wait for pullback or sell put on strength.',summary:'NVDA shows strong business quality and market leadership, but valuation remains elevated. More attractive on a pullback than on a chase.',insights:['Growth profile remains strong compared with many large-cap peers.','Valuation is not cheap, so entry timing still matters.','Technical trend is healthy, but waiting near support may improve risk/reward.']});
+refreshSupabasePanels();
+</script>
+
+
+<script>
+/* ── V1 Auth/Nav JS ── */
+(function(){
+  var fy=document.getElementById('footYear'); if(fy) fy.textContent=new Date().getFullYear();
+  var aKeys=['gs_auth_user_v1','gs_session','ap_session','sb-access-token'];
+  var u=JSON.parse(localStorage.getItem('gs_auth_user_v1')||'null');
+  var has=u||aKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+  var si=document.getElementById('navSignIn'),su=document.getElementById('navSignUp'),dd=document.getElementById('navUserDrop');
+  if(has){
+    if(si)si.style.display='none';if(su)su.style.display='none';if(dd)dd.classList.add('show');
+    var n=u&&(u.name||u.full_name||(u.email?u.email.split('@')[0]:null))||'Account';
+    var nm=document.getElementById('navUserName');if(nm)nm.textContent=n;
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="account.html">&#128282; My Account</a><a class="mob-link" id="v1MobOut" href="#">&#128682; Sign Out</a>';
+    var mo=document.getElementById('v1MobOut');if(mo)mo.addEventListener('click',function(e){e.preventDefault();aKeys.forEach(function(k){localStorage.removeItem(k);});location.href='index.html';});
+  }else{
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="login.html">&#128272; Sign In</a><a class="mob-link" href="signup.html">&#128640; Start Free</a>';
+  }
+  var utog=document.getElementById('navUserBtn'),drop=document.getElementById('navUserDrop');
+  if(utog&&drop){utog.addEventListener('click',function(e){e.stopPropagation();drop.classList.toggle('open');});document.addEventListener('click',function(){drop.classList.remove('open');});}
+  var sob=document.getElementById('navSignOutBtn');
+  if(sob)sob.addEventListener('click',function(){aKeys.forEach(function(k){localStorage.removeItem(k);});location.href='index.html';});
+  var burger=document.getElementById('navBurger'),mm=document.getElementById('mobMenu');
+  if(burger&&mm)burger.addEventListener('click',function(){mm.setAttribute('data-open',mm.getAttribute('data-open')==='true'?'false':'true');});
+})();
+</script>
+</body>
+</html>

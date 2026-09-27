@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Chart Analyzer — Arowana Profits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--brand-light:#1a6bbb;
+  --accent:#16a34a;--bg:#f6f8fb;--panel:#ffffff;
+  --ink:#0d1b2a;--text:#111827;--muted:#64748b;
+  --border:#e2e8f0;--ring:rgba(11,79,138,0.22);
+  --page-width:min(1160px,96vw);
+  --radius:16px;
+  --shadow:0 4px 20px rgba(11,79,138,.08);
+  --shadow-lg:0 8px 32px rgba(11,79,138,.13);
+  --blue:#0b4f8a;--blue-700:#083c69;--green:#16a34a;--amber:#f59e0b;--red:#dc2626;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+.muted{color:var(--muted)}
+
+/* ── Header ── */
+.header-bar{width:100%;background:var(--brand);color:#fff;position:sticky;top:0;z-index:40;}
+.ap-nav{max-width:1200px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
+.ap-left{display:flex;align-items:center;gap:18px;min-width:0;}
+.ap-right{display:flex;align-items:center;gap:18px}
+.ap-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;white-space:nowrap;}
+.ap-logo{width:44px;height:44px;border-radius:999px;object-fit:contain;}
+.ap-title{font-weight:800;font-size:1.35rem;letter-spacing:.2px}
+.ap-nav-main{display:flex;align-items:center;gap:10px;}
+.ap-tab{display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none;padding:10px;border-radius:7px;background:rgba(255,255,255,.10);font-weight:700;transition:background .2s;}
+.ap-tab:hover{background:rgba(255,255,255,.18);}
+.ap-tab.is-active{background:rgba(255,255,255,.22);}
+.dropdown{position:relative;display:inline-flex;align-items:center;}
+.ap-tab.dropdown-toggle{padding-right:22px;cursor:pointer;position:relative;}
+.ap-tab.dropdown-toggle::after{content:'▼';font-size:8px;position:absolute;right:7px;top:50%;transform:translateY(-50%);opacity:.8;}
+.dropdown-content{display:none;position:absolute;min-width:280px;z-index:100;top:100%;left:0;background:#063f73;border:1px solid rgba(255,255,255,.1);border-radius:7px;padding:8px 0;box-shadow:0 8px 16px rgba(0,0,0,.3);max-height:85vh;overflow-y:auto;}
+.dropdown-content a{color:#eaf1f9;padding:10px 16px;display:block;white-space:nowrap;font-weight:400;font-size:.95rem;}
+.dropdown-content a:hover{background:rgba(255,255,255,.1)}
+.dropdown-header{color:#fff;font-size:.72rem;font-weight:700;padding:10px 16px 5px;text-transform:uppercase;pointer-events:none;}
+.dropdown-separator{height:1px;background:rgba(255,255,255,.1);margin:5px 0;}
+@media(hover:hover) and (pointer:fine){.dropdown:hover>.dropdown-content,.dropdown:focus-within>.dropdown-content{display:block;}}
+.user-menu{position:relative;}
+.user-menu-toggle{display:inline-flex;align-items:center;gap:.5rem;border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);color:#fff;padding:7px 10px;border-radius:7px;cursor:pointer;font-weight:700;line-height:1;font-family:inherit;}
+.user-menu-toggle:hover{background:rgba(255,255,255,.16);}.user-menu-toggle::after{content:'▼';font-size:8px;margin-left:6px;opacity:.85;}
+.user-menu-dropdown{position:absolute;right:0;top:calc(100% + 10px);min-width:200px;background:#063f73;color:#eaf1f9;border:1px solid rgba(255,255,255,.10);border-radius:7px;box-shadow:0 18px 40px rgba(0,0,0,.35);padding:8px;display:none;z-index:2000;}
+.user-menu-dropdown button{width:100%;display:flex;align-items:center;gap:10px;padding:10px;background:transparent;border:0;color:#eaf1f9;cursor:pointer;font-weight:700;border-radius:7px;text-align:left;font-family:inherit;}
+.user-menu-dropdown button:hover{background:rgba(255,255,255,.10);}
+.user-menu-dropdown .user-sep{height:1px;background:rgba(255,255,255,.12);margin:6px 0;}
+.ap-emoji{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:7px;background:rgba(255,255,255,.16);font-size:14px;line-height:1;}
+.ap-burger{display:none;border:none;background:rgba(255,255,255,.08);color:#f9fafb;border-radius:7px;padding:6px 10px;font-size:1.1rem;cursor:pointer;}
+#mobileMenu{display:none;position:fixed;top:64px;left:0;right:0;z-index:35;background:#063f73;border-top:1px solid rgba(255,255,255,.12);box-shadow:0 18px 40px rgba(0,0,0,.35);}
+#mobileMenu[data-open="true"]{display:block;}
+.mobile-menu-panel{max-width:1200px;margin:0 auto;padding:8px 12px 16px;display:flex;flex-direction:column;gap:8px;}
+.mobile-main-links a{display:flex;align-items:center;gap:10px;padding:10px 14px;color:#eaf1f9;text-decoration:none;font-size:.95rem;font-weight:600;}
+.mobile-main-links a:hover{background:rgba(255,255,255,.10);}
+.mobile-divider{height:1px;background:rgba(255,255,255,.12);margin:6px 0;}
+.mobile-auth-link{width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;color:#eaf1f9;text-decoration:none;font-size:.95rem;font-weight:700;}
+@media(max-width:900px){#navMain{display:none;}#navTop{display:none;}.ap-burger{display:inline-flex;align-items:center;justify-content:center;}}
+
+/* ── Footer ── */
+footer{background:var(--brand);color:#d7dae0;padding:20px 0;margin-top:auto}
+footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+footer h4{margin:0 0 6px}footer a{color:#b6c3d6}
+.foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+@media(max-width:640px){footer .cols{grid-template-columns:1fr}footer .cols>div:nth-child(2),footer .cols>div:nth-child(3){display:none}}
+
+/* ── Base components ── */
+.card{background:var(--panel);box-shadow:var(--shadow);width:100%;border:1px solid var(--border);border-radius:var(--radius);padding:18px;}
+.section{margin:1rem 0}
+.btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:7px;padding:.6rem 1rem;font-weight:600;cursor:pointer;font-size:.95rem;font-family:inherit;transition:background .15s,transform .1s;}
+.btn.blue{background:var(--blue);color:#fff}.btn.blue:hover{background:var(--blue-700)}
+.btn.green{background:var(--green);color:#fff}.btn.green:hover{background:#15803d}
+.btn.ghost{background:#fff;border:1px solid var(--border);color:#1f2937}.btn.ghost:hover{background:#f9fafb}
+.btn.amber{background:var(--amber);color:#fff}.btn.amber:hover{background:#d97706}
+.btn:disabled{opacity:.5;cursor:not-allowed;transform:none!important;}
+.input{padding:.65rem 1rem;border:1px solid var(--border);border-radius:7px;font-size:.95rem;font-family:inherit;color:var(--text);background:#fff;width:100%;}
+.input:focus{outline:none;box-shadow:0 0 0 3px var(--ring);}
+select.input{cursor:pointer}textarea.input{resize:vertical;}
+.field-label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:.35rem;}
+.note-box{background:#ecfeff;border-left:4px solid var(--blue);padding:.75rem .9rem;border-radius:7px;font-size:.9rem;}
+.success-box{background:#ecfdf5;border-left:4px solid #22c55e;padding:.75rem .9rem;border-radius:7px;color:#065f46;font-size:.9rem;}
+.error-box{background:#fee2e2;border-left:4px solid #ef4444;padding:.75rem .9rem;border-radius:7px;color:#991b1b;font-size:.9rem;}
+.warn-box{background:#fef3c7;border-left:4px solid var(--amber);padding:.75rem .9rem;border-radius:7px;color:#92400e;font-size:.9rem;}
+
+/* ── Main two-col layout ── */
+.analyzer-grid{display:grid;gap:1rem;align-items:start;}
+@media(min-width:900px){.analyzer-grid{grid-template-columns:1fr 1fr;}}
+
+/* ── DROPZONE — always visible, large, inviting ── */
+.dropzone{
+  border:2px dashed #cbd5e1;border-radius:12px;
+  background:linear-gradient(135deg,#f8fafc,#eff6ff);
+  padding:0;cursor:pointer;transition:all .2s;
+  position:relative;overflow:hidden;
+  min-height:240px;display:flex;flex-direction:column;
+}
+.dropzone:hover,.dropzone.drag-over{border-color:var(--brand);background:linear-gradient(135deg,#eff6ff,#dbeafe);}
+.dropzone:focus-within{box-shadow:0 0 0 3px var(--ring);border-color:var(--brand);}
+.dropzone.has-image{border-style:solid;border-color:#94a3b8;}
+
+/* Dropzone empty state */
+.dz-empty{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px 20px;gap:12px;flex:1;text-align:center;}
+.dz-icon{font-size:2.5rem;line-height:1;}
+.dz-title{font-weight:700;font-size:1rem;color:#374151;}
+.dz-sub{font-size:.85rem;color:var(--muted);line-height:1.5;max-width:280px;}
+.dz-methods{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:4px;}
+.dz-badge{background:#e0f2fe;color:#0369a1;border:1px solid #bae6fd;border-radius:999px;padding:.2rem .65rem;font-size:.78rem;font-weight:700;}
+
+/* Dropzone with image */
+.dz-preview-wrap{position:relative;flex:1;display:flex;flex-direction:column;}
+.dz-img{width:100%;height:100%;object-fit:contain;display:none;max-height:360px;padding:8px;}
+.dz-img.show{display:block;}
+.dz-img-actions{position:absolute;top:8px;right:8px;display:flex;gap:.4rem;}
+.dz-chip{background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:6px;padding:.3rem .65rem;font-size:.78rem;font-weight:700;cursor:pointer;backdrop-filter:blur(4px);}
+.dz-chip:hover{background:rgba(0,0,0,.75);}
+.dz-filename{font-size:.78rem;color:var(--muted);padding:.35rem .75rem .5rem;text-align:center;border-top:1px solid var(--border);}
+
+/* Multi-image strip */
+.img-strip{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem;}
+.img-thumb{position:relative;width:68px;height:52px;border-radius:7px;overflow:hidden;border:2px solid transparent;cursor:pointer;flex-shrink:0;transition:border-color .15s;}
+.img-thumb.active{border-color:var(--brand);}
+.img-thumb img{width:100%;height:100%;object-fit:cover;}
+.img-thumb .remove-thumb{position:absolute;top:2px;right:2px;background:rgba(0,0,0,.6);color:#fff;border:none;border-radius:4px;font-size:10px;padding:1px 4px;cursor:pointer;line-height:1.4;}
+.img-thumb .tf-label{position:absolute;bottom:2px;left:2px;background:rgba(11,79,138,.85);color:#fff;font-size:9px;font-weight:700;padding:1px 4px;border-radius:3px;}
+.add-chart-btn{width:68px;height:52px;border-radius:7px;border:2px dashed #cbd5e1;background:#f8fafc;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.4rem;color:var(--muted);transition:all .15s;flex-shrink:0;}
+.add-chart-btn:hover{border-color:var(--brand);color:var(--brand);background:#eff6ff;}
+
+/* ── Indicator tags ── */
+.indicator-grid{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.35rem;}
+.ind-tag{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .65rem;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;user-select:none;transition:all .15s;color:#374151;}
+.ind-tag.selected{background:#dbeafe;border-color:#93c5fd;color:#1d4ed8;}
+.ind-tag.selected::before{content:'✓ ';}
+
+/* ── Trade context chips ── */
+.context-chips{display:flex;flex-wrap:wrap;gap:.4rem;margin-top:.35rem;}
+.ctx-chip{padding:.3rem .7rem;border-radius:999px;border:1px solid var(--border);background:#fff;font-size:.82rem;font-weight:600;cursor:pointer;color:#374151;transition:all .15s;}
+.ctx-chip.selected{background:#dcfce7;border-color:#86efac;color:#15803d;}
+
+/* ── Progress bar ── */
+.prog-wrap{height:6px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin-top:.4rem;}
+.prog-fill{height:100%;background:var(--blue);transition:width .25s ease;width:0%;}
+
+/* ── Result panel ── */
+.result-section{display:none;}
+.result-section.show{display:block;}
+
+.result-header{display:flex;align-items:flex-start;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin-bottom:1rem;}
+.verdict-pill{display:inline-flex;align-items:center;padding:.4rem 1rem;border-radius:999px;font-size:.9rem;font-weight:800;white-space:nowrap;}
+.verdict-bull{background:#dcfce7;color:#166534;border:1px solid #86efac;}
+.verdict-bear{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5;}
+.verdict-neutral{background:#fef3c7;color:#92400e;border:1px solid #fde68a;}
+
+.result-grid{display:grid;gap:.65rem;}
+@media(min-width:700px){.result-grid{grid-template-columns:repeat(2,1fr);}}
+
+.result-card{background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:12px 14px;}
+.result-card-label{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin-bottom:4px;}
+.result-card-value{font-size:.95rem;font-weight:600;color:#0f172a;line-height:1.5;}
+.result-card-value.level{font-size:1.05rem;font-weight:800;font-variant-numeric:tabular-nums;}
+
+.result-full{background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:14px;margin-top:.65rem;line-height:1.7;font-size:.9rem;color:#374151;}
+.result-full h4{margin:0 0 6px;font-size:.88rem;font-weight:700;color:#0f172a;}
+
+/* ── History ── */
+.history-bar{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:.75rem;align-items:center;}
+.history-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 12px;border-radius:7px;border:1px solid var(--border);background:#fff;margin-bottom:.4rem;cursor:pointer;transition:.15s;font-size:.88rem;}
+.history-item:hover{background:#f8fafc;transform:translateY(-1px);}
+.history-item.active{border-color:var(--brand);background:#eff6ff;}
+.history-item strong{font-size:.88rem;font-weight:700;}
+.history-item .hi-meta{font-size:.78rem;color:var(--muted);}
+.history-empty{text-align:center;padding:24px;color:var(--muted);font-size:.88rem;}
+
+/* ── Keyboard shortcut hint ── */
+.kbd-hint{display:inline-flex;align-items:center;gap:.3rem;background:#f1f5f9;border:1px solid var(--border);border-radius:6px;padding:.15rem .5rem;font-size:.75rem;color:var(--muted);}
+kbd{background:#fff;border:1px solid #cbd5e1;border-bottom:2px solid #94a3b8;border-radius:4px;padding:1px 5px;font-size:.75rem;font-family:inherit;}
+
+/* ── Paste hint toast (appears once on load) ── */
+.paste-hint{display:flex;align-items:center;gap:.5rem;background:#eff6ff;border:1px solid #bfdbfe;border-radius:7px;padding:.6rem .9rem;font-size:.85rem;color:#1e40af;margin-bottom:.5rem;}
+.paste-hint button{background:none;border:none;color:#93c5fd;cursor:pointer;font-size:1rem;line-height:1;padding:0 0 0 .25rem;margin-left:auto;}
+
+/* ── Status ── */
+.status-row{display:flex;align-items:center;gap:.5rem;font-size:.85rem;color:var(--muted);margin-top:.35rem;}
+.status-dot{width:8px;height:8px;border-radius:50%;background:#6b7280;flex-shrink:0;}
+.status-dot.ok{background:#16a34a;}.status-dot.err{background:#dc2626;}.status-dot.spin{background:#f59e0b;animation:blink 1s infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── Webhook row ── */
+.webhook-row{display:flex;gap:.5rem;flex-wrap:wrap;}
+.webhook-row input{flex:1;min-width:180px;}
+
+/* ── Toast ── */
+.toast-stack{position:fixed;right:16px;bottom:16px;display:grid;gap:.5rem;z-index:9000;}
+.toast{background:#111827;color:#fff;padding:.6rem .9rem;border-radius:7px;box-shadow:0 8px 22px rgba(0,0,0,.25);font-size:.88rem;display:flex;align-items:center;gap:.6rem;max-width:320px;animation:fadeup .2s ease;}
+@keyframes fadeup{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── Page heading ── */
+.page-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;flex-wrap:wrap;margin:20px 0 1rem;}
+.page-head h1{margin:0;font-size:1.75rem;}
+
+@supports(padding:max(0px)){@media(max-width:640px){body{padding-bottom:max(16px,env(safe-area-inset-bottom))}}}
+@media(max-width:640px){.analyzer-grid{grid-template-columns:1fr}.dz-img{max-height:220px;}.result-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<!-- ── HEADER ── -->
+<!-- ═══ V1 NAV ═══ -->
+<div style="position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)">
+<nav style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto">
+  <a href="index.html" style="display:flex;align-items:center;gap:10px;font-family:'Inter Tight',sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;flex:0 0 auto;text-decoration:none">
+    <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" style="width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px" onerror="this.style.display='none'">
+    Arowana Profits
+  </a>
+  <div id="caNavLinks" style="display:flex;align-items:center;gap:3px;flex:1;justify-content:center;overflow-x:auto">
+    <a href="arowana-trader.html" style="color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);text-decoration:none">&#9889; Arowana Trader</a>
+    <a href="portfolio-advisor.html" style="color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);text-decoration:none">&#127974; Portfolio Advisor</a>
+    <div style="width:1px;height:16px;background:rgba(255,255,255,.18);flex:0 0 1px;margin:0 4px"></div>
+    <a href="learn-investing.html" style="color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none">&#128218; Learn</a>
+    <a href="features.html" style="color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none">&#128296; Features</a>
+    <a href="pricing.html" style="color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none">&#128179; Plans</a>
+    <a href="chart-analysis-form.html" style="color:#fff;font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;background:rgba(255,255,255,.18);text-decoration:none">&#128248; Chart Analyzer</a>
+  </div>
+  <button id="caBurger" style="display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer">&#9776;</button>
+  <div style="display:flex;align-items:center;gap:7px;flex:0 0 auto">
+    <a href="login.html" id="caSignIn" style="padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);text-decoration:none">Sign In</a>
+    <div id="caUserDrop" style="position:relative;display:none">
+      <button id="caUserBtn" style="display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600;cursor:pointer">&#128100; <span id="caUserName">Account</span></button>
+      <div id="caUserMenu" style="position:absolute;right:0;top:calc(100% + 8px);min-width:190px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:6px;display:none;z-index:200">
+        <a href="account.html" style="display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:#64748b;font-size:.82rem;font-weight:500;text-decoration:none">&#128282; My Account</a>
+        <div style="height:1px;background:#e2e8f0;margin:3px 0"></div>
+        <a href="arowana-trader.html" style="display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:#64748b;font-size:.82rem;font-weight:500;text-decoration:none">&#9889; Arowana Trader</a>
+        <a href="portfolio-advisor.html" style="display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:#64748b;font-size:.82rem;font-weight:500;text-decoration:none">&#127974; Portfolio Advisor</a>
+        <div style="height:1px;background:#e2e8f0;margin:3px 0"></div>
+        <a href="short-term-dashboard.html" style="display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:#64748b;font-size:.82rem;font-weight:500;text-decoration:none">&#9889; Short-Term Dashboard</a>
+        <a href="long-term-dashboard.html" style="display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:#64748b;font-size:.82rem;font-weight:500;text-decoration:none">&#128200; Long-Term Dashboard</a>
+        <div style="height:1px;background:#e2e8f0;margin:3px 0"></div>
+        <button id="caSignOutBtn" style="display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:#64748b;font-size:.82rem;font-weight:500;background:none;border:none;width:100%;text-align:left;cursor:pointer">&#128682; Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</div>
+<!-- Mobile nav -->
+<div id="caMobileMenu" data-open="false" style="display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:#083c69;border-top:1px solid rgba(255,255,255,.12)">
+  <div style="padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px">
+    <a href="arowana-trader.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#9889; Arowana Trader</a>
+    <a href="portfolio-advisor.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#127974; Portfolio Advisor</a>
+    <a href="short-term-dashboard.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#9889; Short-Term Dashboard</a>
+    <a href="long-term-dashboard.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128200; Long-Term Dashboard</a>
+    <div style="height:1px;background:rgba(255,255,255,.12);margin:4px 0"></div>
+    <a href="learn-investing.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128218; Learn</a>
+    <a href="features.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128296; Features</a>
+    <a href="pricing.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128179; Plans</a>
+    <div style="height:1px;background:rgba(255,255,255,.12);margin:4px 0"></div>
+    <div id="caMobileAuth"></div>
+  </div>
+</div>
+
+<!-- UPGRADE MODAL -->
+<div id="caUpgModal" style="display:none;position:fixed;inset:0;background:rgba(13,27,42,.55);z-index:9999;align-items:center;justify-content:center;padding:20px;backdrop-filter:blur(3px)">
+  <div style="background:#fff;border-radius:20px;padding:36px 32px 28px;max-width:400px;width:100%;text-align:center;box-shadow:0 32px 80px rgba(0,0,0,.2);position:relative">
+    <button onclick="document.getElementById('caUpgModal').style.display='none'" style="position:absolute;top:14px;right:16px;background:none;border:none;font-size:1.1rem;color:#94a3b8;cursor:pointer">&#10005;</button>
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;border-radius:999px;background:rgba(11,79,138,.08);border:1px solid rgba(11,79,138,.15);font-size:.7rem;font-weight:700;color:#0b4f8a;text-transform:uppercase;letter-spacing:.06em;margin-bottom:14px">&#128248; Daily Limit Reached</div>
+    <div style="font-family:'Inter Tight',sans-serif;font-size:1.15rem;font-weight:800;color:#0d1b2a;margin-bottom:8px">You've used your 5 free analyses today</div>
+    <div style="font-size:.86rem;color:#64748b;line-height:1.7;margin-bottom:22px">Upgrade to Pro for unlimited chart analyses every day.</div>
+    <div style="background:#f6f8fb;border-radius:12px;padding:14px 16px;text-align:left;margin-bottom:20px">
+      <div style="font-size:.72rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Pro includes</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <div style="display:flex;align-items:center;gap:8px;font-size:.83rem;color:#0d1b2a"><span style="color:#16a34a;font-weight:800">&#10003;</span> Unlimited Chart Analyzer scans</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.83rem;color:#0d1b2a"><span style="color:#16a34a;font-weight:800">&#10003;</span> Unlimited Arowana Trader AI scans</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.83rem;color:#0d1b2a"><span style="color:#16a34a;font-weight:800">&#10003;</span> Options Analyzer with full AI</div>
+        <div style="display:flex;align-items:center;gap:8px;font-size:.83rem;color:#0d1b2a"><span style="color:#16a34a;font-weight:800">&#10003;</span> All dashboards &amp; broker CSV import</div>
+      </div>
+    </div>
+    <a href="pricing.html" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:13px 24px;border-radius:999px;background:#0b4f8a;color:#fff;font-weight:700;font-size:.95rem;text-decoration:none;margin-bottom:10px">&#128640; Upgrade to Pro &mdash; $19/mo</a>
+    <div style="font-size:.73rem;color:#94a3b8">Resets tomorrow at midnight &bull; 30-day money-back guarantee</div>
+  </div>
+</div>
+
+
+
+<div id="mobileMenu" data-open="false" aria-hidden="true">
+  <div class="mobile-menu-panel">
+    <div class="mobile-main-links">
+      <a href="short-term-dashboard.html">⚡ Short-Term Dashboard</a>
+      <a href="chart-analysis-form.html" aria-current="page">📸 Chart Analyzer</a>
+      <a href="stock-analyzer.html">📈 Stock Analyzer</a>
+      <a href="trade-journal-pro.html">📓 Trade Journal</a>
+    </div>
+    <div class="mobile-divider"></div>
+    <div id="mobileAuthGrid"></div>
+  </div>
+</div>
+
+<!-- ── MAIN ── -->
+<main class="container">
+
+  <div class="page-head">
+    <div>
+      <h1>📸 Chart Analyzer</h1>
+      <p class="muted" style="margin:.25rem 0 0;">Upload, paste, or drag a chart screenshot — get an AI trade plan with entry, stop, targets, and bias.</p>
+    </div>
+    <a class="btn ghost" href="short-term-dashboard.html">← Dashboard</a>
+  </div>
+
+  <!-- Paste hint banner -->
+  <div class="paste-hint" id="pasteHint">
+    <span>💡 <strong>Tip:</strong> Copy any chart on screen and press <kbd>Ctrl+V</kbd> / <kbd>⌘V</kbd> anywhere on this page to instantly load it.</span>
+    <button onclick="dismissHint()" aria-label="Dismiss">✕</button>
+  </div>
+
+  <div class="analyzer-grid">
+
+    <!-- ═══════ LEFT COLUMN — inputs ═══════ -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- CARD 1: Image input -->
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.75rem;">
+          <h2 style="margin:0;font-size:1rem;">📊 Chart Image</h2>
+          <div style="display:flex;gap:.4rem;align-items:center;">
+            <span class="kbd-hint"><kbd>Ctrl</kbd>+<kbd>V</kbd> to paste</span>
+            <label class="btn ghost" style="cursor:pointer;padding:.4rem .8rem;font-size:.85rem;">
+              📎 Upload
+              <input id="caFile" type="file" accept="image/*" multiple style="display:none">
+            </label>
+          </div>
+        </div>
+
+        <!-- Main dropzone -->
+        <div class="dropzone" id="mainDropzone" tabindex="0" role="button" aria-label="Drop, paste, or click to upload a chart screenshot">
+          <div class="dz-empty" id="dzEmpty">
+            <div class="dz-icon">🖼️</div>
+            <div class="dz-title">Drop chart here, paste it, or click Upload</div>
+            <div class="dz-sub">Works with TradingView, ThinkOrSwim, Webull — any chart screenshot</div>
+            <div class="dz-methods">
+              <span class="dz-badge">📋 Paste</span>
+              <span class="dz-badge">🖱️ Drag &amp; Drop</span>
+              <span class="dz-badge">📎 File Upload</span>
+              <span class="dz-badge">📱 Camera Roll</span>
+            </div>
+          </div>
+          <div class="dz-preview-wrap" id="dzPreviewWrap" style="display:none;">
+            <img id="caPreview" class="dz-img show" alt="Chart preview">
+            <div class="dz-img-actions">
+              <button class="dz-chip" onclick="removeActiveImage()" title="Remove this image">✕ Remove</button>
+              <button class="dz-chip" onclick="document.getElementById('caFile').click()" title="Replace with another">🔄 Replace</button>
+            </div>
+            <div class="dz-filename" id="dzFilename">chart.png</div>
+          </div>
+        </div>
+
+        <!-- Multi-chart strip (up to 3 timeframes) -->
+        <div style="margin-top:.6rem;">
+          <div class="field-label" style="margin-bottom:.35rem;">Multiple Timeframes <span class="muted" style="font-weight:400;">(optional — add up to 3 charts)</span></div>
+          <div class="img-strip" id="imgStrip">
+            <div class="add-chart-btn" id="addChartBtn" title="Add another timeframe chart">＋</div>
+          </div>
+          <input id="caFileExtra" type="file" accept="image/*" style="display:none" multiple>
+        </div>
+      </div>
+
+      <!-- CARD 2: Context -->
+      <div class="card" style="padding:16px;">
+        <h2 style="margin:0 0 .75rem;font-size:1rem;">⚙️ Trade Context</h2>
+
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;margin-bottom:.65rem;">
+          <div>
+            <label class="field-label" for="caTicker">Ticker</label>
+            <input id="caTicker" class="input" type="text" placeholder="e.g. NVDA" maxlength="10" oninput="this.value=this.value.toUpperCase()" style="font-weight:700;">
+          </div>
+          <div>
+            <label class="field-label" for="caStyle">Trade Style</label>
+            <select id="caStyle" class="input">
+              <option value="scalp">⚡ Scalp (minutes)</option>
+              <option value="day" selected>📅 Day Trade</option>
+              <option value="swing">📈 Swing (days–weeks)</option>
+              <option value="position">🏦 Position (weeks–months)</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="caTimeframe">Chart Timeframe</label>
+            <select id="caTimeframe" class="input">
+              <option value="1m">1 min</option>
+              <option value="5m">5 min</option>
+              <option value="15m" selected>15 min</option>
+              <option value="30m">30 min</option>
+              <option value="1h">1 hour</option>
+              <option value="4h">4 hour</option>
+              <option value="1d">Daily</option>
+              <option value="1w">Weekly</option>
+            </select>
+          </div>
+          <div>
+            <label class="field-label" for="caSession">Session</label>
+            <select id="caSession" class="input">
+              <option value="premarket">🌅 Premarket</option>
+              <option value="rth" selected>☀️ Regular (RTH)</option>
+              <option value="afterhours">🌙 After Hours</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Indicators visible on chart -->
+        <div style="margin-bottom:.65rem;">
+          <label class="field-label">Indicators on this chart <span class="muted" style="font-weight:400;">(select all that apply)</span></label>
+          <div class="indicator-grid">
+            <span class="ind-tag" data-ind="VWAP" onclick="toggleTag(this)">VWAP</span>
+            <span class="ind-tag" data-ind="RSI" onclick="toggleTag(this)">RSI</span>
+            <span class="ind-tag" data-ind="MACD" onclick="toggleTag(this)">MACD</span>
+            <span class="ind-tag" data-ind="EMA 9/21" onclick="toggleTag(this)">EMA 9/21</span>
+            <span class="ind-tag" data-ind="SMA 50" onclick="toggleTag(this)">SMA 50</span>
+            <span class="ind-tag" data-ind="SMA 200" onclick="toggleTag(this)">SMA 200</span>
+            <span class="ind-tag" data-ind="Bollinger Bands" onclick="toggleTag(this)">BB</span>
+            <span class="ind-tag" data-ind="Volume" onclick="toggleTag(this)">Volume</span>
+            <span class="ind-tag" data-ind="ATR" onclick="toggleTag(this)">ATR</span>
+            <span class="ind-tag" data-ind="Anchored VWAP" onclick="toggleTag(this)">A-VWAP</span>
+          </div>
+        </div>
+
+        <!-- Pattern hints -->
+        <div style="margin-bottom:.65rem;">
+          <label class="field-label">Pattern / Setup I see <span class="muted" style="font-weight:400;">(optional — helps AI focus)</span></label>
+          <div class="context-chips">
+            <span class="ctx-chip" data-ctx="Breakout" onclick="toggleCtx(this)">Breakout</span>
+            <span class="ctx-chip" data-ctx="Pullback" onclick="toggleCtx(this)">Pullback</span>
+            <span class="ctx-chip" data-ctx="VWAP Reclaim" onclick="toggleCtx(this)">VWAP Reclaim</span>
+            <span class="ctx-chip" data-ctx="ORB" onclick="toggleCtx(this)">ORB</span>
+            <span class="ctx-chip" data-ctx="Gap Fill" onclick="toggleCtx(this)">Gap Fill</span>
+            <span class="ctx-chip" data-ctx="Support Bounce" onclick="toggleCtx(this)">Support Bounce</span>
+            <span class="ctx-chip" data-ctx="Resistance Rejection" onclick="toggleCtx(this)">Resistance Rejection</span>
+            <span class="ctx-chip" data-ctx="Trend Continuation" onclick="toggleCtx(this)">Trend Continuation</span>
+            <span class="ctx-chip" data-ctx="Reversal" onclick="toggleCtx(this)">Reversal</span>
+          </div>
+        </div>
+
+        <!-- Free-text notes -->
+        <div>
+          <label class="field-label" for="caNotes">Additional Notes <span class="muted" style="font-weight:400;">(levels, account size, risk tolerance…)</span></label>
+          <textarea id="caNotes" class="input" rows="3" placeholder="e.g. Breakout above $425 on high volume, VWAP reclaim at $421, stop under $418. Account $25k, risk 0.5%."></textarea>
+        </div>
+      </div>
+
+      <!-- CARD 3: AI Status + action -->
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px;">
+          <h2 style="margin:0;font-size:1rem;">&#129302; AI Analysis</h2>
+          <div id="wsStatusChip" style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:.72rem;font-weight:700;background:#f1f5f9;color:#64748b">
+            <span id="wsDot" style="width:7px;height:7px;border-radius:50%;background:#cbd5e1;display:inline-block;flex-shrink:0"></span>
+            <span id="wsStatus">Checking…</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom:12px;display:flex;gap:.5rem;flex-wrap:wrap;">
+          <button class="btn blue" id="analyzeBtn" style="flex:1;min-width:160px;justify-content:center;">
+            &#128269; Analyze Chart
+          </button>
+          <button class="btn ghost" id="clearBtn" style="white-space:nowrap;">&#8635; Clear</button>
+        </div>
+
+        <div style="margin-top:.5rem;">
+          <div class="status-row" id="statusRow" style="display:none;">
+            <span class="status-dot spin" id="statusDot"></span>
+            <span id="statusMsg">Preparing…</span>
+          </div>
+          <div class="prog-wrap" id="progWrap" style="display:none;">
+            <div class="prog-fill" id="progFill"></div>
+          </div>
+        </div>
+
+        <!-- Not configured notice — shown only when no webhook found -->
+        <div id="wsNotConfigured" style="display:none;margin-top:10px;padding:10px 12px;background:#fffbeb;border:1px solid #fde68a;border-radius:9px;font-size:.8rem;color:#92400e;line-height:1.6">
+          &#9888;&#65039; Chart Analyzer webhook not configured.
+          The AI scan requires an active n8n workflow.
+          <a href="admin.html" style="color:#92400e;font-weight:700;margin-left:3px">Configure in Admin &#8594;</a>
+        </div>
+      </div>
+
+    </div><!-- /left col -->
+
+    <!-- ═══════ RIGHT COLUMN — results + history ═══════ -->
+    <div style="display:flex;flex-direction:column;gap:1rem;">
+
+      <!-- Results -->
+      <div class="card" style="padding:16px;" id="resultCard">
+        <div id="resultPlaceholder">
+          <div class="note-box">
+            <strong>Ready to analyze.</strong> Upload or paste a chart screenshot, fill in context, then click <em>Analyze Chart</em>.
+          </div>
+          <div style="margin-top:.75rem;display:grid;gap:.5rem;">
+            <div style="font-size:.85rem;font-weight:700;color:#374151;">What you'll get:</div>
+            <div style="font-size:.85rem;color:var(--muted);display:flex;align-items:flex-start;gap:.4rem;"><span>🎯</span><span>Entry price zone with trigger conditions</span></div>
+            <div style="font-size:.85rem;color:var(--muted);display:flex;align-items:flex-start;gap:.4rem;"><span>🛑</span><span>Stop loss level and invalidation point</span></div>
+            <div style="font-size:.85rem;color:var(--muted);display:flex;align-items:flex-start;gap:.4rem;"><span>🏹</span><span>Target 1, Target 2, and R:R ratio</span></div>
+            <div style="font-size:.85rem;color:var(--muted);display:flex;align-items:flex-start;gap:.4rem;"><span>📐</span><span>Bias (bullish / bearish / neutral)</span></div>
+            <div style="font-size:.85rem;color:var(--muted);display:flex;align-items:flex-start;gap:.4rem;"><span>⚠️</span><span>Key risks and what would invalidate the trade</span></div>
+            <div style="font-size:.85rem;color:var(--muted);display:flex;align-items:flex-start;gap:.4rem;"><span>💬</span><span>Plain-English summary of the chart setup</span></div>
+          </div>
+        </div>
+
+        <div class="result-section" id="resultSection">
+          <div class="result-header">
+            <div>
+              <div class="muted" style="font-size:.75rem;text-transform:uppercase;letter-spacing:.07em;margin-bottom:3px;">AI Analysis</div>
+              <h3 id="resTitle" style="margin:0;font-size:1.1rem;font-weight:800;">—</h3>
+              <div id="resTimestamp" class="muted" style="font-size:.78rem;margin-top:2px;"></div>
+            </div>
+            <span class="verdict-pill verdict-neutral" id="resVerdict">—</span>
+          </div>
+
+          <!-- Key levels grid -->
+          <div class="result-grid">
+            <div class="result-card">
+              <div class="result-card-label">🎯 Entry Zone</div>
+              <div class="result-card-value level" id="resEntry">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-card-label">🛑 Stop Loss</div>
+              <div class="result-card-value level" id="resStop" style="color:#dc2626;">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-card-label">🏹 Target 1</div>
+              <div class="result-card-value level" id="resT1" style="color:#16a34a;">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-card-label">🏹 Target 2</div>
+              <div class="result-card-value level" id="resT2" style="color:#16a34a;">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-card-label">⚖️ Risk:Reward</div>
+              <div class="result-card-value level" id="resRR">—</div>
+            </div>
+            <div class="result-card">
+              <div class="result-card-label">📐 Trend / Bias</div>
+              <div class="result-card-value" id="resTrend">—</div>
+            </div>
+          </div>
+
+          <!-- Summary -->
+          <div class="result-full" id="resSummary"></div>
+
+          <!-- Risks -->
+          <div class="result-full" id="resRisks" style="display:none;">
+            <h4>⚠️ Risks &amp; Invalidation</h4>
+            <div id="resRisksText"></div>
+          </div>
+
+          <!-- Raw / debug -->
+          <details style="margin-top:.65rem;">
+            <summary style="font-size:.78rem;color:var(--muted);cursor:pointer;user-select:none;">Show raw AI output</summary>
+            <pre id="resRaw" style="margin:.5rem 0 0;white-space:pre-wrap;word-break:break-word;font-size:.78rem;background:#f8fafc;border:1px solid var(--border);border-radius:7px;padding:10px;max-height:260px;overflow:auto;"></pre>
+          </details>
+
+          <div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;">
+            <button class="btn ghost" onclick="copyResult()" style="font-size:.85rem;padding:.4rem .85rem;">📋 Copy Result</button>
+            <button class="btn ghost" onclick="saveToJournal()" style="font-size:.85rem;padding:.4rem .85rem;">📓 Save to Journal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- History -->
+      <div class="card" style="padding:16px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;gap:.5rem;margin-bottom:.75rem;">
+          <h2 style="margin:0;font-size:1rem;">🕘 Recent Analyses</h2>
+          <button class="btn ghost" onclick="clearHistory()" style="font-size:.78rem;padding:.3rem .65rem;">Clear</button>
+        </div>
+        <div id="historyList"><div class="history-empty">No analyses yet. Results will appear here.</div></div>
+      </div>
+
+    </div><!-- /right col -->
+
+  </div><!-- /analyzer-grid -->
+</main>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ── FOOTER ── -->
+<footer style="background:#083c69;color:#94a3b8;padding:32px 0 20px;margin-top:auto">
+  <div class="container">
+    <div style="display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;padding-bottom:20px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:14px">
+      <div>
+        <div style="font-family:'Inter Tight',sans-serif;font-weight:800;font-size:1rem;color:#fff;margin-bottom:5px">Arowana Profits</div>
+        <div style="font-size:.8rem;color:rgba(255,255,255,.45);line-height:1.6">Risk-first education and AI-assisted planning tools for retail traders and investors.</div>
+      </div>
+      <div>
+        <div style="font-weight:700;color:rgba(255,255,255,.7);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Tools</div>
+        <a href="arowana-trader.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Arowana Trader</a>
+        <a href="portfolio-advisor.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Portfolio Advisor</a>
+        <a href="features.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">All Tools</a>
+        <a href="pricing.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Plans</a>
+      </div>
+      <div>
+        <div style="font-weight:700;color:rgba(255,255,255,.7);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Dashboards</div>
+        <a href="short-term-dashboard.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Short-Term</a>
+        <a href="long-term-dashboard.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Long-Term</a>
+        <a href="learn-investing.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Learning Center</a>
+      </div>
+      <div>
+        <div style="font-weight:700;color:rgba(255,255,255,.7);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Legal</div>
+        <a href="disclosures.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Disclosures</a>
+        <a href="terms.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Terms</a>
+        <a href="privacy.html" style="display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none">Privacy</a>
+      </div>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.73rem;color:rgba(255,255,255,.3);margin-bottom:8px">
+      <div>&#169; <span id="caFooterYear"></span> Arowana Profits. All rights reserved.</div>
+      <div style="display:flex;gap:8px">
+        <span style="background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35)">Education-only</span>
+        <span style="background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35)">Not financial advice</span>
+      </div>
+    </div>
+    <p style="font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.6">Arowana Profits is an educational platform. Not investment advice. Trading involves risk including possible loss of principal.</p>
+  </div>
+</footer>
+
+<!-- ── AUTH SCRIPTS ── -->
+<script src="/js/supabase.min.js"></script>
+<script>window.GS_CONFIG_URL="/js/config.json";window.GS_CONFIG_PATH="/js/config.json";</script>
+<script src="/js/app-config.js"></script>
+<script src="/js/auth-header.js"></script>
+<script>window.GSAuthHeader&&window.GSAuthHeader.init({loginUrl:"./login.html",afterLogoutUrl:"./index.html"});</script>
+
+<!-- Mobile burger + user menu -->
+<script>
+(function(){
+  const KEY="gs_auth_user_v1",burger=document.getElementById("apBurger"),menu=document.getElementById("mobileMenu"),grid=document.getElementById("mobileAuthGrid");
+  if(!burger||!menu)return;
+  function readUser(){try{return JSON.parse(localStorage.getItem(KEY)||"null");}catch(_){return null;}}
+  function syncAuth(){
+    if(!grid)return;grid.innerHTML="";const u=readUser();
+    if(u&&(u.email||u.name)){
+      const a1=document.createElement("a");a1.href="account.html";a1.className="mobile-auth-link";a1.textContent="🧑‍💼 Account";grid.appendChild(a1);
+      const a2=document.createElement("a");a2.href="#";a2.className="mobile-auth-link";a2.textContent="🚪 Log out";
+      a2.onclick=e=>{e.preventDefault();const b=document.getElementById("user-signout-btn");if(b)b.click();else{localStorage.removeItem(KEY);location.href="index.html";}};grid.appendChild(a2);
+    }else{const a=document.createElement("a");a.href="login.html";a.className="mobile-auth-link";a.textContent="🪪 Log in";grid.appendChild(a);}
+  }
+  function setOpen(o){menu.setAttribute("data-open",o?"true":"false");menu.setAttribute("aria-hidden",o?"false":"true");burger.setAttribute("aria-expanded",o?"true":"false");if(o)syncAuth();}
+  burger.addEventListener("click",()=>setOpen(menu.getAttribute("data-open")!=="true"));
+  window.addEventListener("storage",e=>{if(e.key===KEY)syncAuth();});
+  const mq=window.matchMedia("(min-width:769px)");if(mq?.addEventListener)mq.addEventListener("change",e=>{if(e.matches)setOpen(false);});
+})();
+(function(){
+  const t=document.getElementById("user-menu-toggle"),d=document.getElementById("user-menu-dropdown");
+  if(!t||!d)return;
+  t.addEventListener("click",()=>{const o=d.style.display==="block";d.style.display=o?"none":"block";t.setAttribute("aria-expanded",String(!o));});
+  document.addEventListener("click",e=>{if(!t.contains(e.target)&&!d.contains(e.target)){d.style.display="none";t.setAttribute("aria-expanded","false");}});
+})();
+</script>
+
+<!-- ── MAIN ANALYZER LOGIC ── -->
+<script>
+/* ================================================================
+   CHART ANALYZER — Enhanced
+   Key improvements over original:
+   1. Visible drag-and-drop zone (not hidden)
+   2. Multi-image / multi-timeframe support (up to 3)
+   3. Indicator tags + pattern chips auto-injected into prompt
+   4. Structured result rendering (entry, stop, targets, R:R)
+   5. localStorage history with thumbnail previews
+   6. Global Ctrl+V paste (anywhere on page)
+   7. Camera roll / mobile file picker
+   8. Copy result + save to journal buttons
+================================================================ */
+
+const LS_WEBHOOK = 'arowana_chart_webhook_url';
+const LS_HISTORY = 'arowana_chart_history_v2';
+const MAX_HISTORY = 12;
+const MAX_IMAGES  = 3;
+
+/* ── State ── */
+let images = [];        // [{dataUrl, filename, timeframe}]
+let activeIdx = 0;      // which image is shown in main dropzone
+let analysisHistory = [];
+try { analysisHistory = JSON.parse(localStorage.getItem(LS_HISTORY) || '[]'); } catch(e) { analysisHistory = []; }
+
+/* ── DOM ── */
+const mainDropzone = document.getElementById('mainDropzone');
+const dzEmpty      = document.getElementById('dzEmpty');
+const dzPreview    = document.getElementById('dzPreviewWrap');
+const caPreview    = document.getElementById('caPreview');
+const dzFilename   = document.getElementById('dzFilename');
+const imgStrip     = document.getElementById('imgStrip');
+const addChartBtn  = document.getElementById('addChartBtn');
+const analyzeBtn   = document.getElementById('analyzeBtn');
+const clearBtn     = document.getElementById('clearBtn');
+const caFile       = document.getElementById('caFile');
+const caFileExtra  = document.getElementById('caFileExtra');
+const progFill     = document.getElementById('progFill');
+const progWrap     = document.getElementById('progWrap');
+const statusRow    = document.getElementById('statusRow');
+const statusMsg    = document.getElementById('statusMsg');
+const statusDot    = document.getElementById('statusDot');
+const wsDot        = document.getElementById('wsDot');
+const wsStatus     = document.getElementById('wsStatus');
+const historyList  = document.getElementById('historyList');
+
+/* ── Toast ── */
+function toast(msg, type='ok'){
+  const el=document.createElement('div');el.className='toast';
+  el.style.borderLeft=`4px solid ${{ok:'#16a34a',err:'#ef4444',warn:'#f59e0b'}[type]||'#16a34a'}`;
+  el.textContent=msg;document.getElementById('toastStack').appendChild(el);setTimeout(()=>el.remove(),4000);
+}
+
+/* ── Paste hint ── */
+const pasteHintShown = localStorage.getItem('ca_paste_hint_dismissed');
+if(pasteHintShown) document.getElementById('pasteHint').style.display='none';
+function dismissHint(){ document.getElementById('pasteHint').style.display='none'; localStorage.setItem('ca_paste_hint_dismissed','1'); }
+
+/* ── Tag toggles ── */
+function toggleTag(el){ el.classList.toggle('selected'); }
+function toggleCtx(el){ el.classList.toggle('selected'); }
+function getSelectedTags(){ return [...document.querySelectorAll('.ind-tag.selected')].map(e=>e.dataset.ind); }
+function getSelectedCtx(){  return [...document.querySelectorAll('.ctx-chip.selected')].map(e=>e.dataset.ctx); }
+
+/* ── Webhook URL — reads AP_WEBHOOKS (set by app-config.js / admin panel)
+   Falls back to localStorage key for dev/offline.
+   Users never paste URLs here — managed in admin.html → Supabase → AP_WEBHOOKS.
+── */
+function getWebhookUrl(){
+  return (window.AP_WEBHOOKS && (window.AP_WEBHOOKS.chart || window.AP_WEBHOOKS.st_main)) ||
+         (function(){ try{ return localStorage.getItem('arowana_chart_webhook_url')||''; }catch(e){ return ''; } })() || '';
+}
+
+function updateWsStatus(){
+  var url = getWebhookUrl();
+  var dot = document.getElementById('wsDot');
+  var status = document.getElementById('wsStatus');
+  var chip = document.getElementById('wsStatusChip');
+  var notConfigured = document.getElementById('wsNotConfigured');
+  if(url){
+    if(dot){ dot.style.background='#16a34a'; }
+    if(status){ status.textContent='AI Connected'; }
+    if(chip){ chip.style.background='rgba(22,163,74,.08)'; chip.style.color='#166534'; }
+    if(notConfigured){ notConfigured.style.display='none'; }
+  }else{
+    if(dot){ dot.style.background='#f59e0b'; }
+    if(status){ status.textContent='Not configured'; }
+    if(chip){ chip.style.background='#fffbeb'; chip.style.color='#92400e'; }
+    if(notConfigured){ notConfigured.style.display=''; }
+  }
+}
+
+function loadSavedWebhook(){ updateWsStatus(); }
+
+/* ── Progress ── */
+let progTimer=null;
+function startProg(){ progWrap.style.display=''; progFill.style.width='8%'; statusRow.style.display='flex'; let p=8; progTimer=setInterval(()=>{ p=Math.min(82,p+3); progFill.style.width=p+'%'; },600); }
+function endProg(ok){ clearInterval(progTimer); progFill.style.width='100%'; setTimeout(()=>{ progWrap.style.display='none'; progFill.style.width='0%'; },600); if(!ok){statusDot.className='status-dot err';} }
+function setStatus(msg,state='spin'){ statusDot.className='status-dot'+( state?' '+state:''); statusMsg.textContent=msg; }
+
+/* ── Image handling ── */
+function fileToDataUrl(f){ return new Promise((res,rej)=>{ const r=new FileReader(); r.onload=()=>res(String(r.result||'')); r.onerror=rej; r.readAsDataURL(f); }); }
+
+function addImage(dataUrl, filename, timeframe=''){
+  if(images.length>=MAX_IMAGES){ toast(`Max ${MAX_IMAGES} charts supported. Remove one first.`,'warn'); return; }
+  images.push({dataUrl, filename:filename||'chart.png', timeframe});
+  activeIdx=images.length-1;
+  renderDropzone();
+  renderStrip();
+  setStatus(`Chart loaded: ${filename||'image'}`, 'ok');
+  statusRow.style.display='flex';
+  toast(`Chart added (${images.length}/${MAX_IMAGES})`);
+}
+
+function removeActiveImage(){
+  images.splice(activeIdx,1);
+  activeIdx=Math.max(0,activeIdx-1);
+  renderDropzone();
+  renderStrip();
+  if(images.length===0){ statusRow.style.display='none'; }
+}
+
+function renderDropzone(){
+  if(!images.length){ dzEmpty.style.display='flex'; dzPreview.style.display='none'; caPreview.classList.remove('show'); mainDropzone.classList.remove('has-image'); return; }
+  const img=images[activeIdx];
+  dzEmpty.style.display='none'; dzPreview.style.display='flex';
+  caPreview.src=img.dataUrl;
+  caPreview.classList.add('show');
+  dzFilename.textContent=img.filename+(img.timeframe?` (${img.timeframe})`:'');
+  mainDropzone.classList.add('has-image');
+}
+
+function renderStrip(){
+  // Keep the + button, prepend thumbs
+  const addBtn = document.getElementById('addChartBtn');
+  imgStrip.innerHTML='';
+  images.forEach((img,i)=>{
+    const div=document.createElement('div');
+    div.className='img-thumb'+(i===activeIdx?' active':'');
+    div.title=img.filename;
+    div.innerHTML=`<img src="${img.dataUrl}" alt="Chart ${i+1}">
+      ${img.timeframe?`<span class="tf-label">${img.timeframe}</span>`:''}
+      <button class="remove-thumb" title="Remove" onclick="event.stopPropagation();removeImageAt(${i})">✕</button>`;
+    div.addEventListener('click',()=>{ activeIdx=i; renderDropzone(); renderStrip(); });
+    imgStrip.appendChild(div);
+  });
+  if(images.length<MAX_IMAGES) imgStrip.appendChild(addBtn);
+}
+
+function removeImageAt(i){ images.splice(i,1); activeIdx=Math.max(0,i-1); renderDropzone(); renderStrip(); }
+
+async function handleFiles(fileList){
+  for(const f of Array.from(fileList)){
+    if(!f.type.startsWith('image/')){ toast('Only image files are supported.','warn'); continue; }
+    const dataUrl=await fileToDataUrl(f).catch(()=>null);
+    if(dataUrl) addImage(dataUrl, f.name);
+  }
+}
+
+/* ── Dropzone events ── */
+mainDropzone.addEventListener('click', e=>{
+  if(e.target.closest('.dz-img-actions')||e.target.closest('.dz-chip')) return;
+  if(images.length<MAX_IMAGES) caFile.click();
+});
+mainDropzone.addEventListener('keydown', e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); caFile.click(); } });
+mainDropzone.addEventListener('dragover', e=>{ e.preventDefault(); mainDropzone.classList.add('drag-over'); });
+['dragleave','drop'].forEach(evt=>mainDropzone.addEventListener(evt, e=>{
+  e.preventDefault(); mainDropzone.classList.remove('drag-over');
+  if(evt==='drop') handleFiles(e.dataTransfer?.files||[]);
+}));
+caFile.addEventListener('change', e=>handleFiles(e.target.files));
+
+/* ── Multi-chart add ── */
+addChartBtn.addEventListener('click', ()=>caFileExtra.click());
+caFileExtra.addEventListener('change', e=>handleFiles(e.target.files));
+
+/* ── Global paste (anywhere on page) ── */
+document.addEventListener('paste', async e=>{
+  const items=Array.from(e.clipboardData?.items||[]);
+  const imgItem=items.find(i=>i.type?.startsWith('image/'));
+  if(!imgItem) return;
+  e.preventDefault();
+  const f=imgItem.getAsFile();
+  if(!f) return;
+  const dataUrl=await fileToDataUrl(f).catch(()=>null);
+  if(dataUrl){ addImage(dataUrl,'pasted-chart.png'); toast('Chart pasted ✓'); }
+});
+
+/* ================================================================
+   ANALYZE — calls n8n webhook with image + structured context
+   ================================================================ */
+async function runAnalysis(){
+  const url=getWebhookUrl();
+  if(!url){ updateWsStatus(); toast('No AI webhook configured — contact admin','err'); return; }
+  if(!images.length && !(document.getElementById('caNotes').value.trim())){ toast('Add a chart image or notes first','warn'); return; }
+  if(!images.length){ toast('No chart image — sending notes only','warn'); }
+
+  analyzeBtn.disabled=true;
+  startProg(); setStatus('Preparing payload…');
+
+  const ticker   = document.getElementById('caTicker').value.trim().toUpperCase();
+  const style    = document.getElementById('caStyle').value;
+  const tf       = document.getElementById('caTimeframe').value;
+  const session  = document.getElementById('caSession').value;
+  const notes    = document.getElementById('caNotes').value.trim();
+  const indicators = getSelectedTags();
+  const patterns   = getSelectedCtx();
+
+  // Build structured prompt enrichment from tags
+  const contextNote = [
+    indicators.length  ? `Indicators visible: ${indicators.join(', ')}` : '',
+    patterns.length    ? `Patterns/setups I see: ${patterns.join(', ')}` : '',
+    notes              ? `Trader notes: ${notes}` : '',
+  ].filter(Boolean).join('\n');
+
+  const payload = {
+    ticker: ticker||null,
+    tradeStyle: style,
+    timeframe: tf,
+    session,
+    indicators,
+    patterns,
+    chartText: contextNote,
+    // Primary image
+    chartImage: images.length ? images[activeIdx].dataUrl : null,
+    // Additional timeframe images
+    additionalImages: images.length>1
+      ? images.filter((_,i)=>i!==activeIdx).map(img=>({ dataUrl:img.dataUrl, timeframe:img.timeframe, filename:img.filename }))
+      : [],
+    imageCount: images.length,
+    source: 'chart-analysis-form'
+  };
+
+  setStatus('Sending to n8n…');
+
+  try{
+    const res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    if(!res.ok) throw new Error(`Webhook returned HTTP ${res.status} ${res.statusText}`);
+    const text=await res.text();
+    let data;
+    try{ data=JSON.parse(text); }catch(e){ throw new Error('n8n returned non-JSON. Check your Respond to Webhook node.'); }
+
+    // Unwrap n8n shapes
+    if(Array.isArray(data)&&data[0]?.json) data=data[0].json;
+    if(data?.output&&typeof data.output==='object') data=data.output;
+    if(data?.result&&typeof data.result==='object') data=data.result;
+    if(data?.analysis&&typeof data.analysis==='object') data=data.analysis;
+
+    endProg(true); setStatus('Analysis complete ✓','ok');
+    renderResult(data, ticker, tf);
+    await saveToHistory(data, ticker, tf, images.length?images[activeIdx].dataUrl:null);
+    toast('Analysis complete ✓');
+
+  }catch(err){
+    endProg(false); setStatus(err.message,'err');
+    toast(err.message,'err');
+    console.error('Chart analyzer error:',err);
+  }finally{
+    analyzeBtn.disabled=false;
+  }
+}
+
+/* ================================================================
+   RENDER RESULT — structured display
+   ================================================================ */
+function esc(v){const d=document.createElement('div');d.textContent=String(v??'');return d.innerHTML;}
+
+function renderResult(data, ticker, tf){
+  document.getElementById('resultPlaceholder').style.display='none';
+  const sec=document.getElementById('resultSection');
+  sec.classList.add('show');
+
+  const title=`${ticker||data.ticker||'Chart'} — ${tfLabel(tf||data.timeframe||'')} ${styleLabel(document.getElementById('caStyle').value)}`;
+  document.getElementById('resTitle').textContent=title;
+  document.getElementById('resTimestamp').textContent=new Date().toLocaleString();
+
+  // Verdict / bias
+  const verdict=data.verdict||data.bias||data.direction||data.signal||'';
+  const vEl=document.getElementById('resVerdict');
+  vEl.textContent=verdict||'Mixed';
+  const vl=(verdict||'').toLowerCase();
+  vEl.className='verdict-pill '+(vl.includes('bull')||vl.includes('long')||vl.includes('buy')?'verdict-bull':vl.includes('bear')||vl.includes('short')||vl.includes('sell')?'verdict-bear':'verdict-neutral');
+
+  // Key levels
+  document.getElementById('resEntry').textContent = fmtLevel(data.entry||data.entry_zone||data.entry_price||data.buy_zone||'—');
+  document.getElementById('resStop').textContent  = fmtLevel(data.stop||data.stop_loss||data.invalidation||'—');
+  document.getElementById('resT1').textContent    = fmtLevel(data.target1||data.t1||data.target_1||data.target||'—');
+  document.getElementById('resT2').textContent    = fmtLevel(data.target2||data.t2||data.target_2||'—');
+  document.getElementById('resRR').textContent    = data.rr||data.risk_reward||data.rrr||'—';
+  document.getElementById('resTrend').textContent = data.trend||data.bias||data.direction||verdict||'—';
+
+  // Summary
+  const summary=data.summary||data.analysis||data.description||data.explanation||'';
+  document.getElementById('resSummary').innerHTML=summary?`<h4>📋 Analysis</h4>${esc(summary).replace(/\n/g,'<br>')}`:'' ;
+
+  // Risks
+  const risks=data.risks||data.invalidation_notes||data.caution||'';
+  if(risks){
+    document.getElementById('resRisks').style.display='';
+    document.getElementById('resRisksText').innerHTML=esc(risks).replace(/\n/g,'<br>');
+  }
+
+  // Raw
+  document.getElementById('resRaw').textContent=typeof data==='string'?data:JSON.stringify(data,null,2);
+}
+
+function fmtLevel(v){ if(!v||v==='—') return '—'; const s=String(v); return s.startsWith('$')?s:'$'+s; }
+function tfLabel(tf){ return({'':``,`1m`:'1min',`5m`:'5min',`15m`:'15min',`30m`:'30min',`1h`:'1H',`4h`:'4H',`1d`:'Daily',`1w`:'Weekly'})[tf]||tf; }
+function styleLabel(s){ return({scalp:'Scalp',day:'Day Trade',swing:'Swing',position:'Position'})[s]||s; }
+
+/* ── Copy result ── */
+function copyResult(){
+  const entry=document.getElementById('resEntry').textContent;
+  const stop=document.getElementById('resStop').textContent;
+  const t1=document.getElementById('resT1').textContent;
+  const t2=document.getElementById('resT2').textContent;
+  const rr=document.getElementById('resRR').textContent;
+  const trend=document.getElementById('resTrend').textContent;
+  const summary=document.getElementById('resSummary').innerText;
+  const title=document.getElementById('resTitle').textContent;
+  const text=`📸 Chart Analysis — ${title}\n\nBias: ${trend}\nEntry: ${entry}\nStop: ${stop}\nTarget 1: ${t1}\nTarget 2: ${t2}\nR:R: ${rr}\n\n${summary}`;
+  navigator.clipboard?.writeText(text).then(()=>toast('Copied to clipboard ✓')).catch(()=>toast('Could not copy','err'));
+}
+
+/* ── Save to journal ── */
+function saveToJournal(){
+  const ticker=document.getElementById('caTicker').value.trim().toUpperCase()||document.getElementById('resTitle').textContent.split(' — ')[0];
+  const url=new URL('trade-journal-pro.html', location.href);
+  url.searchParams.set('ticker', ticker);
+  url.searchParams.set('from', 'chart-analyzer');
+  window.open(url.href,'_blank');
+  toast('Opening Trade Journal…');
+}
+
+/* ── Thumbnail helper: downscale to max 120px wide to save localStorage space ── */
+function makeThumb(dataUrl, maxW=120){
+  return new Promise(res=>{
+    const img=new Image();
+    img.onload=()=>{
+      const scale=Math.min(1, maxW/img.width);
+      const c=document.createElement('canvas');
+      c.width=Math.round(img.width*scale);
+      c.height=Math.round(img.height*scale);
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      res(c.toDataURL('image/jpeg',0.6));
+    };
+    img.onerror=()=>res(null);
+    img.src=dataUrl;
+  });
+}
+
+/* ── History ── */
+async function saveToHistory(data, ticker, tf, thumbUrl){
+  const thumb = thumbUrl ? await makeThumb(thumbUrl) : null;
+  const entry={ id:Date.now(), ts:new Date().toISOString(), ticker:ticker||data.ticker||'Chart', tf, verdict:data.verdict||data.bias||'Mixed', entry:data.entry||data.entry_zone||'—', stop:data.stop||data.stop_loss||'—', t1:data.target1||data.t1||'—', rr:data.rr||data.risk_reward||'—', summary:(data.summary||'').slice(0,120), thumb, raw:data };
+  analysisHistory.unshift(entry);
+  if(analysisHistory.length>MAX_HISTORY) analysisHistory.pop();
+  try { localStorage.setItem(LS_HISTORY,JSON.stringify(analysisHistory)); } catch(e) { console.warn('Could not save history to localStorage:', e); }
+  renderHistory();
+}
+
+function clearHistory(){ if(!confirm('Clear all chart analysis history?')) return; analysisHistory=[]; try{localStorage.removeItem(LS_HISTORY);}catch(e){} renderHistory(); toast('History cleared','warn'); }
+
+function renderHistory(){
+  if(!analysisHistory.length){ historyList.innerHTML='<div class="history-empty">No analyses yet.</div>'; return; }
+  historyList.innerHTML=analysisHistory.map((h,i)=>`
+    <div class="history-item${i===0?' active':''}" onclick="loadHistory(${i})">
+      <div style="display:flex;align-items:center;gap:.6rem;min-width:0;">
+        ${h.thumb?`<img src="${h.thumb}" style="width:44px;height:34px;object-fit:cover;border-radius:5px;flex-shrink:0;" alt="">` : `<div style="width:44px;height:34px;background:#e5e7eb;border-radius:5px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1rem;">📸</div>`}
+        <div style="min-width:0;">
+          <strong>${esc(h.ticker||'—')} ${h.tf?`<span style="font-weight:400;color:var(--muted);font-size:.78rem;">${h.tf}</span>`:''}</strong>
+          <div class="hi-meta" style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px;">${esc((h.summary||'').slice(0,60))||'—'}</div>
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0;">
+        <span class="verdict-pill ${verdictClass(h.verdict)}" style="font-size:.72rem;padding:.2rem .5rem;">${esc(h.verdict||'—')}</span>
+        <span class="hi-meta">${relDate(h.ts)}</span>
+      </div>
+    </div>`).join('');
+}
+
+function loadHistory(i){
+  const h=analysisHistory[i];
+  if(!h) return;
+  renderResult(h.raw, h.ticker, h.tf);
+  document.getElementById('caTicker').value=h.ticker||'';
+  historyList.querySelectorAll('.history-item').forEach((el,idx)=>el.classList.toggle('active',idx===i));
+}
+
+function verdictClass(v){ const l=(v||'').toLowerCase(); return l.includes('bull')||l.includes('long')||l.includes('buy')?'verdict-bull':l.includes('bear')||l.includes('short')||l.includes('sell')?'verdict-bear':'verdict-neutral'; }
+function relDate(d){ if(!d)return''; const h=Math.floor((Date.now()-new Date(d))/3600000),days=Math.floor(h/24); if(h<1)return'Just now'; if(h<24)return`${h}h ago`; if(days===1)return'Yesterday'; if(days<7)return`${days}d ago`; return new Date(d).toLocaleDateString(); }
+
+/* ── Clear all ── */
+clearBtn.addEventListener('click',()=>{
+  images=[]; activeIdx=0; renderDropzone(); renderStrip();
+  document.getElementById('caTicker').value='';
+  document.getElementById('caNotes').value='';
+  document.querySelectorAll('.ind-tag.selected,.ctx-chip.selected').forEach(el=>el.classList.remove('selected'));
+  document.getElementById('resultPlaceholder').style.display='';
+  document.getElementById('resultSection').classList.remove('show');
+  statusRow.style.display='none'; progWrap.style.display='none';
+  toast('Cleared');
+});
+
+/* ── Analyze button ── */
+analyzeBtn.addEventListener('click', runAnalysis);
+
+/* ── Init ── */
+loadSavedWebhook();
+renderHistory();
+</script>
+
+
+<!-- ═══ V1 NAV JS + SCAN LIMIT + AP_WEBHOOKS FIX ═══ -->
+<script>
+(function(){
+'use strict';
+
+var fy=document.getElementById('caFooterYear');
+if(fy)fy.textContent=new Date().getFullYear();
+
+/* ── NAV AUTH ── */
+var KEY='gs_auth_user_v1';
+var authKeys=[KEY,'gs_session','ap_session','sb-access-token'];
+var u=JSON.parse(localStorage.getItem(KEY)||'null');
+var hasSession=u||authKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+
+var signIn=document.getElementById('caSignIn');
+var userDrop=document.getElementById('caUserDrop');
+var userBtn=document.getElementById('caUserBtn');
+var userMenu=document.getElementById('caUserMenu');
+var userName=document.getElementById('caUserName');
+var mobAuth=document.getElementById('caMobileAuth');
+
+if(hasSession){
+  if(signIn)signIn.style.display='none';
+  if(userDrop)userDrop.style.display='block';
+  var n=u&&(u.name||u.full_name||(u.email?u.email.split('@')[0]:null))||'Account';
+  if(userName)userName.textContent=n;
+  if(mobAuth)mobAuth.innerHTML='<a href="account.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128282; My Account</a><a id="caMobOut" href="#" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128682; Sign Out</a>';
+  var mo=document.getElementById('caMobOut');
+  if(mo)mo.addEventListener('click',function(e){e.preventDefault();doSignOut();});
+}else{
+  if(mobAuth)mobAuth.innerHTML='<a href="login.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128272; Sign In</a><a href="signup.html" style="padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none">&#128640; Start Free</a>';
+}
+
+if(userBtn&&userDrop&&userMenu){
+  userBtn.addEventListener('click',function(e){e.stopPropagation();userMenu.style.display=userMenu.style.display==='block'?'none':'block';});
+  document.addEventListener('click',function(){if(userMenu)userMenu.style.display='none';});
+}
+var sob=document.getElementById('caSignOutBtn');
+function doSignOut(){authKeys.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});location.href='index.html';}
+if(sob)sob.addEventListener('click',doSignOut);
+
+var burger=document.getElementById('caBurger');
+var mobMenu=document.getElementById('caMobileMenu');
+var navLinks=document.getElementById('caNavLinks');
+if(burger&&mobMenu){burger.addEventListener('click',function(){var open=mobMenu.getAttribute('data-open')==='true';mobMenu.setAttribute('data-open',open?'false':'true');mobMenu.style.display=open?'none':'block';});}
+function handleResize(){if(!navLinks||!burger)return;if(window.innerWidth<=700){navLinks.style.display='none';burger.style.display='inline-flex';}else{navLinks.style.display='flex';burger.style.display='none';}}
+window.addEventListener('resize',handleResize);handleResize();
+
+/* ── Force login ── */
+(function(){
+  if(hasSession)return;
+  setTimeout(function(){
+    var still=!authKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+    if(still)location.replace('login.html?next='+encodeURIComponent(location.pathname+location.search));
+  },300);
+})();
+
+/* ── Pro detection ── */
+var isPro=localStorage.getItem('ap_is_pro_v1')==='1';
+
+/* ── Scan limit: 5/day free, unlimited Pro ── */
+var SCAN_KEY='ap_chart_scan_count';
+var SCAN_DATE_KEY='ap_chart_scan_date';
+var FREE_LIMIT=5;
+function todayStr(){return new Date().toISOString().slice(0,10);}
+function getScansToday(){var d=localStorage.getItem(SCAN_DATE_KEY);if(d!==todayStr()){localStorage.setItem(SCAN_DATE_KEY,todayStr());localStorage.setItem(SCAN_KEY,'0');return 0;}return parseInt(localStorage.getItem(SCAN_KEY)||'0');}
+function incrementScan(){var n=getScansToday()+1;localStorage.setItem(SCAN_KEY,String(n));localStorage.setItem(SCAN_DATE_KEY,todayStr());updateScanBadge(n);return n;}
+function updateScanBadge(n){
+  var badge=document.getElementById('caScanBadge');if(!badge)return;
+  if(isPro){badge.innerHTML='&#9889; Unlimited scans &mdash; Pro';badge.style.background='rgba(11,79,138,.08)';badge.style.color='#0b4f8a';}
+  else{var left=Math.max(0,FREE_LIMIT-n);badge.textContent=left+' of '+FREE_LIMIT+' free analyses remaining today';badge.style.background=left<=1?'#fff5f5':'rgba(22,163,74,.06)';badge.style.color=left<=1?'#991b1b':'#166534';}
+}
+
+/* Insert scan badge below analyze/clear row */
+(function(){
+  var statusRowEl=document.getElementById('statusRow');
+  if(!statusRowEl)return;
+  var badge=document.createElement('div');
+  badge.id='caScanBadge';
+  badge.style.cssText='font-size:.75rem;font-weight:600;padding:5px 10px;border-radius:8px;margin-top:8px;text-align:center';
+  statusRowEl.parentElement.insertBefore(badge,statusRowEl);
+  updateScanBadge(getScansToday());
+})();
+
+/* Intercept analyzeBtn to enforce limit */
+(function(){
+  var btn=document.getElementById('analyzeBtn');
+  if(!btn)return;
+  var newBtn=btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn,btn);
+  newBtn.addEventListener('click',function(){
+    if(!isPro&&getScansToday()>=FREE_LIMIT){
+      var m=document.getElementById('caUpgModal');if(m)m.style.display='flex';
+      return;
+    }
+    var p=runAnalysis();
+    if(p&&typeof p.then==='function'){p.then(function(){incrementScan();}).catch(function(){});}
+    else{incrementScan();}
+  });
+})();
+
+/* Close upgrade modal on backdrop */
+var upgModal=document.getElementById('caUpgModal');
+if(upgModal){upgModal.addEventListener('click',function(e){if(e.target===upgModal)upgModal.style.display='none';});}
+
+/* ── AP_WEBHOOKS status update (poll until app-config.js ready) ── */
+function patchWebhookLoad(){
+  if(typeof updateWsStatus === 'function') updateWsStatus();
+}
+var _whAttempts=0;
+var _whPoll=setInterval(function(){
+  _whAttempts++;
+  patchWebhookLoad();
+  var loaded=(window.AP_WEBHOOKS&&(window.AP_WEBHOOKS.chart||window.AP_WEBHOOKS.st_main));
+  if(loaded||_whAttempts>10)clearInterval(_whPoll);
+},500);
+
+})();
+</script>
+</body>
+</html>

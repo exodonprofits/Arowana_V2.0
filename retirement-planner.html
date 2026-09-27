@@ -1,0 +1,2007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Retirement Roadmap — Arowana Pro Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<!--
+  NOTE ON AUTH: this page is intentionally PUBLIC — no redirect gate.
+  Unlike trading-command.html and the other core pages, nothing here reads
+  proprietary trading data, so there's no security reason to block entry.
+  Account state (gs_auth_user_v1) is still read, but non-blockingly, near
+  the top of the main <script> below — it only controls which panels are
+  unlocked in place, never a redirect. See getAuthUser() / getAccountTier().
+-->
+
+<style>
+  :root{
+    --brand:#0b4f8a;
+    --brand-dark:#083c69;
+    --brand-light:#e8f1fa;
+    --ink:#0f1720;
+    --ink-soft:#5b6b7a;
+    --line:#e2e8f0;
+    --bg:#f7f9fb;
+    --panel:#ffffff;
+    --good:#16794f;
+    --warn:#b5580a;
+    --bad:#b3261e;
+    --radius:12px;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    font-family:'Plus Jakarta Sans',system-ui,sans-serif;
+    background:var(--bg);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+
+  /* ---- Nav shell (placeholder — swap for your shared nav partial) ---- */
+  header.topbar{
+    background:var(--brand-dark);
+    color:#fff;
+    padding:14px 24px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+  }
+  header.topbar .brand{font-weight:800; letter-spacing:.2px;}
+  header.topbar .brand span{color:#9fc6ea;}
+  header.topbar nav a{
+    color:#cfe1f0; text-decoration:none; font-size:14px; margin-left:18px;
+  }
+  header.topbar nav a.active{color:#fff; font-weight:600;}
+
+  main{max-width:960px; margin:0 auto; padding:32px 20px 80px;}
+  .eyebrow{
+    font-family:'JetBrains Mono',monospace;
+    font-size:12px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--brand); margin:0 0 6px;
+  }
+  h1{font-size:28px; margin:0 0 6px; letter-spacing:-0.01em;}
+  .sub{color:var(--ink-soft); font-size:15px; margin:0 0 28px; max-width:60ch;}
+
+  .disclaimer{
+    background:#fff7e6; border:1px solid #f0cf8a; color:#7a5300;
+    border-radius:var(--radius); padding:12px 16px; font-size:13px; margin-bottom:28px;
+  }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--line); border-radius:var(--radius);
+    padding:24px; margin-bottom:20px;
+  }
+  .panel h2{font-size:16px; margin:0 0 4px;}
+  .panel .hint{color:var(--ink-soft); font-size:13px; margin:0 0 18px;}
+
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:14px 18px;}
+  @media (max-width:640px){.grid{grid-template-columns:1fr;}}
+  .field{display:flex; flex-direction:column; gap:6px;}
+  .field.span2{grid-column:1 / -1;}
+  label{font-size:12.5px; font-weight:600; color:var(--ink);}
+  input, select{
+    font-family:inherit; font-size:14px; padding:9px 11px;
+    border:1px solid var(--line); border-radius:8px; background:#fcfdfe;
+    color:var(--ink);
+  }
+  input:focus, select:focus{outline:2px solid var(--brand); outline-offset:1px; border-color:var(--brand);}
+  .radio-row{display:flex; gap:10px;}
+  .radio-row label{
+    display:flex; align-items:center; gap:6px; font-weight:500; font-size:13px;
+    border:1px solid var(--line); padding:7px 12px; border-radius:8px; cursor:pointer;
+  }
+  .radio-row input{width:auto; padding:0;}
+  .radio-row label:has(input:checked){border-color:var(--brand); background:var(--brand-light); color:var(--brand-dark);}
+
+  .actions{display:flex; align-items:center; gap:12px; margin-top:22px;}
+  button.primary{
+    background:var(--brand); color:#fff; border:none; border-radius:9px;
+    padding:12px 22px; font-size:14.5px; font-weight:700; cursor:pointer;
+    font-family:inherit;
+  }
+  button.primary:hover{background:var(--brand-dark);}
+  button.ghost{
+    background:transparent; border:1px solid var(--line); color:var(--ink-soft);
+    border-radius:9px; padding:12px 18px; font-size:13.5px; cursor:pointer; font-family:inherit;
+  }
+  .save-note{font-size:12.5px; color:var(--ink-soft);}
+
+  /* ---- Results ---- */
+  #results{display:none;}
+  .scenario-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:6px;}
+  @media (max-width:760px){.scenario-grid{grid-template-columns:1fr;}}
+  .scenario-card{
+    border:1px solid var(--line); border-radius:var(--radius); padding:18px;
+    background:#fcfdfe;
+  }
+  .scenario-card h3{margin:0 0 2px; font-size:14px;}
+  .scenario-card .rate{font-family:'JetBrains Mono',monospace; font-size:11.5px; color:var(--ink-soft); margin-bottom:14px;}
+  .scenario-card .stat{margin-bottom:10px;}
+  .scenario-card .stat .label{font-size:11.5px; color:var(--ink-soft);}
+  .scenario-card .stat .value{font-family:'JetBrains Mono',monospace; font-size:19px; font-weight:600;}
+  .status-pill{
+    display:inline-block; font-size:11.5px; font-weight:700; padding:3px 9px;
+    border-radius:20px; margin-top:6px;
+  }
+  .status-pill.good{background:#e6f6ee; color:var(--good);}
+  .status-pill.warn{background:#fff3e0; color:var(--warn);}
+  .status-pill.bad{background:#fbe9e7; color:var(--bad);}
+
+  .assumptions{
+    font-size:12.5px; color:var(--ink-soft); border-top:1px dashed var(--line);
+    margin-top:16px; padding-top:14px; line-height:1.6;
+  }
+
+  .actions-list{list-style:none; margin:0; padding:0; counter-reset:step;}
+  .actions-list li{
+    counter-increment:step; display:flex; gap:14px; padding:14px 0;
+    border-bottom:1px solid var(--line);
+  }
+  .actions-list li:last-child{border-bottom:none;}
+  .actions-list li::before{
+    content:counter(step);
+    flex:0 0 26px; height:26px; border-radius:50%; background:var(--brand-light);
+    color:var(--brand-dark); font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12.5px;
+    display:flex; align-items:center; justify-content:center; margin-top:2px;
+  }
+  .actions-list .txt strong{display:block; font-size:14px; margin-bottom:2px;}
+  .actions-list .txt span{font-size:13px; color:var(--ink-soft);}
+
+  #aiNarrative{white-space:pre-wrap; font-size:14px; line-height:1.65;}
+  #aiNarrative .placeholder{color:var(--ink-soft); font-style:italic;}
+  .estimate-tag{
+    font-family:'JetBrains Mono',monospace; font-size:10.5px; text-transform:uppercase;
+    letter-spacing:.05em; color:#8a97a3;
+  }
+
+  .stress-table{width:100%; border-collapse:collapse; font-size:13.5px;}
+  .stress-table th{
+    text-align:left; font-size:11.5px; text-transform:uppercase; letter-spacing:.04em;
+    color:var(--ink-soft); padding:8px 10px; border-bottom:1px solid var(--line);
+  }
+  .stress-table td{padding:10px; border-bottom:1px solid var(--line); vertical-align:top;}
+  .stress-table tr:last-child td{border-bottom:none;}
+  .stress-table .scenario-name{font-weight:600;}
+  .stress-table .num{font-family:'JetBrains Mono',monospace; white-space:nowrap;}
+  .risk-badge{
+    display:inline-block; font-size:11px; font-weight:700; padding:2px 8px;
+    border-radius:20px;
+  }
+  .risk-badge.low{background:#e6f6ee; color:var(--good);}
+  .risk-badge.med{background:#fff3e0; color:var(--warn);}
+  .risk-badge.high{background:#fbe9e7; color:var(--bad);}
+  .stress-summary{
+    background:var(--brand-light); border-radius:8px; padding:12px 14px;
+    font-size:13.5px; margin-bottom:16px; color:var(--brand-dark);
+  }
+
+  .waterfall-step{
+    display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--line);
+  }
+  .waterfall-step:last-child{border-bottom:none;}
+  .waterfall-step .rank{
+    flex:0 0 30px; height:30px; border-radius:8px; background:var(--brand-light);
+    color:var(--brand-dark); font-family:'JetBrains Mono',monospace; font-weight:700;
+    font-size:13px; display:flex; align-items:center; justify-content:center;
+  }
+  .waterfall-step .body{flex:1;}
+  .waterfall-step .row1{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
+  .waterfall-step .name{font-weight:700; font-size:14.5px;}
+  .waterfall-step .amount{font-family:'JetBrains Mono',monospace; font-weight:700; color:var(--brand);}
+  .waterfall-step .amount.zero{color:#9aa7b2;}
+  .waterfall-step .why{font-size:13px; color:var(--ink-soft); margin-top:3px;}
+  .waterfall-totals{
+    font-size:13px; color:var(--ink-soft); margin-top:8px; padding-top:12px;
+    border-top:1px dashed var(--line);
+  }
+
+  .ss-note{
+    background:#fff7e6; border:1px solid #f0cf8a; color:#7a5300;
+    border-radius:8px; padding:10px 14px; font-size:13px; margin-bottom:14px;
+  }
+  .breakeven-callout{
+    background:var(--brand-light); border-radius:8px; padding:12px 14px;
+    font-size:13.5px; color:var(--brand-dark); margin-bottom:16px;
+  }
+
+  .portfolio-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:14px;}
+  @media (max-width:760px){.portfolio-grid{grid-template-columns:1fr;}}
+  .portfolio-card{border:1px solid var(--line); border-radius:var(--radius); padding:18px; background:#fcfdfe;}
+  .portfolio-card.suggested{border-color:var(--brand); box-shadow:0 0 0 1px var(--brand);}
+  .portfolio-card h3{margin:0 0 2px; font-size:15px;}
+  .portfolio-card .who{font-size:12.5px; color:var(--ink-soft); margin-bottom:14px;}
+  .alloc-row{margin-bottom:8px;}
+  .alloc-row .lbl{display:flex; justify-content:space-between; font-size:12.5px; margin-bottom:3px;}
+  .alloc-row .bar{height:7px; background:#eef2f6; border-radius:4px; overflow:hidden;}
+  .alloc-row .bar-fill{height:100%; background:var(--brand); border-radius:4px;}
+  .portfolio-card .meta{font-size:12.5px; color:var(--ink-soft); margin-top:12px; line-height:1.6; border-top:1px dashed var(--line); padding-top:12px;}
+  .suggested-tag{
+    display:inline-block; font-size:10.5px; font-weight:700; text-transform:uppercase;
+    letter-spacing:.05em; color:var(--brand); background:var(--brand-light);
+    padding:2px 8px; border-radius:12px; margin-bottom:8px;
+  }
+
+  .timeframe-block{margin-bottom:22px;}
+  .timeframe-block h3{
+    font-size:13px; text-transform:uppercase; letter-spacing:.05em; color:var(--brand-dark);
+    margin:0 0 10px; padding-bottom:6px; border-bottom:2px solid var(--brand-light);
+  }
+  .checklist-item{display:flex; gap:12px; padding:10px 0; border-bottom:1px solid var(--line);}
+  .checklist-item:last-child{border-bottom:none;}
+  .checklist-item .box{
+    flex:0 0 18px; height:18px; border:2px solid var(--line); border-radius:5px; margin-top:2px;
+  }
+  .checklist-item .body strong{display:block; font-size:13.5px; margin-bottom:2px;}
+  .checklist-item .body .meta-line{font-size:12px; color:var(--ink-soft); margin-top:3px;}
+  .who-badge{
+    display:inline-block; font-size:10px; font-weight:700; text-transform:uppercase;
+    padding:1px 7px; border-radius:10px; background:#eef2f6; color:var(--ink-soft); margin-right:6px;
+  }
+  .who-badge.self{background:#e6f6ee; color:var(--good);}
+  .who-badge.cpa{background:#fff3e0; color:var(--warn);}
+  .who-badge.attorney{background:#fbe9e7; color:var(--bad);}
+  .who-badge.advisor{background:var(--brand-light); color:var(--brand-dark);}
+  .who-badge.insurance{background:#eef0fb; color:#4a4fb0;}
+
+  .locked-panel{position:relative;}
+  .locked-panel .panel-inner{
+    filter: blur(4px);
+    pointer-events:none;
+    user-select:none;
+  }
+  .lock-overlay{
+    position:absolute; inset:0; display:none; flex-direction:column;
+    align-items:center; justify-content:center; text-align:center;
+    background:rgba(247,249,251,0.72); border-radius:var(--radius);
+    padding:24px; z-index:5;
+  }
+  .locked-panel.is-locked .panel-inner{filter:blur(4px); pointer-events:none; user-select:none;}
+  .locked-panel.is-locked .lock-overlay{display:flex;}
+  .lock-overlay .lock-icon{font-size:22px; margin-bottom:8px;}
+  .lock-overlay .lock-title{font-weight:700; font-size:14.5px; margin-bottom:4px;}
+  .lock-overlay .lock-sub{font-size:12.5px; color:var(--ink-soft); max-width:34ch; margin-bottom:14px;}
+  .lock-overlay button{
+    background:var(--brand); color:#fff; border:none; border-radius:9px;
+    padding:9px 18px; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit;
+  }
+  .lock-overlay button:hover{background:var(--brand-dark);}
+
+  .tier-banner{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:#fff; border:1px solid var(--line); border-radius:var(--radius);
+    padding:12px 18px; margin-bottom:20px; font-size:13.5px;
+  }
+  .tier-banner .status{font-weight:600;}
+  .tier-banner .status.locked{color:var(--ink-soft);}
+  .tier-banner .status.unlocked{color:var(--good);}
+  .tier-banner a, .tier-banner button.link-btn{
+    color:var(--brand); text-decoration:none; font-weight:700; font-size:13px;
+    background:none; border:none; cursor:pointer; font-family:inherit; padding:0;
+  }
+
+  .ai-tier-choice{display:flex; gap:12px; flex-wrap:wrap;}
+  .ai-tier-choice .choice-card{
+    flex:1; min-width:220px; border:1px solid var(--line); border-radius:10px;
+    padding:16px; text-align:left;
+  }
+  .ai-tier-choice .choice-card h4{margin:0 0 4px; font-size:14px;}
+  .ai-tier-choice .choice-card p{margin:0 0 12px; font-size:12.5px; color:var(--ink-soft);}
+  .ai-tier-choice .choice-card input{width:100%; margin-bottom:10px;}
+  .ai-tier-choice .choice-card button{width:100%;}
+  .ai-tier-choice .choice-card button.secondary{
+    background:transparent; border:1px solid var(--brand); color:var(--brand);
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="brand">Arowana <span>Profits</span></div>
+  <nav>
+    <a href="index.html">← Arowana Profits</a>
+    <a href="features-tools-directory.html">All Tools</a>
+    <span style="opacity:.5; margin: 0 4px;">|</span>
+    <a href="retirement-calculator.html">Retirement Calculator</a>
+    <a href="withdrawal-planner.html">Withdrawal Planner</a>
+    <a href="tax-advantaged-guide.html">Tax-Advantaged Guide</a>
+  </nav>
+</header>
+
+<main>
+  <p class="eyebrow">Educational Tool · Not Financial Advice</p>
+  <h1>Retirement Roadmap</h1>
+  <p class="sub">Build a conservative / moderate / optimistic projection from your numbers, see any shortfall, and get five concrete next actions.</p>
+
+  <div class="disclaimer">
+    <strong>This is an educational estimate, not a guarantee.</strong> Figures use simplified compounding assumptions and don't account for taxes, sequence-of-returns risk, or fees unless you enter them. Confirm anything material with a CPA or fee-only fiduciary adviser before acting.
+  </div>
+
+  <form id="roadmapForm">
+    <div class="panel">
+      <h2>Your situation</h2>
+      <p class="hint">The 8 essentials the roadmap needs. Leave employer match / SS blank if unknown — we'll flag it as an assumption.</p>
+      <div class="grid">
+        <div class="field">
+          <label for="age">Current age</label>
+          <input type="number" id="age" min="18" max="80" required placeholder="38">
+        </div>
+        <div class="field">
+          <label for="retireAge">Desired retirement age</label>
+          <input type="number" id="retireAge" min="40" max="85" required placeholder="62">
+        </div>
+        <div class="field">
+          <label for="location">State / country</label>
+          <input type="text" id="location" required placeholder="Illinois, USA">
+        </div>
+        <div class="field">
+          <label for="income">Annual income ($)</label>
+          <input type="number" id="income" min="0" required placeholder="95000">
+        </div>
+        <div class="field">
+          <label for="currentSavings">Current retirement savings ($)</label>
+          <input type="number" id="currentSavings" min="0" required placeholder="120000">
+        </div>
+        <div class="field">
+          <label for="monthlyContrib">Your monthly contribution ($)</label>
+          <input type="number" id="monthlyContrib" min="0" required placeholder="800">
+        </div>
+        <div class="field">
+          <label for="employerMatch">Employer match ($/mo, 0 if none)</label>
+          <input type="number" id="employerMatch" min="0" placeholder="300">
+        </div>
+        <div class="field">
+          <label for="ssPension">Expected SS/pension ($/mo, 0 if unknown)</label>
+          <input type="number" id="ssPension" min="0" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="desiredSpending">Desired retirement spending ($/mo, today's $)</label>
+          <input type="number" id="desiredSpending" min="0" required placeholder="5500">
+        </div>
+        <div class="field">
+          <label for="debtBalance">Debt balance ($, 0 if none)</label>
+          <input type="number" id="debtBalance" min="0" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="debtRate">Debt interest rate (%, if any)</label>
+          <input type="number" id="debtRate" min="0" step="0.1" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="lifeExpectancy">Plan money lasting to age</label>
+          <select id="lifeExpectancy">
+            <option value="90">90</option>
+            <option value="95" selected>95</option>
+            <option value="100">100</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label>Risk comfort</label>
+          <div class="radio-row">
+            <label><input type="radio" name="risk" value="low"> Low</label>
+            <label><input type="radio" name="risk" value="medium" checked> Medium</label>
+            <label><input type="radio" name="risk" value="high"> High</label>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="submit" class="primary">Build my roadmap</button>
+        <button type="button" class="ghost" id="loadSavedBtn">Load saved inputs</button>
+        <span class="save-note" id="saveStatus"></span>
+      </div>
+    </div>
+  </form>
+
+  <div id="results">
+    <div class="tier-banner" id="tierBanner">
+      <span class="status locked" id="tierBannerStatus">Roadmap unlocked — sign in free to unlock 7 more tools</span>
+      <button type="button" class="link-btn" id="tierBannerAction" onclick="goToSignIn()">Sign in</button>
+    </div>
+    <div class="panel">
+      <h2>Projected outcome at retirement</h2>
+      <p class="hint">Three growth-rate scenarios, same contributions. All figures in today's purchasing power (inflation-adjusted).</p>
+      <div class="scenario-grid" id="scenarioGrid"></div>
+      <div class="assumptions" id="assumptionsText"></div>
+    </div>
+
+    <div class="panel">
+      <h2>If you're behind: monthly savings needed</h2>
+      <p class="hint" id="gapHint"></p>
+      <div id="gapDetail"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Five next actions <span class="estimate-tag">rule-based, not advice</span></h2>
+      <ol class="actions-list" id="actionsList"></ol>
+    </div>
+
+    <div class="panel">
+      <h2>AI narrative summary <span class="estimate-tag">optional · BYOK or subscription</span></h2>
+      <p class="hint">Turns your computed roadmap into a plain-English write-up. This is the one feature on this page with a real cost per use, so it follows Arowana's usual BYOK-or-subscription pattern rather than being free like the calculators.</p>
+      <div id="aiNarrativeGate"></div>
+      <div id="aiNarrative" style="margin-top:14px;"></div>
+    </div>
+
+<div class="locked-panel" data-lock-id="stress">
+    <div class="panel panel-inner">
+      <h2>Stress test</h2>
+      <p class="hint">Runs your moderate-scenario numbers through seven adverse conditions instead of assuming everything goes as planned. This is scenario math, not a Monte Carlo simulation.</p>
+      <button type="button" class="ghost" id="stressTestBtn">Run stress test</button>
+      <div id="stressResults" style="margin-top:16px;"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Sign in to unlock</div>
+      <div class="lock-sub">Free with any Arowana account — no payment required.</div>
+      <button type="button" class="unlock-btn" onclick="goToSignIn()">Sign in</button>
+    </div>
+  </div>
+
+<div class="locked-panel" data-lock-id="waterfall">
+    <div class="panel panel-inner">
+      <h2>Where should my next dollar go?</h2>
+      <p class="hint">Uses your debt rate, employer match, and current 401(k) contribution from the roadmap above, plus a few extra details, to build a prioritized waterfall. Limits are the IRS's official 2026 figures (Notice 2025-67 / Rev. Proc. 2025-19) — reconfirm before acting, since these change yearly.</p>
+      <div class="grid">
+        <div class="field">
+          <label for="extraMonthly">Extra amount available ($/mo)</label>
+          <input type="number" id="extraMonthly" min="0" placeholder="500">
+        </div>
+        <div class="field">
+          <label for="monthlyExpenses">Essential monthly expenses ($)</label>
+          <input type="number" id="monthlyExpenses" min="0" placeholder="4000">
+        </div>
+        <div class="field">
+          <label for="emergencyMonths">Emergency fund saved (months of expenses)</label>
+          <input type="number" id="emergencyMonths" min="0" step="0.5" placeholder="1">
+        </div>
+        <div class="field">
+          <label for="hsaEligibility">HSA eligibility</label>
+          <select id="hsaEligibility">
+            <option value="none">Not eligible</option>
+            <option value="self">Eligible — self-only coverage</option>
+            <option value="family">Eligible — family coverage</option>
+          </select>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="waterfallBtn">Build waterfall</button>
+      </div>
+      <div id="waterfallResults" style="margin-top:16px;"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Sign in to unlock</div>
+      <div class="lock-sub">Free with any Arowana account — no payment required.</div>
+      <button type="button" class="unlock-btn" onclick="goToSignIn()">Sign in</button>
+    </div>
+  </div>
+
+<div class="locked-panel" data-lock-id="ss">
+    <div class="panel panel-inner">
+      <h2>Social Security: when to claim</h2>
+      <p class="hint">Compares claiming at 62, full retirement age (67, for anyone born 1960+), and 70 — using your current age and life-expectancy assumption from the roadmap above. FRA is 67; early claiming cuts benefits ~30%; delaying to 70 adds ~24% (8%/yr) — 2026 SSA figures.</p>
+      <div class="grid">
+        <div class="field">
+          <label for="fraBenefit">Estimated monthly benefit at FRA (67) ($)</label>
+          <input type="number" id="fraBenefit" min="0" placeholder="2400">
+        </div>
+        <div class="field">
+          <label for="benefit62Override">Actual estimate at 62, if known ($, optional)</label>
+          <input type="number" id="benefit62Override" min="0" placeholder="leave blank to estimate">
+        </div>
+        <div class="field">
+          <label for="benefit70Override">Actual estimate at 70, if known ($, optional)</label>
+          <input type="number" id="benefit70Override" min="0" placeholder="leave blank to estimate">
+        </div>
+        <div class="field">
+          <label for="maritalStatus">Marital status</label>
+          <select id="maritalStatus">
+            <option value="single">Single</option>
+            <option value="married">Married</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="spouseAge">Spouse's age (if married)</label>
+          <input type="number" id="spouseAge" min="0" placeholder="40">
+        </div>
+        <div class="field">
+          <label for="spouseFraBenefit">Spouse's estimated FRA benefit ($/mo, if married)</label>
+          <input type="number" id="spouseFraBenefit" min="0" placeholder="1800">
+        </div>
+        <div class="field span2">
+          <label for="workIncomeAfterClaim">Planned work income after claiming ($/yr, if claiming before FRA)</label>
+          <input type="number" id="workIncomeAfterClaim" min="0" placeholder="0">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="ssBtn">Compare claiming ages</button>
+      </div>
+      <div id="ssResults" style="margin-top:16px;"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Sign in to unlock</div>
+      <div class="lock-sub">Free with any Arowana account — no payment required.</div>
+      <button type="button" class="unlock-btn" onclick="goToSignIn()">Sign in</button>
+    </div>
+  </div>
+
+<div class="locked-panel" data-lock-id="portfolio">
+    <div class="panel panel-inner">
+      <h2>Three portfolio options</h2>
+      <p class="hint">Educational allocation ranges across broad, low-cost fund categories — not specific tickers, not guaranteed returns. Uses your age and retirement age from the roadmap above.</p>
+      <div class="grid">
+        <div class="field span2">
+          <label>Investing experience</label>
+          <div class="radio-row">
+            <label><input type="radio" name="experience" value="beginner" checked> Beginner</label>
+            <label><input type="radio" name="experience" value="intermediate"> Intermediate</label>
+          </div>
+        </div>
+        <div class="field span2">
+          <label>If the market dropped 30%, you'd most likely...</label>
+          <div class="radio-row">
+            <label><input type="radio" name="reaction" value="selling"> Sell</label>
+            <label><input type="radio" name="reaction" value="holding" checked> Hold</label>
+            <label><input type="radio" name="reaction" value="buying"> Buy more</label>
+            <label><input type="radio" name="reaction" value="unsure"> Unsure</label>
+          </div>
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="portfolioBtn">Build portfolio options</button>
+      </div>
+      <div id="portfolioResults" style="margin-top:16px;"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Sign in to unlock</div>
+      <div class="lock-sub">Free with any Arowana account — no payment required.</div>
+      <button type="button" class="unlock-btn" onclick="goToSignIn()">Sign in</button>
+    </div>
+  </div>
+
+<div class="locked-panel" data-lock-id="roth">
+    <div class="panel panel-inner">
+      <h2>Roth vs. Traditional &amp; conversion analysis</h2>
+      <p class="hint">Uses real 2026 IRS brackets (Rev. Proc. 2025-32) to compare your current marginal rate against retirement. State taxes, NIIT, and AMT are not modeled — flagged below where a CPA should confirm.</p>
+      <div class="grid">
+        <div class="field">
+          <label for="rtFilingStatus">Filing status</label>
+          <select id="rtFilingStatus">
+            <option value="single">Single</option>
+            <option value="mfj">Married filing jointly</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="rtCurrentTaxableIncome">Current taxable income ($/yr, after deductions)</label>
+          <input type="number" id="rtCurrentTaxableIncome" min="0" placeholder="85000">
+        </div>
+        <div class="field">
+          <label for="rtRetirementTaxableIncome">Expected retirement taxable income ($/yr)</label>
+          <input type="number" id="rtRetirementTaxableIncome" min="0" placeholder="60000">
+        </div>
+        <div class="field">
+          <label for="rtPreTaxBalance">Pre-tax (Traditional) balance ($)</label>
+          <input type="number" id="rtPreTaxBalance" min="0" placeholder="200000">
+        </div>
+        <div class="field">
+          <label for="rtRothBalance">Roth balance ($)</label>
+          <input type="number" id="rtRothBalance" min="0" placeholder="40000">
+        </div>
+        <div class="field">
+          <label for="rtCashForTaxes">Cash available to pay conversion taxes ($, optional)</label>
+          <input type="number" id="rtCashForTaxes" min="0" placeholder="10000">
+        </div>
+        <div class="field span2">
+          <label for="rtConversionAmount">Test converting this amount this year ($, optional)</label>
+          <input type="number" id="rtConversionAmount" min="0" placeholder="30000">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="rothBtn">Analyze</button>
+      </div>
+      <div id="rothResults" style="margin-top:16px;"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Sign in to unlock</div>
+      <div class="lock-sub">Free with any Arowana account — no payment required.</div>
+      <button type="button" class="unlock-btn" onclick="goToSignIn()">Sign in</button>
+    </div>
+  </div>
+
+<div class="locked-panel" data-lock-id="withdrawal">
+    <div class="panel panel-inner">
+      <h2>Withdrawal sequencing (first 5 years)</h2>
+      <p class="hint">Compares taxable-first, proportional, and bracket-managed withdrawal order. Assumes 4% real growth on remaining balances, Social Security 85% taxable (a common upper-bound assumption, flagged), and uses your filing status's 2026 brackets — not a substitute for a CPA's projection.</p>
+      <div class="grid">
+        <div class="field">
+          <label for="wsFilingStatus">Filing status</label>
+          <select id="wsFilingStatus">
+            <option value="single">Single</option>
+            <option value="mfj">Married filing jointly</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="wsCash">Cash at retirement ($)</label>
+          <input type="number" id="wsCash" min="0" placeholder="30000">
+        </div>
+        <div class="field">
+          <label for="wsTaxable">Taxable investments ($)</label>
+          <input type="number" id="wsTaxable" min="0" placeholder="150000">
+        </div>
+        <div class="field">
+          <label for="wsTraditional">Traditional retirement accounts ($)</label>
+          <input type="number" id="wsTraditional" min="0" placeholder="500000">
+        </div>
+        <div class="field">
+          <label for="wsRoth">Roth accounts ($)</label>
+          <input type="number" id="wsRoth" min="0" placeholder="100000">
+        </div>
+        <div class="field">
+          <label for="wsPension">Pension ($/yr, 0 if none)</label>
+          <input type="number" id="wsPension" min="0" placeholder="0">
+        </div>
+        <div class="field">
+          <label for="wsSS">Social Security ($/yr)</label>
+          <input type="number" id="wsSS" min="0" placeholder="28800">
+        </div>
+        <div class="field span2">
+          <label for="wsSpending">Annual spending need ($/yr)</label>
+          <input type="number" id="wsSpending" min="0" placeholder="70000">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="wsBtn">Compare sequences</button>
+      </div>
+      <div id="wsResults" style="margin-top:16px;"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Sign in to unlock</div>
+      <div class="lock-sub">Free with any Arowana account — no payment required.</div>
+      <button type="button" class="unlock-btn" onclick="goToSignIn()">Sign in</button>
+    </div>
+  </div>
+
+<div class="locked-panel" data-lock-id="checklist">
+    <div class="panel panel-inner">
+      <h2>12-month action plan</h2>
+      <p class="hint">Turns everything above into a checklist organized by timeframe, personalized to what you've entered in this roadmap.</p>
+      <div class="grid">
+        <div class="field">
+          <label for="insuranceStatus">Insurance coverage (life/disability)</label>
+          <select id="insuranceStatus">
+            <option value="unknown">Not sure</option>
+            <option value="complete">In place and reviewed recently</option>
+            <option value="incomplete">Incomplete or outdated</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="estateStatus">Estate documents (will, POA, beneficiaries)</label>
+          <select id="estateStatus">
+            <option value="unknown">Not sure</option>
+            <option value="complete">Complete and current</option>
+            <option value="incomplete">Incomplete or outdated</option>
+          </select>
+        </div>
+        <div class="field span2">
+          <label for="topConcern">Your biggest concern right now (optional)</label>
+          <input type="text" id="topConcern" placeholder="e.g. not sure if I'm saving enough">
+        </div>
+      </div>
+      <div class="actions">
+        <button type="button" class="primary" id="checklistBtn">Build my 12-month plan</button>
+      </div>
+      <div id="checklistResults" style="margin-top:16px;"></div>
+    </div>
+    <div class="lock-overlay">
+      <div class="lock-icon">🔒</div>
+      <div class="lock-title">Sign in to unlock</div>
+      <div class="lock-sub">Free with any Arowana account — no payment required.</div>
+      <button type="button" class="unlock-btn" onclick="goToSignIn()">Sign in</button>
+    </div>
+  </div>
+  </div>
+</main>
+
+<script>
+/* =========================================================================
+   STORAGE — follows the ap_* localStorage convention. Supabase secondary
+   sync hook is stubbed at the bottom (syncToSupabase) — wire it to your
+   `pbojacnagutipfhcxltj` project using the same pattern as trade-journal-pro.
+   ========================================================================= */
+const STORAGE_KEY = 'ap_retirement_v1';
+
+function readForm(){
+  const risk = document.querySelector('input[name="risk"]:checked').value;
+  return {
+    age: Number(document.getElementById('age').value),
+    retireAge: Number(document.getElementById('retireAge').value),
+    location: document.getElementById('location').value.trim(),
+    income: Number(document.getElementById('income').value),
+    currentSavings: Number(document.getElementById('currentSavings').value),
+    monthlyContrib: Number(document.getElementById('monthlyContrib').value),
+    employerMatch: Number(document.getElementById('employerMatch').value || 0),
+    ssPension: Number(document.getElementById('ssPension').value || 0),
+    desiredSpending: Number(document.getElementById('desiredSpending').value),
+    debtBalance: Number(document.getElementById('debtBalance').value || 0),
+    debtRate: Number(document.getElementById('debtRate').value || 0),
+    lifeExpectancy: Number(document.getElementById('lifeExpectancy').value),
+    risk
+  };
+}
+
+function populateForm(d){
+  if(!d) return;
+  document.getElementById('age').value = d.age ?? '';
+  document.getElementById('retireAge').value = d.retireAge ?? '';
+  document.getElementById('location').value = d.location ?? '';
+  document.getElementById('income').value = d.income ?? '';
+  document.getElementById('currentSavings').value = d.currentSavings ?? '';
+  document.getElementById('monthlyContrib').value = d.monthlyContrib ?? '';
+  document.getElementById('employerMatch').value = d.employerMatch ?? '';
+  document.getElementById('ssPension').value = d.ssPension ?? '';
+  document.getElementById('desiredSpending').value = d.desiredSpending ?? '';
+  document.getElementById('debtBalance').value = d.debtBalance ?? '';
+  document.getElementById('debtRate').value = d.debtRate ?? '';
+  document.getElementById('lifeExpectancy').value = d.lifeExpectancy ?? '95';
+  if(d.risk){
+    const el = document.querySelector(`input[name="risk"][value="${d.risk}"]`);
+    if(el) el.checked = true;
+  }
+}
+
+function saveInputs(d){
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(d));
+    document.getElementById('saveStatus').textContent = 'Saved locally ✓';
+    syncToSupabase(d); // secondary sync, non-blocking
+  }catch(e){
+    document.getElementById('saveStatus').textContent = 'Could not save locally';
+  }
+}
+
+function syncToSupabase(d){
+  // TODO: mirror the pattern used in journal-sync.js once it exists.
+  // e.g. supabase.from('retirement_inputs').upsert({ user_id, ...d })
+  // Left as a no-op stub — local storage is source of truth for the MVP.
+}
+
+document.getElementById('loadSavedBtn').addEventListener('click', () => {
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if(!raw){
+    document.getElementById('saveStatus').textContent = 'No saved inputs found';
+    return;
+  }
+  populateForm(JSON.parse(raw));
+  document.getElementById('saveStatus').textContent = 'Loaded saved inputs';
+});
+
+/* =========================================================================
+   CALCULATION ENGINE — pure math, no AI call needed for the numbers.
+   Real-return assumption: nominal return minus inflation, so results are
+   already expressed in today's dollars.
+   ========================================================================= */
+const INFLATION = 0.025;
+const SCENARIOS = [
+  { key:'conservative', label:'Conservative', nominalReturn:0.04 },
+  { key:'moderate',     label:'Moderate',     nominalReturn:0.06 },
+  { key:'optimistic',   label:'Optimistic',   nominalReturn:0.08 }
+];
+
+function realReturn(nominal){
+  return (1 + nominal) / (1 + INFLATION) - 1;
+}
+
+// Future value of a lump sum + monthly contributions, monthly compounding.
+function futureValue(principal, monthlyContribution, annualRate, years){
+  const r = annualRate / 12;
+  const n = years * 12;
+  if (r === 0) return principal + monthlyContribution * n;
+  const fvPrincipal = principal * Math.pow(1 + r, n);
+  const fvContrib = monthlyContribution * ((Math.pow(1 + r, n) - 1) / r);
+  return fvPrincipal + fvContrib;
+}
+
+// Monthly PMT needed to reach a target FV given principal, rate, years.
+function pmtForTarget(targetFV, principal, annualRate, years){
+  const r = annualRate / 12;
+  const n = years * 12;
+  const fvPrincipal = principal * Math.pow(1 + r, n);
+  const remaining = targetFV - fvPrincipal;
+  if (remaining <= 0) return 0;
+  if (r === 0) return remaining / n;
+  return remaining / ((Math.pow(1 + r, n) - 1) / r);
+}
+
+function fmtMoney(v){
+  return '$' + Math.round(v).toLocaleString('en-US');
+}
+
+function runProjection(d){
+  const years = Math.max(d.retireAge - d.age, 1);
+  const retirementYears = Math.max(d.lifeExpectancy - d.retireAge, 1);
+  const monthlyIn = d.monthlyContrib + d.employerMatch;
+  const results = SCENARIOS.map(s => {
+    const rr = realReturn(s.nominalReturn);
+    const fv = futureValue(d.currentSavings, monthlyIn, rr, years);
+    // Sustainable withdrawal: 4%-rule style, but scaled to actual payout years
+    // using the same real return during retirement as a simplifying assumption.
+    const drawRate = 1 / retirementYears + rr * 0.5; // blended rule-of-thumb
+    const monthlyFromSavings = (fv * Math.min(drawRate, 0.07)) / 12;
+    const totalMonthlyIncome = monthlyFromSavings + d.ssPension;
+    const gapMonthly = d.desiredSpending - totalMonthlyIncome;
+    const pmtNeeded = gapMonthly > 0
+      ? pmtForTarget(
+          // back-solve target FV that would have zeroed the gap
+          (d.desiredSpending - d.ssPension) * 12 / Math.min(drawRate, 0.07),
+          d.currentSavings, rr, years
+        )
+      : 0;
+    return {
+      ...s, fv, monthlyFromSavings, totalMonthlyIncome, gapMonthly,
+      additionalMonthlyNeeded: Math.max(pmtNeeded - monthlyIn, 0)
+    };
+  });
+  return { years, retirementYears, monthlyIn, results };
+}
+
+function statusFor(gapMonthly){
+  if (gapMonthly <= 0) return { cls:'good', label:'On track' };
+  if (gapMonthly < 800) return { cls:'warn', label:'Small gap' };
+  return { cls:'bad', label:'Shortfall' };
+}
+
+function renderResults(d, proj){
+  const grid = document.getElementById('scenarioGrid');
+  grid.innerHTML = '';
+  proj.results.forEach(r => {
+    const st = statusFor(r.gapMonthly);
+    const card = document.createElement('div');
+    card.className = 'scenario-card';
+    card.innerHTML = `
+      <h3>${r.label}</h3>
+      <div class="rate mono">~${(r.nominalReturn*100).toFixed(0)}% nominal / ${((realReturn(r.nominalReturn))*100).toFixed(1)}% real</div>
+      <div class="stat"><div class="label">Projected balance at ${d.retireAge}</div><div class="value">${fmtMoney(r.fv)}</div></div>
+      <div class="stat"><div class="label">Est. monthly income (savings + SS/pension)</div><div class="value">${fmtMoney(r.totalMonthlyIncome)}</div></div>
+      <div class="stat"><div class="label">${r.gapMonthly > 0 ? 'Monthly shortfall' : 'Monthly surplus'}</div><div class="value">${fmtMoney(Math.abs(r.gapMonthly))}</div></div>
+      <span class="status-pill ${st.cls}">${st.label}</span>
+    `;
+    grid.appendChild(card);
+  });
+
+  document.getElementById('assumptionsText').innerHTML = `
+    <strong>Assumptions:</strong> ${INFLATION*100}% inflation · monthly compounding ·
+    growth rates of 4% / 6% / 8% nominal (conservative/moderate/optimistic) ·
+    withdrawal sized to last from ${d.retireAge} to ${d.lifeExpectancy} ·
+    figures shown in today's dollars · taxes and fees not modeled unless reflected in your inputs.
+    All figures are <strong>estimates, not guarantees.</strong>
+  `;
+
+  const moderate = proj.results.find(r => r.key === 'moderate');
+  const gapHint = document.getElementById('gapHint');
+  const gapDetail = document.getElementById('gapDetail');
+  if (moderate.gapMonthly > 0){
+    gapHint.textContent = `Based on the moderate scenario, closing the gap would take roughly this much extra saved per month, starting now:`;
+    gapDetail.innerHTML = `<div class="scenario-card" style="max-width:340px;">
+      <div class="stat"><div class="label">Additional monthly savings needed</div>
+      <div class="value" style="color:var(--bad)">${fmtMoney(moderate.additionalMonthlyNeeded)}</div></div>
+    </div>`;
+  } else {
+    gapHint.textContent = `The moderate scenario shows a surplus — no additional monthly savings appear necessary to hit your stated spending target.`;
+    gapDetail.innerHTML = '';
+  }
+
+  renderActions(d, proj);
+  document.getElementById('results').style.display = 'block';
+  document.getElementById('results').scrollIntoView({ behavior:'smooth' });
+}
+
+function renderActions(d, proj){
+  const moderate = proj.results.find(r => r.key === 'moderate');
+  const actions = [];
+
+  if (d.debtBalance > 0 && d.debtRate >= 6){
+    actions.push({ t:`Prioritize paying down your ${d.debtRate}% debt`, s:`High-interest debt above ~6–7% usually outweighs the expected return on additional investing.` });
+  }
+  if (d.employerMatch === 0){
+    actions.push({ t:'Confirm whether your employer offers a retirement match', s:`Unmatched contributions leave free money on the table — verify this before anything else.` });
+  }
+  if (moderate.gapMonthly > 0){
+    actions.push({ t:`Increase monthly contributions toward ~${fmtMoney(moderate.additionalMonthlyNeeded)}/mo`, s:`This is what closes the moderate-scenario gap; even a partial increase compounds meaningfully over ${proj.years} years.` });
+  } else {
+    actions.push({ t:'Stress-test this plan against a market downturn', s:`You're on track under moderate assumptions — the next step is checking how a 30% decline near retirement or a below-average decade would change the picture.` });
+  }
+  actions.push({ t:'Verify your Social Security / pension estimate', s: d.ssPension > 0 ? `You entered ${fmtMoney(d.ssPension)}/mo — confirm this against your actual SSA statement or plan documents.` : `You left this blank — pull your real estimate from ssa.gov so the projection isn't relying on $0.` });
+  actions.push({ t:'Revisit this roadmap annually or after any income change', s:`Contribution rates, income, and market conditions all drift — treat this as a living plan, not a one-time answer.` });
+
+  const list = document.getElementById('actionsList');
+  list.innerHTML = '';
+  actions.slice(0,5).forEach(a => {
+    const li = document.createElement('li');
+    li.innerHTML = `<div class="txt"><strong>${a.t}</strong><span>${a.s}</span></div>`;
+    list.appendChild(li);
+  });
+}
+
+/* =========================================================================
+   STRESS TEST — reuses the same futureValue/realReturn engine, applied to
+   the moderate scenario under seven adverse conditions. Pure client-side
+   math, same caveat as above: this is scenario analysis, not a true
+   Monte Carlo simulation, and is labeled as such in the UI.
+   ========================================================================= */
+const STRESS_EMERGENCY_COST = 50000; // stated assumption, shown in the UI
+
+function monthlyIncomeFromFV(fv, retirementYears, ssPension, nominalRate){
+  const rr = realReturn(nominalRate);
+  const drawRate = Math.min(1 / retirementYears + rr * 0.5, 0.07);
+  return (fv * drawRate) / 12 + ssPension;
+}
+
+function runStressTest(d, proj){
+  const base = proj.results.find(r => r.key === 'moderate');
+  const baseNominal = 0.06;
+  const years = proj.years;
+  const retirementYears = proj.retirementYears;
+  const monthlyIn = proj.monthlyIn;
+  const baselineIncome = base.totalMonthlyIncome;
+
+  const scenarios = [];
+
+  // 1. 30% decline near retirement — one-time haircut to the balance right before drawdown.
+  {
+    const fv = base.fv * 0.7;
+    const income = monthlyIncomeFromFV(fv, retirementYears, d.ssPension, baseNominal);
+    scenarios.push({ name:'30% market decline near retirement', fv, income });
+  }
+
+  // 2. Ten years of below-average returns — last min(10,years) accumulation years run 2pts colder.
+  {
+    const coldYears = Math.min(10, years);
+    const warmYears = years - coldYears;
+    const rrWarm = realReturn(baseNominal);
+    const rrCold = realReturn(baseNominal - 0.02);
+    const fvWarm = futureValue(d.currentSavings, monthlyIn, rrWarm, warmYears);
+    const fv = futureValue(fvWarm, monthlyIn, rrCold, coldYears);
+    const income = monthlyIncomeFromFV(fv, retirementYears, d.ssPension, baseNominal - 0.02);
+    scenarios.push({ name:'10 years of below-average returns', fv, income });
+  }
+
+  // 3. Inflation stays at 4% instead of 2.5% — erodes real return throughout accumulation.
+  {
+    const rr = (1 + baseNominal) / 1.04 - 1;
+    const fv = futureValue(d.currentSavings, monthlyIn, rr, years);
+    const income = monthlyIncomeFromFV(fv, retirementYears, d.ssPension, baseNominal);
+    scenarios.push({ name:'Inflation stays at 4%', fv, income });
+  }
+
+  // 4. Retiring five years early — shorter accumulation, longer payout.
+  {
+    const yrs = Math.max(years - 5, 0);
+    const payoutYrs = retirementYears + 5;
+    const rr = realReturn(baseNominal);
+    const fv = futureValue(d.currentSavings, monthlyIn, rr, yrs);
+    const income = monthlyIncomeFromFV(fv, payoutYrs, d.ssPension, baseNominal);
+    scenarios.push({ name:'Retiring 5 years early', fv, income });
+  }
+
+  // 5. Living to age 100 — same balance, longer payout window.
+  {
+    const payoutYrs = Math.max(100 - d.retireAge, 1);
+    const income = monthlyIncomeFromFV(base.fv, payoutYrs, d.ssPension, baseNominal);
+    scenarios.push({ name:'Living to age 100', fv: base.fv, income });
+  }
+
+  // 6. Healthcare/family emergency — one-time hit to the balance at retirement.
+  {
+    const fv = Math.max(base.fv - STRESS_EMERGENCY_COST, 0);
+    const income = monthlyIncomeFromFV(fv, retirementYears, d.ssPension, baseNominal);
+    scenarios.push({ name:`$${STRESS_EMERGENCY_COST.toLocaleString()} healthcare/family emergency`, fv, income });
+  }
+
+  // 7. Spending 20% more than planned — balance unchanged, target spend rises.
+  {
+    scenarios.push({ name:'Spending 20% more than planned', fv: base.fv, income: baselineIncome, spendOverride: d.desiredSpending * 1.2 });
+  }
+
+  return scenarios.map(s => {
+    const targetSpend = s.spendOverride ?? d.desiredSpending;
+    const gap = targetSpend - s.income;
+    let risk = 'low';
+    if (gap > 0 && gap < 1000) risk = 'med';
+    if (gap >= 1000) risk = 'high';
+    return { ...s, targetSpend, gap, risk };
+  }).sort((a,b) => b.gap - a.gap);
+}
+
+function contingencyFor(name){
+  const map = {
+    '30% market decline near retirement': 'Shift to a more conservative glide path in the 5 years before retirement, or delay retirement 1–2 years to let the market recover.',
+    '10 years of below-average returns': 'Increase the savings rate now as a buffer; below-average decades are common enough to plan around, not just react to.',
+    'Inflation stays at 4%': 'Favor growth assets and inflation-linked holdings; reduce fixed-income concentration relative to a low-inflation plan.',
+    'Retiring 5 years early': 'Build a bridge fund to cover the gap years before SS/pension eligibility, or plan part-time income during that window.',
+    'Living to age 100': 'Use a lower initial withdrawal rate than the 4% rule, or hold a small annuity for guaranteed longevity coverage.',
+    [`$${STRESS_EMERGENCY_COST.toLocaleString()} healthcare/family emergency`]: 'Maintain a dedicated emergency fund outside retirement accounts so a shock doesn\'t force an early, penalized withdrawal.',
+    'Spending 20% more than planned': 'Track actual spending against this plan annually — a 20% miss compounds fast, so catching it early matters more than the plan itself.'
+  };
+  return map[name] || 'Revisit assumptions and consider professional guidance.';
+}
+
+function renderStressResults(d, proj){
+  const scenarios = runStressTest(d, proj);
+  const highRiskCount = scenarios.filter(s => s.risk === 'high').length;
+  const worst = scenarios[0];
+
+  const container = document.getElementById('stressResults');
+  const summary = document.createElement('div');
+  summary.className = 'stress-summary';
+  summary.innerHTML = `<strong>${highRiskCount} of 7 scenarios show a high-risk gap.</strong> The most damaging is "${worst.name}", cutting est. monthly income to ${fmtMoney(worst.income)} against a ${fmtMoney(worst.targetSpend)} target.`;
+
+  const table = document.createElement('table');
+  table.className = 'stress-table';
+  table.innerHTML = `
+    <thead><tr>
+      <th>Scenario</th><th>Est. monthly income</th><th>Target spend</th><th>Gap</th><th>Risk</th><th>Contingency option</th>
+    </tr></thead>
+    <tbody>
+      ${scenarios.map(s => `
+        <tr>
+          <td class="scenario-name">${s.name}</td>
+          <td class="num">${fmtMoney(s.income)}</td>
+          <td class="num">${fmtMoney(s.targetSpend)}</td>
+          <td class="num" style="color:${s.gap > 0 ? 'var(--bad)' : 'var(--good)'}">${s.gap > 0 ? '-' : '+'}${fmtMoney(Math.abs(s.gap))}</td>
+          <td><span class="risk-badge ${s.risk}">${s.risk === 'high' ? 'High' : s.risk === 'med' ? 'Medium' : 'Low'}</span></td>
+          <td>${contingencyFor(s.name)}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+
+  container.innerHTML = '';
+  container.appendChild(summary);
+  container.appendChild(table);
+}
+
+document.getElementById('stressTestBtn').addEventListener('click', () => {
+  if (!window.__lastProjection){
+    document.getElementById('stressResults').innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Build your roadmap first.</span>';
+    return;
+  }
+  renderStressResults(window.__lastProjection.inputs, window.__lastProjection.proj);
+});
+
+/* =========================================================================
+   CONTRIBUTION WATERFALL — prioritizes an extra monthly dollar amount
+   across debt, emergency fund, HSA, IRA, and 401(k) headroom.
+
+   2026 IRS limits used below (verify annually — these are indexed for
+   inflation and change every year):
+     401(k) employee elective deferral: $24,500  (+$8,000 catch-up 50+,
+       or $11,250 for ages 60–63) — IRS Notice 2025-67 / IR-2025-111
+     Traditional/Roth IRA combined:     $7,500   (+$1,100 catch-up 50+)
+     HSA:                                $4,400 self-only / $8,750 family
+       (+$1,000 catch-up 55+)          — IRS Rev. Proc. 2025-19
+   Source: irs.gov/newsroom/401k-limit-increases-to-24500-for-2026-ira-limit-increases-to-7500
+   ========================================================================= */
+const LIMITS_2026 = {
+  k401: 24500, k401Catchup50: 8000, k401Catchup60to63: 11250,
+  ira: 7500, iraCatchup50: 1100,
+  hsaSelf: 4400, hsaFamily: 8750, hsaCatchup55: 1000
+};
+
+function annualLimitFor(base, age, catchup50, catchup60to63){
+  if (catchup60to63 && age >= 60 && age <= 63) return base + catchup60to63;
+  if (age >= 50) return base + catchup50;
+  return base;
+}
+
+function buildWaterfall(d, wf){
+  const steps = [];
+  let remaining = wf.extraMonthly;
+
+  // 1. High-interest debt (>= 7%) — no cap, absorbs everything until it's gone.
+  if (d.debtBalance > 0 && d.debtRate >= 7){
+    const amt = remaining;
+    steps.push({ name:`Pay down debt at ${d.debtRate}%`, amount: amt,
+      why:`Guaranteed ${d.debtRate}% return by not paying that interest — hard to beat with investing.` });
+    remaining -= amt;
+  }
+
+  // 2. Emergency fund to 3 months of essential expenses.
+  if (wf.monthlyExpenses > 0 && wf.emergencyMonths < 3){
+    const pace = Math.min(remaining, Math.round(wf.monthlyExpenses * 0.5));
+    steps.push({ name:'Build emergency fund to 3 months', amount: pace,
+      why:`You have ~${wf.emergencyMonths} month(s) saved against a 3-month target of ${fmtMoney(wf.monthlyExpenses*3)}; this paces you there without stalling other goals.` });
+    remaining -= pace;
+  }
+
+  // 3. Confirm employer match is fully captured (informational, doesn't consume budget
+  //    since the match amount was already reported as being received).
+  if (d.employerMatch > 0){
+    steps.push({ name:'Confirm you\'re capturing the full employer match', amount: 0,
+      why:`You reported ${fmtMoney(d.employerMatch)}/mo in match — verify your contribution rate still qualifies for all of it before allocating further; unmatched contribution room here is effectively a 100% return.` });
+  } else {
+    steps.push({ name:'Check if your employer offers a match at all', amount: 0,
+      why:`You reported no match — confirm this is accurate. If one exists and you're not capturing it, it should move to priority #1.` });
+  }
+
+  // 4. HSA headroom (if eligible).
+  if (wf.hsaEligibility !== 'none' && remaining > 0){
+    const annualLimit = (wf.hsaEligibility === 'family' ? LIMITS_2026.hsaFamily : LIMITS_2026.hsaSelf)
+      + (d.age >= 55 ? LIMITS_2026.hsaCatchup55 : 0);
+    const monthlyRoom = Math.round(annualLimit / 12);
+    const amt = Math.min(remaining, monthlyRoom);
+    steps.push({ name:'HSA', amount: amt,
+      why:`Triple tax advantage (pre-tax in, tax-free growth, tax-free for medical) — the strongest tax wrapper available if you're eligible. 2026 room: up to ${fmtMoney(monthlyRoom)}/mo.` });
+    remaining -= amt;
+  }
+
+  // 5. IRA headroom (Traditional or Roth — this tool doesn't pick which; see prompt #5/#6).
+  if (remaining > 0){
+    const annualLimit = LIMITS_2026.ira + (d.age >= 50 ? LIMITS_2026.iraCatchup50 : 0);
+    const monthlyRoom = Math.round(annualLimit / 12);
+    const amt = Math.min(remaining, monthlyRoom);
+    steps.push({ name:'Traditional or Roth IRA', amount: amt,
+      why:`2026 combined limit is ${fmtMoney(annualLimit)}/yr (${fmtMoney(monthlyRoom)}/mo) — which type fits better depends on your tax bracket now vs. in retirement.` });
+    remaining -= amt;
+  }
+
+  // 6. Remaining 401(k) headroom beyond current contribution.
+  if (remaining > 0){
+    const annualLimit = annualLimitFor(LIMITS_2026.k401, d.age, LIMITS_2026.k401Catchup50, LIMITS_2026.k401Catchup60to63);
+    const monthlyRoom = Math.max(annualLimit / 12 - d.monthlyContrib, 0);
+    const amt = Math.min(remaining, Math.round(monthlyRoom));
+    steps.push({ name:'Increase 401(k) contribution', amount: amt,
+      why:`You're contributing ${fmtMoney(d.monthlyContrib)}/mo against a 2026 room of ~${fmtMoney(annualLimit/12)}/mo — this lowers taxable income today.` });
+    remaining -= amt;
+  }
+
+  // 7. Everything else: taxable investing (or lower-rate debt, if any remains).
+  if (remaining > 0){
+    if (d.debtBalance > 0 && d.debtRate > 0 && d.debtRate < 7){
+      steps.push({ name:`Extra payments on ${d.debtRate}% debt, or taxable investing`, amount: remaining,
+        why:`Below ~6–7%, this is a toss-up between guaranteed debt payoff and expected market return — pick based on your risk comfort.` });
+    } else {
+      steps.push({ name:'Taxable brokerage investing', amount: remaining,
+        why:`Tax-advantaged room is filled — this is flexible money with no withdrawal restrictions, at the cost of no tax shelter.` });
+    }
+    remaining = 0;
+  }
+
+  return steps;
+}
+
+function renderWaterfall(d, wf){
+  const steps = buildWaterfall(d, wf);
+  const list = document.getElementById('waterfallResults');
+  list.innerHTML = '';
+  const wrap = document.createElement('div');
+  steps.forEach((s, i) => {
+    const row = document.createElement('div');
+    row.className = 'waterfall-step';
+    row.innerHTML = `
+      <div class="rank mono">${i+1}</div>
+      <div class="body">
+        <div class="row1">
+          <span class="name">${s.name}</span>
+          <span class="amount ${s.amount === 0 ? 'zero' : ''}">${s.amount === 0 ? '—' : fmtMoney(s.amount) + '/mo'}</span>
+        </div>
+        <div class="why">${s.why}</div>
+      </div>
+    `;
+    wrap.appendChild(row);
+  });
+  const totals = document.createElement('div');
+  totals.className = 'waterfall-totals';
+  totals.textContent = `Allocated ${fmtMoney(wf.extraMonthly)}/mo of extra capacity across ${steps.filter(s=>s.amount>0).length} funded priorities. Limits sourced from IRS 2026 figures — reconfirm at irs.gov before acting, especially if your age crosses a catch-up threshold or your income affects Roth IRA eligibility.`;
+  wrap.appendChild(totals);
+  list.appendChild(wrap);
+}
+
+document.getElementById('waterfallBtn').addEventListener('click', () => {
+  const resultsBox = document.getElementById('waterfallResults');
+  if (!window.__lastProjection){
+    resultsBox.innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Build your roadmap above first — this tool reuses your debt rate, employer match, and contribution from there.</span>';
+    return;
+  }
+  const extraMonthly = Number(document.getElementById('extraMonthly').value || 0);
+  const monthlyExpenses = Number(document.getElementById('monthlyExpenses').value || 0);
+  const emergencyMonths = Number(document.getElementById('emergencyMonths').value || 0);
+  const hsaEligibility = document.getElementById('hsaEligibility').value;
+  if (extraMonthly <= 0){
+    resultsBox.innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Enter an amount available to allocate.</span>';
+    return;
+  }
+  renderWaterfall(window.__lastProjection.inputs, { extraMonthly, monthlyExpenses, emergencyMonths, hsaEligibility });
+});
+
+/* =========================================================================
+   SOCIAL SECURITY CLAIMING COMPARISON — 2026 SSA figures, sourced:
+     Full retirement age (FRA): 67 for anyone born 1960 or later.
+     Claiming at 62: permanent ~30% reduction vs. FRA benefit.
+     Delaying to 70: delayed retirement credits of ~8%/year → ~24% above FRA.
+     2026 COLA: 2.8%.
+     Earnings test (only applies before FRA):
+       - Under FRA all year: $24,480/yr limit, $1 withheld per $2 over.
+       - Year reaching FRA: $65,160 limit (months before FRA), $1 per $3 over.
+       - No limit or withholding once at/after FRA.
+   Source: ssa.gov/benefits/retirement/planner/whileworking.html and
+   SSA 2026 COLA release. Cumulative totals below are nominal (pre-COLA)
+   sums for break-even purposes — COLA applies similarly across claiming
+   ages and doesn't materially shift the break-even point.
+   ========================================================================= */
+const SS_FRA = 67;
+const SS_EARLY_REDUCTION = 0.30;      // claiming at 62 vs FRA
+const SS_DELAY_BONUS = 0.24;          // claiming at 70 vs FRA (8%/yr x 3)
+const SS_EARNINGS_LIMIT_UNDER_FRA = 24480;
+const SS_EARNINGS_LIMIT_FRA_YEAR = 65160;
+
+function estimateSSBenefits(fraBenefit, override62, override70){
+  const b62 = override62 > 0 ? override62 : Math.round(fraBenefit * (1 - SS_EARLY_REDUCTION));
+  const b70 = override70 > 0 ? override70 : Math.round(fraBenefit * (1 + SS_DELAY_BONUS));
+  return { 62: b62, 67: fraBenefit, 70: b70 };
+}
+
+function cumulativeAt(claimAge, monthlyBenefit, atAge){
+  if (atAge <= claimAge) return 0;
+  return monthlyBenefit * 12 * (atAge - claimAge);
+}
+
+function crossoverAge(ageA, benA, ageB, benB, maxAge){
+  // Finds the first integer age at/after ageB where claiming-B's cumulative catches claiming-A's.
+  for (let age = ageB; age <= maxAge; age++){
+    if (cumulativeAt(ageB, benB, age) >= cumulativeAt(ageA, benA, age)) return age;
+  }
+  return null; // never catches up within the planning horizon
+}
+
+function earningsTestImpact(claimAge, monthlyBenefit, annualWorkIncome){
+  if (!annualWorkIncome || annualWorkIncome <= 0) return null;
+  if (claimAge >= SS_FRA) return null; // no test at/after FRA
+  const limit = SS_EARNINGS_LIMIT_UNDER_FRA;
+  if (annualWorkIncome <= limit) return null;
+  const withheld = Math.round((annualWorkIncome - limit) / 2);
+  const annualBenefit = monthlyBenefit * 12;
+  const monthsWithheld = Math.min(Math.ceil(withheld / monthlyBenefit), 12);
+  return { withheld: Math.min(withheld, annualBenefit), monthsWithheld };
+}
+
+function renderSSResults(d, ss){
+  const benefits = estimateSSBenefits(ss.fraBenefit, ss.benefit62Override, ss.benefit70Override);
+  const planToAge = d.lifeExpectancy || 95;
+  const claimAges = [62, 67, 70];
+
+  const box = document.getElementById('ssResults');
+  box.innerHTML = '';
+
+  if (ss.fraBenefit <= 0){
+    box.innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Enter an estimated FRA benefit to compare.</span>';
+    return;
+  }
+
+  // Break-even ages
+  const be_62_67 = crossoverAge(62, benefits[62], 67, benefits[67], planToAge);
+  const be_67_70 = crossoverAge(67, benefits[67], 70, benefits[70], planToAge);
+  const be_62_70 = crossoverAge(62, benefits[62], 70, benefits[70], planToAge);
+
+  const callout = document.createElement('div');
+  callout.className = 'breakeven-callout';
+  callout.innerHTML = `
+    <strong>Break-even ages</strong> (the age by which the later claim catches up in total dollars received):<br>
+    62 vs. 67: ${be_62_67 ? `age ${be_62_67}` : `not within your planned age ${planToAge}`} ·
+    67 vs. 70: ${be_67_70 ? `age ${be_67_70}` : `not within your planned age ${planToAge}`} ·
+    62 vs. 70: ${be_62_70 ? `age ${be_62_70}` : `not within your planned age ${planToAge}`}<br>
+    Living past a break-even age favors delaying; not reaching it favors claiming earlier.
+  `;
+  box.appendChild(callout);
+
+  // Earnings test warning
+  const workIncome = ss.workIncomeAfterClaim;
+  [62, 67].forEach(age => {
+    const impact = earningsTestImpact(age, benefits[age], workIncome);
+    if (impact){
+      const warn = document.createElement('div');
+      warn.className = 'ss-note';
+      warn.textContent = `If you claim at ${age} and earn ${fmtMoney(workIncome)}/yr, the earnings test would withhold about ${fmtMoney(impact.withheld)} (roughly ${impact.monthsWithheld} month(s) of benefits) until you reach FRA — after which SSA recalculates your check upward to credit the withheld amount. This is temporary, not lost.`;
+      box.appendChild(warn);
+    }
+  });
+
+  // Cumulative table at planToAge and a couple of milestones
+  const milestones = [...new Set([80, 85, planToAge])].filter(a => a >= 70).sort((a,b)=>a-b);
+  const table = document.createElement('table');
+  table.className = 'stress-table';
+  table.innerHTML = `
+    <thead><tr>
+      <th>Claim age</th><th>Monthly benefit</th>
+      ${milestones.map(m => `<th>Total by age ${m}</th>`).join('')}
+    </tr></thead>
+    <tbody>
+      ${claimAges.map(age => `
+        <tr>
+          <td class="scenario-name">${age}${age===67?' (FRA)':''}</td>
+          <td class="num">${fmtMoney(benefits[age])}</td>
+          ${milestones.map(m => `<td class="num">${fmtMoney(cumulativeAt(age, benefits[age], m))}</td>`).join('')}
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+  box.appendChild(table);
+
+  // Spousal note
+  if (ss.maritalStatus === 'married' && ss.spouseFraBenefit > 0){
+    const spousalFloor = Math.round(ss.fraBenefit * 0.5);
+    const note = document.createElement('div');
+    note.className = 'assumptions';
+    note.style.marginTop = '16px';
+    if (ss.spouseFraBenefit < spousalFloor){
+      note.innerHTML = `<strong>Spousal note:</strong> your spouse's own FRA benefit (${fmtMoney(ss.spouseFraBenefit)}) is below 50% of yours (${fmtMoney(spousalFloor)}) — they may be eligible for a spousal top-up to roughly ${fmtMoney(spousalFloor)}/mo at their FRA, on top of their own record. Also worth coordinating: the higher earner delaying to 70 increases the <em>survivor</em> benefit the other spouse would receive if you predecease them.`;
+    } else {
+      note.innerHTML = `<strong>Spousal note:</strong> your spouse's own benefit already exceeds the spousal-top-up floor, so they'd likely claim on their own record. Still worth coordinating claiming ages — the higher earner delaying to 70 increases the survivor benefit for whichever spouse lives longer.`;
+    }
+    box.appendChild(note);
+  }
+
+  const disclaimer = document.createElement('div');
+  disclaimer.className = 'assumptions';
+  disclaimer.style.marginTop = '12px';
+  disclaimer.innerHTML = `Uses your actual estimates where entered, official 2026 SSA reduction/delay factors otherwise, and your roadmap's life-expectancy assumption (${planToAge}) as the planning horizon. Verify your real numbers at <strong>ssa.gov</strong> — this does not account for taxation of benefits, which varies by total income.`;
+  box.appendChild(disclaimer);
+}
+
+document.getElementById('ssBtn').addEventListener('click', () => {
+  if (!window.__lastProjection){
+    document.getElementById('ssResults').innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Build your roadmap above first — this reuses your current age and life-expectancy planning horizon.</span>';
+    return;
+  }
+  const d = window.__lastProjection.inputs;
+  const ss = {
+    fraBenefit: Number(document.getElementById('fraBenefit').value || 0),
+    benefit62Override: Number(document.getElementById('benefit62Override').value || 0),
+    benefit70Override: Number(document.getElementById('benefit70Override').value || 0),
+    maritalStatus: document.getElementById('maritalStatus').value,
+    spouseAge: Number(document.getElementById('spouseAge').value || 0),
+    spouseFraBenefit: Number(document.getElementById('spouseFraBenefit').value || 0),
+    workIncomeAfterClaim: Number(document.getElementById('workIncomeAfterClaim').value || 0)
+  };
+  renderSSResults(d, ss);
+});
+
+/* =========================================================================
+   THREE PORTFOLIO OPTIONS — broad, low-cost category ranges only (no
+   tickers, no market timing, no guaranteed-return language). Drawdown
+   figures are typical historical ranges for portfolios of this equity
+   weighting, shown as "typical," not predictions.
+   ========================================================================= */
+const PORTFOLIOS = {
+  conservative: {
+    label:'Conservative', usStocks:[20,30], intlStocks:[10,15], bonds:[45,55], cash:[5,10],
+    drawdown:'roughly -15% to -20% in a bad year', who:'Shorter horizon, low tolerance for seeing the balance drop, or leaning heavily on this money soon.'
+  },
+  balanced: {
+    label:'Balanced', usStocks:[35,45], intlStocks:[15,20], bonds:[30,40], cash:[0,5],
+    drawdown:'roughly -25% to -30% in a bad year', who:'Mid-length horizon, comfortable with real swings but wants meaningful ballast.'
+  },
+  growth: {
+    label:'Growth-focused', usStocks:[50,60], intlStocks:[20,25], bonds:[15,20], cash:[0,5],
+    drawdown:'roughly -35% to -45% in a bad year', who:'Long horizon, high tolerance for volatility, will not touch this money for a decade or more.'
+  }
+};
+
+function suggestPortfolio(yearsToRetirement, risk, reaction){
+  let score = 0; // higher = more growth-oriented
+  score += yearsToRetirement >= 20 ? 2 : yearsToRetirement >= 10 ? 1 : 0;
+  score += risk === 'high' ? 2 : risk === 'medium' ? 1 : 0;
+  score += reaction === 'buying' ? 2 : reaction === 'holding' ? 1 : reaction === 'unsure' ? 0 : -2;
+  if (score >= 4) return 'growth';
+  if (score >= 1) return 'balanced';
+  return 'conservative';
+}
+
+function renderPortfolios(d, experience, reaction){
+  const yearsToRetirement = Math.max(d.retireAge - d.age, 0);
+  const suggestedKey = suggestPortfolio(yearsToRetirement, d.risk, reaction);
+
+  const box = document.getElementById('portfolioResults');
+  box.innerHTML = '';
+
+  const note = document.createElement('div');
+  note.className = 'breakeven-callout';
+  note.innerHTML = `Based on ${yearsToRetirement} years to retirement, ${d.risk} risk comfort from your roadmap, and how you said you'd react to a 30% drop, the <strong>${PORTFOLIOS[suggestedKey].label}</strong> range is the suggested starting point — reflected below, not prescribed.`;
+  box.appendChild(note);
+
+  const grid = document.createElement('div');
+  grid.className = 'portfolio-grid';
+  Object.entries(PORTFOLIOS).forEach(([key, p]) => {
+    const card = document.createElement('div');
+    card.className = 'portfolio-card' + (key === suggestedKey ? ' suggested' : '');
+    const rows = [
+      ['US stocks', p.usStocks], ['International stocks', p.intlStocks],
+      ['Bonds', p.bonds], ['Cash', p.cash]
+    ].map(([label, range]) => `
+      <div class="alloc-row">
+        <div class="lbl"><span>${label}</span><span class="mono">${range[0]}–${range[1]}%</span></div>
+        <div class="bar"><div class="bar-fill" style="width:${range[1]}%"></div></div>
+      </div>
+    `).join('');
+    card.innerHTML = `
+      ${key === suggestedKey ? '<span class="suggested-tag">Suggested starting point</span>' : ''}
+      <h3>${p.label}</h3>
+      <div class="who">${p.who}</div>
+      ${rows}
+      <div class="meta">Typical drawdown: ${p.drawdown}. Diversification comes from holding all four categories, not from picking winners within them.</div>
+    `;
+    grid.appendChild(card);
+  });
+  box.appendChild(grid);
+
+  const guidance = document.createElement('div');
+  guidance.className = 'assumptions';
+  guidance.innerHTML = `
+    <strong>Evaluating funds:</strong> look for broad index funds with expense ratios under ~0.20% (many are under 0.05%); avoid sales loads. Rebalance roughly once a year, or when an allocation drifts more than ~5 percentage points from target — not in reaction to headlines.
+    ${experience === 'beginner' ? ' As a beginner, a single target-date or target-allocation fund that auto-rebalances can substitute for managing these four categories by hand.' : ''}
+  `;
+  box.appendChild(guidance);
+
+  const questions = document.createElement('div');
+  questions.style.marginTop = '16px';
+  questions.innerHTML = `
+    <h2 style="font-size:15px; margin-bottom:10px;">Five questions before choosing</h2>
+    <ol class="actions-list">
+      <li><div class="txt"><strong>How many years until you actually need this money?</strong><span>Not just your target retirement age — when the first real withdrawal happens.</span></div></li>
+      <li><div class="txt"><strong>Could you leave a 30–40% drop untouched for years, not months?</strong><span>The honest answer here matters more than your stated risk tolerance.</span></div></li>
+      <li><div class="txt"><strong>Do you have other guaranteed income reducing reliance on this portfolio?</strong><span>Pension or Social Security coverage can justify more equity exposure elsewhere.</span></div></li>
+      <li><div class="txt"><strong>Is fee or tax location a bigger lever right now than allocation?</strong><span>Cutting a 1% fee or fixing account placement can matter more than the conservative-vs-growth choice.</span></div></li>
+      <li><div class="txt"><strong>Will you actually rebalance once a year, or do you need it automated?</strong><span>A target-date fund exists specifically for people who answer "probably not."</span></div></li>
+    </ol>
+  `;
+  box.appendChild(questions);
+}
+
+document.getElementById('portfolioBtn').addEventListener('click', () => {
+  if (!window.__lastProjection){
+    document.getElementById('portfolioResults').innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Build your roadmap above first — this reuses your age, retirement age, and risk comfort.</span>';
+    return;
+  }
+  const d = window.__lastProjection.inputs;
+  const experience = document.querySelector('input[name="experience"]:checked').value;
+  const reaction = document.querySelector('input[name="reaction"]:checked').value;
+  renderPortfolios(d, experience, reaction);
+});
+
+/* =========================================================================
+   2026 FEDERAL TAX BRACKETS — sourced from IRS Revenue Procedure 2025-32
+   via Tax Foundation (taxfoundation.org/data/all/federal/2026-tax-brackets).
+   Ordinary income only; no state tax, NIIT, or AMT modeled. Used by both
+   the Roth/Traditional analysis and the withdrawal-sequencing tool below.
+   ========================================================================= */
+const BRACKETS_2026 = {
+  single: [
+    { upTo: 12400, rate: 0.10 }, { upTo: 50400, rate: 0.12 }, { upTo: 105700, rate: 0.22 },
+    { upTo: 201775, rate: 0.24 }, { upTo: 256225, rate: 0.32 }, { upTo: 640600, rate: 0.35 },
+    { upTo: Infinity, rate: 0.37 }
+  ],
+  mfj: [
+    { upTo: 24800, rate: 0.10 }, { upTo: 100800, rate: 0.12 }, { upTo: 211400, rate: 0.22 },
+    { upTo: 403550, rate: 0.24 }, { upTo: 512450, rate: 0.32 }, { upTo: 768700, rate: 0.35 },
+    { upTo: Infinity, rate: 0.37 }
+  ]
+};
+const STD_DEDUCTION_2026 = { single: 16100, mfj: 32200 };
+
+function marginalRateFor(taxableIncome, filingStatus){
+  const brackets = BRACKETS_2026[filingStatus];
+  for (const b of brackets){ if (taxableIncome <= b.upTo) return b.rate; }
+  return brackets[brackets.length - 1].rate;
+}
+
+// Tax owed on `amount` stacked on top of `existingTaxableIncome`.
+function taxOnStack(existingTaxableIncome, amount, filingStatus){
+  const brackets = BRACKETS_2026[filingStatus];
+  let pos = existingTaxableIncome;
+  let remaining = amount;
+  let tax = 0;
+  for (const b of brackets){
+    if (remaining <= 0) break;
+    if (pos >= b.upTo) continue;
+    const roomInBracket = b.upTo - pos;
+    const taxedHere = Math.min(remaining, roomInBracket);
+    tax += taxedHere * b.rate;
+    pos += taxedHere;
+    remaining -= taxedHere;
+  }
+  return tax;
+}
+
+function fedTax(taxableIncome, filingStatus){
+  return taxOnStack(0, Math.max(taxableIncome, 0), filingStatus);
+}
+
+function renderRothAnalysis(inputs){
+  const box = document.getElementById('rothResults');
+  box.innerHTML = '';
+  if (inputs.currentTaxableIncome <= 0 || inputs.retirementTaxableIncome <= 0){
+    box.innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Enter your current and expected retirement taxable income.</span>';
+    return;
+  }
+
+  const currentRate = marginalRateFor(inputs.currentTaxableIncome, inputs.filingStatus);
+  const futureRate = marginalRateFor(inputs.retirementTaxableIncome, inputs.filingStatus);
+
+  const callout = document.createElement('div');
+  callout.className = 'breakeven-callout';
+  let verdict;
+  if (currentRate > futureRate + 0.02) verdict = 'leans Traditional — you\'d likely pay less tax deferring income now and withdrawing in a lower future bracket.';
+  else if (futureRate > currentRate + 0.02) verdict = 'leans Roth — paying tax now, at a lower rate than you expect later, is usually the better trade.';
+  else verdict = 'a toss-up on rate alone — this is a good case for splitting contributions between both for tax diversification.';
+  callout.innerHTML = `Current marginal bracket: <strong>${(currentRate*100).toFixed(0)}%</strong>. Expected retirement marginal bracket: <strong>${(futureRate*100).toFixed(0)}%</strong>. On rate comparison alone, this ${verdict}`;
+  box.appendChild(callout);
+
+  // Three future-rate scenarios
+  const scenarios = [
+    { label: 'Future rates lower than today', futureRate: Math.max(currentRate - 0.05, 0.10) },
+    { label: 'Future rates about the same', futureRate: currentRate },
+    { label: 'Future rates higher than today', futureRate: Math.min(currentRate + 0.05, 0.37) }
+  ];
+  const sTable = document.createElement('table');
+  sTable.className = 'stress-table';
+  sTable.innerHTML = `
+    <thead><tr><th>Scenario</th><th>Illustrative future rate</th><th>Favors</th></tr></thead>
+    <tbody>
+      ${scenarios.map(s => `
+        <tr>
+          <td class="scenario-name">${s.label}</td>
+          <td class="num">${(s.futureRate*100).toFixed(0)}%</td>
+          <td>${s.futureRate < currentRate ? 'Traditional' : s.futureRate > currentRate ? 'Roth' : 'Either — diversify'}</td>
+        </tr>
+      `).join('')}
+    </tbody>
+  `;
+  box.appendChild(sTable);
+
+  // Conversion analysis
+  if (inputs.conversionAmount > 0){
+    const taxCost = taxOnStack(inputs.currentTaxableIncome, inputs.conversionAmount, inputs.filingStatus);
+    const effectiveRate = taxCost / inputs.conversionAmount;
+    const conv = document.createElement('div');
+    conv.className = 'assumptions';
+    conv.style.marginTop = '16px';
+    conv.innerHTML = `
+      <strong>Converting ${fmtMoney(inputs.conversionAmount)} this year</strong> would cost approximately ${fmtMoney(taxCost)} in federal tax
+      (effective rate on the conversion: ${(effectiveRate*100).toFixed(1)}%, since it stacks on top of your current income and may span brackets).
+      ${effectiveRate < futureRate
+        ? `That's below your expected ${(futureRate*100).toFixed(0)}% retirement bracket — the conversion looks favorable on rate alone.`
+        : `That's at or above your expected ${(futureRate*100).toFixed(0)}% retirement bracket — converting this much in one year may cost more than waiting, unless you value the tax diversification or reduced future RMDs.`}
+      ${inputs.cashForTaxes > 0
+        ? (inputs.cashForTaxes >= taxCost ? ' You have enough set aside to pay the tax from outside funds — generally the better approach than pulling it from the converted amount itself.' : ` You've set aside ${fmtMoney(inputs.cashForTaxes)}, which falls short of the ${fmtMoney(taxCost)} estimated bill — paying the shortfall from the conversion itself reduces its benefit.`)
+        : ' No cash-for-taxes amount was entered — paying the conversion tax from funds outside the IRA (not from the conversion itself) is generally what makes conversions worthwhile.'}
+    `;
+    box.appendChild(conv);
+  }
+
+  const flags = document.createElement('div');
+  flags.className = 'ss-note';
+  flags.style.marginTop = '14px';
+  flags.innerHTML = `<strong>Confirm with a CPA:</strong> state income tax (not modeled here), Medicare IRMAA surcharges if a conversion pushes MAGI over a threshold two years before you're on Medicare, how a large conversion interacts with any Net Investment Income Tax, and how converting now affects future Required Minimum Distributions.`;
+  box.appendChild(flags);
+}
+
+document.getElementById('rothBtn').addEventListener('click', () => {
+  renderRothAnalysis({
+    filingStatus: document.getElementById('rtFilingStatus').value,
+    currentTaxableIncome: Number(document.getElementById('rtCurrentTaxableIncome').value || 0),
+    retirementTaxableIncome: Number(document.getElementById('rtRetirementTaxableIncome').value || 0),
+    preTaxBalance: Number(document.getElementById('rtPreTaxBalance').value || 0),
+    rothBalance: Number(document.getElementById('rtRothBalance').value || 0),
+    cashForTaxes: Number(document.getElementById('rtCashForTaxes').value || 0),
+    conversionAmount: Number(document.getElementById('rtConversionAmount').value || 0)
+  });
+});
+
+/* =========================================================================
+   WITHDRAWAL SEQUENCING — simplified 5-year simulation of three orderings.
+   Assumptions (stated in the UI): 4% real growth on remaining balances,
+   Social Security taxed at 85% (the common upper-bound assumption — actual
+   taxable portion depends on total income and is often lower), taxable
+   account withdrawals are NOT taxed here (basis assumed, ignores embedded
+   capital gains — a real plan must account for this).
+   ========================================================================= */
+const SEQ_GROWTH = 0.04;
+const SS_TAXABLE_ASSUMPTION = 0.85;
+
+function simulateSequence(strategyKey, inputs, years){
+  let { cash, taxable, trad, roth } = inputs;
+  const rows = [];
+  const stdDed = STD_DEDUCTION_2026[inputs.filingStatus];
+  const bracket12Top = inputs.filingStatus === 'mfj' ? 100800 : 50400;
+
+  for (let y = 1; y <= years; y++){
+    const guaranteed = inputs.pension + inputs.ss;
+    const netNeeded = Math.max(inputs.annualSpending - guaranteed, 0);
+    let remaining = netNeeded;
+    let drawCash = 0, drawTaxable = 0, drawTrad = 0, drawRoth = 0;
+
+    if (strategyKey === 'taxableFirst'){
+      drawCash = Math.min(remaining, cash); remaining -= drawCash;
+      drawTaxable = Math.min(remaining, taxable); remaining -= drawTaxable;
+      drawTrad = Math.min(remaining, trad); remaining -= drawTrad;
+      drawRoth = Math.min(remaining, roth); remaining -= drawRoth;
+    } else if (strategyKey === 'proportional'){
+      const pool = cash + taxable + trad + roth;
+      if (pool > 0 && remaining > 0){
+        drawCash = Math.min(remaining * (cash/pool), cash);
+        drawTaxable = Math.min(remaining * (taxable/pool), taxable);
+        drawTrad = Math.min(remaining * (trad/pool), trad);
+        drawRoth = Math.min(remaining * (roth/pool), roth);
+      }
+    } else if (strategyKey === 'bracketManaged'){
+      const ssTaxable = inputs.ss * SS_TAXABLE_ASSUMPTION;
+      const baseOrdinary = inputs.pension + ssTaxable;
+      const roomInBracket = Math.max(bracket12Top + stdDed - baseOrdinary, 0);
+      drawTrad = Math.min(remaining, roomInBracket, trad); remaining -= drawTrad;
+      drawCash = Math.min(remaining, cash); remaining -= drawCash;
+      drawTaxable = Math.min(remaining, taxable); remaining -= drawTaxable;
+      drawRoth = Math.min(remaining, roth); remaining -= drawRoth;
+    }
+
+    cash -= drawCash; taxable -= drawTaxable; trad -= drawTrad; roth -= drawRoth;
+    taxable *= (1 + SEQ_GROWTH); trad *= (1 + SEQ_GROWTH); roth *= (1 + SEQ_GROWTH);
+
+    const ssTaxable = inputs.ss * SS_TAXABLE_ASSUMPTION;
+    const ordinaryTaxableIncome = Math.max(inputs.pension + ssTaxable + drawTrad - stdDed, 0);
+    const tax = fedTax(ordinaryTaxableIncome, inputs.filingStatus);
+
+    rows.push({
+      year: y, drawCash, drawTaxable, drawTrad, drawRoth, tax,
+      endingTotal: Math.max(cash,0) + Math.max(taxable,0) + Math.max(trad,0) + Math.max(roth,0)
+    });
+  }
+  return rows;
+}
+
+function renderSequenceTable(title, rows){
+  const totalTax = rows.reduce((s,r) => s + r.tax, 0);
+  const wrap = document.createElement('div');
+  wrap.style.marginBottom = '18px';
+  wrap.innerHTML = `
+    <h3 style="font-size:14px; margin:0 0 8px;">${title} <span class="mono estimate-tag">5-yr tax: ${fmtMoney(totalTax)}</span></h3>
+    <table class="stress-table">
+      <thead><tr><th>Year</th><th>From cash</th><th>From taxable</th><th>From Traditional</th><th>From Roth</th><th>Est. fed tax</th><th>Ending total</th></tr></thead>
+      <tbody>
+        ${rows.map(r => `
+          <tr>
+            <td class="scenario-name">Year ${r.year}</td>
+            <td class="num">${fmtMoney(r.drawCash)}</td>
+            <td class="num">${fmtMoney(r.drawTaxable)}</td>
+            <td class="num">${fmtMoney(r.drawTrad)}</td>
+            <td class="num">${fmtMoney(r.drawRoth)}</td>
+            <td class="num">${fmtMoney(r.tax)}</td>
+            <td class="num">${fmtMoney(r.endingTotal)}</td>
+          </tr>
+        `).join('')}
+      </tbody>
+    </table>
+  `;
+  return wrap;
+}
+
+function renderWithdrawalSequencing(inputs){
+  const box = document.getElementById('wsResults');
+  box.innerHTML = '';
+  if (inputs.annualSpending <= 0){
+    box.innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Enter an annual spending need.</span>';
+    return;
+  }
+  const years = 5;
+  const strategies = [
+    { key:'taxableFirst', label:'Taxable-first' },
+    { key:'proportional', label:'Proportional' },
+    { key:'bracketManaged', label:'Bracket-managed (fill 12% bracket with Traditional, then taxable, then Roth)' }
+  ];
+  const results = strategies.map(s => ({ ...s, rows: simulateSequence(s.key, inputs, years) }));
+
+  const summary = document.createElement('div');
+  summary.className = 'breakeven-callout';
+  const totals = results.map(r => ({ label: r.label, tax: r.rows.reduce((s,x)=>s+x.tax,0), ending: r.rows[r.rows.length-1].endingTotal }));
+  const lowestTax = totals.reduce((a,b) => a.tax < b.tax ? a : b);
+  const highestEnding = totals.reduce((a,b) => a.ending > b.ending ? a : b);
+  summary.innerHTML = `Over these 5 years, <strong>${lowestTax.label}</strong> produces the lowest estimated federal tax (${fmtMoney(lowestTax.tax)}), and <strong>${highestEnding.label}</strong> leaves the highest ending balance (${fmtMoney(highestEnding.ending)}). Bracket-managed sequencing typically wins on lifetime tax by smoothing income and avoiding future RMD-driven bracket jumps — at the cost of more complexity to execute each year.`;
+  box.appendChild(summary);
+
+  results.forEach(r => box.appendChild(renderSequenceTable(r.label, r.rows)));
+
+  const flags = document.createElement('div');
+  flags.className = 'ss-note';
+  flags.innerHTML = `<strong>Not modeled here — confirm with a CPA or fiduciary adviser:</strong> Required Minimum Distributions once Traditional accounts hit RMD age, Medicare IRMAA thresholds, embedded capital gains tax on taxable-account withdrawals, and state income tax. The 85% Social Security taxability assumption is an upper bound for illustration — your actual taxable portion may be lower.`;
+  box.appendChild(flags);
+}
+
+document.getElementById('wsBtn').addEventListener('click', () => {
+  renderWithdrawalSequencing({
+    filingStatus: document.getElementById('wsFilingStatus').value,
+    cash: Number(document.getElementById('wsCash').value || 0),
+    taxable: Number(document.getElementById('wsTaxable').value || 0),
+    trad: Number(document.getElementById('wsTraditional').value || 0),
+    roth: Number(document.getElementById('wsRoth').value || 0),
+    pension: Number(document.getElementById('wsPension').value || 0),
+    ss: Number(document.getElementById('wsSS').value || 0),
+    annualSpending: Number(document.getElementById('wsSpending').value || 0)
+  });
+});
+
+/* =========================================================================
+   12-MONTH ACTION PLAN — combines static best-practice items with a few
+   conditional items pulled from the roadmap inputs and this panel's own
+   insurance/estate/concern fields.
+   ========================================================================= */
+function buildChecklist(d, extras){
+  const plan = {
+    'This week': [],
+    'First 30 days': [],
+    'Months 2–3': [],
+    'Months 4–6': [],
+    'Months 7–12': [],
+    'Annual review': []
+  };
+
+  plan['This week'].push(
+    { t:'Pull your real Social Security estimate', purpose:'Replaces any assumption in this roadmap with your actual SSA figure.', effort:'15 min', docs:'ssa.gov login', who:'self' },
+    { t:'List every account balance in one place', purpose:'You can\'t sequence or waterfall what you haven\'t inventoried.', effort:'30 min', docs:'Statements or account logins', who:'self' }
+  );
+
+  if (d.employerMatch === 0){
+    plan['This week'].push({ t:'Ask HR/benefits whether an employer match exists', purpose:'Unmatched free money is the single highest-priority fix if it exists.', effort:'10 min', docs:'None', who:'self' });
+  }
+
+  plan['First 30 days'].push(
+    { t:'Set the extra-dollar waterfall in motion', purpose:'Turn this roadmap\'s waterfall order into an actual contribution-rate change.', effort:'20 min', docs:'Payroll/401(k) portal access', who:'self' },
+    { t:'Confirm 2026 contribution limits before increasing anything', purpose:'Limits shift yearly — verify at irs.gov before locking in a new rate.', effort:'10 min', docs:'None', who:'self' }
+  );
+  if (d.debtBalance > 0 && d.debtRate >= 7){
+    plan['First 30 days'].push({ t:`Call your lender about the ${d.debtRate}% debt`, purpose:'Confirm payoff amount and whether extra payments apply to principal.', effort:'15 min', docs:'Loan statement', who:'self' });
+  }
+
+  plan['Months 2–3'].push(
+    { t:'Meet with a fee-only fiduciary or CPA to sanity-check this roadmap', purpose:'A professional can catch state-tax, IRMAA, and RMD effects this tool doesn\'t model.', effort:'1 hr', docs:'This roadmap\'s outputs, recent tax return', who:'cpa' }
+  );
+  if (extras.insuranceStatus !== 'complete'){
+    plan['Months 2–3'].push({ t:'Review life/disability insurance coverage', purpose:'Confirms your family\'s plan survives an unexpected gap, not just the retirement number.', effort:'45 min', docs:'Current policies, if any', who:'insurance' });
+  }
+
+  plan['Months 4–6'].push(
+    { t:'Run the stress test scenarios again with updated numbers', purpose:'Catches drift in the plan before it compounds for another 6 months.', effort:'15 min', docs:'This tool', who:'self' },
+    { t:'Decide on Roth vs. Traditional split for new contributions', purpose:'Uses this year\'s actual tax bracket, not last year\'s assumption.', effort:'20 min', docs:'This roadmap\'s Roth/Traditional analysis', who:'self' }
+  );
+
+  if (extras.estateStatus !== 'complete'){
+    plan['Months 7–12'].push({ t:'Draft or update your will, POA, and account beneficiaries', purpose:'Outdated beneficiary designations override even a perfect will.', effort:'2–4 hrs', docs:'Asset list, family/executor decisions', who:'attorney' });
+  }
+  plan['Months 7–12'].push(
+    { t:'Rebalance investment accounts back to target allocation', purpose:'A year of drift can quietly shift your actual risk level.', effort:'20 min', docs:'This roadmap\'s portfolio option', who:'self' }
+  );
+
+  plan['Annual review'].push(
+    { t:'Rebuild this entire roadmap with the new year\'s numbers', purpose:'Income, limits, and market conditions all move — treat this as a living plan.', effort:'1 hr', docs:'Updated account balances, SSA statement, tax return', who:'self' },
+    { t:'Revisit Social Security claiming strategy if within 5 years of eligibility', purpose:'Break-even math changes as your actual longevity outlook and finances evolve.', effort:'20 min', docs:'This tool\'s SS comparison', who:'self' }
+  );
+
+  if (extras.topConcern){
+    plan['This week'].unshift({ t:`Address your stated top concern: "${extras.topConcern}"`, purpose:'Named concerns left unaddressed tend to resurface as anxiety, not action — tackle it first.', effort:'Varies', docs:'Depends on the concern', who:'self' });
+  }
+
+  return plan;
+}
+
+const WHO_LABELS = { self:'Self', cpa:'CPA', attorney:'Attorney', insurance:'Insurance pro', advisor:'Fiduciary adviser' };
+
+function renderChecklist(plan){
+  const box = document.getElementById('checklistResults');
+  box.innerHTML = '';
+  Object.entries(plan).forEach(([period, items]) => {
+    if (items.length === 0) return;
+    const block = document.createElement('div');
+    block.className = 'timeframe-block';
+    block.innerHTML = `
+      <h3>${period}</h3>
+      ${items.map(i => `
+        <div class="checklist-item">
+          <div class="box"></div>
+          <div class="body">
+            <strong>${i.t}</strong>
+            <div class="meta-line"><span class="who-badge ${i.who}">${WHO_LABELS[i.who]}</span>${i.purpose}</div>
+            <div class="meta-line">Effort: ${i.effort} · Docs needed: ${i.docs}</div>
+          </div>
+        </div>
+      `).join('')}
+    `;
+    box.appendChild(block);
+  });
+}
+
+document.getElementById('checklistBtn').addEventListener('click', () => {
+  if (!window.__lastProjection){
+    document.getElementById('checklistResults').innerHTML = '<span class="placeholder" style="color:var(--ink-soft); font-style:italic;">Build your roadmap above first.</span>';
+    return;
+  }
+  const d = window.__lastProjection.inputs;
+  const extras = {
+    insuranceStatus: document.getElementById('insuranceStatus').value,
+    estateStatus: document.getElementById('estateStatus').value,
+    topConcern: document.getElementById('topConcern').value.trim()
+  };
+  renderChecklist(buildChecklist(d, extras));
+});
+
+document.getElementById('roadmapForm').addEventListener('submit', (e) => {
+  e.preventDefault();
+  const d = readForm();
+  saveInputs(d);
+  const proj = runProjection(d);
+  window.__lastProjection = { inputs:d, proj }; // used by AI narrative call below
+  renderResults(d, proj);
+});
+
+/* =========================================================================
+   ACCOUNT STATE — non-blocking. This page never redirects; it only reads
+   gs_auth_user_v1 (same key trading-command.html's authGate checks) to
+   decide which panels render unlocked. No account = still full access to
+   the Roadmap above; the 7 panels below and the AI narrative are gated.
+   ========================================================================= */
+function getAuthUser(){
+  try{
+    const raw = localStorage.getItem('gs_auth_user_v1') || sessionStorage.getItem('gs_auth_user_v1');
+    if (!raw) return null;
+    const user = JSON.parse(raw);
+    return (user && (user.id || user.email)) ? user : null;
+  }catch(_){ return null; }
+}
+
+// Three account types per Arowana's model: free / BYOK / subscription.
+// 'free' here means "signed in, no BYOK key, no paid plan" — still unlocks
+// all 7 calculator panels (they're zero marginal cost); only the AI
+// narrative distinguishes byok vs subscription vs neither.
+function getAccountTier(){
+  const user = getAuthUser();
+  if (!user) return 'anonymous';
+  const isPro = localStorage.getItem('ap_is_pro_v1') === 'true'; // sacred key, set by billing sync elsewhere
+  if (isPro) return 'subscription';
+  const byokKey = localStorage.getItem('ap_retirement_ai_key');
+  if (byokKey) return 'byok';
+  return 'free';
+}
+
+function goToSignIn(){
+  const next = encodeURIComponent(location.pathname + location.search + location.hash);
+  location.href = 'login.html?next=' + next;
+}
+window.goToSignIn = goToSignIn;
+
+function applyLockState(){
+  const tier = getAccountTier();
+  const signedIn = tier !== 'anonymous';
+
+  document.querySelectorAll('.locked-panel').forEach(el => {
+    el.classList.toggle('is-locked', !signedIn);
+  });
+
+  const bannerStatus = document.getElementById('tierBannerStatus');
+  const bannerAction = document.getElementById('tierBannerAction');
+  if (signedIn){
+    bannerStatus.className = 'status unlocked';
+    bannerStatus.textContent = 'Signed in — all 8 tools unlocked.';
+    bannerAction.style.display = 'none';
+  } else {
+    bannerStatus.className = 'status locked';
+    bannerStatus.textContent = 'Roadmap unlocked — sign in free to unlock 7 more tools';
+    bannerAction.style.display = 'inline';
+    bannerAction.textContent = 'Sign in';
+    bannerAction.onclick = goToSignIn;
+  }
+
+  renderAINarrativeGate();
+}
+
+/* =========================================================================
+   AI NARRATIVE — the one feature with a real per-use cost, so it follows
+   the BYOK-or-subscription pattern instead of the free-once-signed-in
+   pattern the other 7 panels use.
+     - anonymous / free (signed in, no key, no plan): upsell choice
+     - byok: calls the user's own webhook (ap_retirement_ai_key)
+     - subscription: calls Arowana's managed webhook (window.AP_WEBHOOKS)
+   ========================================================================= */
+window.AP_WEBHOOKS = window.AP_WEBHOOKS || {
+  // TODO: replace with your real managed n8n webhook URL, e.g.
+  // retirementNarrative: 'https://exodonprofits.app.n8n.cloud/webhook/retirement-narrative'
+  retirementNarrative: null
+};
+
+function renderAINarrativeGate(){
+  const tier = getAccountTier();
+  const gate = document.getElementById('aiNarrativeGate');
+  const box = document.getElementById('aiNarrative');
+  gate.innerHTML = '';
+  box.innerHTML = '';
+
+  if (tier === 'anonymous'){
+    gate.innerHTML = `<div class="lock-sub" style="margin-bottom:10px; max-width:none; text-align:left;">Sign in to unlock this — BYOK is free, or use Arowana's managed AI on any paid plan.</div>
+      <button type="button" class="ghost" onclick="goToSignIn()">Sign in to continue</button>`;
+    return;
+  }
+
+  if (tier === 'free'){
+    gate.innerHTML = `
+      <div class="ai-tier-choice">
+        <div class="choice-card">
+          <h4>Bring your own key</h4>
+          <p>Free forever. Paste your own n8n webhook (or Anthropic-backed endpoint) — you control the cost.</p>
+          <input type="text" id="byokWebhookInput" placeholder="https://your-n8n.app.n8n.cloud/webhook/...">
+          <button type="button" id="saveByokBtn">Save &amp; use my key</button>
+        </div>
+        <div class="choice-card">
+          <h4>Use Arowana's managed AI</h4>
+          <p>No key to manage — included on Pro, Elite, and Founders plans.</p>
+          <button type="button" class="secondary" onclick="location.href='pricing.html'">Upgrade plan</button>
+        </div>
+      </div>`;
+    document.getElementById('saveByokBtn').addEventListener('click', () => {
+      const val = document.getElementById('byokWebhookInput').value.trim();
+      if (!val){ return; }
+      localStorage.setItem('ap_retirement_ai_key', val);
+      applyLockState(); // re-render gate now that tier is 'byok'
+    });
+    return;
+  }
+
+  // byok or subscription — show the generate button.
+  const label = tier === 'byok' ? 'Generate narrative (using your key)' : 'Generate narrative (managed)';
+  gate.innerHTML = `<button type="button" class="ghost" id="aiNarrativeBtn">${label}</button>
+    ${tier === 'byok' ? '<button type="button" class="link-btn" id="clearByokBtn" style="margin-left:12px;">Remove my key</button>' : ''}`;
+  box.innerHTML = '<span class="placeholder">Not generated yet.</span>';
+
+  document.getElementById('aiNarrativeBtn').addEventListener('click', async () => {
+    if (!window.__lastProjection){
+      box.innerHTML = '<span class="placeholder">Build your roadmap first.</span>';
+      return;
+    }
+    const webhookUrl = tier === 'byok'
+      ? localStorage.getItem('ap_retirement_ai_key')
+      : window.AP_WEBHOOKS.retirementNarrative;
+
+    if (!webhookUrl){
+      box.innerHTML = tier === 'byok'
+        ? '<span class="placeholder">No key saved.</span>'
+        : '<span class="placeholder">Managed AI isn\'t configured yet — set window.AP_WEBHOOKS.retirementNarrative to your n8n endpoint. Numbers above are already fully computed client-side; this only adds the write-up.</span>';
+      return;
+    }
+    box.innerHTML = '<span class="placeholder">Generating…</span>';
+    try{
+      const res = await fetch(webhookUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(window.__lastProjection)
+      });
+      const data = await res.json();
+      box.textContent = data.narrative || 'No narrative returned.';
+    }catch(err){
+      box.innerHTML = '<span class="placeholder">Could not reach the narrative webhook.</span>';
+    }
+  });
+
+  const clearBtn = document.getElementById('clearByokBtn');
+  if (clearBtn){
+    clearBtn.addEventListener('click', () => {
+      localStorage.removeItem('ap_retirement_ai_key');
+      applyLockState();
+    });
+  }
+}
+
+applyLockState(); // initial paint on page load
+</script>
+</body>
+</html>

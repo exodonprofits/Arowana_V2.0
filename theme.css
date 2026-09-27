@@ -1,0 +1,168 @@
+/* ==========================================================================
+   Arowana Profits — shared design tokens
+   ==========================================================================
+   ONE :root for the whole platform. Link this before any page stylesheet:
+
+       <link rel="stylesheet" href="./js/theme.css">
+
+   Why this file exists
+   --------------------
+   Every workspace page carried its own :root — two to four of them per
+   page — each generation of theming layered on top of the last instead of
+   replacing it. Trading Command alone redefined 58 tokens with a different
+   value than it had already declared. The first definition on six of seven
+   pages set --brand to #0b4f8a and was then overwritten; that value has
+   been dead code for a long time.
+
+   The pages had also drifted apart from each other, and in the one place
+   it matters most on a trading platform:
+
+       --bull   #087a59  on analysis-central, market-intelligence, trading-command
+                #11a779  on options-hub, portfolio-command
+       --bear   #b4233b  on analysis-central, market-intelligence, trading-command
+                #dc4c64  on options-hub, portfolio-command
+
+   Green meant one thing on Options Hub and another on Analysis Central.
+   A trader comparing two screens was reading two palettes.
+
+   How the values below were chosen
+   --------------------------------
+   Majority of the EFFECTIVE value on each page (the last :root wins in
+   CSS, so that is what was actually rendering). Where a token was
+   contested, the majority is used and the alternative is noted inline.
+
+   Two pages — arowana-trader and portfolio-advisor — began as dark themes
+   and were converted to light by layering a light :root over the dark one.
+   Their dark values are deliberately NOT carried across; the dark rules
+   still sitting in those files are inert and should eventually be removed.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand -------------------------------------------------------- */
+  /* #175f8f on 5 of 7 pages. arowana-trader and portfolio-advisor use
+     #176d9f — close enough to look like a rendering difference rather than
+     a decision, which is exactly why it should be one value. */
+  --brand:            #175f8f;
+  --brand-light:      #2686bd;
+  --brand-dark:       #104b73;
+
+  /* ---- Canvas ------------------------------------------------------- */
+  --bg:               #eef3f6;
+  --surface:          #ffffff;
+  --card:             #ffffff;
+  --card-hover:       #f1f5f9;
+  --hover:            #edf4f7;
+
+  /* ---- Text --------------------------------------------------------- */
+  --text:             #172733;
+  --text-muted:       #526571;
+  --text-dim:         #657782;
+
+  /* ---- Lines and depth ---------------------------------------------- */
+  --border:           #d7e0e5;
+  --border-light:     #e8eef1;
+  --border-hi:        #b9cad4;
+  --shadow:           0 10px 28px rgba(30, 57, 73, .08);
+  --ring:             rgba(23, 95, 143, .22);
+
+  /* ---- Radius ------------------------------------------------------- */
+  /* 14px on 5 of 6 pages; portfolio-advisor used 13px. Trading Command
+     declared --radius twice, 12px and then 14px, so its corners depended
+     on which rule a component happened to sit after. */
+  --radius-sm:        9px;
+  --radius:           14px;
+  --radius-lg:        16px;
+
+  /* ---- Direction: the colours that carry meaning --------------------- */
+  /* These are the ones worth being strict about. A green that differs by
+     page is not a style inconsistency, it is a data-legibility problem. */
+  --bull:             #087a59;
+  --bull-light:       #d1fae5;
+  --bear:             #b4233b;
+  --bear-light:       #fee2e2;
+
+  /* ---- Status ------------------------------------------------------- */
+  /* Deliberately NOT aliased to --bull/--bear. They were identical on
+     several pages, which meant "this succeeded" and "this position is up"
+     shared a colour and could never be told apart or restyled separately. */
+  --success:          #0f7a4f;
+  --success-light:    #e7f8f2;
+  --danger:           #b4233b;
+  --danger-light:     #fee2e2;
+  --warning:          #b45309;
+  --warning-light:    #fef3c7;
+  --info:             #175f8f;
+  --info-light:       #dbeafe;
+
+  /* ---- Type --------------------------------------------------------- */
+  --font:             'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:             'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* A real scale. The pages between them used 52 distinct font sizes,
+     including 9.5px, 10.5px, 0.78rem and 0.82rem — one-off adjustments
+     rather than steps. rem throughout, so browser font-size settings are
+     respected; the px sizes scattered through the pages ignore them. */
+  --fs-xs:            0.72rem;
+  --fs-sm:            0.8rem;
+  --fs-base:          0.88rem;
+  --fs-md:            0.95rem;
+  --fs-lg:            1.1rem;
+  --fs-xl:            1.35rem;
+  --fs-2xl:           1.7rem;
+
+  /* ---- Layout ------------------------------------------------------- */
+  /* options-hub declared --sidebar-width three times: 300px, 280px, 260px. */
+  --sidebar-width:    286px;
+  --sidebar-collapsed: 68px;
+  --content-max:      1480px;
+}
+
+/* --------------------------------------------------------------------------
+   Aliases, kept so existing pages keep rendering while they migrate.
+   --------------------------------------------------------------------------
+   Each of these was a second (or third) name for a value already above.
+   They point at the canonical token rather than repeating its literal, so
+   a future change to --bull moves everything that means "up" with it.
+
+   These are a migration aid, not part of the system. New CSS should use
+   the tokens above; when a page stops referencing an alias, delete it.
+   -------------------------------------------------------------------------- */
+:root {
+  --panel:            var(--surface);      /* was a third name for #ffffff */
+  --text-primary:     var(--text);
+  --text-secondary:   var(--text-muted);
+  --ink:              var(--text);
+  --muted:            var(--text-dim);
+  --dim:              var(--text-dim);
+
+  --profitable:       var(--bull);         /* was #16a34a on 2 pages, #087a59 on 1 */
+  --losing:           var(--bear);         /* was #ef4444 on 2 pages, #b4233b on 1 */
+  --green:            var(--bull);
+  --red:              var(--bear);
+  --blue:             var(--brand);
+  --cyan:             #56a9c8;
+
+  --card-hi:          var(--card-hover);
+  --tc-border:        var(--border);
+  --tc-bg:            var(--bg);
+
+  /* Tokens the pages reference that the earlier survey missed. Values are
+     the platform majority; --font-sans/--font-mono/--focus/--border-strong
+     were already unanimous across five pages. */
+  --font-sans:        var(--font);
+  --font-mono:        var(--mono);
+  --sans:             var(--font);
+  --neutral:          #64748b;
+  --amber:            #9b5d00;
+  --gold:             #a9761a;
+  --gold-pale:        rgba(169, 118, 26, .10);
+  --focus:            rgba(38, 134, 189, .24);
+  --shadow-lg:        0 18px 42px rgba(30, 57, 73, .12);
+  --border-strong:    #c4d0d7;
+  --success-dark:     #066347;
+  --bullish:          var(--bull);
+  --bearish:          var(--bear);
+  --green-pale:       rgba(8, 122, 89, .10);
+  --red-pale:         rgba(180, 35, 59, .09);
+  --r:                var(--radius);
+}

@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071a2f">
+  <meta name="description" content="The Wheel Strategy Desk from Arowana Profits: track options premium and cost basis, find covered calls and cash-secured puts on stocks you want to own, and avoid costly mistakes.">
+  <title>Wheel Strategy Desk — Arowana Profits</title>
+  <link rel="canonical" href="https://arowanaprofits.com/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Arowana Profits">
+  <meta property="og:title" content="Wheel Strategy Desk — Arowana Profits">
+  <meta property="og:description" content="Track premium, find covered calls and cash-secured puts on stocks you want to own, and catch costly mistakes. Join the Founders waitlist.">
+  <meta property="og:url" content="https://arowanaprofits.com/">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>🐟</text></svg>">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy-950:#061426;--navy-900:#071a2f;--navy-800:#0b2947;--brand:#0b6cae;--blue:#1d8bd1;--cyan:#35c3dc;--bg:#f3f6f9;--surface:#fff;--text:#132437;--muted:#607284;--dim:#8da0b1;--line:#dbe4ea;--success:#11a779;--warning:#e09b2d;--danger:#dc4c64;--purple:#7b61d1;--radius:14px;--shadow:0 12px 34px rgba(10,36,62,.10);--font:'Plus Jakarta Sans',system-ui,sans-serif;--mono:'JetBrains Mono',monospace}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}body{margin:0;background:var(--bg);color:var(--text);font-family:var(--font);font-size:15px;line-height:1.55;-webkit-font-smoothing:antialiased}a{color:inherit;text-decoration:none}button{font:inherit}button,a{tap-highlight-color:transparent}:focus-visible{outline:3px solid rgba(53,195,220,.65);outline-offset:3px}.shell{max-width:1540px;margin:auto;padding:0 28px}
+    .topbar{height:72px;background:rgba(6,20,38,.96);color:#fff;position:sticky;top:0;z-index:50;border-bottom:1px solid rgba(255,255,255,.09);backdrop-filter:blur(18px)}.topbar .shell{height:100%;display:flex;align-items:center;gap:28px}.brand{display:flex;align-items:center;gap:11px;min-width:max-content}.brand-logo{width:39px;height:39px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.1);padding:2px}.brand-fallback{width:39px;height:39px;border-radius:12px;background:linear-gradient(145deg,var(--cyan),var(--brand));display:none;place-items:center;font-size:20px}.brand-name{font-weight:800;font-size:16px;letter-spacing:-.02em}.brand-name small{display:block;font:500 9px var(--mono);color:#7fabc8;letter-spacing:.14em;text-transform:uppercase;margin-top:1px}.topnav{display:flex;align-items:center;gap:5px;margin-left:auto}.topnav a{color:#a9c0d0;padding:9px 12px;border-radius:8px;font-size:13px;font-weight:650}.topnav a:hover,.topnav a.active{color:#fff;background:rgba(255,255,255,.08)}.account-actions{display:flex;align-items:center;gap:8px}.signin{color:#c5d5e1;padding:9px 10px;font-weight:700;font-size:13px}.account-cta{background:#fff;color:var(--navy-900);padding:9px 15px;border-radius:9px;font-size:13px;font-weight:800}.hamburger{display:none;margin-left:auto;width:42px;height:42px;border:1px solid rgba(255,255,255,.16);border-radius:10px;background:rgba(255,255,255,.07);color:#fff;font-size:20px}.mobile-menu{display:none;position:absolute;top:64px;left:16px;right:16px;background:#fff;border-radius:14px;box-shadow:0 25px 60px rgba(0,0,0,.28);padding:8px;color:var(--text)}.mobile-menu.open{display:block}.mobile-menu a{display:block;padding:12px;border-radius:9px;font-weight:700}.mobile-menu a:hover{background:#edf4f8}.mobile-account{padding:11px 12px;border-bottom:1px solid var(--line);color:var(--muted);font-size:12px;word-break:break-all}
+    .hero{background:radial-gradient(circle at 76% 20%,rgba(29,139,209,.25),transparent 33%),radial-gradient(circle at 24% 110%,rgba(53,195,220,.11),transparent 38%),linear-gradient(135deg,var(--navy-950),#0b3151);color:#fff;overflow:hidden}.hero-grid{min-height:455px;display:grid;grid-template-columns:minmax(0,1.04fr) minmax(420px,.96fr);gap:64px;align-items:center;padding-top:60px;padding-bottom:60px}.eyebrow{display:inline-flex;align-items:center;gap:9px;font:600 11px var(--mono);color:#7ed8e8;text-transform:uppercase;letter-spacing:.14em}.eyebrow:before{content:'';width:22px;height:2px;background:var(--cyan)}h1{font-size:clamp(42px,5vw,68px);line-height:1.02;letter-spacing:-.055em;margin:17px 0 22px;max-width:720px}h1 span{color:#65cde1}.hero-copy{max-width:650px;color:#b7cbda;font-size:17px;line-height:1.75;margin:0}.hero-actions{display:flex;gap:11px;flex-wrap:wrap;margin-top:28px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:45px;padding:0 18px;border:1px solid transparent;border-radius:10px;font-weight:800;font-size:13px;cursor:pointer}.btn-primary{background:linear-gradient(135deg,var(--blue),#1171b4);color:#fff;box-shadow:0 9px 24px rgba(18,127,192,.3)}.btn-primary:hover{filter:brightness(1.08);transform:translateY(-1px)}.btn-ghost{border-color:rgba(255,255,255,.18);background:rgba(255,255,255,.07);color:#e9f5fb}.btn-ghost:hover{background:rgba(255,255,255,.12)}.hero-note{display:flex;gap:18px;flex-wrap:wrap;margin-top:27px;color:#86a5ba;font-size:12px}.hero-note span:before{content:'✓';color:#63d5ba;font-weight:800;margin-right:7px}
+    .command-panel{background:rgba(5,18,33,.7);border:1px solid rgba(149,206,236,.15);border-radius:18px;box-shadow:0 28px 80px rgba(0,0,0,.25);overflow:hidden}.panel-top{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.08)}.panel-label{display:flex;align-items:center;gap:9px;font:600 11px var(--mono);color:#aac2d2;text-transform:uppercase;letter-spacing:.1em}.live-dot{width:8px;height:8px;border-radius:50%;background:#25d298;box-shadow:0 0 0 5px rgba(37,210,152,.1)}.panel-clock{font:500 11px var(--mono);color:#6f93aa}.panel-body{padding:14px}.mini-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.mini-card{padding:15px;border:1px solid rgba(255,255,255,.075);background:rgba(255,255,255,.035);border-radius:11px;display:flex;align-items:center;gap:12px}.mini-icon{width:38px;height:38px;border-radius:10px;display:grid;place-items:center;background:#11385a;font-size:19px}.mini-card strong{display:block;font-size:12px}.mini-card small{font:500 9px var(--mono);color:#7297af;text-transform:uppercase}.panel-footer{padding:12px 16px;border-top:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:space-between;color:#789aae;font-size:11px}.key{border:1px solid rgba(255,255,255,.13);background:rgba(255,255,255,.05);border-radius:5px;padding:2px 6px;font:500 9px var(--mono);color:#aac4d4}
+    .workspace{padding:62px 0 74px}.section-head{display:flex;align-items:end;justify-content:space-between;gap:30px;margin-bottom:24px}.section-kicker{font:600 10px var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--brand);margin-bottom:7px}.section-head h2{font-size:30px;letter-spacing:-.035em;margin:0}.section-head p{color:var(--muted);margin:7px 0 0}.directory-link{color:var(--brand);font-weight:800;font-size:13px;white-space:nowrap}.platform-grid{display:grid;grid-template-columns:repeat(12,1fr);gap:16px}.platform-card{grid-column:span 4;min-height:260px;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:22px;display:flex;flex-direction:column;position:relative;overflow:hidden;transition:.2s ease;cursor:pointer}.platform-card:nth-child(4),.platform-card:nth-child(5){grid-column:span 6}.platform-card:before{content:'';position:absolute;inset:0 auto 0 0;width:4px;background:var(--accent)}.platform-card:hover{transform:translateY(-4px);border-color:color-mix(in srgb,var(--accent) 45%,var(--line));box-shadow:var(--shadow)}.card-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px}.card-icon{width:48px;height:48px;border-radius:13px;display:grid;place-items:center;font-size:23px;background:color-mix(in srgb,var(--accent) 10%,white);border:1px solid color-mix(in srgb,var(--accent) 20%,white)}.status{display:flex;align-items:center;gap:6px;padding:5px 9px;border-radius:99px;background:#ecf9f4;color:#087c5b;font:700 9px var(--mono);text-transform:uppercase;letter-spacing:.08em}.status:before{content:'';width:6px;height:6px;border-radius:50%;background:var(--success)}.platform-card h3{font-size:19px;letter-spacing:-.025em;margin:19px 0 5px}.card-role{font:600 10px var(--mono);color:var(--accent);letter-spacing:.1em;text-transform:uppercase}.card-copy{font-size:13px;color:var(--muted);line-height:1.65;margin:13px 0 20px;max-width:520px}.card-tools{display:flex;flex-wrap:wrap;gap:6px;margin-top:auto}.tool-tag{padding:5px 8px;border-radius:6px;background:#f0f4f7;color:#52697a;font:600 10px var(--mono)}.card-launch{margin-top:18px;padding-top:15px;border-top:1px solid #e8eef2;display:flex;align-items:center;justify-content:space-between;font-size:12px;font-weight:800;color:var(--accent)}.shortcut{color:#99a8b4}.shortcut .key{color:#657887;border-color:#dce4ea;background:#f6f8fa}
+    .workflow{padding:64px 0;background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.workflow-grid{display:grid;grid-template-columns:.72fr 1.28fr;gap:60px;align-items:center}.workflow h2{font-size:31px;line-height:1.18;letter-spacing:-.04em;margin:8px 0 14px}.workflow-copy{color:var(--muted);max-width:500px}.flow{display:grid;grid-template-columns:repeat(5,1fr);position:relative}.flow:before{content:'';position:absolute;top:23px;left:10%;right:10%;height:1px;background:#cddce5}.flow-step{position:relative;text-align:center;padding:0 8px}.flow-num{width:46px;height:46px;margin:auto;border:1px solid #c8d9e4;background:#fff;color:var(--brand);border-radius:50%;display:grid;place-items:center;font:700 12px var(--mono);position:relative}.flow-step strong{display:block;font-size:11px;margin-top:12px}.flow-step small{display:block;color:var(--dim);font-size:10px;margin-top:3px}.notice{margin-top:18px;border:1px solid #d3e3ec;background:#f2f8fb;border-radius:11px;padding:13px 15px;color:#526c7c;font-size:12px}.notice strong{color:#193c53}
+    .stats{background:var(--navy-900);color:#fff}.stats-grid{display:grid;grid-template-columns:repeat(4,1fr)}.stat{padding:29px;border-right:1px solid rgba(255,255,255,.08)}.stat:last-child{border:0}.stat strong{display:block;font-size:25px;color:#66c9dc}.stat span{font-size:11px;color:#809fb3;text-transform:uppercase;letter-spacing:.1em;font-weight:700}
+    footer{background:#04101e;color:#7f9aae;padding:36px 0}.footer-row{display:flex;align-items:center;justify-content:space-between;gap:25px}.footer-brand{color:#d7e5ed;font-weight:800}.footer-brand span{color:#52bfd4}.footer-links{display:flex;gap:19px;font-size:12px}.footer-links a:hover{color:#fff}.disclaimer{margin-top:22px;padding-top:20px;border-top:1px solid rgba(255,255,255,.07);font-size:10px;line-height:1.6;color:#587589}
+    .loading{position:fixed;inset:0;background:rgba(5,18,32,.92);z-index:100;display:none;place-items:center;color:#fff}.loading.active{display:grid}.spinner{width:38px;height:38px;border:3px solid rgba(255,255,255,.15);border-top-color:var(--cyan);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 13px}@keyframes spin{to{transform:rotate(360deg)}}.loading p{font:600 11px var(--mono);color:#a9c5d5}.toast{position:fixed;right:22px;bottom:22px;z-index:90;background:var(--navy-900);color:#fff;padding:13px 16px;border:1px solid #204665;border-radius:10px;box-shadow:0 15px 40px rgba(0,0,0,.25);font-size:12px;transform:translateY(20px);opacity:0;animation:toastIn .25s forwards}@keyframes toastIn{to{transform:none;opacity:1}}
+    @media(max-width:1050px){.hero-grid{grid-template-columns:1fr;gap:35px}.command-panel{max-width:700px}.platform-card{grid-column:span 6!important}.workflow-grid{grid-template-columns:1fr}.topnav{display:none}.account-actions{margin-left:auto}.hamburger{display:block}}
+    @media(max-width:720px){.shell{padding:0 16px}.topbar{height:64px}.account-actions{display:none}.hero-grid{min-height:auto;padding-top:52px;padding-bottom:52px}.hero-copy{font-size:15px}.mini-grid{grid-template-columns:1fr 1fr}.section-head{align-items:flex-start;flex-direction:column}.workspace{padding:45px 0}.platform-card{grid-column:1/-1!important;min-height:235px}.workflow{padding:48px 0}.flow{grid-template-columns:1fr;gap:12px}.flow:before{top:20px;bottom:20px;left:22px;right:auto;width:1px;height:auto}.flow-step{text-align:left;display:grid;grid-template-columns:46px 1fr;column-gap:14px;align-items:center}.flow-num{grid-row:1/3}.flow-step strong{margin:0}.flow-step small{margin:0}.stats-grid{grid-template-columns:1fr 1fr}.stat:nth-child(2){border-right:0}.stat:nth-child(-n+2){border-bottom:1px solid rgba(255,255,255,.08)}.footer-row{align-items:flex-start;flex-direction:column}.footer-links{flex-wrap:wrap}.hero-note{gap:10px}.command-panel{border-radius:14px}}
+    @media(max-width:430px){h1{font-size:38px}.mini-grid{grid-template-columns:1fr}.hero-actions .btn{width:100%}.stats-grid{grid-template-columns:1fr}.stat{border-right:0;border-bottom:1px solid rgba(255,255,255,.08)!important}}
+  </style>
+  <style>
+    .experience-backdrop{position:fixed;inset:0;z-index:2000;display:none;place-items:center;padding:20px;background:rgba(3,18,32,.72);backdrop-filter:blur(8px)}.experience-backdrop.open{display:grid}.experience-dialog{width:min(760px,100%);max-height:90vh;overflow:auto;background:#fff;border:1px solid #cadbe4;border-radius:22px;padding:28px;box-shadow:0 30px 80px rgba(2,18,32,.3);color:#102536}.experience-kicker{font:700 10px 'JetBrains Mono',monospace;letter-spacing:.14em;text-transform:uppercase;color:#176d9f}.experience-dialog h2{font-size:28px;margin:7px 0}.experience-dialog>p{color:#526977;margin:0 0 20px}.experience-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}.experience-card{appearance:none;text-align:left;padding:18px;border:1px solid #d7e0e5;border-radius:15px;background:#f8fafb;color:#102536;cursor:pointer}.experience-card:hover,.experience-card:focus{border-color:#2789be;box-shadow:0 8px 22px rgba(35,91,124,.1)}.experience-card.recommended{background:#eaf4f8;border-color:#9cc9dc}.experience-card strong{display:block;font-size:15px;margin:8px 0 5px}.experience-card span{display:block;color:#526977;font-size:12px;line-height:1.55}.experience-badge{display:inline-block!important;width:max-content;padding:3px 7px;border-radius:99px;background:#176d9f;color:#fff!important;font-size:9px!important;font-weight:800}.experience-note{margin-top:15px!important;font-size:11px;color:#607784!important;text-align:center}@media(max-width:650px){.experience-dialog{padding:20px}.experience-dialog h2{font-size:22px}.experience-grid{grid-template-columns:1fr}.experience-card{padding:14px}}
+  </style>
+  <style>
+    /* W0.4 Wheel Strategy Desk landing — namespaced wd- */
+    .wd-hero{background:radial-gradient(circle at 78% 30%,rgba(53,195,220,.16),transparent 36%),linear-gradient(140deg,var(--navy-950),#0b3151);color:#fff;overflow:hidden}
+    .wd-hero-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(360px,.9fr);gap:56px;align-items:center;padding-top:64px;padding-bottom:72px}
+    .wd-hero h1{font-size:clamp(38px,5vw,60px);line-height:1.04;letter-spacing:-.045em;margin:0 0 20px;max-width:13ch}
+    .wd-lede{font-size:18px;line-height:1.6;color:#c4d6e2;max-width:56ch;margin:0 0 14px}
+    .wd-plain{font-size:15px;color:#94afc1;max-width:56ch;margin:0 0 28px}
+    .wd-actions{display:flex;flex-wrap:wrap;gap:12px}
+    .wd-btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:48px;padding:0 22px;border-radius:12px;font-weight:700;font-size:15px;border:1px solid transparent;cursor:pointer;transition:background .15s,border-color .15s}
+    .wd-btn-primary{background:var(--cyan);color:#04202c}
+    .wd-btn-primary:hover{background:#5fd3e6}
+    .wd-btn-ghost{border-color:rgba(255,255,255,.22);color:#fff}
+    .wd-btn-ghost:hover{border-color:rgba(255,255,255,.5)}
+    .wd-hero-foot{margin-top:22px;font-size:13px;color:#8aa6b9}
+
+    /* The wheel */
+    .wd-wheel{position:relative;width:100%;max-width:470px;aspect-ratio:1;margin-left:auto}
+    .wd-wheel svg{position:absolute;inset:14%;width:72%;height:72%;overflow:visible}
+    .wd-ring{fill:none;stroke:rgba(149,206,236,.22);stroke-width:2}
+    .wd-arc{fill:none;stroke:var(--cyan);stroke-width:3;stroke-linecap:round;opacity:.55}
+    .wd-orbit{transform-box:view-box;transform-origin:100px 100px;animation:wdOrbit 7.2s cubic-bezier(.45,.05,.55,.95) .5s 1 both}
+    .wd-orbit circle{fill:var(--cyan)}
+    @keyframes wdOrbit{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+    .wd-center{position:absolute;inset:0;display:grid;place-items:center;text-align:center;pointer-events:none}
+    .wd-center strong{display:block;font-size:22px;letter-spacing:-.02em}
+    .wd-center span{display:block;font-size:12px;color:#8aa6b9;margin-top:4px}
+    .wd-station{position:absolute;width:170px;padding:11px 13px;border-radius:12px;background:rgba(5,18,33,.82);border:1px solid rgba(149,206,236,.18);transition:border-color .3s,background .3s}
+    .wd-station b{display:block;font-size:13.5px;line-height:1.3}
+    .wd-station small{display:block;font-size:12px;line-height:1.4;color:#9db6c7;margin-top:3px}
+    .wd-station.is-lit{border-color:var(--cyan);background:rgba(10,49,76,.95)}
+    .wd-st-1{top:0;left:50%;transform:translateX(-50%)}
+    .wd-st-2{right:0;top:50%;transform:translateY(-50%)}
+    .wd-st-3{bottom:0;left:50%;transform:translateX(-50%)}
+    .wd-st-4{left:0;top:50%;transform:translateY(-50%)}
+    .wd-wheel-list{display:none}
+
+    /* Sections */
+    .wd-section{padding:76px 0}
+    .wd-section.alt{background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+    .wd-head{max-width:720px;margin-bottom:36px}
+    .wd-head h2{font-size:clamp(28px,3.2vw,38px);line-height:1.12;letter-spacing:-.035em;margin:0 0 12px}
+    .wd-head p{color:var(--muted);font-size:16px;margin:0}
+
+    .wd-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:0;border-top:2px solid var(--navy-900)}
+    .wd-steps li{padding:22px 20px 0 0;counter-increment:wd}
+    .wd-steps li::before{content:counter(wd);display:grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--navy-900);color:#fff;font:600 13px var(--mono);margin:-37px 0 16px}
+    .wd-steps{counter-reset:wd}
+    .wd-steps h3{font-size:16px;margin:0 0 6px;letter-spacing:-.01em}
+    .wd-steps p{font-size:14px;color:var(--muted);margin:0 0 10px}
+    .wd-steps .wd-does{font-size:13px;color:var(--text);border-left:3px solid var(--cyan);padding-left:10px}
+
+    .wd-features{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:16px;overflow:hidden}
+    .wd-feature{background:#fff;padding:26px 28px}
+    .wd-feature h3{font-size:19px;letter-spacing:-.02em;margin:0 0 8px}
+    .wd-feature p{color:var(--muted);margin:0 0 14px;font-size:15px}
+    .wd-status{display:inline-block;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px}
+    .wd-status.soon{background:#e6f6fa;color:#0b6a80}
+    .wd-status.live{background:#e3f6ef;color:#0b7a58}
+
+    .wd-now{margin-top:28px;display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;font-size:14px;color:var(--muted)}
+    .wd-now a{color:var(--brand);font-weight:700}
+    .wd-now a:hover{text-decoration:underline}
+
+    .wd-rules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:32px}
+    .wd-rule h3{font-size:18px;margin:0 0 8px;letter-spacing:-.02em}
+    .wd-rule p{color:var(--muted);margin:0;font-size:15px}
+    .wd-rule-example{margin-top:12px;font:500 12.5px/1.5 var(--mono);color:var(--navy-800);background:#eef4f8;border-radius:8px;padding:10px 12px}
+
+    .wd-fit{display:grid;grid-template-columns:1.3fr 1fr;gap:40px}
+    .wd-fit h3{font-size:18px;margin:0 0 12px}
+    .wd-fit ul{margin:0;padding-left:20px;color:var(--text)}
+    .wd-fit li{margin-bottom:8px}
+    .wd-fit .wd-notfor li{color:var(--muted)}
+
+    .wd-founders{background:var(--navy-900);color:#fff}
+    .wd-founders-grid{display:grid;grid-template-columns:1fr minmax(320px,440px);gap:56px;align-items:start}
+    .wd-founders h2{font-size:clamp(28px,3.2vw,40px);line-height:1.1;letter-spacing:-.035em;margin:0 0 14px}
+    .wd-founders p{color:#b7cbd8;margin:0 0 12px;max-width:56ch}
+    .wd-price{font:600 15px var(--mono);color:#fff;margin:18px 0 6px}
+    .wd-price span{color:var(--cyan);font-size:30px;letter-spacing:-.02em}
+    .wd-seats{font-size:14px;color:#cfe3f5;margin:8px 0 0}
+    .wd-seats b{color:#fff}
+    .wd-founders ul{padding-left:20px;color:#d2e1ea;margin:14px 0 0}
+    .wd-founders li{margin-bottom:6px}
+    .wd-form{background:#fff;color:var(--text);border-radius:16px;padding:26px}
+    .wd-form h3{margin:0 0 4px;font-size:19px}
+    .wd-form .wd-form-sub{color:var(--muted);font-size:14px;margin:0 0 18px}
+    .wd-field{margin-bottom:14px}
+    .wd-field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+    .wd-field input,.wd-field select{width:100%;min-height:46px;border:1px solid #c8d5de;border-radius:10px;padding:0 12px;font:inherit;font-size:15px;color:var(--text);background:#fff}
+    .wd-field input:focus,.wd-field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,108,174,.18)}
+    .wd-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
+    .wd-form .wd-btn{width:100%;background:var(--navy-900);color:#fff}
+    .wd-form .wd-btn:hover{background:var(--navy-800)}
+    .wd-form .wd-btn[disabled]{opacity:.6;cursor:progress}
+    .wd-msg{margin-top:12px;font-size:14px;min-height:1.4em}
+    .wd-msg.ok{color:#0b7a58;font-weight:700}
+    .wd-msg.err{color:#b8283f}
+    .wd-form .wd-fine{font-size:12px;color:var(--muted);margin:12px 0 0}
+
+    @media(max-width:1050px){
+      .wd-hero-grid{grid-template-columns:1fr;gap:40px}
+      .wd-wheel{margin:0 auto}
+      .wd-steps{grid-template-columns:1fr;border-top:0;border-left:2px solid var(--navy-900);padding-left:0}
+      .wd-steps li{padding:0 0 24px 28px}
+      .wd-steps li::before{margin:0 0 10px -44px}
+      .wd-founders-grid,.wd-fit{grid-template-columns:1fr}
+      .wd-rules{grid-template-columns:1fr;gap:26px}
+    }
+    @media(max-width:720px){
+      .wd-features{grid-template-columns:1fr}
+      .wd-section{padding:54px 0}
+      .wd-hero-grid{padding-top:44px;padding-bottom:52px}
+      .wd-actions .wd-btn{flex:1 1 100%}
+    }
+    @media(max-width:560px){
+      .wd-wheel{max-width:300px}
+      .wd-wheel svg{inset:0;width:100%;height:100%}
+      .wd-station{display:none}
+      .wd-wheel-list{display:block;margin:18px 0 0;padding-left:20px;color:#c4d6e2;font-size:14px}
+      .wd-wheel-list li{margin-bottom:6px}
+      .wd-wheel-list b{color:#fff}
+    }
+    @media(prefers-reduced-motion:reduce){
+      .wd-orbit{animation:none}
+      .wd-station{transition:none}
+      html{scroll-behavior:auto}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell">
+      <a class="brand" href="index.html" aria-label="Arowana Profits home">
+        <img class="brand-logo" src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" onerror="this.style.display='none';this.nextElementSibling.style.display='grid'">
+        <span class="brand-fallback">🐟</span>
+        <span class="brand-name">Arowana Profits<small>Wheel Strategy Desk</small></span>
+      </a>
+      <nav class="topnav" aria-label="Primary navigation">
+        <a class="active" href="index.html">Home</a><a href="#how">How it works</a><a href="#inside">What's inside</a><a href="wheel-calculator.html">Free calculator</a><a href="assignment-risk.html">Assignment risk</a><a href="pricing.html">Pricing</a><a href="support.html">Support</a>
+      </nav>
+      <div class="account-actions"><a class="signin" id="authSignIn" href="login.html">Sign in</a><a class="account-cta" id="authStartFree" href="#founders">Founders &mdash; $399/yr</a></div>
+      <button class="hamburger" id="navHamburger" aria-label="Open menu" aria-expanded="false">☰</button>
+      <div class="mobile-menu" id="navMobileMenu"><div class="mobile-account" id="navMobileAccount" hidden></div><a href="#how">How it works</a><a href="#inside">What's inside</a><a href="wheel-calculator.html">Free calculator</a><a href="assignment-risk.html">Assignment risk</a><a href="tools.html">All tools</a><a href="pricing.html">Pricing</a><a href="support.html">Support</a><a id="navMobileSignIn" href="login.html">Sign in</a><a id="navMobileStartFree" href="#founders">Founders &mdash; $399/yr →</a></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="wd-hero" aria-labelledby="wdTitle">
+      <div class="shell wd-hero-grid">
+        <div>
+          <h1 id="wdTitle">The desk for traders who run the wheel.</h1>
+          <p class="wd-lede">Track every dollar of premium, find covered calls and cash-secured puts on stocks you actually want to own, and catch the mistakes that quietly cost money.</p>
+          <p class="wd-plain">New to it? The wheel is a steady options-income routine: sell a put on a stock you'd be glad to own, and if you're assigned the shares, sell calls against them.</p>
+          <div class="wd-actions">
+            <a class="wd-btn wd-btn-primary" id="wdPrimaryCta" href="#founders">Become a founding member</a>
+            <a class="wd-btn wd-btn-ghost" href="#how">See how it works</a>
+          </div>
+          <p class="wd-hero-foot" id="wdHeroFoot">The trade journal is free to use today. Founders get every wheel tool as it ships. Just want the math? Try the <a href="wheel-calculator.html" style="color:#cfe3f5;text-decoration:underline">free wheel calculator</a>.</p>
+        </div>
+
+        <div class="wd-wheel" aria-hidden="true">
+          <svg viewBox="0 0 200 200" focusable="false">
+            <circle class="wd-ring" cx="100" cy="100" r="78"/>
+            <path class="wd-arc" d="M 118 24 A 78 78 0 0 1 176 82"/>
+            <path class="wd-arc" d="M 176 118 A 78 78 0 0 1 118 176"/>
+            <path class="wd-arc" d="M 82 176 A 78 78 0 0 1 24 118"/>
+            <path class="wd-arc" d="M 24 82 A 78 78 0 0 1 82 24"/>
+            <g class="wd-orbit"><circle cx="100" cy="22" r="5"/></g>
+          </svg>
+          <div class="wd-center"><div><strong>Premium</strong><span>at every turn</span></div></div>
+          <div class="wd-station wd-st-1" data-step="1"><b>Sell a cash-secured put</b><small>Get paid to wait for a price you like</small></div>
+          <div class="wd-station wd-st-2" data-step="2"><b>Get assigned shares</b><small>The premium lowers your cost basis</small></div>
+          <div class="wd-station wd-st-3" data-step="3"><b>Sell a covered call</b><small>Collect more, above your basis</small></div>
+          <div class="wd-station wd-st-4" data-step="4"><b>Shares called away</b><small>Back to cash, then start again</small></div>
+        </div>
+        <ol class="wd-wheel-list">
+          <li><b>Sell a cash-secured put</b> to get paid while you wait for your price.</li>
+          <li><b>Get assigned shares</b>; the premium lowers your cost basis.</li>
+          <li><b>Sell a covered call</b> above your basis for more premium.</li>
+          <li><b>Shares called away</b>, back to cash, and start again.</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="wd-section" id="how" aria-labelledby="howTitle">
+      <div class="shell">
+        <div class="wd-head">
+          <h2 id="howTitle">What the desk does at each turn of the wheel</h2>
+          <p>The wheel is simple on paper. The hard part is the bookkeeping and the discipline. That's the part Arowana handles.</p>
+        </div>
+        <ol class="wd-steps">
+          <li><h3>Pick stocks you'd own</h3><p>Start from a short list of companies you'd be comfortable holding.</p><div class="wd-does">Your Want-to-Own list filters every scanner.</div></li>
+          <li><h3>Sell a put</h3><p>Choose a strike and expiration that pay enough for the risk.</p><div class="wd-does">The put scanner shows yield, cash needed, and earnings dates.</div></li>
+          <li><h3>Handle assignment</h3><p>If the stock drops below your strike, you own the shares.</p><div class="wd-does">Cost basis updates automatically with every premium.</div></li>
+          <li><h3>Sell a call</h3><p>Pick a strike above what the shares really cost you.</p><div class="wd-does">The call scanner only suggests strikes above your basis.</div></li>
+          <li><h3>Review the month</h3><p>See what you earned, what it cost, and what repeated.</p><div class="wd-does">The income tracker and coach sum it up in one place.</div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="wd-section alt" id="inside" aria-labelledby="insideTitle">
+      <div class="shell">
+        <div class="wd-head">
+          <h2 id="insideTitle">Built for income, not for the next hot tip</h2>
+          <p>Some of this works today. The wheel-specific tools are being built now, and Founders get each one first.</p>
+        </div>
+        <div class="wd-features">
+          <div class="wd-feature"><h3>Premium income tracker</h3><p>Premium by month, yield on the cash you tied up, and your real cost basis after every assignment. No more spreadsheet.</p><span class="wd-status soon">Founders first</span></div>
+          <div class="wd-feature"><h3>Covered call and put scanners</h3><p>Candidates for the shares you hold and the stocks you want to own, with earnings dates flagged before you pick an expiration.</p><span class="wd-status soon">Founders first</span></div>
+          <div class="wd-feature"><h3>Roll and risk coach</h3><p>When a position is tested, see your choices (roll, take assignment, or close) and the rule behind each one. Get warned about concentration and earnings risk.</p><span class="wd-status soon">Founders first</span></div>
+          <div class="wd-feature"><h3>Trade journal</h3><p>Stock and options trades in one log, with mistake tags and notes. Import your broker's CSV instead of typing trades by hand.</p><span class="wd-status live">Available now</span></div>
+        </div>
+        <div class="wd-now" id="wdNowLinks">
+          <span>Try what's live today:</span>
+          <a href="trade-journal-pro.html">Trade journal</a>
+          <a href="options-hub.html">Options Hub</a>
+          <a href="portfolio-command.html">Portfolio</a>
+          <a href="wheel-calculator.html">Free wheel calculator</a>
+          <a href="assignment-risk.html">Assignment risk checker</a>
+          <a href="tools.html">All tools</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="wd-section" aria-labelledby="rulesTitle">
+      <div class="shell">
+        <div class="wd-head">
+          <h2 id="rulesTitle">Three rules the desk won't break</h2>
+        </div>
+        <div class="wd-rules">
+          <div class="wd-rule"><h3>Every signal shows its rule</h3><p>No mystery scores. If a number drives a suggestion, you can see exactly how it was calculated.</p><div class="wd-rule-example">Vol rank = today's 21-day price volatility, ranked 0–100 against its own history</div></div>
+          <div class="wd-rule"><h3>No made-up numbers</h3><p>When real data isn't available, you'll see an empty state and the reason, never a placeholder that looks real.</p></div>
+          <div class="wd-rule"><h3>Education, not stock picks</h3><p>Arowana helps you track, check, and stick to your own plan. It doesn't tell you what to buy.</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wd-section alt" aria-labelledby="fitTitle">
+      <div class="shell">
+        <div class="wd-head"><h2 id="fitTitle">Who it's for</h2></div>
+        <div class="wd-fit">
+          <div>
+            <h3>A good fit if you</h3>
+            <ul>
+              <li>Sell cash-secured puts or covered calls, or want to start</li>
+              <li>Hold shares in a brokerage account or IRA and want income from them</li>
+              <li>Track premium and cost basis in a spreadsheet today</li>
+              <li>Want guardrails that stop an expensive mistake before it happens</li>
+            </ul>
+          </div>
+          <div class="wd-notfor">
+            <h3>Probably not for you if you</h3>
+            <ul>
+              <li>Day trade and need tick-by-tick scanners</li>
+              <li>Only buy and hold, and never trade options</li>
+              <li>Want someone to hand you stock picks</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="wd-section wd-founders" id="founders" aria-labelledby="foundersTitle">
+      <div class="shell wd-founders-grid">
+        <div>
+          <h2 id="foundersTitle">Become a founding member</h2>
+          <p>Founders are the first traders on the Wheel Strategy Desk. You get every wheel tool as it ships, a year of Pro included, and a direct say in what gets built next.</p>
+          <div class="wd-price"><span>$399</span> / year &middot; your rate stays the same while you're subscribed</div>
+          <p class="wd-seats" id="wdSeats" aria-live="polite">Limited to the first 100 members.</p>
+          <div class="wd-actions" style="margin-top:18px">
+            <a class="wd-btn wd-btn-primary" href="checkout.html?plan=founders">Become a founding member</a>
+          </div>
+          <ul>
+            <li>12 months of Pro included, then $399/year</li>
+            <li>Every wheel tool as it ships: scanners, income tracker, coach</li>
+            <li>A direct line to request features and report problems</li>
+            <li>Prefer to pay monthly? See <a href="pricing.html" style="color:var(--cyan);font-weight:700">Free, Pro and Pro</a></li>
+          </ul>
+        </div>
+        <form class="wd-form" id="wdWaitlistForm" novalidate>
+          <h3>Not ready yet?</h3>
+          <p class="wd-form-sub">Leave your email and we'll tell you when Founders seats are running out, or when a tool you're waiting on ships. No spam.</p>
+          <div class="wd-field">
+            <label for="wdEmail">Email</label>
+            <input id="wdEmail" name="email" type="email" autocomplete="email" inputmode="email" required maxlength="254" placeholder="you@example.com">
+          </div>
+          <div class="wd-field">
+            <label for="wdExperience">Where are you with the wheel? (optional)</label>
+            <select id="wdExperience" name="experience">
+              <option value="">Choose one</option>
+              <option value="running_wheel">I already run the wheel</option>
+              <option value="new_to_wheel">I'm new to the wheel</option>
+              <option value="other_options">I trade other options strategies</option>
+            </select>
+          </div>
+          <div class="wd-hp" aria-hidden="true">
+            <label for="wdCompany">Company</label>
+            <input id="wdCompany" name="company" type="text" tabindex="-1" autocomplete="off">
+          </div>
+          <button class="wd-btn" type="submit" id="wdSubmit">Keep me posted</button>
+          <div class="wd-msg" id="wdMsg" role="status" aria-live="polite"></div>
+          <p class="wd-fine">We only use your email to contact you about Founders access. See our <a href="privacy.html" style="text-decoration:underline">privacy policy</a>.</p>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer><div class="shell"><div class="footer-row"><div class="footer-brand">Arowana <span>Profits</span></div><div class="footer-links"><a href="wheel-calculator.html">Free calculator</a><a href="assignment-risk.html">Assignment risk</a><a href="pricing.html">Pricing</a><a href="support.html">Support</a><a href="docs.html">Documentation</a><a href="disclosures.html">Disclosures</a><a href="privacy.html">Privacy</a><a href="terms.html">Terms</a></div><small>© <span id="currentYear">2026</span> Arowana Profits</small></div><div class="disclaimer">Trading and investing involve risk, including possible loss of principal. Arowana Profits provides analytical tools and educational information, not individualized financial advice or guaranteed results.</div></div></footer>
+
+  <script>
+    let currentUser=null;
+    document.addEventListener('DOMContentLoaded',()=>{initAuth();initMenu();initWheel();initWaitlist();initShortcuts();loadSeats();document.getElementById('currentYear').textContent=new Date().getFullYear()});
+    function initAuth(){const raw=localStorage.getItem('gs_auth_user_v1');if(raw){try{currentUser=JSON.parse(raw)}catch(e){console.warn('Unable to read saved account')}}const signIn=document.getElementById('authSignIn'),cta=document.getElementById('authStartFree'),account=document.getElementById('navMobileAccount'),mobileSignIn=document.getElementById('navMobileSignIn'),mobileCta=document.getElementById('navMobileStartFree');if(currentUser){signIn.hidden=true;cta.textContent='👤 '+(currentUser.displayName||'My Account');cta.href='account.html';account.hidden=false;account.textContent=currentUser.email||currentUser.displayName||'Signed in';mobileSignIn.hidden=true;mobileCta.textContent='My account →';mobileCta.href='account.html';
+      // Signed-in visitors go straight to their desk; the waitlist stays below.
+      const primary=document.getElementById('wdPrimaryCta'),foot=document.getElementById('wdHeroFoot');
+      if(primary){primary.textContent='Open your desk';primary.href='trading-command.html'}
+      if(foot){foot.innerHTML='You\u2019re signed in. <a href="#founders" style="color:#fff;text-decoration:underline">Join the Founders waitlist</a> for the wheel tools.'}
+      const email=document.getElementById('wdEmail');if(email&&currentUser.email)email.value=currentUser.email;
+    }}
+    function initMenu(){const btn=document.getElementById('navHamburger'),menu=document.getElementById('navMobileMenu');const close=()=>{menu.classList.remove('open');btn.setAttribute('aria-expanded','false');btn.textContent='☰'};btn.addEventListener('click',e=>{e.stopPropagation();const open=menu.classList.toggle('open');btn.setAttribute('aria-expanded',String(open));btn.textContent=open?'×':'☰'});document.addEventListener('click',e=>{if(!menu.contains(e.target))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',close))}
+
+    // One pass around the wheel on load: each station lights as the dot passes it.
+    function initWheel(){
+      const stations=[...document.querySelectorAll('.wd-station')];
+      if(!stations.length)return;
+      const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+      if(reduce){stations[0].classList.add('is-lit');return}
+      const start=500,lap=7200;
+      stations.forEach((st,i)=>{setTimeout(()=>{stations.forEach(s=>s.classList.remove('is-lit'));st.classList.add('is-lit')},start+lap*i/4)});
+      setTimeout(()=>{stations.forEach(s=>s.classList.remove('is-lit'));stations[0].classList.add('is-lit')},start+lap);
+    }
+
+    // Founders waitlist → public.ap_founders_waitlist (insert-only for visitors).
+    function wdGetClient(timeoutMs){
+      const pick=()=>{const c=window.supabaseClient||window.sbClient||window.GSClient;return c&&c.from?c:null};
+      return new Promise(resolve=>{
+        const now=pick();if(now)return resolve(now);
+        let done=false;const finish=c=>{if(done)return;done=true;window.removeEventListener('ap:config:ready',onReady);clearInterval(poll);resolve(c)};
+        const onReady=()=>{const c=pick();if(c)finish(c)};
+        window.addEventListener('ap:config:ready',onReady);
+        const poll=setInterval(()=>{const c=pick();if(c)finish(c)},150);
+        setTimeout(()=>finish(pick()),timeoutMs);
+      });
+    }
+    function initWaitlist(){
+      const form=document.getElementById('wdWaitlistForm');if(!form)return;
+      const email=document.getElementById('wdEmail'),exp=document.getElementById('wdExperience'),hp=document.getElementById('wdCompany'),btn=document.getElementById('wdSubmit'),msg=document.getElementById('wdMsg');
+      const say=(text,kind)=>{msg.textContent=text;msg.className='wd-msg'+(kind?' '+kind:'')};
+      form.addEventListener('submit',async e=>{
+        e.preventDefault();
+        const value=(email.value||'').trim();
+        if(hp.value){say('Thanks, you\u2019re on the list.','ok');form.reset();return}
+        if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(value)||value.length>254){say('Enter a valid email address, like you@example.com.','err');email.focus();return}
+        btn.disabled=true;btn.textContent='Saving…';say('');
+        try{
+          const client=await wdGetClient(4000);
+          if(!client)throw new Error('no-client');
+          const row={email:value,source:'landing'};if(exp.value)row.experience=exp.value;
+          const {error}=await client.from('ap_founders_waitlist').insert(row);
+          if(error&&error.code!=='23505')throw error;
+          say(error?'You\u2019re already on the list. We\u2019ll email you when checkout opens.':'You\u2019re on the list. We\u2019ll email you when Founders checkout opens.','ok');
+          btn.textContent='Saved';
+          try{localStorage.setItem('ap_founders_waitlist_joined_v1','1')}catch(_){}
+        }catch(err){
+          console.warn('[waitlist] save failed',err);
+          say('Your spot wasn\u2019t saved. Try again in a minute, or reach us through the Support page.','err');
+          btn.disabled=false;btn.textContent='Join the waitlist';
+        }
+      });
+    }
+
+    // Real seat count — aggregate only, no personal data.
+    async function loadSeats() {
+      var el = document.getElementById('wdSeats');
+      if (!el) return;
+      try {
+        var res = await fetch('https://pbojacnagutipfhcxltj.supabase.co/functions/v1/arowana-founders-count');
+        if (!res.ok) return;
+        var d = await res.json();
+        if (typeof d.remaining !== 'number') return;
+        el.innerHTML = d.remaining > 0
+          ? '<b>' + d.remaining + ' of ' + d.limit + ' seats left</b> \u2014 ' + d.taken + ' traders have joined.'
+          : '<b>All ' + d.limit + ' founding seats are taken.</b> Pro and Pro are still open.';
+      } catch (e) { /* keep the static line */ }
+    }
+
+    // Ctrl/Cmd + 1–5 still jump to the workspaces for signed-in users.
+    function initShortcuts(){
+      if(!currentUser)return;
+      const routes={1:'trading-command.html',2:'portfolio-command.html',3:'analysis-central.html',4:'options-hub.html',5:'watchlist.html'};
+      document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&routes[e.key]){e.preventDefault();location.href=routes[e.key]}});
+    }
+  </script>
+  <div class="experience-backdrop" id="experienceBackdrop" role="presentation"><section class="experience-dialog" role="dialog" aria-modal="true" aria-labelledby="experienceTitle"><div class="experience-kicker">Personalize your workspace</div><h2 id="experienceTitle">How experienced are you with trading?</h2><p>We’ll show the right amount of detail. You can change this later.</p><div class="experience-grid"><button class="experience-card recommended" data-experience="beginner"><span class="experience-badge">Recommended</span><strong>🌱 New trader</strong><span>Start with the AI Coach, plain-language guidance, risk, and one step at a time.</span></button><button class="experience-card" data-experience="guided"><strong>🧭 Some experience</strong><span>Use guided coaching with access to the full Trade Desk when you need it.</span></button><button class="experience-card" data-experience="advanced"><strong>⚡ Experienced trader</strong><span>Open Trading Command and see the complete analytics and toolset.</span></button></div><p class="experience-note">Arowana provides education and decision support—not automatic trade execution.</p></section></div>
+  <script>
+  (function(){
+    // Workspace personalization is for signed-in users; new visitors see the landing page uninterrupted.
+    var KEY='ap_experience_level_v1',modal=document.getElementById('experienceBackdrop');
+    var signedIn=!!localStorage.getItem('gs_auth_user_v1');
+    /* The modal asked which experience level to use. With one level there is
+       nothing to ask, so it never opens; onboarding handles a first visit. */
+    /* Experience levels were retired: one desk, for traders who already sell
+       options. Any click just opens the desk. */
+    modal&&modal.querySelectorAll('[data-experience]').forEach(function(btn){
+      btn.addEventListener('click',function(){ location.href='trading-command.html'; });
+    });
+  })();
+  </script>
+  <script>window.GS_CONFIG_URL="./js/config.json";</script>
+  <script src="./js/app-config.js?v=20260918c"></script>
+  <script src="./js/supabase_min.js?v=20260918c"></script>
+</body>
+</html>

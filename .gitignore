@@ -1,0 +1,34 @@
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets / local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+local-config.json
+
+# Logs / temp
+*.log
+.tmp/
+tmp/
+
+# Python
+__pycache__/
+*.pyc
+
+# Node (future tooling)
+node_modules/
+dist/
+build/
+coverage/
+
+# Local exports / broker files
+exports/
+private/
+portfolio-imports/

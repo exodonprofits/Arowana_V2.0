@@ -1,0 +1,1250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>🔐</text></svg>">
+  <title>Sign In — Arowana Profits</title>
+  <meta name="gs-config" content="/js/config.json">
+  
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --brand: #0b4f8a;
+      --brand-dk: #083d6e;
+      --brand-lt: #e8f2fb;
+      --bg: #f6f8fb;
+      --panel: #fff;
+      --text: #111827;
+      --muted: #64748b;
+      --border: #e5e7eb;
+      --shadow: 0 4px 24px rgba(11,79,138,.08);
+      --radius: 14px;
+      --ring: rgba(11,79,138,.22);
+      --green: #16a34a;
+      --red: #dc2626;
+      --amber: #d97706;
+      --blue: #3b9eff;
+      --cyan: #00d4ff;
+      --page-width: min(1200px,92vw);
+    }
+    
+    * { 
+      box-sizing: border-box; 
+    }
+    
+    html, body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    a {
+      color: var(--brand);
+      text-decoration: none;
+    }
+    
+    a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 3px var(--ring);
+    }
+    
+    .container {
+      width: 100%;
+      max-width: var(--page-width);
+      margin: 0 auto;
+      padding: 0 16px;
+    }
+
+    /* Platform Nav — matched to features.html */
+    .nav-wrap{position:sticky;top:0;z-index:90;background:linear-gradient(135deg, rgba(6,52,99,.97), rgba(11,79,138,.90));box-shadow:0 2px 20px rgba(0,0,0,.2)}
+    .nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 24px;max-width:1600px;margin:0 auto}
+
+    .nav-brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:1.25rem;color:white;text-decoration:none;flex:0 0 auto}
+    .nav-logo{width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px}
+
+    .nav-links{display:flex;align-items:center;gap:4px;flex:1;justify-content:center;overflow-x:auto}
+    .nav-links::-webkit-scrollbar{height:0}
+    .nav-link{color:rgba(255,255,255,.8);font-size:.9rem;font-weight:600;padding:8px 16px;border-radius:8px;white-space:nowrap;transition:all .2s ease;text-decoration:none}
+    .nav-link:hover{background:rgba(255,255,255,.1);color:#fff}
+    .nav-link.active{background:rgba(255,255,255,.2);color:#fff}
+
+    .nav-auth{display:flex;align-items:center;gap:12px;flex:0 0 auto}
+    .auth-link{color:rgba(255,255,255,.8);text-decoration:none;font-size:.9rem;font-weight:600;padding:8px 16px;border-radius:8px;transition:all .2s ease}
+    .auth-link:hover{color:#fff;background:rgba(255,255,255,.1)}
+    .auth-cta{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-weight:700}
+    .auth-cta:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+
+    .nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer}
+    .mobile-menu{display:none;position:fixed;top:72px;left:0;right:0;z-index:80;background:#083c69;border-top:1px solid rgba(255,255,255,.12)}
+    .mobile-menu[data-open="true"]{display:block}
+    .mobile-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+    .mobile-link{display:flex;align-items:center;gap:9px;padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none}
+    .mobile-link:hover{background:rgba(255,255,255,.08);color:#fff}
+    .mobile-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+    @media(max-width:700px){.nav-links{display:none}.auth-cta{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+    /* Main Content */
+    .auth-main {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 16px;
+      background: linear-gradient(135deg, rgba(11,79,138,0.02) 0%, rgba(59,159,255,0.02) 100%);
+      min-height: calc(100vh - 120px); /* Account for header height */
+    }
+    
+    .auth-card {
+      background: var(--panel);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      padding: 36px;
+      width: 100%;
+      max-width: 440px;
+      position: relative;
+      transform: translateY(-20px); /* Slight upward positioning for better visual balance */
+    }
+    
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--brand) 0%, var(--blue) 100%);
+      border-radius: var(--radius) var(--radius) 0 0;
+    }
+    
+    .auth-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    
+    .auth-title {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin: 0 0 8px 0;
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    
+    .auth-subtitle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      font-weight: 500;
+      margin: 0;
+      line-height: 1.55;
+    }
+
+    /* Alert Messages */
+    .alert {
+      display: none;
+      padding: 12px 16px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 16px;
+      border: 1px solid transparent;
+    }
+    
+    .alert.ok {
+      background: #f0fdf4;
+      color: #166534;
+      border-color: rgba(22,163,74,.25);
+    }
+    
+    .alert.err {
+      background: #fef2f2;
+      color: #991b1b;
+      border-color: rgba(220,38,38,.25);
+    }
+
+    .alert.warn {
+      background: #fffbeb;
+      color: #92400e;
+      border-color: rgba(245,158,11,.30);
+    }
+
+    /* Social Login */
+    .social-btn {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 0.94rem;
+      font-weight: 600;
+      color: var(--text);
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      margin-bottom: 20px;
+    }
+    
+    .social-btn:hover {
+      border-color: var(--brand);
+      box-shadow: 0 2px 8px rgba(11,79,138,.1);
+      background: #fafcff;
+    }
+    
+    .social-btn img {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Divider */
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      color: var(--muted);
+      font-weight: 600;
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin: 20px 0;
+    }
+    
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border);
+    }
+
+    /* Form Fields */
+    .field {
+      margin-bottom: 18px;
+    }
+    
+    .label {
+      display: block;
+      font-weight: 600;
+      color: var(--text);
+      font-size: 0.85rem;
+      margin-bottom: 6px;
+    }
+    
+    .input-wrap {
+      position: relative;
+    }
+    
+    .input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 8px;
+      border: 1px solid var(--border);
+      outline: none;
+      font-weight: 500;
+      font-size: 0.94rem;
+      background: #fff;
+      font-family: inherit;
+      color: var(--text);
+      transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    }
+    
+    .input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(11,79,138,0.1);
+    }
+    
+    .input::placeholder {
+      color: var(--muted);
+      font-weight: 400;
+    }
+
+    /* Password Toggle */
+    .pass-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 16px;
+      padding: 4px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .pass-toggle:hover {
+      color: var(--brand);
+    }
+
+    /* Form Row */
+    .form-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 16px 0 24px;
+      flex-wrap: wrap;
+    }
+    
+    .check-label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.86rem;
+      font-weight: 500;
+      cursor: pointer;
+    }
+    
+    .check-label input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+      accent-color: var(--brand);
+    }
+    
+    .forgot-btn {
+      background: none;
+      border: none;
+      color: var(--brand);
+      font-weight: 600;
+      font-size: 0.86rem;
+      cursor: pointer;
+      font-family: inherit;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background 0.15s ease;
+    }
+    
+    .forgot-btn:hover {
+      background: rgba(11,79,138,0.06);
+    }
+
+    /* Buttons */
+    .btn-submit {
+      width: 100%;
+      padding: 13px 20px;
+      border-radius: 10px;
+      border: none;
+      background: var(--brand);
+      color: #fff;
+      font-size: 0.94rem;
+      font-weight: 700;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 48px;
+      letter-spacing: 0.01em;
+      box-shadow: 0 4px 14px rgba(11,79,138,.25);
+    }
+    
+    .btn-submit:hover:not(:disabled) {
+      background: var(--brand-dk);
+      box-shadow: 0 6px 20px rgba(11,79,138,.35);
+      transform: translateY(-1px);
+    }
+    
+    .btn-submit:active {
+      transform: translateY(0);
+    }
+    
+    .btn-submit:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    .btn-secondary {
+      width: 100%;
+      padding: 11px 20px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--brand);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      transition: all 0.15s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 44px;
+      text-decoration: none;
+    }
+    
+    .btn-secondary:hover {
+      background: #daeaff;
+      border-color: var(--brand);
+    }
+    
+    .btn-row {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+    
+    .btn-row .btn-submit,
+    .btn-row .btn-secondary {
+      flex: 1;
+    }
+    
+    .is-hidden {
+      display: none !important;
+    }
+
+    /* Auth Footer */
+    .auth-footer {
+      margin-top: 20px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+    
+    .auth-footer a {
+      font-weight: 700;
+      color: var(--brand);
+    }
+
+    /* Trust Strip */
+    .trust-strip {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      padding: 24px 0 0;
+    }
+    
+    .trust-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(11,79,138,0.06);
+      border: 1px solid rgba(11,79,138,0.1);
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    /* Footer */
+    .site-footer {
+      background: #021d36;
+      color: #9fb3c8;
+      padding: 28px 0;
+      font-size: 13.5px;
+      margin-top: auto;
+    }
+    
+    .footer-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .footer-brand {
+      font-weight: 900;
+      color: #e5f0ff;
+      font-size: 15px;
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+    }
+    
+    .footer-link {
+      color: #b6c3d6;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.15s ease;
+    }
+    
+    .footer-link:hover {
+      color: #e5f0ff;
+    }
+
+    /* Mobile Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+      }
+      
+      .auth-card {
+        padding: 24px 20px;
+        margin: 20px 16px;
+      }
+      
+      .form-row {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+      }
+      
+      .btn-row {
+        flex-direction: column;
+      }
+      
+      .footer-content {
+        flex-direction: column;
+        text-align: center;
+      }
+      
+      .footer-links {
+        justify-content: center;
+        gap: 16px;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .nav-brand {
+        font-size: 1.1rem;
+      }
+      
+      .nav-logo {
+        width: 30px;
+        height: 30px;
+      }
+      
+      .trust-strip {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+
+    /* Animations */
+    @keyframes fadeSlideUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .auth-card {
+      animation: fadeSlideUp 0.4s ease-out;
+    }
+
+    /* Command Center login experience */
+    .auth-main{padding:42px 24px;background:radial-gradient(circle at 14% 10%,rgba(29,139,209,.09),transparent 31%),#f3f6f9;min-height:calc(100vh - 72px)}
+    .auth-layout{width:min(1100px,100%);display:grid;grid-template-columns:minmax(0,1.05fr) minmax(390px,.82fr);border:1px solid #d8e3ea;border-radius:20px;overflow:hidden;box-shadow:0 24px 65px rgba(7,35,60,.13);background:#fff}
+    .auth-aside{position:relative;overflow:hidden;padding:52px;background:radial-gradient(circle at 85% 15%,rgba(53,195,220,.20),transparent 32%),radial-gradient(circle at 12% 95%,rgba(29,139,209,.18),transparent 35%),linear-gradient(145deg,#061426,#0b3151);color:#fff;display:flex;flex-direction:column;justify-content:space-between;min-height:620px}
+    .auth-aside:after{content:'';position:absolute;inset:0;background-image:radial-gradient(circle,rgba(255,255,255,.08) 1px,transparent 1px);background-size:28px 28px;mask-image:linear-gradient(to bottom,black,transparent 76%);pointer-events:none}
+    .aside-content,.aside-bottom{position:relative;z-index:1}.aside-kicker{display:inline-flex;align-items:center;gap:9px;font:600 10px 'JetBrains Mono',monospace;color:#71d5e7;letter-spacing:.14em;text-transform:uppercase}.aside-kicker:before{content:'';width:22px;height:2px;background:#35c3dc}.auth-aside h2{font-size:clamp(38px,4vw,54px);line-height:1.05;letter-spacing:-.05em;margin:18px 0 18px;max-width:520px}.auth-aside h2 span{color:#63cde0}.aside-copy{color:#b2c9d8;font-size:15px;line-height:1.75;max-width:520px}.workspace-list{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:32px}.workspace-item{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid rgba(255,255,255,.09);border-radius:10px;background:rgba(255,255,255,.045);font-size:11px;font-weight:700;color:#dceaf2}.workspace-item span{font-size:17px}.aside-bottom{display:flex;align-items:center;gap:10px;color:#85a7bb;font:500 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em}.aside-bottom i{width:8px;height:8px;border-radius:50%;background:#24d197;box-shadow:0 0 0 5px rgba(36,209,151,.10)}
+    .auth-card{border:0;border-radius:0;box-shadow:none;padding:50px 48px;max-width:none;transform:none;display:flex;flex-direction:column;justify-content:center}.auth-card:before{display:none}.auth-header{text-align:left;margin-bottom:26px}.auth-title{font-size:2rem;letter-spacing:-.04em}.auth-subtitle{font-size:.9rem}.access-label{display:flex;align-items:center;gap:8px;color:#0b6cae;font:600 10px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em;margin-bottom:13px}.access-label:before{content:'';width:8px;height:8px;border-radius:50%;background:#16a34a;box-shadow:0 0 0 4px rgba(22,163,74,.1)}.social-btn{min-height:48px;border-color:#d7e1e8}.input{min-height:48px;border-color:#d9e2e8;background:#fbfcfd}.input:hover{border-color:#b7c7d2}.btn-submit{background:linear-gradient(135deg,#0b6cae,#07588f);min-height:50px}.form-row{margin:14px 0 21px}.auth-footer{padding-top:18px;border-top:1px solid #edf1f4;margin-top:24px}.trust-strip{padding-top:18px;gap:7px}.trust-pill{background:#f2f7fa;border-color:#e0e9ee;font-size:.68rem}.security-note{display:flex;align-items:flex-start;gap:9px;margin-top:17px;padding:11px 12px;border-radius:9px;background:#f8fafb;color:#718291;font-size:10px;line-height:1.55}.security-note strong{color:#425a6b}.nav-wrap{background:rgba(6,20,38,.97)}.nav{max-width:1540px}.nav-brand{font-size:1rem}.nav-brand:after{content:'Secure Access';display:block;color:#79a7c4;font:500 9px 'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.12em;margin-left:2px}.nav-link{font-size:.78rem;padding:8px 11px}
+    @media(max-width:900px){.auth-layout{grid-template-columns:1fr;max-width:540px}.auth-aside{min-height:auto;padding:34px}.auth-aside h2{font-size:36px}.aside-copy{font-size:14px}.workspace-list{margin-top:24px}.aside-bottom{margin-top:28px}.auth-card{padding:38px 34px}}
+    @media(max-width:600px){.auth-main{padding:20px 14px}.auth-layout{border-radius:15px}.auth-aside{padding:28px 22px}.auth-aside h2{font-size:31px}.workspace-list{grid-template-columns:1fr 1fr}.workspace-item{padding:9px;font-size:10px}.auth-card{padding:31px 22px}.auth-card{margin:0}.nav-brand:after{display:none}.site-footer{padding:20px 0}.trust-strip{align-items:stretch}.trust-pill{justify-content:center}}
+    @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+  </style>
+<!-- Quarantines the previous account's local data when a different user
+     signs in. Loaded here because this is where the change happens. -->
+<script src="./js/session-user.js"></script>
+</head>
+
+<body>
+  <!-- Header -->
+  <div class="nav-wrap">
+    <nav class="nav">
+      <a class="nav-brand" href="index.html" aria-label="Arowana Profits Home">
+        <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" class="nav-logo" onerror="this.style.display='none'">
+        <span>Arowana Profits</span>
+      </a>
+
+      <div class="nav-links">
+        <a href="trading-command.html" class="nav-link">⚡ Trading Command</a>
+        <a href="portfolio-command.html" class="nav-link">🏦 Portfolio Command</a>
+        <a href="analysis-central.html" class="nav-link">🔍 Ticker Research</a>
+        <a href="options-hub.html" class="nav-link">📈 Options Hub</a>
+      </div>
+
+      <div class="nav-auth">
+        <!-- On login page: no "Sign In" link (you're on it), "Start Free" routes to signup -->
+        <a href="signup.html" class="auth-link auth-cta">🚀 Start Free</a>
+      </div>
+
+      <button class="nav-burger" id="navBurger" aria-label="Open menu">&#9776;</button>
+    </nav>
+
+    <div class="mobile-menu" id="mobileMenu" data-open="false">
+      <div class="mobile-panel">
+        <a class="mobile-link" href="trading-command.html">⚡ Trading Command</a>
+        <a class="mobile-link" href="portfolio-command.html">🏦 Portfolio Command</a>
+        <a class="mobile-link" href="analysis-central.html">🔍 Ticker Research</a>
+        <a class="mobile-link" href="options-hub.html">📈 Options Hub</a>
+        <div class="mobile-div"></div>
+        <a class="mobile-link" href="features.html">Features</a>
+        <a class="mobile-link" href="pricing.html">Pricing</a>
+        <a class="mobile-link" href="about.html">About</a>
+        <div class="mobile-div"></div>
+        <a class="mobile-link" href="signup.html">🚀 Start Free</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <main class="auth-main">
+    <div class="auth-layout">
+      <section class="auth-aside" aria-label="Arowana Profits platform overview">
+        <div class="aside-content">
+          <div class="aside-kicker">Arowana Command Center</div>
+          <h2>One account.<br><span>Every decision.</span></h2>
+          <p class="aside-copy">Sign in once to run the wheel: picks on the stocks you want to own, every open position checked after the close, and every dollar of premium in one place.</p>
+          <div class="workspace-list">
+            <div class="workspace-item"><span>⚡</span> Trading Command</div>
+            <div class="workspace-item"><span>📈</span> Options Hub &mdash; calls, puts, roll coach</div>
+            <div class="workspace-item"><span>🏦</span> Portfolio &amp; premium income</div>
+            <div class="workspace-item"><span>📓</span> Trade journal</div>
+            <div class="workspace-item"><span>🔍</span> Ticker Research</div>
+            <div class="workspace-item"><span>🧰</span> Tools</div>
+          </div>
+        </div>
+        <div class="aside-bottom"><i></i> Secure platform access</div>
+      </section>
+      <div class="auth-card">
+      <div class="auth-header">
+        <div class="access-label">Secure account access</div>
+        <h1 class="auth-title">Welcome back</h1>
+        <p class="auth-subtitle">Sign in to continue to your Arowana workspace.</p>
+      </div>
+
+      <!-- Session-expired banner (populated by JS when ?expired=1 is on URL) -->
+      <div id="expiredBanner" class="alert warn" role="status" aria-live="polite"></div>
+
+      <div id="ok" class="alert ok" role="status" aria-live="polite"></div>
+      <div id="err" class="alert err" role="alert" aria-live="assertive"></div>
+
+      <!-- Google Sign In -->
+      <button class="social-btn" id="btnGoogle" type="button">
+        <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="">
+        Continue with Google
+      </button>
+
+      <div class="divider">or sign in with email</div>
+
+      <!-- Email/Password Form -->
+      <form id="loginForm" autocomplete="on" novalidate>
+        <div class="field">
+          <label class="label" for="email">Email</label>
+          <input class="input" id="email" name="email" type="email" placeholder="you@example.com" autocomplete="email" required>
+        </div>
+
+        <div class="field">
+          <label class="label" for="password">Password</label>
+          <div class="input-wrap">
+            <input class="input" id="password" name="password" type="password" placeholder="Your password" autocomplete="current-password" required style="padding-right: 44px;">
+            <button type="button" class="pass-toggle" id="passToggle" aria-label="Show password">👁</button>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <label class="check-label">
+            <input type="checkbox" id="remember" checked>
+            Keep me signed in on this device
+          </label>
+          <button type="button" class="forgot-btn" id="btnForgot">Forgot password?</button>
+        </div>
+
+        <button type="submit" class="btn-submit" id="btnSubmit">
+          <span>🔐</span> Sign In
+        </button>
+      </form>
+
+      <!-- Already Signed In Options -->
+      <div class="btn-row">
+        <button class="btn-secondary is-hidden" id="btnContinue" type="button">Continue as me →</button>
+        <button class="btn-secondary is-hidden" id="btnSignOut" type="button">Sign Out</button>
+      </div>
+
+      <p class="auth-footer">No account yet? <a href="signup.html">Create one free →</a></p>
+
+      <!-- Trust Indicators -->
+      <div class="trust-strip">
+        <span class="trust-pill">🔒 Secure sign-in</span>
+        <span class="trust-pill">🛡 Protected session</span>
+      </div>
+      <div class="security-note"><span>ⓘ</span><span><strong>Security reminder:</strong> Arowana Profits will never ask for your brokerage password or trading credentials on this page.</span></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-content">
+        <div class="footer-brand">Arowana Profits</div>
+        <!-- Legal links belong on every public page; the old list pointed at
+             pages that no longer exist and left them off entirely. -->
+        <div class="footer-links">
+          <a class="footer-link" href="index.html">Home</a>
+          <a class="footer-link" href="wheel-calculator.html">Wheel calculator</a>
+          <a class="footer-link" href="assignment-risk.html">Assignment risk</a>
+          <a class="footer-link" href="pricing.html">Pricing</a>
+          <a class="footer-link" href="support.html">Support</a>
+          <a class="footer-link" href="disclosures.html">Disclosures</a>
+          <a class="footer-link" href="terms.html">Terms</a>
+          <a class="footer-link" href="privacy.html">Privacy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="./js/supabase_min.js?v=20260918c"></script>
+  <script src="./js/auth-header.js?v=20260918c"></script>
+  
+  <script>
+    // Mobile nav burger toggle
+    (function(){
+      const burger = document.getElementById('navBurger');
+      const menu = document.getElementById('mobileMenu');
+      if (burger && menu) {
+        const closeMenu = () => {
+          menu.setAttribute('data-open', 'false');
+          burger.setAttribute('aria-expanded', 'false');
+          burger.textContent = '☰';
+        };
+        burger.setAttribute('aria-expanded', 'false');
+        burger.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const open = menu.getAttribute('data-open') === 'true';
+          menu.setAttribute('data-open', open ? 'false' : 'true');
+          burger.setAttribute('aria-expanded', String(!open));
+          burger.textContent = open ? '☰' : '×';
+        });
+        menu.querySelectorAll('a').forEach(link => link.addEventListener('click', closeMenu));
+        document.addEventListener('click', event => { if (!menu.contains(event.target)) closeMenu(); });
+        document.addEventListener('keydown', event => { if (event.key === 'Escape') closeMenu(); });
+      }
+    })();
+
+    // Helper functions for messages
+    const $ = s => document.querySelector(s);
+    const ok = $('#ok'), err = $('#err');
+    
+    const showOk = m => { 
+      if(!ok) return; 
+      ok.textContent = m || ''; 
+      ok.style.display = m ? 'block' : 'none'; 
+      if (err) err.style.display = 'none';
+    };
+    
+    const showErr = m => { 
+      if(!err) return; 
+      err.textContent = m || 'Something went wrong.'; 
+      err.style.display = 'block'; 
+      if (ok) ok.style.display = 'none';
+    };
+    
+    // Load config.json and initialize authentication
+    async function initializeAuth() {
+      try {
+        // Load configuration from js folder
+        const configResponse = await fetch('./js/config.json');
+        
+        if (!configResponse.ok) {
+          throw new Error(`Config not found (${configResponse.status}). Make sure config.json exists in the js/ directory.`);
+        }
+        
+        const config = await configResponse.json();
+        
+        if (!config.supabase?.url || !config.supabase?.anonKey) {
+          throw new Error('Supabase configuration missing in config.json');
+        }
+        
+        // Check if Supabase SDK is loaded
+        if (!window.supabase || !window.supabase.createClient) {
+          throw new Error('Supabase SDK not loaded. Make sure js/supabase_min.js exists.');
+        }
+        
+        // Create Supabase client
+        const supabaseClient = window.supabase.createClient(
+          config.supabase.url,
+          config.supabase.anonKey,
+          {
+            auth: {
+              persistSession: true,
+              autoRefreshToken: true,
+              detectSessionInUrl: true
+            }
+          }
+        );
+        
+        console.log('✅ Supabase client initialized');
+        return { client: supabaseClient, config };
+        
+      } catch (error) {
+        console.error('Auth initialization failed:', error);
+        showErr(`Authentication system error: ${error.message}`);
+        return null;
+      }
+    }
+  </script>
+
+  <script>
+    (function(){
+      const $ = s => document.querySelector(s);
+      const ok = $('#ok'), err = $('#err');
+      
+      const showOk = m => { 
+        if(!ok) return; 
+        ok.textContent = m || ''; 
+        ok.style.display = m ? 'block' : 'none'; 
+        if (err) err.style.display = 'none';
+      };
+      
+      const showErr = m => { 
+        if(!err) return; 
+        err.textContent = m || 'Something went wrong.'; 
+        err.style.display = 'block'; 
+        if (ok) ok.style.display = 'none';
+      };
+
+      // Get redirect destination
+      const params = new URLSearchParams(location.search);
+        /* Where a successful sign-in goes when nothing else was requested.
+     ------------------------------------------------------------------------
+     index.html is the marketing homepage — the right landing for a visitor, the
+     wrong one for someone who just proved who they are. Trading Command is the
+     workspace, so that is the default. An explicit ?next= still wins, so being
+     bounced to login from Portfolio Command still returns you to Portfolio
+     Command rather than somewhere generic. */
+  const DEFAULT_AFTER_LOGIN = 'trading-command.html';
+
+  function safeNext(raw) {
+    const fallback = DEFAULT_AFTER_LOGIN;
+        if (!raw || typeof raw !== 'string') return fallback;
+        try {
+          const target = new URL(raw, location.origin);
+          if (target.origin !== location.origin) return fallback;
+          if (!/\.html(?:$|[?#])/.test(target.pathname + target.search + target.hash)) return fallback;
+          return target.pathname.replace(/^\//, '') + target.search + target.hash;
+        } catch (_) {
+          return fallback;
+        }
+      }
+      let next = safeNext(params.get('next'));
+  /* Pages send ?next=index.html when they bounce an unauthenticated visitor,
+     which after a successful sign-in means "back to the homepage" — not what
+     anyone wants at that moment. Treat it as no preference. */
+  if (next === 'index.html' || next === '/index.html') next = DEFAULT_AFTER_LOGIN;
+  const OAUTH_PENDING_KEY = 'ap_oauth_pending_v1';
+  const KNOWN_USERS_KEY   = 'ap_known_users_v1';
+
+  /* There is one experience now, so nothing needs setting on a first sign-in.
+     The old code chose an interface mode here; modes were removed because this
+     desk assumes a trader who already has options approval. */
+  function applyFirstRunDefaults() { /* nothing to do */ }
+
+      function friendlyAuthError(error) {
+        const message = String(error?.message || error || 'Sign in failed.');
+        if (/invalid login credentials/i.test(message)) return 'The email or password is incorrect. Please try again.';
+        if (/email not confirmed/i.test(message)) return 'Please confirm your email before signing in.';
+        if (/rate limit|too many requests/i.test(message)) return 'Too many attempts. Please wait a moment and try again.';
+        if (/network|fetch/i.test(message)) return 'We could not reach the sign-in service. Check your connection and try again.';
+        return message;
+      }
+
+      // Session-expired banner — populated when auth-guard.js redirects here.
+      // Triggers: ?expired=1 plus an optional ?reason=session_missing|user_mismatch|signed_out_elsewhere
+      (function showExpiredBannerIfNeeded() {
+        if (params.get('expired') !== '1') return;
+        const banner = document.getElementById('expiredBanner');
+        if (!banner) return;
+        const reason = params.get('reason') || '';
+        const messages = {
+          session_missing:       '⏱ Your session expired. Please sign in again to continue.',
+          user_mismatch:         '🔄 Signed-in user changed. Please sign in again.',
+          signed_out_elsewhere:  '🚪 You were signed out from another tab or device. Please sign in again.'
+        };
+        banner.textContent = messages[reason] || messages.session_missing;
+        banner.style.display = 'block';
+      })();
+
+      function cacheUser(user, session) {
+        try {
+          if (!user) return;
+          const profile = {
+            id: user.id,
+            email: user.email || '',
+            name: user.user_metadata?.full_name || user.user_metadata?.name || user.email?.split('@')[0] || '',
+            username: user.user_metadata?.username || '',
+            plan: user.user_metadata?.plan || 'Free',
+            /* The JWT is deliberately NOT cached here.
+               ------------------------------------------------------------
+               It used to be stored alongside the profile, which meant a
+               bearer token sat in localStorage indefinitely — nothing ever
+               expired it, so the "use the cached token" fallback in
+               portfolio-command and analysis-central could send a JWT hours
+               past its life and produce a 401 that looks like a permissions
+               bug rather than an expired session.
+
+               supabase-js already persists and refreshes the session in its
+               own storage, and every consumer asks the live client first
+               (pcGetAccessToken step 1). Dropping it removes a stale-token
+               failure mode and one more copy of a credential, without
+               removing any working path. */
+            updated_at: Date.now()
+          };
+          
+          // Use auth-header.js if available, otherwise fallback to localStorage
+                  if (window.GSAuthHeader?.setCachedUser) {
+          window.GSAuthHeader.setCachedUser(profile, false);
+        } else {
+          const userData = JSON.stringify(profile);
+          localStorage.setItem('gs_auth_user_v1', userData);
+        }
+
+        /* Verify what actually landed.
+           --------------------------------------------------------------------
+           Every page keys its data off gs_auth_user_v1.id — portfolio-advisor's
+           getUID(), portfolio-command's pcGetAuthUser(), journal-sync's whole
+           write path. Without an id they all silently return nothing while the
+           header still shows the user's name, which is a genuinely hard failure
+           to diagnose: it looks like a network or permissions problem.
+
+           This cache is written through GSAuthHeader when that module is
+           present, and we cannot see what shape it stores. So rather than trust
+           it, read the value back — and if the id did not survive, write the
+           full profile directly. Cheap, and it removes a whole class of
+           "signed in but nothing loads". */
+        try {
+          const stored = JSON.parse(localStorage.getItem('gs_auth_user_v1') || 'null');
+          if (!stored || !stored.id) {
+            console.warn('[login] cached user came back without an id — rewriting it directly.');
+            localStorage.setItem('gs_auth_user_v1', JSON.stringify(profile));
+          }
+        } catch (_) {
+          localStorage.setItem('gs_auth_user_v1', JSON.stringify(profile));
+        }
+
+        /* Do this here rather than at each call site: cacheUser() is the one
+           place every sign-in path passes through — password, OAuth return
+           and the already-signed-in check alike. */
+        /* Do this before anything reads local data: this is the moment the
+           account can change, and every user-scoped key still holds the
+           previous person's. AP_SESSION quarantines them (never deletes). */
+        try {
+          if (window.AP_SESSION && AP_SESSION.enforceUserScope) {
+            AP_SESSION.enforceUserScope(profile.id);
+          }
+        } catch (_) {}
+
+        applyFirstRunDefaults(profile.id);
+
+        console.log('✅ User cached successfully:', profile.name || profile.email);
+        } catch(error) {
+          console.error('Error caching user:', error);
+        }
+      }
+
+      // Navigation dropdown functionality
+      function initNavigation() {
+        // Password toggle functionality only
+        const passToggle = document.getElementById('passToggle');
+        const passwordField = document.getElementById('password');
+        
+        if (passToggle && passwordField) {
+          passToggle.addEventListener('click', function() {
+            const type = passwordField.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordField.setAttribute('type', type);
+            passToggle.textContent = type === 'password' ? '👁' : '🙈';
+          });
+        }
+      }
+
+      async function init() {
+        try {
+          // Initialize navigation
+          initNavigation();
+          
+          // Initialize authentication
+          const authData = await initializeAuth();
+          if (!authData) return;
+          
+          const { client, config } = authData;
+          console.log('✅ Supabase client initialized');
+
+          // Check if already signed in
+          try {
+                    const { data: { user }, error } = await client.auth.getUser();
+        if (user && !error) {
+          const { data: { session } } = await client.auth.getSession();
+          cacheUser(user, session);
+
+          /* Returning from an OAuth round-trip?
+             ------------------------------------------------------------------
+             Supabase sends the user back here with the tokens in the URL — a
+             hash fragment (implicit flow) or ?code= (PKCE). Either way the
+             person just finished signing in and expects to land in the app, not
+             on a login screen telling them they are signed in.
+
+             Without this, Google sign-in completed successfully — the session
+             was live and the user cached — and then simply stopped, because the
+             branch below is written for someone who WANDERED onto this page
+             while already signed in. For them, offering Continue and Sign Out is
+             right: they may want to switch accounts. Telling the two cases
+             apart is what was missing. */
+          /* A live session means you are signed in — so go to the app.
+             ----------------------------------------------------------------
+             Previously only an OAuth return auto-redirected, and every other
+             case sat on the login screen saying "you're already signed in"
+             with a Continue button. That is a dead end dressed as a choice:
+             the one thing someone in that state never wants is to look at a
+             login form.
+
+             So this now always leaves — but on a short delay with a visible
+             way to stay, because the legitimate reason to open this page while
+             signed in is to sign in as SOMEBODY ELSE, and bouncing that person
+             away with no route to Sign Out would be its own trap. An OAuth
+             return skips the delay entirely: they just came back from Google
+             and have no reason to want this page. */
+          let cameFromOAuth = false;
+          try {
+            cameFromOAuth = sessionStorage.getItem(OAUTH_PENDING_KEY) === '1';
+            if (cameFromOAuth) sessionStorage.removeItem(OAUTH_PENDING_KEY);
+          } catch (_) {}
+          const hash = location.hash || '';
+          if (hash.includes('access_token') || hash.includes('provider_token') || params.has('code')) {
+            cameFromOAuth = true;
+          }
+
+          /* ?switch=1 says "I came here on purpose to change accounts" — never
+             redirect that away. */
+          const wantsSwitch = params.get('switch') === '1';
+
+          try { history.replaceState(null, '', location.pathname + location.search); } catch (_) {}
+
+          if (cameFromOAuth && !wantsSwitch) {
+            showOk('Signed in. Taking you to your workspace…');
+            location.replace(next);
+            return;
+          }
+
+          if (!wantsSwitch) {
+            const who = (user.email || 'your account');
+            showOk(`Signed in as ${who}. Taking you to your workspace…`);
+
+            let cancelled = false;
+            const stay = document.createElement('button');
+            stay.type = 'button';
+            stay.className = 'btn ghost';
+            stay.style.cssText = 'margin-top:10px;width:100%';
+            stay.textContent = 'Not you? Stay here and switch account';
+            stay.onclick = () => {
+              cancelled = true;
+              stay.remove();
+              showOk(`You're already signed in as ${who.split('@')[0]}.`);
+            };
+            /* Sits directly under the success message (#ok, the element showOk
+               writes to) rather than being appended to <body>, where it would
+               land at the bottom of the page out of view. */
+            const okBox = document.getElementById('ok');
+            if (okBox && okBox.parentNode) {
+              okBox.parentNode.insertBefore(stay, okBox.nextSibling);
+            } else {
+              const form = document.getElementById('loginForm');
+              if (form && form.parentNode) form.parentNode.insertBefore(stay, form);
+            }
+
+            setTimeout(() => { if (!cancelled) location.replace(next); }, 1800);
+          }
+
+          const label = (user.email || 'Account').split('@')[0];
+          showOk(`You're already signed in as ${label}.`);
+
+          /* Make the email field agree with the banner.
+             ----------------------------------------------------------------
+             The page never writes this input, so the browser's saved-password
+             autofill leaves whichever address was typed last — which meant the
+             form showed jtran112675@gmail.com while the banner correctly said
+             the session belonged to someone else. It is only a form field and
+             changes nothing about who is signed in, but two different addresses
+             on one screen is precisely the ambiguity that sent us hunting
+             phantom identity bugs. Show the signed-in address; anyone wanting a
+             different account can still type over it or use Sign Out. */
+          const emailField = $('#email');
+          if (emailField && user.email && emailField.value !== user.email) {
+            emailField.value = user.email;
+          }
+              
+              const btnContinue = $('#btnContinue');
+              if (btnContinue) {
+                btnContinue.classList.remove('is-hidden');
+                btnContinue.onclick = () => location.assign(next);
+              }
+              
+              const btnSignOut = $('#btnSignOut');
+              if (btnSignOut) {
+                btnSignOut.classList.remove('is-hidden');
+                btnSignOut.onclick = async () => {
+                  try { 
+                    await client.auth.signOut(); 
+                    if (window.GSAuthHeader?.clearCachedUser) {
+                      window.GSAuthHeader.clearCachedUser();
+                    } else {
+                      localStorage.removeItem('gs_auth_user_v1');
+                    }
+                  } catch(_) {}
+                  
+                  showOk('Signed out. Sign in again below.');
+                  if (btnContinue) btnContinue.classList.add('is-hidden');
+                  btnSignOut.classList.add('is-hidden');
+                };
+              }
+            }
+          } catch(checkError) {
+            console.log('No existing session found');
+          }
+
+          // Form submission
+          $('#loginForm')?.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = ($('#email')?.value || '').trim();
+            const pass = $('#password')?.value || '';
+            const btn = $('#btnSubmit');
+            
+            if (!email) return showErr('Please enter your email.');
+            if (!pass) return showErr('Please enter your password.');
+            
+            if (btn) {
+              btn.disabled = true;
+              btn.innerHTML = '<span>⏳</span> Signing in…';
+            }
+            
+            try {
+              const { data, error } = await client.auth.signInWithPassword({ 
+                email, 
+                password: pass 
+              });
+              
+              if (error) {
+                if (btn) {
+                  btn.disabled = false;
+                  btn.innerHTML = '<span>🔐</span> Sign In';
+                }
+                return showErr(friendlyAuthError(error));
+              }
+              
+              if (data.user && data.session) {
+                cacheUser(data.user, data.session);
+                showOk('Signed in! Redirecting…');
+                
+                // Small delay for user feedback
+                setTimeout(() => {
+                  location.assign(next);
+                }, 1000);
+              }
+              
+            } catch (ex) {
+              if (btn) {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔐</span> Sign In';
+              }
+              showErr(friendlyAuthError(ex));
+              console.error('Login error:', ex);
+            }
+          });
+
+          // Forgot password
+          $('#btnForgot')?.addEventListener('click', async () => {
+            const email = ($('#email')?.value || '').trim();
+            if (!email) return showErr('Enter your email first, then click Forgot password.');
+            if (!$('#email').checkValidity()) return showErr('Enter a valid email address first.');
+            const forgotBtn = $('#btnForgot');
+            forgotBtn.disabled = true;
+            forgotBtn.textContent = 'Sending…';
+            
+            try {
+              const { error } = await client.auth.resetPasswordForEmail(email, {
+                redirectTo: new URL('reset-password.html', location.origin).toString()
+              });
+              
+              if (error) return showErr(friendlyAuthError(error));
+              showOk('Password reset email sent. Check your inbox.');
+            } catch (ex) {
+              showErr(friendlyAuthError(ex));
+            } finally {
+              forgotBtn.disabled = false;
+              forgotBtn.textContent = 'Forgot password?';
+            }
+          });
+
+          // Google OAuth
+          $('#btnGoogle')?.addEventListener('click', async () => {
+            const googleBtn = $('#btnGoogle');
+            googleBtn.disabled = true;
+            googleBtn.textContent = 'Connecting to Google…';
+            try {
+                      /* Record that we are leaving for an OAuth round-trip.
+           ------------------------------------------------------------------
+           Detecting the return from the URL does not work: the Supabase SDK
+           runs with detectSessionInUrl enabled, so it consumes the #access_token
+           fragment and cleans the address bar BEFORE this page's own code gets
+           to look at it. By the time init() runs the URL is just
+           login.html?next=index.html# — indistinguishable from a normal visit,
+           which is why sign-in completed and then sat on the login screen.
+
+           sessionStorage is the right place for this: it survives the redirect
+           to Google and back, dies with the tab, and is not shared with the
+           other products on this domain. */
+        try { sessionStorage.setItem(OAUTH_PENDING_KEY, '1'); } catch (_) {}
+
+        const { error } = await client.auth.signInWithOAuth({
+          provider: 'google',
+          options: {
+            redirectTo: new URL(`login.html?next=${encodeURIComponent(next)}`, location.origin).toString()
+          }
+        });
+        if (error) { try { sessionStorage.removeItem(OAUTH_PENDING_KEY); } catch (_) {} }
+              
+              if (error) showErr(friendlyAuthError(error));
+            } catch (ex) {
+              showErr(friendlyAuthError(ex));
+            } finally {
+              googleBtn.disabled = false;
+              googleBtn.innerHTML = '<img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt=""> Continue with Google';
+            }
+          });
+
+        } catch (ex) {
+          showErr(ex?.message || 'Login initialization failed.');
+          console.error('Init error:', ex);
+        }
+      }
+      
+      // Initialize when DOM is ready
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+      } else {
+        init();
+      }
+      
+    })();
+  </script>
+</body>
+</html>

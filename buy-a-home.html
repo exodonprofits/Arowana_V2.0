@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Buy a Home — Arowana Profits</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  
+  <style>
+  /* ===== Arowana Shell & Base Styles (mirrors rsi-screener.html) ===== */
+  :root{
+    --brand:#1a3c5e; --ink:#222; --muted:#667085; --bg:#f9fafb; --panel:#ffffff; --ring:rgba(26,60,94,0.22);
+    --page-width: min(1200px, 92vw);
+    --card:#fff; --text:#111827; --shadow:0 4px 12px rgba(0,0,0,.08);
+    --blue:#2563eb; --blue-700:#1d4ed8; --green:#16a34a; --green-700:#15803d; --amber:#d97706; --red:#dc2626; --border:#e5e7eb;
+    --radius-lg:1.25rem; --radius-sm:.625rem;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text, var(--ink));min-height:100vh;display:flex;flex-direction:column}
+  a{color:var(--brand);text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring)}
+  .container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+  /* Header / Nav (copied style) */
+  .header{width:100%;background:#1a3c5e;color:#fff;padding:20px 0;position:relative;margin-bottom:20px}
+  .header-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+  .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:clamp(18px,4vw,20px);white-space:nowrap}
+  .logo-img{width:50px;height:50px;border-radius:6px}
+  .nav{display:flex;gap:12px;align-items:center}
+  .nav a{color:#eaf1f9;padding:8px 10px;border-radius:10px}
+  .nav a[aria-current="page"]{background:rgba(255,255,255,.22);color:#fff}
+  .nav a:active{background:rgba(255,255,255,.15)}
+  .hamburger{display:none;font-size:24px;cursor:pointer;color:#eaf1f9;padding:8px;border-radius:10px}
+
+  /* Mobile menu */
+  .mobile-menu{display:none;position:absolute;top:100%;left:0;right:0;background:#0f2a44;padding:12px 16px 24px;z-index:60;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+  .mobile-menu a{display:flex;align-items:center;gap:10px;color:#eaf1f9;padding:12px 8px;border-radius:12px}
+  .mobile-menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .mobile-menu .grid a{background:rgba(255,255,255,.06);justify-content:center}
+
+  /* Footer */
+  footer{margin-top:auto;background:#1a3c5e;color:#d7dae0;padding:28px 0}
+  footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  footer h4{margin:0 0 6px}
+  footer a{color:#b6c3d6}
+  .foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+
+  /* Page Specific (screener layout) */
+  main h1{margin:8px 0;font-size:clamp(22px,4.2vw,32px)}
+  .muted{color:#6b7280}
+  .card{background:var(--card);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow);margin:12px 0;border:1px solid var(--border)}
+  .card h2{margin:0 0 10px;font-size:1.2rem;color:var(--brand)}
+  .hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+  .status-note{background:var(--bg);padding:14px;border-radius:var(--radius-sm);margin:16px 0;border:1px solid var(--border);color:#0e7490;display:none}
+
+  .form-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+  .row{display:grid;gap:12px}
+  .row.two{grid-template-columns:1fr 1fr}
+  .row.single{grid-template-columns:1fr}
+
+  label{display:block;font-size:.9rem;margin-bottom:4px;color:#1b3350}
+  input,select{width:100%;padding:10px;border-radius:10px;border:1px solid #d0d7e2;font-size:.95rem;min-height:42px}
+  input[type="checkbox"]{width:auto;min-height:auto}
+  .check-wrap{display:flex;align-items:center;gap:8px}
+
+  .btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:9999px;padding:.55rem 1rem;font-weight:600;cursor:pointer}
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.ghost{background:#fff;border:1px solid #dfe5ef;color:#1f2937}
+
+  .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;min-width:780px}
+  th,td{padding:.6rem .7rem;text-align:left;border-bottom:1px solid #eef1f5}
+  th{position:sticky;top:0;background:#f6f8fb;color:#1a3550;font-weight:700;z-index:1}
+  td.num,th.num{text-align:right}
+  tr:hover td{background:#fbfdff}
+
+  .chip{display:inline-block;background:#f3f6fb;border:1px solid #e3e8f2;color:#1a3550;border-radius:9999px;padding:.28rem .6rem;font-weight:700;font-size:.85rem}
+
+  @media (max-width: 640px){.hamburger{display:block}.nav{display:none}footer .cols{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <header class="header">
+    <div class="container">
+      <div class="header-top">
+        <div class="logo">
+          <span><img src="../shared/images/arowanalogo.png" class="logo-img"/></span>
+          <a href="../index.html" style="color:#fff;text-decoration:none;">Arowana Profits</a>
+        </div>
+        <nav class="nav" id="nav">
+          <a href="../index.html">Home</a>
+          <a href="../short-term-dashboard.html">Short-Term</a>
+          <a href="../long-term-dashboard.html" aria-current="page">Long-Term</a>
+          <a href="../learn-investing.html">Learn</a>
+        </nav>
+        <div class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <div class="grid">
+        <a href="../index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="../short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+        <a href="../long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+        <a href="../learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0">🏠 Buy a Home</h1>
+        <p class="muted" style="margin:.25rem 0 0">Plan an inflation‑aware down payment and see the monthly saving/investing needed by your target date.</p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <a class="btn ghost" href="../long-term-dashboard.html">← Dashboard</a>
+        <a class="btn ghost" id="btnCsv"><i class="fas fa-file-csv"></i> Export CSV</a>
+      </div>
+    </div>
+
+    <div id="note" class="status-note"></div>
+
+    <div class="card">
+      <h2>Inputs</h2>
+      <form id="homeForm" onsubmit="return false">
+        <div class="form-grid">
+          <div><label for="homePrice">Target home price (today $)</label><input id="homePrice" type="number" min="0" step="1000" value="600000"></div>
+          <div><label for="homePct">Down payment %</label><input id="homePct" type="number" min="1" max="100" step="1" value="20"></div>
+          <div><label for="homeYears">Years until purchase</label><input id="homeYears" type="number" min="1" step="1" value="3"></div>
+          <div><label for="homeInfl">Expected inflation % (annual)</label><input id="homeInfl" type="number" min="0" step="0.25" value="3"></div>
+          <div><label for="homeNow">Current savings ($)</label><input id="homeNow" type="number" min="0" step="100" value="15000"></div>
+          <div><label for="homeRet">Expected return % (annual)</label><input id="homeRet" type="number" min="0" step="0.25" value="5"></div>
+          <div><label for="homeMonthly">Planned monthly contribution ($)</label><input id="homeMonthly" type="number" min="0" step="50" value="1000"></div>
+          <div class="check-wrap" style="align-self:end"><input id="homeSolve" type="checkbox"><label for="homeSolve">Solve monthly needed for me</label></div>
+        </div>
+        <div class="row single" style="margin-top:16px">
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button type="submit" class="btn primary"><i class="fas fa-calculator"></i> Calculate Plan</button>
+            <button type="button" id="btnClear" class="btn ghost">Clear</button>
+            <span id="spinner" style="align-self:center;display:none"><i class="fas fa-spinner fa-spin"></i> Calculating…</span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="card">
+      <h2>Plan <span id="resultsCount" class="muted" style="font-weight:400;font-size:.85em;">(0 months)</span></h2>
+      <div class="row two" style="margin-bottom:10px">
+        <div>
+          <div class="chip" id="outTarget">Target down payment: —</div>
+          <div class="chip" id="outFuture">Inflation‑adjusted target: —</div>
+          <div class="chip" id="outNeeded">Monthly needed: —</div>
+        </div>
+        <div>
+          <div class="chip" id="outProj">Projected balance: —</div>
+          <div class="chip" id="outGap">Gap/Surplus: —</div>
+          <div class="chip" id="outRate">Return: — / Inflation: —</div>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table id="resultsTable">
+          <thead>
+            <tr>
+              <th class="num">Month</th>
+              <th class="num">Contribution</th>
+              <th class="num">Interest</th>
+              <th class="num">Balance</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"><tr><td colspan="4" class="muted">Enter your inputs and calculate to see a monthly schedule.</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div><h4>Arowana Profits</h4><p>AI-powered tools for traders and investors.</p></div>
+        <div><h4>Solutions</h4><ul><li><a href="../short-term-dashboard.html">Trading Dashboard</a></li><li><a href="../long-term-dashboard.html">Long-Term</a></li><li><a href="../learn-investing.html">Learning Center</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="../about.html">About</a></li><li><a href="../contact.html">Contact</a></li></ul></div>
+        <div><h4>Legal</h4><p><strong>Disclaimer:</strong> This is not investment advice. Investing involves risk.</p></div>
+      </div>
+      <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu
+    const ham = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    ham?.addEventListener('click', ()=>{
+      const open = mobileMenu.getAttribute('aria-hidden')==='false';
+      mobileMenu.setAttribute('aria-hidden', open?'true':'false');
+      mobileMenu.style.display = open? 'none':'grid';
+      ham.setAttribute('aria-expanded', open? 'false':'true');
+    });
+    const mmq = window.matchMedia('(min-width: 641px)');
+    mmq.addEventListener?.('change', e=>{ if(e.matches){ mobileMenu.style.display='none'; mobileMenu.setAttribute('aria-hidden','true'); ham.setAttribute('aria-expanded','false'); } });
+    (function(){const path=location.pathname.split('/').pop()||'index.html'; document.querySelectorAll('.nav a').forEach(a=>{ if((a.getAttribute('href')||'').endsWith(path)){ a.setAttribute('aria-current','page'); } });})();
+  </script>
+
+  <script>
+    // ===== Buy-a-Home Planner Logic (RSI layout compatible) =====
+    const $ = s=>document.querySelector(s);
+    const $$ = s=>document.querySelectorAll(s);
+    const fmt = n=> n.toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
+
+    function compoundSchedule(P0, Pm, rA, nY){
+      const r = (Number(rA)||0)/100/12; const n = Math.round((Number(nY)||0)*12);
+      let bal = Number(P0)||0; const rows=[];
+      for(let m=1;m<=n;m++){
+        const interest = bal*r; bal += interest + (Number(Pm)||0);
+        rows.push({m,contrib:Number(Pm)||0,interest,bal});
+      }
+      return rows;
+    }
+    function solveMonthly(target, P0, rA, nY){
+      const r=(Number(rA)||0)/100/12, n=Math.round((Number(nY)||0)*12);
+      const fv0 = (Number(P0)||0) * Math.pow(1+r, n);
+      if(r===0) return (target - fv0) / n;
+      return (target - fv0) * r / ((Math.pow(1+r,n)-1) * (1+r));
+    }
+
+    function calculate(){
+      $('#spinner').style.display='inline-block';
+      $('#note').style.display='none';
+
+      const homePrice = Number($('#homePrice').value||0);
+      const dpPct = Math.min(100, Math.max(1, Number($('#homePct').value||0)));
+      const yrs = Math.max(1, Number($('#homeYears').value||1));
+      const infl = Math.max(0, Number($('#homeInfl').value||0));
+      const now = Math.max(0, Number($('#homeNow').value||0));
+      const ret = Math.max(0, Number($('#homeRet').value||0));
+      let monthly = Math.max(0, Number($('#homeMonthly').value||0));
+      const solve = $('#homeSolve').checked;
+
+      const targetToday = homePrice * (dpPct/100);
+      const futureTarget = targetToday * Math.pow(1 + infl/100, yrs);
+
+      if(solve){
+        monthly = Math.max(0, solveMonthly(futureTarget, now, ret, yrs));
+        $('#homeMonthly').value = Math.round(monthly);
+      }
+
+      const rows = compoundSchedule(now, monthly, ret, yrs);
+      const finalBal = rows.at(-1)?.bal || 0;
+
+      // chips
+      $('#outTarget').textContent = `Target down payment: ${fmt(targetToday)}`;
+      $('#outFuture').textContent = `Inflation‑adjusted target: ${fmt(futureTarget)}`;
+      $('#outNeeded').textContent = `Monthly needed: ${fmt(monthly)}`;
+      $('#outProj').textContent   = `Projected balance: ${fmt(finalBal)}`;
+      const gap = finalBal - futureTarget; const label = gap>=0? 'Surplus':'Gap';
+      $('#outGap').textContent    = `${label}: ${fmt(Math.abs(gap))}`;
+      $('#outRate').textContent   = `Return: ${ret}% / Inflation: ${infl}%`;
+
+      // table
+      const tbody = $('#tbody');
+      if(rows.length===0){
+        tbody.innerHTML = '<tr><td colspan="4" class="muted">No rows.</td></tr>';
+      } else {
+        tbody.innerHTML = rows.map(r=>`<tr><td class="num">${r.m}</td><td class="num">${fmt(r.contrib)}</td><td class="num">${fmt(r.interest)}</td><td class="num">${fmt(r.bal)}</td></tr>`).join('');
+      }
+      $('#resultsCount').textContent = `(${rows.length} months)`;
+
+      $('#spinner').style.display='none';
+      return { rows, monthly, finalBal, futureTarget };
+    }
+
+    // Events
+    document.addEventListener('DOMContentLoaded', ()=>{
+      $('#homeForm').addEventListener('submit', (e)=>{ e.preventDefault(); calculate(); });
+      $('#btnClear').addEventListener('click', ()=>{
+        $('#tbody').innerHTML = '<tr><td colspan="4" class="muted">Cleared. Enter inputs and calculate.</td></tr>';
+        $('#resultsCount').textContent = '(0 months)';
+        $('#note').style.display='none';
+      });
+      $('#btnCsv').addEventListener('click', ()=>{
+        const { rows } = calculate();
+        const csv = ['month,contribution,interest,balance'].concat(rows.map(r=>`${r.m},${r.contrib.toFixed(2)},${r.interest.toFixed(2)},${r.bal.toFixed(2)}`)).join('\n');
+        const blob = new Blob([csv], { type:'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='home-downpayment-schedule.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+      });
+      // Auto-calc once so user sees example
+      calculate();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>✨ Features • Arowana Profits — Smarter Investing & Trading Tools</title>
+  <meta name="description" content="Explore Arowana Profits: focused tools for long-term investors and short-term traders—fair value models, watchlists, portfolio views, alerts, and trend context."/>
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" crossorigin>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Icons -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="Arowana Profits — Features"/>
+  <meta property="og:description" content="Smarter tools for investors and traders. Research faster, manage risk better, and execute with confidence."/>
+
+  <style>
+    /* ===== Unified Shell (matches other pages) ===== */
+    :root{
+      --brand:#1a3c5e;
+      --ink:#222;
+      --text:#111827;
+      --muted:#667085;
+      --bg:#f9fafb;
+      --panel:#ffffff;
+      --border:#e5e7eb;
+      --shadow:0 4px 12px rgba(0,0,0,.08);
+      --ring:rgba(26,60,94,0.22);
+      --page-width:min(1200px,92vw);
+      --radius-lg:1.25rem;
+      --radius-sm:.625rem;
+    }
+    *{box-sizing:border-box}
+    html,body{
+      margin:0; padding:0;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+      background:var(--bg); color:var(--text);
+      min-height:100vh; display:flex; flex-direction:column;
+    }
+    a{color:var(--brand); text-decoration:none}
+    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none; box-shadow:0 0 0 4px var(--ring)}
+    .container{width:100%; max-width:var(--page-width); margin:0 auto; padding:0 16px}
+    .muted{color:var(--muted)}
+
+    /* Header */
+    .header{width:100%; background:#1a3c5e; color:#fff; padding:20px 0; position:relative; margin-bottom:20px}
+    .header-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+    .logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:clamp(18px, 4vw, 20px); white-space:nowrap}
+    .logo-img{width:50px;height:50px;border-radius:6px}
+    .nav{display:flex; gap:12px; align-items:center}
+    .nav a{color:#eaf1f9; padding:8px 10px; border-radius:10px}
+    .nav a[aria-current="page"]{background:rgba(255,255,255,.22); color:#fff}
+    .nav a:active{background:rgba(255,255,255,.15)}
+    .hamburger{display:none; font-size:24px; cursor:pointer; color:#eaf1f9; padding:8px; border-radius:10px}
+
+    /* Mobile Menu (bottom sheet style like others) */
+    .mobile-menu{
+      display:none; position:fixed; inset:auto 0 0 0; background:#0f2a44;
+      padding:12px 16px 24px; z-index:60; box-shadow:0 -12px 30px rgba(0,0,0,.35);
+      border-top-left-radius:14px; border-top-right-radius:14px;
+      padding-bottom:calc(12px + env(safe-area-inset-bottom));
+    }
+    .mobile-menu a{display:flex;align-items:center;gap:10px;color:#eaf1f9;padding:12px 8px;border-radius:12px}
+    .mobile-menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+    .mobile-menu .grid a{background:rgba(255,255,255,.06);justify-content:center}
+
+    /* Footer */
+    footer{margin-top:auto; background:var(--brand); color:#d7dae0; padding:28px 0}
+    footer .cols{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+    footer h4{margin:0 0 6px}
+    footer a{color:#b6c3d6}
+    .foot-bottom{margin-top:14px; font-size:12px; text-align:center; color:#9aa6b6}
+
+    /* Cards & Grids */
+    .card{background:var(--panel); border:1px solid var(--border); border-radius:var(--radius-lg); box-shadow:var(--shadow); padding:18px; margin:12px 0}
+    .grid-cats{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px}
+    .cat{background:var(--panel); border:1px solid #eef2f6; border-radius:12px; padding:14px; box-shadow:0 1px 6px rgba(0,0,0,.05)}
+    .cat h3{margin:.25rem 0 .5rem; color:var(--brand)}
+    .cat-emoji{font-size:1.75rem; margin-bottom:.35rem}
+    .btn{display:inline-flex;align-items:center;justify-content:center; gap:.5rem; border:none; border-radius:9999px; padding:.55rem 1rem; font-weight:600; cursor:pointer}
+    .btn.primary{background:var(--brand); color:#fff}
+    .btn.link{background:#fff; border:1px solid #dfe5ef; color:#1f2937; border-radius:9999px; padding:.45rem .9rem}
+
+    /* Typography */
+    main h1{margin:8px 0; font-size:clamp(26px,5.5vw,40px); line-height:1.15; letter-spacing:-0.01em}
+    .lead{font-size:clamp(1rem,2.2vw,1.25rem); color:#32465f}
+
+    /* Responsive */
+    @media (max-width:980px){ .row.four{grid-template-columns:1fr 1fr} }
+    @media (max-width:640px){
+      .hamburger{display:block}
+      .nav{display:none}
+      .mobile-menu{display:grid}
+      .row.four{grid-template-columns:1fr}
+      footer .cols{grid-template-columns:1fr}
+      body{padding-bottom:82px}
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-top">
+        <a href="index.html" class="logo" aria-label="Arowana Profits Home">
+          <img class="logo-img" src="images/arowanalogo.png" alt="Arowana Profits Logo"/>
+          <span>Arowana Profits</span>
+        </a>
+        <nav class="nav">
+          <a href="index.html">Home</a>
+          <a href="feature_new.html" aria-current="page">Features</a>
+          <a href="long-term-dashboard.html">Long-Term</a>
+          <a href="short-term-dashboard.html">Short-Term</a>
+          <a href="learn-investing.html">Learn</a>
+        </nav>
+        <div class="hamburger" id="hamburger" aria-expanded="false" aria-controls="mobileMenu">
+          <i class="fas fa-bars"></i>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Mobile Menu -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true" style="display:none;">
+    <a href="index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="feature_new.html" aria-current="page"><i class="fas fa-star"></i> Features</a>
+    <div class="grid">
+      <a href="long-term-dashboard.html"><i class="fas fa-bank"></i> Long-Term</a>
+      <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+    </div>
+    <a href="learn-investing.html"><i class="fas fa-book"></i> Learn Investing</a>
+  </div>
+
+  <!-- Main -->
+  <main class="container">
+    <div class="card" style="padding: 24px 18px 30px; border: none; box-shadow: none; background: transparent;">
+      <h1 style="margin:0 0 6px; color:var(--brand);">
+        ✨ The Tools You Need. The Clarity You Deserve.
+      </h1>
+      <p class="lead" style="max-width:800px; margin:8px 0 24px;">
+        Arowana Profits brings together powerful analytical models and precision trading tools—helping you make
+        <strong>smarter decisions</strong> whether you’re investing for decades or trading for hours.
+      </p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap">
+        <a class="btn primary" href="long-term-dashboard.html"><i class="fas fa-landmark"></i> Long-Term Dashboard</a>
+        <a class="btn primary" href="short-term-dashboard.html" style="background:#2563eb"><i class="fas fa-bolt"></i> Short-Term Dashboard</a>
+      </div>
+    </div>
+
+    <!-- Long-Term -->
+    <h2 style="font-size:1.8rem; color:var(--brand); margin:24px 0 8px;">💼 Focused on Value and Safety</h2>
+    <p class="muted" style="margin-bottom:16px">For conviction investors who prioritize intrinsic value and capital protection.</p>
+    <div class="grid-cats">
+      <div class="cat">
+        <div class="cat-emoji">💎</div>
+        <h3>Fair Value Modeling</h3>
+        <p class="muted">Automated <strong>DCF</strong>, Graham, and Peer Comparison models to estimate intrinsic value so you don’t overpay.</p>
+        <a class="btn link" href="long-term-dashboard.html">Explore Dashboard <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="cat">
+        <div class="cat-emoji">📈</div>
+        <h3>Growth & Goals Tracking</h3>
+        <p class="muted">Track portfolio growth vs. personalized milestones. Stay aligned with your <strong>5/10/20-year</strong> plan.</p>
+        <a class="btn link" href="long-term-dashboard.html">Explore Dashboard <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="cat">
+        <div class="cat-emoji">🛡️</div>
+        <h3>Safety & Quality Screening</h3>
+        <p class="muted">Screen with <strong>Piotroski F-Score</strong>, <strong>Altman Z-Score</strong>, and debt/coverage metrics.</p>
+        <a class="btn link" href="long-term-dashboard.html">Explore Dashboard <i class="fas fa-arrow-right"></i></a>
+      </div>
+    </div>
+
+    <hr style="border:none; border-top:1px solid var(--border); margin:36px 0;">
+
+    <!-- Short-Term -->
+    <h2 style="font-size:1.8rem; color:var(--brand); margin:24px 0 8px;">⚡ Precision Tools for Active Traders</h2>
+    <p class="muted" style="margin-bottom:16px">Cutting-edge scanners and sizing tools for disciplined execution.</p>
+    <div class="grid-cats">
+      <div class="cat">
+        <div class="cat-emoji">🧮</div>
+        <h3>Advanced Position Sizing</h3>
+        <p class="muted">Size trades by fixed-risk with ATR or Kelly overlays. Output shares/contracts, RR, and stop distance.</p>
+        <a class="btn link" href="short-term-dashboard.html">Open Dashboard <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="cat">
+        <div class="cat-emoji">🚀</div>
+        <h3>High-Impact Pattern Scans</h3>
+        <p class="muted">Pre-built scans for volatility breakouts, <strong>Post-Earnings Drift</strong>, VWAP setups, and short-squeeze context.</p>
+        <a class="btn link" href="short-term-dashboard.html">Open Dashboard <i class="fas fa-arrow-right"></i></a>
+      </div>
+      <div class="cat">
+        <div class="cat-emoji">📓</div>
+        <h3>Structured Trade Journal</h3>
+        <p class="muted">Log setups, tags, outcomes, and lessons learned. Identify biases and sharpen your edge.</p>
+        <a class="btn link" href="short-term-dashboard.html">Open Dashboard <i class="fas fa-arrow-right"></i></a>
+      </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="card" style="margin:36px 0 40px; padding:28px; background:#ebf3f7; border:1px solid #d0e0ec;">
+      <h2 style="font-size:1.5rem; color:#1a3c5e; margin:0 0 10px;">Ready to Elevate Your Strategy? 🔥</h2>
+      <p class="muted" style="margin:0 0 14px;">Jump into the dashboard that matches your approach.</p>
+      <div style="display:flex; gap:10px; flex-wrap:wrap;">
+        <a class="btn primary" href="long-term-dashboard.html"><i class="fas fa-landmark"></i> Long-Term</a>
+        <a class="btn primary" href="short-term-dashboard.html" style="background:#2563eb;"><i class="fas fa-bolt"></i> Short-Term</a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div>
+          <h4>🏦 Dashboards</h4>
+          <a href="long-term-dashboard.html">Long-Term Investing</a><br/>
+          <a href="short-term-dashboard.html">Short-Term Trading</a><br/>
+          <a href="learn-investing.html">Learn Investing</a>
+        </div>
+        <div>
+          <h4>🏠 Company</h4>
+          <a href="index.html">Home</a><br/>
+          <a href="feature_new.html" aria-current="page">Features</a>
+        </div>
+        <div>
+          <h4>🧰 Tools</h4>
+          <a href="rsi-screener.html">RSI Screener</a><br/>
+          <a href="position-sizer.html">Position Sizer</a><br/>
+          <a href="atr-stop-planner.html">ATR Stop Planner</a>
+        </div>
+        <div>
+          <h4>⚖️ Legal</h4>
+          <p class="muted" style="margin:0">For education only. Not investment advice.</p>
+        </div>
+      </div>
+      <div class="foot-bottom">© 2025 Arowana Profits</div>
+    </div>
+  </footer>
+
+  <script>
+    // Mobile menu toggle
+    const ham = document.getElementById("hamburger");
+    const mobileMenu = document.getElementById("mobileMenu");
+    const toggleMenu = (open) => {
+      mobileMenu.setAttribute("aria-hidden", open ? "false" : "true");
+      mobileMenu.style.display = open ? "grid" : "none";
+      ham?.setAttribute("aria-expanded", open ? "true" : "false");
+    };
+    ham?.addEventListener("click", () => {
+      const isHidden = mobileMenu.getAttribute("aria-hidden") === "true";
+      toggleMenu(isHidden);
+    });
+    matchMedia("(min-width:641px)").addEventListener?.("change", e => { if(e.matches){ toggleMenu(false); } });
+
+    // Close on link click (mobile)
+    mobileMenu.querySelectorAll('a').forEach(a => {
+      a.addEventListener('click', () => { if (innerWidth <= 640) toggleMenu(false); });
+    });
+
+    // Active link highlight (desktop & mobile)
+    (function(){
+      const path = location.pathname.split("/").pop() || "index.html";
+      document.querySelectorAll(".nav a, .mobile-menu a").forEach(a=>{
+        const href = a.getAttribute("href");
+        if(href && href.endsWith(path)){ a.setAttribute("aria-current","page"); }
+        else { a.removeAttribute("aria-current"); }
+      });
+    })();
+  </script>
+</body>
+</html>
+

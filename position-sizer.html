@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Position Sizer — Arowana Profits</title>
+<link rel="icon" type="image/png" href="./images/arowanalogo.png?v=20260501">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@500;600&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef3f6;--surface:#fff;--soft:#f5f8fa;--border:#d2dee5;--border-light:#e7edf0;--ink:#102536;--text:#102536;--text-primary:#102536;--text-muted:#526977;--text-dim:#728691;--muted:#526977;--hover:#eef5f8;--brand:#176d9f;--brand2:#2389bf;--green:#087a55;--red:#c9363e;--danger:#c9363e;--amber:#9b5d00;--ring:rgba(35,137,191,.25);--font:'Manrope',system-ui,sans-serif;--mono:'DM Mono',monospace;--radius:13px;--radius-sm:9px;--shadow:0 7px 22px rgba(35,61,77,.06);--shadow-lg:0 14px 38px rgba(35,61,77,.16)}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font:13px/1.5 var(--font)}button,input,select{font:inherit}button{cursor:pointer}a{color:inherit}.app-shell{display:grid;grid-template-columns:286px minmax(0,1fr);min-height:100vh;transition:grid-template-columns .15s ease}.sidebar{position:sticky;top:0;height:100vh;padding:16px 12px;background:#fff;border-right:1px solid var(--border);box-shadow:5px 0 24px rgba(35,61,77,.05);z-index:90;display:flex;flex-direction:column}
+/* Matches Trading Command: the sidebar itself is never a scroll container —
+   .rail-nav does the scrolling. Forced, because the collapse tab is absolutely
+   positioned 19px past the sidebar's right edge; if anything turns .sidebar
+   into a scroll box (nav-rail.js injects its own sheet after this one), that
+   overhang becomes ~7px of horizontal overflow and the browser paints a
+   full-width horizontal scrollbar across the bottom of the rail, squashing the
+   Account row against it. */
+.sidebar{overflow:visible!important}
+#railMount{display:flex;flex:1 1 auto;min-width:0;min-height:0;flex-direction:column;overflow:visible}.main{min-width:0}
+/* Shared navigation markup is injected by nav-rail.js; keep its presentation in
+   this standalone page so it matches Trading Command even before app CSS loads. */
+.rail-top{position:relative;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 16px;margin-bottom:8px;border-bottom:1px solid var(--border-light)}.rail-brand{display:flex;align-items:center;gap:10px;min-width:0;color:#174e71;text-decoration:none;font-weight:800;font-size:1.05rem;overflow:hidden;white-space:nowrap}.rail-brand-logo{width:28px!important;height:28px!important;max-width:28px;max-height:28px;border-radius:50%;object-fit:contain;flex:0 0 28px}.rail-brand-text{overflow:hidden;text-overflow:ellipsis}.rail-collapse-btn{position:absolute;right:-19px;top:0;z-index:120;width:15px;min-width:15px;height:29px;padding:0;border:1px solid #b7c9d3;border-radius:8px;background:#fff;color:#244b60;box-shadow:4px 3px 12px rgba(35,69,88,.14);font-size:0}.rail-collapse-btn::before{content:'‹';font:800 17px/1 var(--font)}.rail-collapse-btn:hover{background:#eaf3f7}.rail-nav{flex:1 1 auto;min-height:0;overflow-y:auto;overflow-x:hidden;display:flex;flex-direction:column;gap:2px}.rail-group{display:flex;flex-direction:column}.rail-item-row{position:relative;display:flex;align-items:center}.rail-item{display:flex;align-items:center;gap:12px;flex:1;min-width:0;width:100%;padding:10px 38px 10px 8px;border:0;border-radius:9px;background:none;color:#5d707d;text-decoration:none;font-size:11.5px;font-weight:700;cursor:pointer}.rail-item:hover{color:#174e71;background:#eef5f8}.rail-item.active,.rail-item[aria-current="page"]{color:#174e71;background:#e7f1f6;box-shadow:inset 3px 0 0 #2686bd}.rail-item-icon{width:22px;flex:0 0 22px;text-align:center;font-size:1.15rem}.rail-item-label{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.rail-group-toggle{position:absolute;right:5px;top:50%;transform:translateY(-50%);display:flex;align-items:center;justify-content:center;width:26px;height:26px;padding:0;border:0;border-radius:7px;background:transparent;color:#71838e}.rail-group-toggle:hover{background:rgba(23,95,143,.09);color:#175f8f}.rail-group-toggle[aria-expanded="true"] .rail-group-arrow{display:inline-block;transform:rotate(180deg)}.rail-submenu{display:none;flex-direction:column;padding:2px 0 6px 30px}.rail-group.expanded .rail-submenu{display:flex}.rail-subitem{display:flex;align-items:center;gap:9px;padding:7px 8px;border-radius:9px;color:var(--text-muted);text-decoration:none;font-size:10px}.rail-subitem:hover{background:var(--hover);color:var(--text)}.rail-subitem-icon{width:18px;flex:0 0 18px;text-align:center}.rail-subitem-label{display:block;color:var(--text);font-weight:700}.rail-subitem-desc{display:block;color:var(--text-dim);font-size:9px}.rail-bottom{flex:0 0 auto;margin-top:8px;padding-top:8px;border-top:1px solid var(--border-light)}.rail-account{position:relative;min-width:0}.rail-account>.user-toggle{justify-content:flex-start;padding-right:8px;color:#435b6a}
+/* nav-rail.js emits the account trigger as .rail-account-btn on some builds and
+   .user-toggle on others; Trading Command styles both, so this page does too —
+   otherwise the Account row falls back to raw button styling. */
+.rail-account-btn{display:flex;align-items:center;gap:12px;width:100%;min-width:0;padding:10px 8px;border:0;border-radius:9px;background:none;color:#435b6a;text-decoration:none;text-align:left;font-size:11.5px;font-weight:700;cursor:pointer}.rail-account-btn:hover{color:#174e71;background:#eef5f8}.rail-account-btn .rail-item-icon,.rail-account-btn>span:first-child{flex:0 0 22px}.sidebar .rail-account,.sidebar .rail-account-btn{color:#435b6a}.sidebar .rail-toggle{color:#71838e;background:#f3f7f9;border-color:#dfe7eb}
+/* The rail-account block at the end of this file swaps the "Account" label for
+   the signed-in user's name in a .user-name span; these two match Trading
+   Command so a long name truncates instead of pushing the row wide. */
+.user-name{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.dropdown-arrow{flex:0 0 auto;font-size:.7rem;transition:transform .2s ease}.user-toggle.open .dropdown-arrow,.rail-account-btn.open .dropdown-arrow{transform:rotate(180deg)}.user-menu{position:absolute;z-index:1000;min-width:250px;max-width:calc(100vw - 28px);margin-top:8px;border:1px solid var(--border);border-radius:var(--radius);background:#fff;box-shadow:var(--shadow-lg);opacity:0;visibility:hidden;transform:translateY(-8px);transition:opacity .2s ease,transform .2s ease,visibility .2s ease;overflow:hidden}.user-menu.open{opacity:1;visibility:visible;transform:translateY(0)}.rail-account .user-menu{top:auto;right:auto;bottom:calc(100% + 8px);left:0;margin-top:0}.menu-header{padding:13px 14px;border-bottom:1px solid var(--border-light);background:var(--bg)}.menu-user-email{overflow:hidden;text-overflow:ellipsis;color:var(--text-primary);font-size:11px;font-weight:700}.menu-user-plan{margin-top:3px;color:var(--text-muted);font-size:10px}.menu-section{padding:6px 0}.menu-divider{height:1px;margin:5px 0;background:var(--border-light)}.menu-item{display:flex;align-items:center;gap:10px;width:100%;padding:9px 14px;border:0;background:none;color:var(--text);text-decoration:none;text-align:left;font-size:10.5px;font-weight:600;cursor:pointer}.menu-item:hover{background:var(--hover)}.menu-item.danger{color:var(--danger)}.menu-item-icon{width:17px;flex:0 0 17px;text-align:center}
+@media(min-width:701px){body.rail-collapsed .app-shell{grid-template-columns:68px minmax(0,1fr)}.sidebar.rail-collapsed{width:68px}.sidebar.rail-collapsed .rail-brand-text,.sidebar.rail-collapsed .rail-item-label,.sidebar.rail-collapsed .rail-group-toggle,.sidebar.rail-collapsed .rail-submenu{display:none}.sidebar.rail-collapsed .rail-top,.sidebar.rail-collapsed .rail-item{justify-content:center}.sidebar.rail-collapsed .rail-item{padding-right:8px}.sidebar.rail-collapsed .rail-collapse-btn{left:calc(100% + 4px);right:auto}.sidebar.rail-collapsed .rail-collapse-btn::before{content:'›'}}
+.workspace-bar{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:20px;padding:14px 30px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:80;backdrop-filter:blur(14px)}.workspace-heading{display:flex;align-items:center;gap:14px}.workspace-mark{width:46px;height:46px;display:grid;place-items:center;border:1px solid #c9dce5;border-radius:13px;background:#edf6f9;font-size:22px}.workspace-title{margin:0;font-size:19px;line-height:1.15;letter-spacing:-.03em}.workspace-kicker{margin-top:5px;color:#607784;font:700 9px var(--mono);letter-spacing:.16em;text-transform:uppercase}.workspace-actions{display:flex;align-items:center;justify-content:flex-end;gap:9px;flex-wrap:wrap}.experience-switch{width:185px;max-width:100%;min-height:36px;padding:0 34px 0 12px;border:1px solid #b9cad5;border-radius:9px;background:#fff;color:#294b60;font:700 10.5px/1.2 var(--font)}.experience-switch:focus-visible,.input:focus-visible,.btn:focus-visible{outline:3px solid var(--ring);outline-offset:2px}.session-pill{display:inline-flex;align-items:center;gap:7px;min-height:36px;padding:6px 11px;border:1px solid var(--border);border-radius:9px;background:#f7fafc;color:#355468;font:700 10px var(--mono);white-space:nowrap}.session-dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:36px;padding:7px 12px;border:1px solid var(--border);border-radius:9px;background:#fff;color:#315465;font-size:11px;font-weight:800;text-decoration:none}.btn:hover{border-color:#9fb9c7}.btn.primary{border-color:var(--brand);background:linear-gradient(135deg,var(--brand2),var(--brand));color:#fff}.btn.danger{color:var(--red)}.content{max-width:1480px;margin:auto;padding:24px 30px 42px}
+.mode-guide{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:18px;padding:16px 18px;border:1px solid #cbdde6;border-radius:15px;background:linear-gradient(135deg,#fff,#eef7fa);box-shadow:var(--shadow)}.mode-guide h2{margin:0 0 3px;font-size:15px}.mode-guide p{margin:0;color:var(--muted);font-size:11px}.mode-steps{display:flex;gap:7px;flex-wrap:wrap}.mode-step{padding:7px 10px;border:1px solid #d8e4ea;border-radius:9px;background:#fff;color:#405967;font-size:10px;font-weight:700}.layout{display:grid;grid-template-columns:minmax(360px,.82fr) minmax(480px,1.18fr);gap:18px;align-items:start}.stack{display:grid;gap:18px}.card{background:#fff;border:1px solid var(--border);border-radius:13px;box-shadow:var(--shadow);overflow:hidden}.card-head{display:flex;justify-content:space-between;gap:12px;padding:15px 18px;border-bottom:1px solid var(--border)}.card-head h2{margin:0;font-size:14px}.card-head p{margin:3px 0 0;color:var(--muted);font-size:10.5px}.card-body{padding:18px}.section-title{margin:0 0 12px;color:#436274;font:700 9px var(--mono);letter-spacing:.11em;text-transform:uppercase}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}.field{min-width:0}.field.full{grid-column:1/-1}.label{display:flex;justify-content:space-between;gap:8px;margin-bottom:5px;color:#405967;font-size:10.5px;font-weight:800}.hint{color:#728691;font-size:9.5px;font-weight:500}.input-wrap{position:relative}.affix{position:absolute;top:50%;transform:translateY(-50%);color:#71838e;font-weight:700;pointer-events:none}.affix.left{left:11px}.affix.right{right:11px}.input{width:100%;min-height:38px;padding:8px 11px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--ink);font-size:12px}.input.has-left{padding-left:25px}.input.has-right{padding-right:28px}.presets{display:flex;gap:5px;flex-wrap:wrap;margin-top:7px}.preset{min-height:27px;padding:3px 9px;border:1px solid var(--border);border-radius:999px;background:#fff;color:var(--muted);font-size:9.5px;font-weight:800}.preset.active,.preset:hover{border-color:var(--brand);background:#eaf4f8;color:#14577f}.direction{display:grid;grid-template-columns:1fr 1fr;gap:7px}.direction .preset{border-radius:9px;min-height:38px}.divider{height:1px;margin:17px 0;background:var(--border)}
+.result-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.result-card{min-width:0;padding:14px;border:1px solid var(--border);border-radius:11px;background:var(--soft)}.result-card.primary{border-color:#afd0df;background:#edf7fb}.result-card.risk{border-color:#ecc7ca;background:#fff5f5}.result-label{color:#607784;font:700 8.5px var(--mono);letter-spacing:.08em;text-transform:uppercase}.result-value{margin-top:6px;font:700 21px var(--mono);letter-spacing:-.04em;overflow-wrap:anywhere}.result-sub{margin-top:3px;color:var(--muted);font-size:9.5px}.placeholder{padding:42px 18px;text-align:center;color:var(--muted)}.placeholder .icon{font-size:34px}.placeholder strong{display:block;margin:8px 0 3px;color:var(--ink);font-size:13px}.result-output[hidden],.placeholder[hidden]{display:none}.plain-summary{margin-top:12px;padding:13px 14px;border:1px solid #c8dbe5;border-radius:10px;background:#f4f9fc}.plain-summary strong{display:block;color:#174f70;font-size:12px}.plain-summary span{display:block;margin-top:3px;color:var(--muted);font-size:10.5px}.plain-summary.caution{border-color:#e8c890;background:#fff8e8}.plain-summary.high{border-color:#edc4c7;background:#fff4f4}.details{margin-top:14px;border:1px solid var(--border);border-radius:10px;overflow:hidden}.detail-row{display:flex;justify-content:space-between;gap:20px;padding:9px 12px;border-bottom:1px solid var(--border);font-size:10.5px}.detail-row:last-child{border-bottom:0}.detail-row span{color:var(--muted)}.detail-row strong{font-family:var(--mono);text-align:right}.warning{display:none;margin-top:12px;padding:11px 13px;border:1px solid #edc4c7;border-left:3px solid var(--red);border-radius:9px;background:#fff5f5;color:#8f2830;font-size:10.5px}.warning.show{display:block}.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:14px}
+.coach-checks{display:grid;gap:8px}.coach-check{display:flex;gap:10px;padding:10px 11px;border:1px solid var(--border);border-radius:9px;background:var(--soft)}.coach-check i{font-style:normal}.coach-check strong{display:block;font-size:10.5px}.coach-check span{display:block;color:var(--muted);font-size:9.5px}.risk-scale{display:grid;grid-template-columns:repeat(4,1fr);gap:7px}.risk-level{padding:10px;border:1px solid var(--border);border-radius:9px;background:var(--soft);text-align:center}.risk-level strong{display:block;font-size:10px}.risk-level span{color:var(--muted);font-size:9px}.risk-level.current{border-color:#86b9d0;background:#eaf5fa}.education-note{margin:11px 0 0;color:var(--muted);font-size:9.5px}.guided-only,.full-only{display:none}body.mode-guided .guided-only,body.mode-full .guided-only,body.mode-full .full-only{display:block}body.mode-guided .guided-only.inline,body.mode-full .guided-only.inline,body.mode-full .full-only.inline{display:inline-flex}body.mode-beginner .target-field{display:none}body.mode-beginner .result-grid{grid-template-columns:1fr 1fr}body.mode-beginner .result-card.capital,body.mode-beginner .result-card.rr{display:none}
+.compact-footer{margin-top:6px;border-top:1px solid #cad8df;background:#e8f0f4;color:#49606d}.footer-main{display:flex;justify-content:space-between;align-items:center;gap:14px;max-width:1480px;margin:auto;padding:12px 30px;font-size:10.5px}.footer-links{display:flex;gap:14px}.footer-links a{font-weight:700;text-decoration:none}.footer-risk{border-top:1px solid #cad8df;padding:8px 30px 10px;text-align:center;color:#526977;font-size:9.5px}.mobile-top,.mobile-bottom{display:none}
+@media(max-width:1000px){.app-shell{grid-template-columns:220px minmax(0,1fr)}.layout{grid-template-columns:1fr}}
+@media(max-width:700px){body{padding-bottom:66px}.app-shell{display:block}.sidebar{display:none}.workspace-bar{position:relative;min-height:auto;padding:14px;flex-wrap:wrap}.workspace-heading{width:100%}.workspace-mark{width:40px;height:40px}.workspace-title{font-size:16px}.workspace-actions{width:100%;justify-content:flex-start}.session-pill{display:none}.content{padding:14px 12px 24px}.mode-guide{display:block;padding:14px}.mode-steps{margin-top:10px}.layout{display:block}.stack{gap:12px}.card{margin-bottom:12px}.form-grid{grid-template-columns:1fr}.field.full{grid-column:auto}.result-grid{grid-template-columns:1fr 1fr}.risk-scale{grid-template-columns:1fr 1fr}.mobile-top{display:flex;align-items:center;justify-content:space-between;min-height:56px;padding:8px 14px;border-bottom:1px solid var(--border);background:#fff}.mobile-brand{display:flex;align-items:center;gap:9px;color:#174e71;font-size:14px;font-weight:800;text-decoration:none}.mobile-brand img{width:30px;height:30px;border-radius:50%}.mobile-bottom{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;z-index:100;background:#fff;border-top:1px solid var(--border);padding:7px 4px calc(7px + env(safe-area-inset-bottom))}.mobile-bottom a{text-align:center;text-decoration:none;color:#526977;font-size:9px}.mobile-bottom b{display:block;font-size:17px}.compact-footer{display:none}}
+@media(max-width:420px){.result-grid,body.mode-beginner .result-grid{grid-template-columns:1fr}.workspace-actions .btn{flex:1}.result-value{font-size:19px}}
+.hint#psHoldingNote,.hint#psAcctNote{display:block;margin-top:6px;line-height:1.45}
+#psHoldingNote.is-warn{color:var(--red,#c0392b);font-weight:700}
+#psHoldingNote.is-info{color:#607784}
+#psAcctNote{color:#607784}
+#psAcctNote button{margin-left:6px;background:none;border:none;padding:0;font:inherit;font-weight:800;color:var(--brand,#176d9f);cursor:pointer;text-decoration:underline}
+</style>
+<!-- Single owner of ap_interface_mode_v1. Loaded in <head> because the
+     page's own script reads AP_MODE at parse time; loading it near </body>
+     left AP_MODE undefined and the page fell back to Beginner regardless
+     of the stored mode. The module applies the body class immediately, so
+     an early load also avoids a flash of the wrong mode. -->
+<script src="./js/interface-mode.js"></script>
+<!-- Keeps one account's local data out of another's session, and restores
+     gs_auth_user_v1.id when the shared cache loses it. -->
+<script src="./js/session-user.js"></script>
+</head>
+<body class="mode-beginner">
+<div class="mobile-top"><a class="mobile-brand" href="index.html"><img src="images/arowanalogo.png?v=20260501" alt="">Arowana Profits</a></div>
+<div class="app-shell"><aside class="sidebar"><div id="railMount"></div></aside><main class="main">
+<header class="workspace-bar"><div class="workspace-heading"><div class="workspace-mark">🧮</div><div><h1 class="workspace-title">Position Sizer</h1><div class="workspace-kicker">Define risk before the trade</div></div></div><div class="workspace-actions">
+        <a class="btn" id="backWorkspace" href="arowana-trader.html">← AI Trading Coach</a><select class="experience-switch" id="experienceSwitch" aria-label="Trading experience level"><option value="beginner">Beginner Mode</option><option value="guided">Guided Trade Desk</option><option value="advanced">Full Trade Desk</option></select><span class="session-pill"><span class="session-dot"></span><span id="workspaceClock">Chicago · --:--</span></span></div></header>
+<div class="content">
+<section class="mode-guide" aria-live="polite"><div><h2 id="modeTitle">Beginner Position Guide</h2><p id="modeDescription"></p></div><div class="mode-steps" id="modeSteps"></div></section>
+<div class="layout"><div class="stack">
+<section class="card"><div class="card-head"><div><h2>🎯 Plan the position</h2><p>Define the loss limit before calculating shares.</p></div></div><div class="card-body">
+<h3 class="section-title">Account guardrail</h3><div class="form-grid">
+<div class="field full"><label class="label" for="acctSize">Account Size <span class="hint" id="dollarHint"></span></label><div class="input-wrap"><span class="affix left">$</span><input class="input has-left" id="acctSize" type="number" min="1" step="100" value="25000"></div><div class="presets"><button class="preset" type="button" data-field="acctSize" data-value="10000">$10k</button><button class="preset active" type="button" data-field="acctSize" data-value="25000">$25k</button><button class="preset" type="button" data-field="acctSize" data-value="50000">$50k</button><button class="preset" type="button" data-field="acctSize" data-value="100000">$100k</button></div><div class="hint" id="psAcctNote"></div></div>
+<div class="field"><label class="label" for="riskPct">Risk Limit <span class="hint">Per trade</span></label><div class="input-wrap"><input class="input has-right" id="riskPct" type="number" min="0.1" max="10" step="0.1" value="1"><span class="affix right">%</span></div><div class="presets"><button class="preset" type="button" data-field="riskPct" data-value="0.5">0.5%</button><button class="preset active" type="button" data-field="riskPct" data-value="1">1%</button><button class="preset guided-only inline" type="button" data-field="riskPct" data-value="1.5">1.5%</button><button class="preset full-only inline" type="button" data-field="riskPct" data-value="2">2%</button></div></div>
+<div class="field full-only"><label class="label" for="allocationCap">Maximum Capital Allocation <span class="hint">Full mode</span></label><div class="input-wrap"><input class="input has-right" id="allocationCap" type="number" min="1" max="100" value="100"><span class="affix right">%</span></div></div></div>
+<div class="divider"></div><h3 class="section-title">Price plan</h3><div class="form-grid">
+<div class="field full"><label class="label" for="psSymbol">Symbol <span class="hint">Optional &mdash; unlocks the concentration check</span></label><div class="input-wrap"><input class="input" id="psSymbol" type="text" maxlength="10" placeholder="e.g. SNDK" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" style="text-transform:uppercase"></div><div class="hint" id="psHoldingNote"></div></div>
+<div class="field"><label class="label" for="entryPrice">Planned Entry</label><div class="input-wrap"><span class="affix left">$</span><input class="input has-left" id="entryPrice" type="number" min=".01" step=".01" placeholder="150.00"></div></div>
+<div class="field"><label class="label" for="stopPrice"><span id="stopLabel">Exit If Wrong</span><span class="hint">Invalidation</span></label><div class="input-wrap"><span class="affix left">$</span><input class="input has-left" id="stopPrice" type="number" min=".01" step=".01" placeholder="145.50"></div></div>
+<div class="field target-field"><label class="label" for="targetPrice">Planned Target <span class="hint">Optional</span></label><div class="input-wrap"><span class="affix left">$</span><input class="input has-left" id="targetPrice" type="number" min=".01" step=".01" placeholder="160.00"></div></div>
+<div class="field"><label class="label">Direction</label><div class="direction"><button class="preset active" type="button" data-direction="long">▲ <span id="longLabel">Price rises</span></button><button class="preset" type="button" data-direction="short">▼ <span id="shortLabel">Price falls</span></button></div></div></div>
+<button class="btn primary" id="calcBtn" type="button" style="width:100%;margin-top:17px">Calculate Position</button></div></section>
+<section class="card guided-only"><div class="card-head"><div><h2>🧭 Before you use the number</h2><p>Position size is the last step—not the thesis.</p></div></div><div class="card-body coach-checks"><div class="coach-check"><i>1️⃣</i><div><strong>Entry has a reason</strong><span>Define what must happen before entering.</span></div></div><div class="coach-check"><i>2️⃣</i><div><strong>Stop marks invalidation</strong><span>Place it where the idea is wrong.</span></div></div><div class="coach-check"><i>3️⃣</i><div><strong>Risk fits current conditions</strong><span>Account for volatility and total exposure.</span></div></div></div></section>
+</div><div class="stack">
+<section class="card" id="resultCard"><div class="card-head"><div><h2>📊 Position plan</h2><p>A sizing calculation—not a recommendation.</p></div></div><div class="card-body"><div class="placeholder" id="placeholder"><div class="icon">🧮</div><strong>Enter your price plan</strong><span>Complete account size, risk, entry, and invalidation.</span></div><div class="result-output" id="resultOutput" hidden>
+<div class="result-grid"><div class="result-card primary"><div class="result-label">Maximum Shares</div><div class="result-value" id="rShares">—</div><div class="result-sub">Risk-defined limit</div></div><div class="result-card risk"><div class="result-label">Dollars at Risk</div><div class="result-value" id="rRisk">—</div><div class="result-sub" id="rRiskSub"></div></div><div class="result-card capital"><div class="result-label">Capital Used</div><div class="result-value" id="rCapital">—</div><div class="result-sub" id="rCapitalSub"></div></div><div class="result-card rr"><div class="result-label">Reward / Risk</div><div class="result-value" id="rRR">—</div><div class="result-sub" id="rRRSub"></div></div></div>
+<div class="plain-summary" id="plainSummary"><strong id="summaryTitle"></strong><span id="summaryText"></span></div><div class="details full-only"><div class="detail-row"><span>Risk-based limit</span><strong id="dRiskShares"></strong></div><div class="detail-row"><span>Allocation-based limit</span><strong id="dCapShares"></strong></div><div class="detail-row"><span>Stop distance</span><strong id="dStop"></strong></div><div class="detail-row"><span>Account risk used</span><strong id="dRiskPct"></strong></div><div class="detail-row"><span>Binding constraint</span><strong id="dConstraint"></strong></div></div><div class="warning" id="warning"></div><div class="actions guided-only"><button class="btn" id="copyBtn">📋 Copy Plan</button><button class="btn" id="logBtn">📓 Send to Journal</button><button class="btn danger full-only inline" id="resetBtn">↺ Reset</button></div></div></div></section>
+<section class="card"><div class="card-head"><div><h2>🛡️ Risk context</h2><p>Educational reference—not a universal rule.</p></div></div><div class="card-body"><div class="risk-scale"><div class="risk-level" data-risk-max=".5"><strong>Lower</strong><span>Up to 0.5%</span></div><div class="risk-level" data-risk-max="1"><strong>Typical guardrail</strong><span>0.6–1%</span></div><div class="risk-level" data-risk-max="2"><strong>Elevated</strong><span>1.1–2%</span></div><div class="risk-level" data-risk-max="999"><strong>High caution</strong><span>Above 2%</span></div></div><p class="education-note">The appropriate limit depends on volatility, liquidity, account rules, experience, and total exposure. The calculated shares are not a trade signal.</p></div></section>
+</div></div></div>
+</main></div>
+
+<!-- Footer sits OUTSIDE .app-shell, as in trading-command.html, so it spans
+     the full page width beneath both the rail and the content column. It
+     previously lived inside the main element, which confined it to the
+     content column and left it floating mid-page above dead space. -->
+<footer class="compact-footer"><div class="footer-main"><span>© <span id="yearNow"></span> Arowana Profits. All rights reserved.</span><nav class="footer-links"><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="disclosures.html">Disclosures</a><a href="support.html">Support</a></nav></div><div class="footer-risk">Position sizing calculations are educational estimates—not financial advice or instructions to trade.</div></footer>
+<nav class="mobile-bottom" aria-label="Primary tools"><a href="trading-command.html"><b>⚡</b>Trading</a><a href="portfolio-command.html"><b>🏦</b>Portfolio</a><a href="analysis-central.html"><b>📊</b>Analysis</a><a href="watchlist.html"><b>👁️</b>Watchlist</a><a href="arowana-trader.html"><b>🤖</b>Coach</a></nav><div id="toastStack" style="position:fixed;right:16px;bottom:82px;z-index:1000;display:grid;gap:7px"></div>
+<style>body.mode-guided .actions.guided-only,body.mode-full .actions.guided-only{display:flex}
+/* ── Page width + footer placement (matches trading-command.html) ──────────
+   .content and .footer-main were both capped at a hard-coded 1480px and
+   centred, so on a wide monitor the workspace sat in the middle with large
+   empty gutters. This file defined no --content-max, so one is added here and
+   both read it — the cap is now a single knob:
+
+       --content-max: 100%;     full width (current)
+       --content-max: 1480px;   previous behaviour
+       --content-max: 1920px;   wide but bounded
+
+   The footer moved out of the main element, so the page needs the same layout
+   trading-command.html uses: body is the flex column, the shell grows to fill
+   it, and the footer takes margin-top:auto. .app-shell's own min-height:100vh
+   is dropped — body already guarantees the viewport height, and leaving both
+   would push the footer a footer's-worth below the fold. The sidebar switches
+   from a fixed 100vh to filling the shell so it stops overhanging the footer
+   on short pages. */
+:root{--content-max:100%}
+body{display:flex;flex-direction:column;min-height:100vh}
+.app-shell{flex:1 1 auto;min-height:0}
+.sidebar{height:100%;max-height:100vh}
+.compact-footer{margin-top:auto}
+.content{max-width:var(--content-max)}
+.footer-main{max-width:var(--content-max)}
+</style>
+<script src="./js/nav-rail.js"></script>
+<script>
+(function(){'use strict';
+const $=id=>document.getElementById(id);let direction='long',last=null;
+  /* Mode state, the ?mode= param and persistence all belong to AP_MODE now. */
+  const mode=()=>window.AP_MODE?AP_MODE.get():'beginner';
+const money=v=>new Intl.NumberFormat('en-US',{style:'currency',currency:'USD'}).format(Number(v)||0),num=(v,d=0)=>new Intl.NumberFormat('en-US',{minimumFractionDigits:d,maximumFractionDigits:d}).format(Number(v)||0);
+function toast(text,type='ok'){const el=document.createElement('div');el.textContent=text;el.style.cssText=`padding:10px 13px;border:1px solid var(--border);border-left:4px solid ${type==='error'?'var(--red)':type==='warn'?'var(--amber)':'var(--green)'};border-radius:9px;background:#fff;box-shadow:var(--shadow);font-size:11px`;$('toastStack').appendChild(el);setTimeout(()=>el.remove(),3200)}
+const copy={beginner:{title:'Beginner Position Guide',desc:'Use four numbers to learn how much of your account would be at risk.',steps:['1. Risk limit','2. Entry','3. Exit if wrong','4. Review size']},guided:{title:'Guided Position Sizing',desc:'Build the position after the entry, invalidation, and risk checks are clear.',steps:['1. Thesis','2. Invalidation','3. Risk','4. Size','5. Review']},advanced:{title:'Full Position Sizer',desc:'Use complete metrics, capital constraints, reward/risk, and journal handoff.',steps:['Risk model','Allocation cap','Reward/risk','Detailed math','Journal']}};
+/* Renders this page for the current mode. It no longer persists anything,
+     sets the body class, or syncs the select — AP_MODE does all three, and it
+     uses classList rather than the old `body.className = ...`, which wiped
+     every other body class (rail-collapsed among them) on every mode change. */
+  function renderMode(m){const c=copy[m]||copy.beginner;const mode=m;$('modeTitle').textContent=c.title;$('modeDescription').textContent=c.desc;$('modeSteps').innerHTML=c.steps.map(x=>`<span class="mode-step">${x}</span>`).join('');$('stopLabel').textContent=mode==='beginner'?'Exit If Wrong':'Stop / Invalidation';$('longLabel').textContent=mode==='beginner'?'Price rises':'Long';$('shortLabel').textContent=mode==='beginner'?'Price falls':'Short';$('backWorkspace').href=mode==='beginner'?'arowana-trader.html?mode=beginner':`trading-command.html?mode=${mode}`;$('backWorkspace').textContent=mode==='beginner'?'← AI Trading Coach':'← Trading Command';calculate(false)}
+/* ── Account size from the real journal ──────────────────────────
+   The field was hardcoded to 25,000 for everyone, so every number this
+   page produced — shares, risk dollars, % of account — was sized against
+   a fictional account unless the user remembered to change it. Read the
+   accounts the journal already knows about instead, and say where the
+   figure came from so it is not mistaken for a default. */
+function psReadLS(key){
+  try{ var a=JSON.parse(localStorage.getItem(key)||'[]'); return Array.isArray(a)?a:[]; }
+  catch(_){ return []; }
+}
+
+function psOpenPositions(){
+  return psReadLS('tj_stocks_v2')
+    .filter(function(t){ return String(t.status||'open').toLowerCase()==='open'; })
+    .map(function(t){
+      return {
+        ticker:String(t.ticker||t.symbol||'').trim().toUpperCase(),
+        shares:Number(t.qty!=null?t.qty:t.shares)||0,
+        entry:Number(t.entryPrice!=null?t.entryPrice:t.entry)||0,
+        broker:(t.broker||t.account||'').trim()||'Default'
+      };
+    })
+    .filter(function(p){ return p.ticker&&p.shares>0&&p.entry>0; });
+}
+
+/* Cost basis of everything currently open. Not the same as account equity —
+   it ignores cash and unrealised P&L — so it is offered as a starting point
+   the user confirms, never written silently over what they typed. */
+function psAccountEstimate(){
+  var pos=psOpenPositions();
+  if(!pos.length)return null;
+  var total=pos.reduce(function(sum,p){ return sum+p.shares*p.entry; },0);
+  return total>0?Math.round(total):null;
+}
+
+function psRenderAccountNote(){
+  var el=$('psAcctNote'); if(!el)return;
+  while(el.firstChild)el.removeChild(el.firstChild);
+
+  var est=psAccountEstimate();
+  if(!est)return;
+  var current=+$('acctSize').value;
+  if(Math.abs(current-est)<1)   {
+    el.appendChild(document.createTextNode('Matches your open positions at cost.'));
+    return;
+  }
+  el.appendChild(document.createTextNode('Your journal shows '+money(est)+' of open positions at cost.'));
+  var b=document.createElement('button');
+  b.type='button';
+  b.textContent='Use this';
+  b.addEventListener('click',function(){
+    $('acctSize').value=est;
+    document.querySelectorAll('[data-field="acctSize"]').forEach(function(x){x.classList.remove('active')});
+    calculate(false);
+  });
+  el.appendChild(b);
+}
+
+/* Concentration check.
+   The existing warning only knew about the position being sized ("uses
+   21.7% of the account"). It had no idea the user already held the same
+   stock, so adding to a name they were already heavy in read as a fresh,
+   modest position. */
+function psRenderHoldingNote(result){
+  var el=$('psHoldingNote'); if(!el)return;
+  while(el.firstChild)el.removeChild(el.firstChild);
+  el.className='hint';
+
+  var sym=($('psSymbol').value||'').trim().toUpperCase();
+  if(!sym)return;
+
+  var lots=psOpenPositions().filter(function(p){ return p.ticker===sym; });
+  if(!lots.length){
+    el.classList.add('is-info');
+    el.textContent='No open position in '+sym+' in your journal.';
+    return;
+  }
+
+  var shares=lots.reduce(function(n,p){ return n+p.shares; },0);
+  var cost=lots.reduce(function(n,p){ return n+p.shares*p.entry; },0);
+  var acct=+$('acctSize').value||0;
+  var existingPct=acct>0?(cost/acct*100):0;
+
+  var txt='You already hold '+num(shares)+' '+sym+' at '+money(cost)+' cost'+
+          (lots.length>1?(' across '+lots.length+' lots'):'')+
+          (acct>0?(' \u2014 '+num(existingPct,1)+'% of this account'):'')+'.';
+
+  // Only once a position has been calculated can we say where it lands.
+  if(result&&result.ok&&result.capital>0&&acct>0){
+    var combinedPct=(cost+result.capital)/acct*100;
+    txt+=' Adding this takes '+sym+' to '+num(combinedPct,1)+'%.';
+    if(combinedPct>=25)el.classList.add('is-warn');
+    else el.classList.add('is-info');
+  }else{
+    el.classList.add('is-info');
+  }
+
+  el.textContent=txt;
+}
+
+function values(){return{account:+$('acctSize').value,riskPct:+$('riskPct').value,entry:+$('entryPrice').value,stop:+$('stopPrice').value,target:+$('targetPrice').value,allocation:+$('allocationCap').value||100}}
+function empty(message){$('placeholder').hidden=false;$('resultOutput').hidden=true;$('placeholder').querySelector('span').textContent=message;last=null}
+function calculate(scroll=true){const v=values();$('dollarHint').textContent='Risk limit: '+money(v.account*v.riskPct/100);document.querySelectorAll('.risk-level').forEach(x=>x.classList.remove('current'));const lvl=[...document.querySelectorAll('.risk-level')].find(x=>v.riskPct<=+x.dataset.riskMax);if(lvl)lvl.classList.add('current');psRenderAccountNote();psRenderHoldingNote(null);if(!(v.account>0&&v.riskPct>0&&v.entry>0&&v.stop>0)){empty('Complete account size, risk, entry, and invalidation.');return}const dist=direction==='long'?v.entry-v.stop:v.stop-v.entry;if(dist<=0){empty(direction==='long'?'For a long plan, invalidation must be below entry.':'For a short plan, invalidation must be above entry.');return}const maxRisk=v.account*v.riskPct/100,riskShares=Math.floor(maxRisk/dist),allocation=mode==='advanced'?Math.min(100,Math.max(1,v.allocation)):100,capShares=Math.floor(v.account*allocation/100/v.entry),shares=Math.max(0,Math.min(riskShares,capShares));if(shares<1){empty('The selected limits do not allow one whole share at this stop distance.');return}const actualRisk=shares*dist,capital=shares*v.entry,capitalPct=capital/v.account*100,actualRiskPct=actualRisk/v.account*100,reward=v.target>0?(direction==='long'?v.target-v.entry:v.entry-v.target):0,rr=reward>0?reward/dist:null,constraint=capShares<riskShares?'Capital allocation':'Risk limit';last={...v,direction,dist,riskShares,capShares,shares,actualRisk,capital,capitalPct,actualRiskPct,rr,constraint};$('placeholder').hidden=true;$('resultOutput').hidden=false;$('rShares').textContent=num(shares);$('rRisk').textContent=money(actualRisk);$('rRiskSub').textContent=num(actualRiskPct,2)+'% of account';$('rCapital').textContent=money(capital);$('rCapitalSub').textContent=num(capitalPct,1)+'% of account';$('rRR').textContent=rr===null?'—':'1 : '+num(rr,1);$('rRRSub').textContent=rr===null?'Add a target':rr>=2?'Target is at least 2× risk':'Target is below 2× risk';$('dRiskShares').textContent=num(riskShares);$('dCapShares').textContent=num(capShares);$('dStop').textContent=money(dist)+' / share';$('dRiskPct').textContent=num(actualRiskPct,2)+'%';$('dConstraint').textContent=constraint;const box=$('plainSummary');box.className='plain-summary'+(v.riskPct>2?' high':v.riskPct>1?' caution':'');$('summaryTitle').textContent=v.riskPct>2?'High caution':v.riskPct>1?'Elevated risk':'Within selected guardrail';$('summaryText').textContent=`At ${num(shares)} shares, reaching invalidation would risk about ${money(actualRisk)}. The calculation is limited by ${constraint.toLowerCase()}.`;const warnings=[];if(capitalPct>20)warnings.push(`This position uses ${num(capitalPct,1)}% of the account.`);
+  /* Concentration: the capital warning above only sees this trade. If the
+     journal already holds the same symbol, the real exposure is the sum. */
+  const _sym=($('psSymbol').value||'').trim().toUpperCase();
+  if(_sym){
+    const _held=psOpenPositions().filter(p=>p.ticker===_sym);
+    if(_held.length){
+      const _cost=_held.reduce((n,p)=>n+p.shares*p.entry,0);
+      const _combined=(_cost+capital)/v.account*100;
+      if(_combined>=25)warnings.push(`Combined with what you already hold, ${_sym} would be ${num(_combined,1)}% of the account.`);
+    }
+  }if(v.riskPct>2)warnings.push('The selected risk limit is above 2%.');if(rr!==null&&rr<1)warnings.push('The planned reward is smaller than the risk.');$('warning').textContent=warnings.join(' ');$('warning').classList.toggle('show',!!warnings.length);psRenderHoldingNote({ok:true,capital:capital});if(scroll&&innerWidth<=700)$('resultCard').scrollIntoView({behavior:'smooth'})}
+document.querySelectorAll('[data-field]').forEach(btn=>btn.addEventListener('click',()=>{const input=$(btn.dataset.field);input.value=btn.dataset.value;document.querySelectorAll(`[data-field="${btn.dataset.field}"]`).forEach(x=>x.classList.toggle('active',x===btn));calculate(false)}));document.querySelectorAll('[data-direction]').forEach(btn=>btn.addEventListener('click',()=>{direction=btn.dataset.direction;document.querySelectorAll('[data-direction]').forEach(x=>x.classList.toggle('active',x===btn));calculate(false)}));['acctSize','riskPct','entryPrice','stopPrice','targetPrice','allocationCap'].forEach(id=>$(id).addEventListener('input',()=>calculate(false)));$('psSymbol').addEventListener('input',()=>{$('psSymbol').value=$('psSymbol').value.toUpperCase();calculate(false)});$('calcBtn').addEventListener('click',()=>calculate(true));/* AP_MODE.bindSelect keeps #experienceSwitch in sync both ways, and
+     onChange re-renders — including the first call, so no init needed. */
+  if(window.AP_MODE){AP_MODE.bindSelect($('experienceSwitch'));AP_MODE.onChange(d=>renderMode(d.mode));}
+  else{renderMode('beginner');}
+
+  /* Paint the account-size hint on load. calculate() only runs on input, so
+     without this the "your journal shows X" offer stayed invisible until
+     the user touched a field — which is exactly when it is least useful. */
+  psRenderAccountNote();
+$('copyBtn').addEventListener('click',async()=>{if(!last){toast('Calculate a position first','warn');return}const r=last,text=`Position Sizing Plan\nDirection: ${r.direction}\nEntry: ${money(r.entry)}\nInvalidation: ${money(r.stop)}\nMaximum shares: ${num(r.shares)}\nRisk: ${money(r.actualRisk)} (${num(r.actualRiskPct,2)}%)\nCapital: ${money(r.capital)} (${num(r.capitalPct,1)}%)${r.rr!==null?`\nReward/Risk: 1:${num(r.rr,1)}`:''}\nEducational calculation—not a trade instruction.`;try{await navigator.clipboard.writeText(text);toast('Position plan copied')}catch(e){toast('Unable to copy','error')}});$('logBtn').addEventListener('click',()=>{if(!last){toast('Calculate a position first','warn');return}const r=last,url=new URL('trade-journal-pro.html',location.href);url.searchParams.set('entry',r.entry);url.searchParams.set('stop',r.stop);url.searchParams.set('shares',r.shares);url.searchParams.set('direction',r.direction);const _s=($('psSymbol').value||'').trim().toUpperCase();if(_s)url.searchParams.set('ticker',_s);url.searchParams.set('from','position-sizer');location.href=url.href});$('resetBtn').addEventListener('click',()=>{$('psSymbol').value='';$('acctSize').value=25000;$('riskPct').value=1;$('entryPrice').value='';$('stopPrice').value='';$('targetPrice').value='';$('allocationCap').value=100;direction='long';last=null;document.querySelectorAll('[data-direction]').forEach(x=>x.classList.toggle('active',x.dataset.direction==='long'));calculate(false);toast('Position Sizer reset')});
+function clock(){const t=new Intl.DateTimeFormat('en-US',{timeZone:'America/Chicago',hour:'numeric',minute:'2-digit'}).format(new Date());$('workspaceClock').textContent='Chicago · '+t}clock();setInterval(clock,30000);$('yearNow').textContent=new Date().getFullYear();
+})();
+</script>
+
+<!-- Platform auth/session trio, same order Trading Command loads it in.
+     app-config.js supplies window.AP_WEBHOOKS.supabase, supabase_min.js
+     supplies window.supabase.createClient, and auth-header.js supplies
+     window.GSAuthHeader.clearCachedUser() — all three are used by signOut()
+     in the rail-account block below. -->
+<script>window.AP_DEV_CONFIG = window.AP_DEV_CONFIG || {enableProFeatures:true,enableProBadges:true,enableUpgradePrompts:true,showDevNotice:false,mockDataMode:false,debugMode:false,fastUpdates:false,version:'1.0.0',buildDate:new Date().toISOString(),notes:'Production build'};</script>
+<script src="./js/app-config.js"></script>
+<script src="./js/supabase_min.js"></script>
+<script src="./js/auth-header.js"></script>
+
+<!-- Rail account row: name, flyout menu, support + sign out.
+     nav-rail.js only renders the shell — the ids #userToggle / #userMenu /
+     #userName / #menuUserEmail and the global openSupport() / signOut() the
+     menu items call are the PAGE's responsibility. Trading Command does this
+     inline (initUserDropdown + the gs_auth_user_v1 read in its DOMContentLoaded
+     handler + signOut); this is the same behaviour, self-contained so it can't
+     collide with the calculator IIFE above. Bound via MutationObserver because
+     nav-rail.js may inject the rail after this script runs. -->
+<script>
+(function(){'use strict';
+var AUTH_KEY='gs_auth_user_v1';
+function readUser(){try{var raw=localStorage.getItem(AUTH_KEY)||sessionStorage.getItem(AUTH_KEY);return raw?JSON.parse(raw):null}catch(_){return null}}
+function toast(text){var stack=document.getElementById('toastStack');if(!stack)return;var el=document.createElement('div');el.textContent=text;el.style.cssText='padding:10px 13px;border:1px solid var(--border);border-left:4px solid var(--brand);border-radius:9px;background:#fff;box-shadow:var(--shadow);font-size:11px';stack.appendChild(el);setTimeout(function(){el.remove()},3200)}
+/* Same fallback chain Trading Command uses: name -> full_name -> username ->
+   the local-part of the email -> the generic label nav-rail.js ships with. */
+function paint(){
+  var nameEl=document.getElementById('userName'),emailEl=document.getElementById('menuUserEmail');
+  if(!nameEl)return false;
+  var user=readUser();
+  if(!user){nameEl.textContent='Account';if(emailEl)emailEl.textContent='Not signed in';return true}
+  nameEl.textContent=user.name||user.full_name||user.username||(user.email?String(user.email).split('@')[0]:'Account');
+  if(emailEl&&user.email)emailEl.textContent=user.email;
+  return true;
+}
+var bound=false;
+function closeMenu(){var t=document.getElementById('userToggle'),m=document.getElementById('userMenu');if(t)t.classList.remove('open');if(m)m.classList.remove('open')}
+function bind(){
+  if(bound)return true;
+  var t=document.getElementById('userToggle'),m=document.getElementById('userMenu');
+  if(!t||!m)return false;
+  bound=true;
+  t.addEventListener('click',function(e){e.stopPropagation();var open=m.classList.toggle('open');t.classList.toggle('open',open)});
+  document.addEventListener('click',function(e){if(!t.contains(e.target)&&!m.contains(e.target))closeMenu()});
+  document.addEventListener('keydown',function(e){if(e.key==='Escape')closeMenu()});
+  return true;
+}
+window.closeUserMenu=closeMenu;
+window.openSupport=function(){closeMenu();location.href='mailto:support@arowanaprofits.com?subject=Position%20Sizer%20support'};
+window.signOut=async function(){
+  if(!confirm('Are you sure you want to sign out? This will clear your session data.'))return;
+  closeMenu();toast('Signing you out…');
+  try{var cfg=window.AP_WEBHOOKS&&window.AP_WEBHOOKS.supabase,createClient=window.supabase&&window.supabase.createClient;
+    if(cfg&&cfg.url&&cfg.anonKey&&typeof createClient==='function'){var client=createClient(cfg.url,cfg.anonKey);if(client&&client.auth&&client.auth.signOut)await client.auth.signOut()}
+  }catch(err){console.warn('Supabase signOut failed (continuing with local signout):',err)}
+  try{if(window.GSAuthHeader&&window.GSAuthHeader.clearCachedUser){window.GSAuthHeader.clearCachedUser()}else{localStorage.removeItem(AUTH_KEY);sessionStorage.removeItem(AUTH_KEY)}}catch(_){}
+  try{localStorage.removeItem('ap_user_api_keys');localStorage.removeItem('ap_rate_usage');
+    for(var i=localStorage.length-1;i>=0;i--){var k=localStorage.key(i);if(k&&k.indexOf('ap_cache_')===0)localStorage.removeItem(k)}
+  }catch(_){}
+  location.replace('login.html');
+};
+function sync(){var ok=paint();bind();return ok}
+function start(){
+  if(sync())return;
+  var mount=document.getElementById('railMount');
+  if(!mount)return;
+  var obs=new MutationObserver(function(){if(sync())obs.disconnect()});
+  obs.observe(mount,{childList:true,subtree:true});
+  setTimeout(function(){obs.disconnect()},8000);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+/* This page is not auth-gated, so a signout in another tab repaints the row
+   rather than redirecting the way the gated pages do. */
+window.addEventListener('storage',function(e){if(e.key===AUTH_KEY)paint()});
+})();
+</script>
+<!-- Slims the site footer to a single compliance line on workspace pages.
+     Marketing pages and signed-out visitors keep the full footer. -->
+<script src="./js/workspace-footer.js"></script>
+</body></html>

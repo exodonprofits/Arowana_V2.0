@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Usage &mdash; Arowana Profits admin</title>
+<meta name="robots" content="noindex"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0b4f8a;--brand-dark:#083c69;--bg:#f6f8fb;--panel:#fff;--ink:#0d1b2a;--muted:#64748b;
+  --border:#e2e8f0;--good:#11a779;--warn:#e8a33d;--bad:#dc4c64;--radius:14px;--mono:"JetBrains Mono",ui-monospace,monospace}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;min-height:100vh}
+a{color:var(--brand)}
+header{background:var(--brand-dark);color:#fff;padding:14px 0}
+.shell{max-width:1100px;margin:0 auto;padding:0 20px}
+header .shell{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+header strong{font:800 1.05rem "Inter Tight",system-ui,sans-serif}
+header a{color:#cfe3f5;font-size:.86rem;font-weight:600;text-decoration:none}
+main{padding:26px 0 60px}
+h1{font:800 1.5rem/1.2 "Inter Tight",system-ui,sans-serif;margin-bottom:4px}
+.sub{color:var(--muted);font-size:.9rem;margin-bottom:22px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:22px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px}
+.card .label{font-size:.75rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.card .value{font:700 1.7rem var(--mono);letter-spacing:-.02em;margin-top:4px}
+.card .note{font-size:.78rem;color:var(--muted);margin-top:4px}
+.card.warn .value{color:var(--warn)}
+.card.bad .value{color:var(--bad)}
+.panel{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px 20px;margin-bottom:18px}
+.panel h2{font:700 1.02rem "Inter Tight",system-ui,sans-serif;margin-bottom:12px}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th,td{text-align:right;padding:7px 9px;border-bottom:1px solid #eef2f6;white-space:nowrap}
+th:first-child,td:first-child{text-align:left}
+th{font-size:.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+td.num{font-family:var(--mono)}
+.bar{height:8px;background:#eef2f6;border-radius:99px;overflow:hidden;margin-top:6px}
+.bar span{display:block;height:100%;background:var(--brand);border-radius:99px}
+.msg{padding:16px 18px;border-radius:12px;font-size:.9rem}
+.msg.err{background:#fdecef;color:#8a1c2b;border:1px solid #f5c2cb}
+.muted{color:var(--muted);font-size:.84rem}
+.controls{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.controls button{border:1px solid var(--border);background:var(--panel);border-radius:9px;padding:7px 13px;
+  font:600 .82rem inherit;color:var(--muted);cursor:pointer}
+.controls button.on{background:var(--brand);border-color:var(--brand);color:#fff}
+@media(max-width:600px){.card .value{font-size:1.4rem}}
+</style>
+</head>
+<body>
+  <header>
+    <div class="shell">
+      <strong>Arowana Profits &mdash; admin</strong>
+      <a href="trading-command.html">Back to the desk &rarr;</a>
+    </div>
+  </header>
+
+  <main class="shell">
+    <h1>Data usage</h1>
+    <p class="sub">What we actually send our data providers, and what the coach costs. Counts every proxied call, including the ones that don't use a customer's quota.</p>
+
+    <div id="state"></div>
+
+    <div id="report" hidden>
+      <div class="controls">
+        <button data-days="7">7 days</button>
+        <button data-days="14" class="on">14 days</button>
+        <button data-days="30">30 days</button>
+      </div>
+
+      <div class="cards">
+        <div class="card" id="cardToday">
+          <div class="label">Provider calls today</div>
+          <div class="value" id="todayCalls">—</div>
+          <div class="bar"><span id="todayBar" style="width:0%"></span></div>
+          <div class="note" id="todayNote">against the daily ceiling</div>
+        </div>
+        <div class="card">
+          <div class="label">Errors today</div>
+          <div class="value" id="todayErrors">—</div>
+          <div class="note">provider refusals or timeouts</div>
+        </div>
+        <div class="card">
+          <div class="label">Coach spend this month</div>
+          <div class="value" id="coachCost">—</div>
+          <div class="note" id="coachNote">&nbsp;</div>
+        </div>
+        <div class="card">
+          <div class="label">Research lookups today</div>
+          <div class="value" id="researchToday">—</div>
+          <div class="note" id="researchNote">&nbsp;</div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>By day</h2>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>Day</th><th>Calls</th><th>Errors</th><th>Users</th></tr></thead>
+          <tbody id="byDay"></tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>By endpoint</h2>
+        <p class="muted" style="margin-bottom:10px">Where the volume actually goes. A quote-heavy page shows up here first.</p>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>Endpoint</th><th>Calls</th><th>Errors</th><th>Share</th></tr></thead>
+          <tbody id="byPath"></tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Heaviest accounts</h2>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>Account</th><th>Calls</th></tr></thead>
+          <tbody id="topUsers"></tbody>
+        </table></div>
+      </div>
+
+      <div class="panel">
+        <h2>Accounts by plan</h2>
+        <div style="overflow-x:auto"><table>
+          <thead><tr><th>Plan</th><th>Accounts</th></tr></thead>
+          <tbody id="plans"></tbody>
+        </table></div>
+      </div>
+    </div>
+  </main>
+
+  <script>window.GS_CONFIG_URL="./js/config.json";</script>
+  <script src="./js/app-config.js?v=20260918c"></script>
+  <script src="./js/supabase_min.js?v=20260918c"></script>
+  <script>
+  (function () {
+    'use strict';
+    var DAILY_CAP = 20000;      // mirrors AROWANA_DAILY_CALL_CAP in the function
+    var days = 14;
+
+    function el(id) { return document.getElementById(id); }
+    function esc(v) { return String(v == null ? '' : v).replace(/[&<>"']/g, function (c) { return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]; }); }
+    function n(v) { return Number(v || 0).toLocaleString('en-US'); }
+
+    function getClient() { return window.supabaseClient || window.sbClient || null; }
+    function waitForClient(ms) {
+      return new Promise(function (resolve) {
+        var c = getClient();
+        if (c && c.auth) return resolve(c);
+        var done = false;
+        function finish() { if (done) return; var x = getClient(); if (x && x.auth) { done = true; cleanup(); resolve(x); } }
+        function cleanup() { window.removeEventListener('ap:config:ready', finish); clearInterval(poll); }
+        window.addEventListener('ap:config:ready', finish);
+        var poll = setInterval(finish, 200);
+        setTimeout(function () { if (!done) { done = true; cleanup(); resolve(null); } }, 4000);
+      });
+    }
+
+    function say(html, cls) {
+      el('state').innerHTML = '<div class="msg ' + (cls || '') + '">' + html + '</div>';
+    }
+
+    function render(d) {
+      el('state').innerHTML = '';
+      el('report').hidden = false;
+
+      var calls = Number(d.today_calls) || 0;
+      el('todayCalls').textContent = n(calls);
+      var pct = Math.min(100, Math.round(calls / DAILY_CAP * 100));
+      el('todayBar').style.width = pct + '%';
+      el('todayNote').textContent = pct + '% of the ' + n(DAILY_CAP) + ' daily ceiling';
+      el('cardToday').className = 'card' + (pct >= 90 ? ' bad' : pct >= 60 ? ' warn' : '');
+
+      el('todayErrors').textContent = n(d.today_errors);
+
+      var coach = d.coach_month || {};
+      el('coachCost').textContent = '$' + (Number(coach.cost_usd) || 0).toFixed(2);
+      el('coachNote').textContent = n(coach.messages) + ' messages from ' + n(coach.users) + ' account(s)';
+
+      var research = d.research_today || {};
+      el('researchToday').textContent = n(research.lookups);
+      el('researchNote').textContent = n(research.users) + ' account(s) so far today';
+
+      el('byDay').innerHTML = (d.by_day || []).map(function (r) {
+        return '<tr><td>' + esc(r.day) + '</td><td class="num">' + n(r.calls) +
+          '</td><td class="num">' + n(r.errors) + '</td><td class="num">' + n(r.users) + '</td></tr>';
+      }).join('') || '<tr><td colspan="4" class="muted">No calls recorded yet.</td></tr>';
+
+      var paths = d.by_path || [];
+      var total = paths.reduce(function (s, r) { return s + Number(r.calls || 0); }, 0) || 1;
+      el('byPath').innerHTML = paths.map(function (r) {
+        var share = Math.round(Number(r.calls) / total * 100);
+        return '<tr><td>' + esc(r.path) + '</td><td class="num">' + n(r.calls) +
+          '</td><td class="num">' + n(r.errors) + '</td><td class="num">' + share + '%</td></tr>';
+      }).join('') || '<tr><td colspan="4" class="muted">Nothing yet.</td></tr>';
+
+      el('topUsers').innerHTML = (d.top_users || []).map(function (r) {
+        return '<tr><td>' + esc(r.email) + '</td><td class="num">' + n(r.calls) + '</td></tr>';
+      }).join('') || '<tr><td colspan="2" class="muted">Nothing yet.</td></tr>';
+
+      var plans = d.plans || {};
+      el('plans').innerHTML = Object.keys(plans).sort().map(function (k) {
+        return '<tr><td>' + esc(k) + '</td><td class="num">' + n(plans[k]) + '</td></tr>';
+      }).join('') || '<tr><td colspan="2" class="muted">No accounts.</td></tr>';
+    }
+
+    async function load() {
+      var sb = await waitForClient(4000);
+      if (!sb) { say('Could not connect. Reload the page.', 'err'); return; }
+      var sess = await sb.auth.getSession();
+      if (!(sess && sess.data && sess.data.session)) {
+        say('<a href="login.html">Sign in</a> to view this page.', 'err');
+        return;
+      }
+      say('Loading…');
+      var res = await sb.rpc('ap_usage_summary', { p_days: days });
+      if (res.error) { say('Could not load usage: ' + esc(res.error.message), 'err'); return; }
+      var d = res.data || {};
+      if (d.error === 'not_admin') {
+        say('This page is for administrators. Nothing here relates to your own account.', 'err');
+        return;
+      }
+      render(d);
+    }
+
+    document.querySelectorAll('.controls button').forEach(function (b) {
+      b.addEventListener('click', function () {
+        document.querySelectorAll('.controls button').forEach(function (x) { x.classList.remove('on'); });
+        b.classList.add('on');
+        days = Number(b.getAttribute('data-days')) || 14;
+        load();
+      });
+    });
+
+    document.addEventListener('DOMContentLoaded', load);
+  })();
+  </script>
+</body>
+</html>

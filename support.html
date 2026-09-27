@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Support — Arowana Profits</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>💬</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--brand:#0b4f8a;--brand-dark:#083c69;--bg:#f6f8fb;--panel:#fff;--ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;--radius:14px;--max:820px;--shadow:0 4px 20px rgba(11,79,138,.08)}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.7}
+a{color:var(--brand)} button{font-family:inherit;cursor:pointer}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* V1 Nav */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;text-decoration:none}
+.logo img{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);padding:2px}
+.nav-links{display:flex;align-items:center;gap:3px;flex:1;justify-content:center}
+.nav-links a{color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none;transition:background .15s}
+.nav-links a:hover{background:rgba(255,255,255,.13)}
+.nav-links .agent{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.nav-div{width:1px;height:16px;background:rgba(255,255,255,.18);margin:0 4px;flex-shrink:0}
+.nav-auth{display:flex;align-items:center;gap:7px}
+.nbtn{padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;text-decoration:none;transition:all .15s}
+.nbtn-g{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.nbtn-s{background:#fff;color:var(--brand);font-weight:700}
+.nav-user{position:relative;display:none}.nav-user.show{display:block}
+.nav-user-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600}
+.nav-user-menu{position:absolute;right:0;top:calc(100%+8px);min-width:195px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:6px;display:none;z-index:200}
+.nav-user.open .nav-user-menu{display:block}
+.nav-user-menu a,.nav-user-menu button{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:var(--muted);font-size:.82rem;font-weight:500;background:none;border:none;width:100%;text-align:left;text-decoration:none;cursor:pointer}
+.nav-user-menu a:hover,.nav-user-menu button:hover{color:var(--ink);background:rgba(11,79,138,.06)}
+.menu-sep{height:1px;background:var(--border);margin:3px 0}
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mob-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mob-menu[data-open="true"]{display:block}
+.mob-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mob-link{padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none;display:block}
+.mob-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:700px){.nav-links{display:none}.nbtn-s{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* Content */
+main{flex:1;padding:48px 0 64px}
+.page-header{margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.page-icon{font-size:2.5rem;margin-bottom:12px}
+.page-title{font-family:"Inter Tight",sans-serif;font-size:clamp(22px,3vw,32px);font-weight:800;margin-bottom:8px}
+.page-sub{font-size:.93rem;color:var(--muted);line-height:1.65}
+.last-updated{font-size:.78rem;color:var(--muted);margin-top:8px}
+.section{margin-bottom:32px}
+.section h2{font-family:"Inter Tight",sans-serif;font-size:1.05rem;font-weight:800;margin-bottom:10px;color:var(--ink);display:flex;align-items:center;gap:8px}
+.section h2::before{content:"";display:inline-block;width:4px;height:18px;background:var(--brand);border-radius:2px}
+.section p{font-size:.9rem;color:#374151;line-height:1.75;background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px 18px;box-shadow:var(--shadow)}
+.back-link{display:inline-flex;align-items:center;gap:6px;font-size:.84rem;font-weight:600;color:var(--brand);text-decoration:none;margin-bottom:28px}
+.back-link:hover{text-decoration:underline}
+
+/* Footer */
+.site-footer{background:var(--brand-dark);color:#94a3b8;padding:36px 0 22px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:4px}
+.footer-tag{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6}
+.fc-title{font-weight:700;color:rgba(255,255,255,.7);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.fl{display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none}
+.fl:hover{color:rgba(255,255,255,.8)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.73rem;color:rgba(255,255,255,.3);margin-bottom:8px}
+.fpill{background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35);margin-left:4px}
+.fdis{font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.6}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr}}
+.support-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:32px}
+.support-card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;box-shadow:var(--shadow)}
+.support-card h3{font-family:"Inter Tight",sans-serif;font-size:.98rem;font-weight:800;margin-bottom:6px}
+.support-card p{font-size:.86rem;color:#374151;line-height:1.65;margin-bottom:8px}
+.support-card a.big{display:inline-block;font-weight:700;font-size:.92rem}
+.faq{background:var(--panel);border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);margin-bottom:12px}
+.faq summary{cursor:pointer;padding:14px 18px;font-weight:700;font-size:.92rem;color:var(--ink)}
+.faq[open] summary{border-bottom:1px solid var(--border)}
+.faq .a{padding:14px 18px;font-size:.88rem;color:#374151;line-height:1.7}
+.faq .a p+p{margin-top:8px}
+.section-label{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.05rem;margin:28px 0 12px;display:flex;align-items:center;gap:8px}
+.section-label::before{content:"";display:inline-block;width:4px;height:18px;background:var(--brand);border-radius:2px}
+@media(max-width:700px){.support-grid{grid-template-columns:1fr}}
+
+</style>
+</head>
+<body>
+
+<div class="nav-wrap">
+<nav class="nav">
+  <a href="index.html" class="logo"><img src="images/arowanalogo.png?v=20260117" alt="" onerror="this.style.display='none'">Arowana Profits</a>
+  <div class="nav-links">
+    <a href="trading-command.html" class="agent">&#9889; Trading Command</a>
+    <a href="options-hub.html" class="agent">&#128200; Options Hub</a>
+    <div class="nav-div"></div>
+    <a href="wheel-calculator.html">&#129518; Wheel calculator</a>
+    <a href="assignment-risk.html">&#9888;&#65039; Assignment risk</a>
+    <a href="pricing.html">&#128179; Pricing</a>
+    <a href="support.html">&#128172; Support</a>
+  </div>
+  <button class="nav-burger" id="navBurger">&#9776;</button>
+  <div class="nav-auth">
+    <a href="login.html" id="navSignIn" class="nbtn nbtn-g">Sign In</a>
+    <a href="signup.html" id="navSignUp" class="nbtn nbtn-s">&#128640; Start Free</a>
+    <div class="nav-user" id="navUserDrop">
+      <button class="nav-user-btn" id="navUserBtn">&#128100; <span id="navUserName">Account</span></button>
+      <div class="nav-user-menu">
+        <a href="account.html">&#128282; My Account</a>
+        <div class="menu-sep"></div>
+        <a href="trading-command.html">&#9889; Trading Command</a>
+        <a href="portfolio-command.html">&#127974; Portfolio Command</a>
+        <div class="menu-sep"></div>
+        <button id="navSignOutBtn">&#128682; Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</div>
+<div class="mob-menu" id="mobMenu" data-open="false">
+  <div class="mob-panel">
+    <a class="mob-link" href="trading-command.html">&#9889; Trading Command</a>
+    <a class="mob-link" href="options-hub.html">&#128200; Options Hub</a>
+    <a class="mob-link" href="wheel-calculator.html">&#129518; Wheel calculator</a>
+    <a class="mob-link" href="pricing.html">&#128179; Pricing</a>
+    <div class="mob-div"></div>
+    <div id="mobAuthLinks"></div>
+  </div>
+</div>
+
+<main>
+<div class="container">
+  <a href="javascript:history.back()" class="back-link">&#8592; Back</a>
+  <div class="page-header">
+    <div class="page-icon">💬</div>
+    <h1 class="page-title">Support</h1>
+    <p class="page-sub">Questions, problems, or something that looks wrong? Email us and a person reads it.</p>
+  </div>
+
+  <div class="support-grid">
+    <div class="support-card">
+      <h3>📧 Email us</h3>
+      <p>The fastest way to reach us. Include your account email and, if something looks wrong, a screenshot.</p>
+      <a class="big" href="mailto:support@arowanaprofits.com">support@arowanaprofits.com</a>
+      <p style="margin-top:8px;font-size:.8rem;color:var(--muted)">We aim to reply within one business day. We are a small team, so evenings and weekends may take longer.</p>
+    </div>
+    <div class="support-card">
+      <h3>💳 Billing and cancellation</h3>
+      <p>Change your card, switch plan or cancel yourself from the billing portal on your account page. Cancelling stops future charges and your plan runs to the end of the period you paid for.</p>
+      <a class="big" href="account.html">Open my account &rarr;</a>
+    </div>
+  </div>
+
+  <div class="section-label">Common questions</div>
+  <details class="faq"><summary>When do the scans run, and why is there nothing today?</summary><div class="a"><p>Four jobs run each weekday evening, US Eastern time: prices and earnings are cached at 5:30 PM, the covered call scanner runs at 5:45, the cash-secured put scanner at 5:50, and the roll coach at 5:55. Your daily brief is written at 7:30 AM before the open.</p><p>If a tab is empty, the usual reasons are: you signed up today and no evening run has happened yet; your Want-to-Own list is empty, so the put scanner has nothing to scan; you hold no shares, so the call scanner has nothing to cover; or nothing met the rules that day, which is a real answer rather than a failure. Each tab explains which applies.</p></div></details>
+  <details class="faq"><summary>Where do the prices come from, and can I trade on them?</summary><div class="a"><p>Stock prices and indicators come from end-of-day data, refreshed once each weekday evening. Option prices come from a free feed that is delayed and indicative, meaning the figures are estimates rather than the live bid and ask you would trade against.</p><p>Always check the live quote with your broker before placing an order. Every candidate shows its data source and quote time so you can see how fresh it is.</p></div></details>
+  <details class="faq"><summary>How do I import my trades?</summary><div class="a"><p>Open Trade Journal Pro and use the CSV import. Exports from Schwab, Robinhood, Webull, E*Trade, Tastytrade and thinkorswim are recognised automatically, and both stock and option rows are supported. Duplicates are detected, so re-importing an overlapping file is safe.</p><p>If your broker is not on that list, email us the file with any personal details removed and we will look at adding it.</p></div></details>
+  <details class="faq"><summary>What does each plan include?</summary><div class="a"><p>Free covers the trade journal, watchlists, your Want-to-Own list and Ticker Research. Pro adds the covered call and cash-secured put scanners, the premium income tracker, cost basis after premium, the tax snapshot, risk guardrails, your daily brief, the roll coach and pattern detection.</p><p>Full detail is on the <a href="pricing.html">pricing page</a>.</p></div></details>
+  <details class="faq"><summary>Can I get a refund?</summary><div class="a"><p>Yes. Email us within 30 days of your first payment and we will refund it in full, no explanation needed. After 30 days payments are non-refundable except where the law requires otherwise. See the <a href="terms.html">Terms</a> for the detail.</p></div></details>
+  <details class="faq"><summary>Do I need my own API key?</summary><div class="a"><p>Not for the wheel tools. The scanners, roll coach, income tracker, guardrails and daily brief all run on data we fetch, with nothing for you to configure.</p><p>Ticker Research is the exception: its fundamentals and sentiment need a free Finnhub or Alpha Vantage key of your own, added on your account page.</p></div></details>
+  <details class="faq"><summary>Who can see my trades?</summary><div class="a"><p>No other user can. Every table enforces row-level security, so an account only ever reads its own data.</p><p>As the operator we hold administrative access to the database and can view account data when troubleshooting or running the service. We do not browse it out of curiosity and never sell or share it. The <a href="privacy.html">Privacy Policy</a> spells this out.</p></div></details>
+  <details class="faq"><summary>How do I delete my account?</summary><div class="a"><p>Email us from the address on your account and we will delete it. Your personal data and trading records are removed within 30 days, apart from payment records we are legally required to keep. Export your journal and watchlists first if you want a copy.</p></div></details>
+  <details class="faq"><summary>Is this financial advice?</summary><div class="a"><p>No. Everything the platform produces is information for your own analysis, generated by fixed rules applied to your data. We are not a registered investment adviser or broker-dealer, we do not execute trades, and nothing here is tailored to your circumstances.</p><p>Options carry substantial risk and selling them can lose far more than the premium received. Please read the <a href="disclosures.html">Disclosures</a> before trading.</p></div></details>
+  <details class="faq"><summary>Something looks wrong with my numbers.</summary><div class="a"><p>Tell us. Income, cost basis and pattern figures are calculated from your journal, so the most common cause is a missing or mistyped trade, but if the arithmetic is wrong we want to know.</p><p>Email support@arowanaprofits.com with the ticker, the screen you were on and what you expected instead. Include a screenshot if you can.</p></div></details>
+
+  <div class="section-label">Still stuck?</div>
+  <div class="support-card">
+    <p>Email <a href="mailto:support@arowanaprofits.com">support@arowanaprofits.com</a> with your account email and what you were trying to do. We would rather hear about a small problem early than lose you over it quietly.</p>
+  </div>
+
+</div>
+</main>
+
+<footer class="site-footer">
+<div class="container">
+  <div class="footer-grid">
+    <div><div class="footer-brand">Arowana Profits</div><div class="footer-tag">The desk for traders who run the wheel. Education only, not financial advice.</div></div>
+    <div><div class="fc-title">Explore</div><a class="fl" href="wheel-calculator.html">Wheel calculator</a><a class="fl" href="assignment-risk.html">Assignment risk</a><a class="fl" href="pricing.html">Pricing</a></div>
+    <div><div class="fc-title">Legal</div><a class="fl" href="disclosures.html">Disclosures</a><a class="fl" href="terms.html">Terms</a><a class="fl" href="privacy.html">Privacy</a></div>
+    <div><div class="fc-title">Account</div><a class="fl" href="signup.html">Sign Up Free</a><a class="fl" href="login.html">Sign In</a><a class="fl" href="account.html">My Account</a></div>
+  </div>
+  <div class="foot-bot"><div>&#169; <span id="footYear"></span> Arowana Profits. All rights reserved.</div><div><span class="fpill">Education-only</span><span class="fpill">Not financial advice</span></div></div>
+  <p class="fdis"><strong>Important:</strong> Arowana Profits is for educational purposes only. Not financial advice.</p>
+</div>
+</footer>
+
+<script>
+(function(){
+  document.getElementById('footYear').textContent = new Date().getFullYear();
+  var aKeys=['gs_auth_user_v1','gs_session','ap_session','sb-access-token'];
+  var u=JSON.parse(localStorage.getItem('gs_auth_user_v1')||'null');
+  var has=u||aKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+  var si=document.getElementById('navSignIn'),su=document.getElementById('navSignUp'),dd=document.getElementById('navUserDrop');
+  if(has){
+    if(si)si.style.display='none'; if(su)su.style.display='none'; if(dd)dd.classList.add('show');
+    var n=u&&(u.name||u.full_name||(u.email?u.email.split('@')[0]:null))||'Account';
+    var nm=document.getElementById('navUserName'); if(nm)nm.textContent=n;
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="account.html">&#128282; My Account</a>';
+  }else{
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="login.html">&#128272; Sign In</a><a class="mob-link" href="signup.html">&#128640; Start Free</a>';
+  }
+  var utog=document.getElementById('navUserBtn'),ddrop=document.getElementById('navUserDrop');
+  if(utog&&ddrop){utog.addEventListener('click',function(e){e.stopPropagation();ddrop.classList.toggle('open');});document.addEventListener('click',function(){ddrop.classList.remove('open');});}
+  var sob=document.getElementById('navSignOutBtn');
+  if(sob)sob.addEventListener('click',function(){aKeys.forEach(function(k){localStorage.removeItem(k);});location.href='index.html';});
+  var burger=document.getElementById('navBurger'),mm=document.getElementById('mobMenu');
+  if(burger&&mm)burger.addEventListener('click',function(){mm.setAttribute('data-open',mm.getAttribute('data-open')==='true'?'false':'true');});
+})();
+</script>
+</body>
+</html>

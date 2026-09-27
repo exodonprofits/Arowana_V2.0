@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>💳 Fee Impact Analyzer</title>
+  <style>
+    :root{
+      --bg:#f9fafb; --card:#fff; --text:#111827; --muted:#4b5563; --shadow:0 4px 12px rgba(0,0,0,.1);
+      --blue:#2563eb; --blue-dark:#1d4ed8; --green:#16a34a; --green-dark:#15803d; --red:#dc2626; --gray:#e5e7eb;
+    }
+    *{box-sizing:border-box}
+    body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);margin:0;padding:1.25rem;display:flex;flex-direction:column;align-items:center}
+    header{text-align:center;margin-top:2.25rem}
+    header h1{font-size:2rem;margin:0 0 .5rem}
+    header p{margin:0;color:var(--muted);max-width:860px}
+
+    /* TOP-BOTTOM layout */
+    .wrap{width:100%;max-width:1200px;margin:1.25rem auto 2rem;display:flex;flex-direction:column;gap:1rem}
+
+    .panel{background:var(--card);border-radius:1.25rem;box-shadow:var(--shadow);padding:1rem}
+    h2{font-size:1.1rem;margin:.25rem 0 .65rem}
+    .sub{color:var(--muted);font-size:.9rem}
+
+    label{font-weight:600}
+    input[type="number"],input[type="text"],select{width:100%;padding:.5rem .6rem;border-radius:.6rem;border:1px solid #e5e7eb}
+    .row{margin:.65rem 0}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:.5rem}
+
+    /* Buttons */
+    .btn{border:none;cursor:pointer;font-weight:600;padding:.55rem .9rem;border-radius:9999px;transition:.2s ease;display:inline-flex;align-items:center;gap:.5rem}
+    .btn-green{background:var(--green);color:#fff}.btn-green:hover{background:var(--green-dark)}
+    .btn-blue{background:var(--blue);color:#fff}.btn-blue:hover{background:var(--blue-dark)}
+    .btn-gray{background:var(--gray);color:#111827}
+    .btn-red{background:var(--red);color:#fff}
+
+    .btns{display:flex;flex-wrap:wrap;gap:.5rem}
+    .mt-1{margin-top:.5rem}.mt-2{margin-top:.75rem}.mt-3{margin-top:1rem}
+
+    .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-top:.5rem}
+    @media(min-width:700px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+    .stat{background:#f3f4f6;border-radius:.9rem;padding:.65rem .75rem;text-align:center}
+    .stat b{display:block;font-size:1.05rem}
+    .stat span{color:var(--muted);font-size:.85rem}
+
+    .table-wrap{overflow:auto;border-radius:1rem;border:1px solid #eee;margin-top:.75rem}
+    table{width:100%;border-collapse:collapse;font-size:.95rem}
+    th,td{padding:.6rem .7rem}
+    thead th{position:sticky;top:0;background:#f3f4f6;text-align:left;border-bottom:1px solid #e5e7eb}
+    tbody tr:nth-child(odd){background:#fafafa}
+    tbody tr:hover{background:#eef2ff}
+    .right{text-align:right}
+
+    canvas{width:100% !important;height:auto !important}
+    .note{background:#eef2ff;border-left:6px solid var(--blue);padding:.75rem 1rem;border-radius:.75rem;color:#0f172a}
+
+    .footer-nav{margin:1rem 0;display:flex;gap:.5rem;flex-wrap:wrap;align-items:center}
+    a{color:var(--blue);text-decoration:none}
+    a:hover{color:var(--blue-dark)}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <header>
+    <h1>💳 Fee Impact Analyzer</h1>
+    <p>See how expense ratios compound over time. Compare multiple funds, visualize total fees paid, and estimate portfolio value drag.</p>
+  </header>
+
+  <div class="wrap">
+    <!-- TOP: Scenario Inputs -->
+    <section class="panel" aria-label="Inputs">
+      <h2>Scenario Inputs</h2>
+      <div class="row"><label>Starting Balance ($)</label><input type="number" id="start" value="10000" min="0" step="100"></div>
+      <div class="grid2 row">
+        <div><label>Monthly Contribution ($)</label><input type="number" id="contrib" value="500" min="0" step="10"></div>
+        <div><label>Years</label><input type="number" id="years" value="20" min="1" max="60"></div>
+      </div>
+      <div class="grid2 row">
+        <div><label>Expected Gross Return (before fees) % / yr</label><input type="number" id="gross" value="7" min="0" max="20" step="0.1"></div>
+        <div><label>Inflation (optional) % / yr</label><input type="number" id="infl" value="0" min="0" max="10" step="0.1"></div>
+      </div>
+
+      <h2 class="mt-2">Funds to Compare</h2>
+      <div class="row sub">Add up to 5 funds. ER = expense ratio in % per year.</div>
+      <div id="funds"></div>
+      <div class="btns mt-1">
+        <button class="btn btn-gray" onclick="addFund()">➕ Add Fund</button>
+        <button class="btn btn-red" onclick="clearFunds()">🧹 Clear Funds</button>
+      </div>
+
+      <div class="btns mt-2">
+        <button class="btn btn-green" onclick="run()">▶️ Run Analysis</button>
+        <button class="btn btn-gray" onclick="exportCSV()">⬇️ Export CSV</button>
+        <button class="btn btn-gray" onclick="saveScenario()">💾 Save</button>
+        <button class="btn btn-gray" onclick="loadScenario()">📥 Load</button>
+      </div>
+
+      <div class="note mt-2">Educational only. Results assume contributions at end of each month and fees taken continuously via ER (annualized). Not investment advice.</div>
+
+      <div class="footer-nav">
+        <a class="btn btn-blue" href="long-term-dashboard.html">⬅️ Back to Long‑Term Dashboard</a>
+      </div>
+    </section>
+
+    <!-- BOTTOM: Results -->
+    <section class="panel" aria-label="Results">
+      <h2>Results</h2>
+      <div class="stat-grid" id="stats">
+        <div class="stat"><b id="endBest">—</b><span>Best Ending Value</span></div>
+        <div class="stat"><b id="endWorst">—</b><span>Worst Ending Value</span></div>
+        <div class="stat"><b id="feesBest">—</b><span>Lowest Total Fees Paid</span></div>
+        <div class="stat"><b id="feesWorst">—</b><span>Highest Total Fees Paid</span></div>
+      </div>
+
+      <div class="row mt-2"><canvas id="chart"></canvas></div>
+
+      <h2>Detail Table</h2>
+      <div class="table-wrap">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>Fund</th><th class="right">ER %</th><th class="right">End Value ($)</th><th class="right">Total Fees Paid ($)</th><th class="right">Fee Drag vs Cheapest ($)</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // --- UI helpers ---
+    const fundsWrap = document.getElementById('funds');
+    function addFund(ticker='', name='', er=0.03){
+      if(fundsWrap.children.length >= 5){ return alert('Limit 5 funds for clarity.'); }
+      const row = document.createElement('div');
+      row.className='row';
+      row.innerHTML = `
+        <div class="grid2" style="align-items:center;gap:.5rem">
+          <input type="text" placeholder="Ticker (e.g., VTI)" value="${ticker}">
+          <input type="text" placeholder="Name (optional)" value="${name}">
+        </div>
+        <div class="grid2" style="align-items:center;gap:.5rem;margin-top:.4rem">
+          <div>
+            <label>Expense Ratio %</label>
+            <input type="number" step="0.01" min="0" value="${er}">
+          </div>
+          <div class="btns">
+            <button class="btn btn-gray" onclick="duplicateFund(this)">📄 Duplicate</button>
+            <button class="btn btn-red" onclick="this.closest('.row').remove()">✖ Remove</button>
+          </div>
+        </div>`;
+      fundsWrap.appendChild(row);
+    }
+    function duplicateFund(btn){
+      const row = btn.closest('.row');
+      const [t,n] = row.querySelectorAll('input[type=text]');
+      const er = row.querySelector('input[type=number]').value;
+      addFund(t.value, n.value, er);
+    }
+    function clearFunds(){ fundsWrap.innerHTML=''; }
+
+    // --- Math engine ---
+    function simulate(erPct){
+      const start = +document.getElementById('start').value || 0;
+      const contrib = +document.getElementById('contrib').value || 0;
+      const years = +document.getElementById('years').value || 1;
+      const gross = (+document.getElementById('gross').value || 0)/100;
+      const infl = (+document.getElementById('infl').value || 0)/100;
+
+      const net = Math.max(gross - erPct/100, -0.999); // guard
+      const mRate = Math.pow(1+net, 1/12) - 1; // monthly equivalent
+
+      let bal = start;
+      let totalFees = 0;
+      let months = Math.round(years*12);
+      for(let m=1;m<=months;m++){
+        const fee = bal * (erPct/100) / 12; // monthly fee approx
+        totalFees += fee;
+        bal = bal * (1 + mRate) + contrib; // contrib at end of month
+      }
+
+      if(infl>0){
+        const inflAdj = Math.pow(1+infl, years);
+        bal = bal / inflAdj;
+        totalFees = totalFees / inflAdj;
+      }
+      return {end: bal, fees: totalFees};
+    }
+
+    function currency(n){ return n.toLocaleString(undefined,{maximumFractionDigits:0}); }
+
+    let chart;
+    function run(){
+      const rows = [...fundsWrap.querySelectorAll('.row')];
+      if(!rows.length){ addFund('VTI','Total US',0.03); addFund('S&P 500 ETF','Large Blend',0.05); }
+
+      const results = rows.map(r=>{
+        const [t,n] = r.querySelectorAll('input[type=text]');
+        const er = parseFloat(r.querySelector('input[type=number]').value)||0;
+        const res = simulate(er);
+        return {ticker:t.value||'Fund', name:n.value||'', er, ...res};
+      });
+
+      const cheapest = results.reduce((min,r)=> r.er<min.er?r:min, results[0]);
+      const best = results.reduce((max,r)=> r.end>max.end?r:max, results[0]);
+      const worst = results.reduce((min,r)=> r.end<min.end?r:min, results[0]);
+      const lowFee = results.reduce((min,r)=> r.fees<min.fees?r:min, results[0]);
+      const hiFee = results.reduce((max,r)=> r.fees>max.fees?r:max, results[0]);
+
+      document.getElementById('endBest').textContent = '$'+currency(best.end);
+      document.getElementById('endWorst').textContent = '$'+currency(worst.end);
+      document.getElementById('feesBest').textContent = '$'+currency(lowFee.fees);
+      document.getElementById('feesWorst').textContent = '$'+currency(hiFee.fees);
+
+      const tbody = document.querySelector('#tbl tbody');
+      tbody.innerHTML = '';
+      results.sort((a,b)=>a.er-b.er).forEach(r=>{
+        const drag = Math.max(0, simulate(cheapest.er).end - r.end);
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td><b>${r.ticker}</b> ${r.name?('— '+r.name):''}</td>
+                        <td class="right">${r.er.toFixed(2)}</td>
+                        <td class="right">$${currency(r.end)}</td>
+                        <td class="right">$${currency(r.fees)}</td>
+                        <td class="right">$${currency(drag)}</td>`;
+        tbody.appendChild(tr);
+      });
+
+      const ctx = document.getElementById('chart');
+      const labels = results.map(r=> (r.ticker||'Fund') + ` (${r.er.toFixed(2)}%)`);
+      const endVals = results.map(r=> Math.round(r.end));
+      const feeVals = results.map(r=> Math.round(r.fees));
+
+      const data = {
+        labels,
+        datasets: [
+          {label:'Ending Value', data:endVals, backgroundColor:'#2563eb'},
+          {label:'Total Fees Paid', data:feeVals, backgroundColor:'#f59e0b'}
+        ]
+      };
+      const opts = {responsive:true, plugins:{legend:{position:'bottom'}}, scales:{y:{ticks:{callback:(v)=>'$'+v.toLocaleString()}}}};
+      if(chart){ chart.data=data; chart.options=opts; chart.update(); }
+      else { chart = new Chart(ctx, {type:'bar', data, options:opts}); }
+    }
+
+    function exportCSV(){
+      const rows = [...document.querySelectorAll('#tbl tbody tr')].map(tr=>[...tr.children].map(td=>td.textContent));
+      const hdr = ['Fund','ER %','End Value ($)','Total Fees Paid ($)','Fee Drag vs Cheapest ($)'];
+      const csv = [hdr].concat(rows).map(r=>r.join(',')).join('\n');
+      const blob = new Blob([csv],{type:'text/csv'});
+      const url = URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='fee-analyzer.csv'; a.click(); URL.revokeObjectURL(url);
+    }
+
+    function saveScenario(){
+      const obj = {
+        start:+document.getElementById('start').value,
+        contrib:+document.getElementById('contrib').value,
+        years:+document.getElementById('years').value,
+        gross:+document.getElementById('gross').value,
+        infl:+document.getElementById('infl').value,
+        funds:[...fundsWrap.querySelectorAll('.row')].map(r=>{
+          const [t,n] = r.querySelectorAll('input[type=text]');
+          const er = parseFloat(r.querySelector('input[type=number]').value)||0;
+          return {ticker:t.value,name:n.value,er};
+        })
+      };
+      localStorage.setItem('fee_analyzer_v1', JSON.stringify(obj));
+      alert('Saved to this browser.');
+    }
+    function loadScenario(){
+      try{
+        const obj = JSON.parse(localStorage.getItem('fee_analyzer_v1')||'null');
+        if(!obj) return alert('No saved scenario found.');
+        document.getElementById('start').value = obj.start;
+        document.getElementById('contrib').value = obj.contrib;
+        document.getElementById('years').value = obj.years;
+        document.getElementById('gross').value = obj.gross;
+        document.getElementById('infl').value = obj.infl;
+        fundsWrap.innerHTML='';
+        (obj.funds||[]).forEach(f=>addFund(f.ticker,f.name,f.er));
+      }catch(err){ alert('Load failed: '+err.message); }
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      addFund('VTI','Total US',0.03);
+      addFund('S&P 500 ETF','Large Blend',0.05);
+      run();
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>📊</text></svg>">
+<title>News Trading Strategy — Arowana Profits</title>
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dk:#083d6e;--brand-lt:#e8f2fb;
+  --bg:#f6f8fb;--panel:#fff;--text:#111827;--muted:#64748b;
+  --border:#e5e7eb;--shadow:0 4px 24px rgba(11,79,138,.08);--radius:14px;
+  --ring:rgba(11,79,138,.22);--green:#16a34a;--red:#dc2626;--amber:#d97706;
+  --blue:#3b9eff;--cyan:#00d4ff;
+  --page-width:min(1200px,92vw)
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+/* ─ NAV ─ */
+.nav-shell{background:var(--brand);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;font-size:1.2rem;white-space:nowrap}
+.nav-logo{width:34px;height:34px;border-radius:8px;object-fit:contain;background:rgba(255,255,255,.15);padding:2px}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{color:rgba(255,255,255,.75);padding:7px 11px;border-radius:8px;font-size:.875rem;font-weight:600;transition:.15s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nav-btn{color:rgba(255,255,255,.8);padding:6px 12px;border-radius:8px;font-size:.85rem;font-weight:600;transition:.15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.nav-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-btn.cta{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.nav-btn.cta:hover{background:rgba(255,255,255,.28)}
+
+/* ─ PAGE HERO ─ */
+.page-hero{background:linear-gradient(135deg,#0b4f8a 0%,#1565a8 60%,#0d7bc4 100%);color:#fff;padding:28px 0 24px}
+.page-hero h1{margin:0 0 4px;font-size:1.7rem;font-weight:800}
+.page-hero p{margin:0;opacity:.8;font-size:.9rem}
+
+/* ─ CARDS ─ */
+.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:1rem;font-weight:700;margin:0}
+
+/* ─ BUTTONS ─ */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.875rem;font-family:inherit;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dk)}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:#f8fafc}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b91c1c}
+.btn-amber{background:var(--amber);color:#fff}.btn-amber:hover{background:#b45309}
+.btn-sm{padding:5px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─ INPUTS ─ */
+input[type=text],input[type=number],select,textarea{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:var(--text);background:#fff;width:100%;transition:.15s}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px var(--ring);border-color:var(--brand)}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.hint{font-size:.75rem;color:var(--muted);margin-top:3px}
+
+/* ─ LAYOUT ─ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.three-col{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.three-col{grid-template-columns:1fr}}
+
+/* ─ TABS ─ */
+.tab-nav{display:flex;gap:2px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:0}
+.tab-nav button{background:none;border:none;padding:10px 16px;font-size:.9rem;font-weight:600;color:var(--muted);cursor:pointer;border-radius:8px 8px 0 0;transition:.15s;font-family:inherit}
+.tab-nav button.active{color:var(--brand);background:var(--panel);border-bottom:2px solid var(--brand)}
+.tab-nav button:hover:not(.active){background:rgba(0,0,0,.04)}
+.tab-content{display:none}
+.tab-content.active{display:block}
+
+/* ─ NEWS INPUT ─ */
+.search-row{display:flex;gap:8px;align-items:end;margin-bottom:20px}
+.search-input{flex:1}
+.search-type{display:flex;gap:8px;margin-bottom:12px}
+.search-type label{display:flex;align-items:center;gap:6px;font-size:.85rem;font-weight:600;color:var(--text);margin:0;cursor:pointer}
+.search-type input[type="radio"]{margin:0}
+
+/* ─ SPINNER ─ */
+.spinner{display:none;text-align:center;padding:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-icon{width:22px;height:22px;border:3px solid #e5e7eb;border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+
+/* ─ ALERTS ─ */
+.alert{border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:.9rem}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-warning{background:#fffbeb;border:1px solid #fed7aa;color:#92400e}
+.alert-danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+
+/* ─ NEWS SUMMARY ─ */
+.news-summary{background:#f8fafc;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:16px}
+.news-summary h4{margin:0 0 8px;color:var(--text)}
+.news-item{border-bottom:1px solid #e5e7eb;padding:12px 0;margin:0}
+.news-item:last-child{border-bottom:none}
+.news-title{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:4px}
+.news-meta{font-size:.75rem;color:var(--muted);margin-bottom:6px}
+.news-snippet{font-size:.85rem;line-height:1.5;color:#374151}
+
+/* ─ IMPACT ANALYSIS ─ */
+.impact-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.impact-card{border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff}
+.impact-card h4{margin:0 0 12px;display:flex;align-items:center;gap:8px}
+.impact-indicator{padding:4px 8px;border-radius:6px;font-size:.75rem;font-weight:600;text-transform:uppercase}
+.impact-positive{background:#dcfce7;color:#166534}
+.impact-negative{background:#fee2e2;color:#dc2626}
+.impact-neutral{background:#f3f4f6;color:#6b7280}
+.impact-content{font-size:.9rem;line-height:1.6}
+
+/* ─ TRADING STRATEGY ─ */
+.strategy-card{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:12px;padding:16px;margin:16px 0}
+.strategy-card h4{color:#0c4a6e;margin:0 0 12px}
+.strategy-item{background:#fff;border:1px solid #e0e7ff;border-radius:8px;padding:12px;margin:8px 0}
+.strategy-item h5{margin:0 0 6px;color:var(--text);font-size:.9rem}
+.strategy-item p{margin:0;font-size:.85rem;color:#4b5563;line-height:1.5}
+
+/* ─ PRICE RANGE ─ */
+.range-visual{background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:16px;margin:12px 0;text-align:center}
+.range-bar{position:relative;height:8px;background:#e5e7eb;border-radius:4px;margin:16px 0;overflow:hidden}
+.range-fill{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--red),var(--amber),var(--green))}
+.range-labels{display:flex;justify-content:space-between;font-size:.75rem;color:var(--muted);margin-top:8px}
+.current-price{position:absolute;top:-12px;width:2px;height:32px;background:var(--brand);border-radius:1px}
+.price-label{position:absolute;top:-24px;left:50%;transform:translateX(-50%);font-size:.7rem;font-weight:600;color:var(--brand);background:#fff;padding:2px 6px;border-radius:4px;border:1px solid var(--brand)}
+
+/* ─ TOAST NOTIFICATIONS ─ */
+.toast-container{position:fixed;top:70px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px}
+.toast{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;min-width:300px;animation:slideIn .3s ease}
+.toast.success{border-left:4px solid var(--green)}
+.toast.error{border-left:4px solid var(--red)}
+.toast.info{border-left:4px solid var(--blue)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ─ FOOTER ─ */
+footer{background:var(--brand);color:#cfe0f5;padding:28px 0;margin-top:auto}
+.f-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:720px){.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.f-grid{grid-template-columns:1fr}}
+.f-col h4{color:#fff;font-size:.875rem;font-weight:700;margin:0 0 8px}
+.f-col a{display:block;color:#94bad8;font-size:.8rem;margin-bottom:4px}
+.f-col a:hover{color:#fff}
+.f-col p{font-size:.78rem;margin:0;line-height:1.6}
+.f-bottom{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);text-align:center;font-size:.73rem;color:#6b94b8}
+
+/* ─ MOBILE RESPONSIVE ─ */
+@media(max-width:600px){
+  .container{padding:0 12px}
+  .page-hero h1{font-size:1.4rem}
+  .nav-inner{padding:0 12px}
+  .nav-brand{font-size:1rem}
+  .card{padding:16px}
+  .search-row{flex-direction:column;gap:12px}
+  .impact-grid{grid-template-columns:1fr}
+}
+</style>
+</head>
+
+<body>
+
+<!-- Navigation -->
+<nav class="nav-shell">
+  <div class="nav-inner">
+    <a href="index.html" class="nav-brand">
+      <img src="https://arowanaprofits.com/images/logo-icon.png" alt="" class="nav-logo">
+      Arowana Profits
+    </a>
+    <div class="nav-links">
+      <a href="arowana-trader.html" class="nav-link">📊 Trader</a>
+      <a href="portfolio-advisor.html" class="nav-link">💼 Portfolio</a>
+      <a href="features.html" class="nav-link">🛠️ Tools</a>
+      <a href="news-trading.html" class="nav-link active">📰 News Trading</a>
+    </div>
+    <div class="nav-right">
+      <button class="nav-btn" onclick="location.href='login.html'">Sign In</button>
+      <button class="nav-btn cta" onclick="location.href='pricing.html'">Start Free</button>
+    </div>
+  </div>
+</nav>
+
+<!-- Page Hero -->
+<section class="page-hero">
+  <div class="container">
+    <h1>📰 News Trading Strategy</h1>
+    <p>Convert breaking news into actionable trading strategies with impact analysis and price range predictions.</p>
+  </div>
+</section>
+
+<!-- Main Content -->
+<main style="padding:24px 0">
+  <div class="container">
+    
+    <!-- News Input -->
+    <div class="card">
+      <div class="card-hd">
+        <h2 class="card-title">📰 News Analysis Input</h2>
+        <div style="display:flex;gap:8px">
+          <button id="demoBtn" class="btn btn-ghost btn-sm">🧪 Demo Mode</button>
+          <button id="resetBtn" class="btn btn-ghost btn-sm">🔄 Reset</button>
+        </div>
+      </div>
+      
+      <div class="search-type">
+        <label>
+          <input type="radio" name="searchType" value="company" checked>
+          🏢 Company
+        </label>
+        <label>
+          <input type="radio" name="searchType" value="sector">
+          🏭 Sector
+        </label>
+        <label>
+          <input type="radio" name="searchType" value="manual">
+          ✍️ Manual News
+        </label>
+      </div>
+      
+      <div class="search-row">
+        <div class="search-input">
+          <label for="newsQuery" id="inputLabel">Company Name or Ticker</label>
+          <input type="text" id="newsQuery" placeholder="Enter company (e.g., Apple, AAPL) or sector (e.g., Technology, EV)" maxlength="100">
+          <div class="hint" id="inputHint">AI will find and analyze the latest relevant news automatically</div>
+        </div>
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span id="analyzeText">🔍 Analyze News</span>
+          <div id="analyzeSpinner" class="spinner" style="display:none">
+            <div class="spin-icon"></div>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Manual News Input (hidden by default) -->
+      <div id="manualNewsInput" style="display:none;margin-top:16px">
+        <label for="manualNewsText">News Content</label>
+        <textarea id="manualNewsText" rows="4" placeholder="Paste news article, earnings report, or press release here..."></textarea>
+        <div class="hint">Paste the full text of the news you want to analyze for trading implications</div>
+      </div>
+      
+      <!-- Demo Mode Notice -->
+      <div id="demoNotice" class="alert alert-warning" style="display:none">
+        🧪 <strong>Demo Mode Active:</strong> Analysis uses simulated news data for demonstration purposes.
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" style="display:none">
+      
+      <!-- News Summary -->
+      <div class="card">
+        <div class="card-hd">
+          <h2 class="card-title">📰 Latest News Summary</h2>
+          <div style="font-size:.8rem;color:var(--muted)" id="newsMeta">Analysis for: <span id="newsSubject"></span></div>
+        </div>
+        
+        <div class="news-summary">
+          <div id="newsList">
+            <!-- News items will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Impact Analysis -->
+      <div class="card">
+        <div class="card-hd">
+          <h2 class="card-title">📊 Impact Analysis</h2>
+        </div>
+        
+        <div class="impact-grid">
+          <div class="impact-card">
+            <h4>⚡ Short-term Impact (1-7 days)</h4>
+            <div id="shortTermImpact" class="impact-content">
+              <!-- Short-term analysis will be populated here -->
+            </div>
+          </div>
+          
+          <div class="impact-card">
+            <h4>🎯 Long-term Impact (1-6 months)</h4>
+            <div id="longTermImpact" class="impact-content">
+              <!-- Long-term analysis will be populated here -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Range Prediction -->
+      <div class="card">
+        <div class="card-hd">
+          <h2 class="card-title">💰 Expected Price Movement</h2>
+        </div>
+        
+        <div class="range-visual">
+          <h4 style="margin:0 0 12px;color:var(--text)" id="rangeTitle">Price Range Forecast</h4>
+          <div class="range-bar">
+            <div class="range-fill"></div>
+            <div class="current-price" id="currentPriceIndicator">
+              <div class="price-label" id="currentPriceLabel">Current</div>
+            </div>
+          </div>
+          <div class="range-labels">
+            <span id="bearishTarget">Bearish: —</span>
+            <span id="neutralTarget">Neutral: —</span>
+            <span id="bullishTarget">Bullish: —</span>
+          </div>
+          <div style="margin-top:12px;font-size:.85rem;color:var(--muted)" id="rangeExplanation">
+            <!-- Range explanation will be populated here -->
+          </div>
+        </div>
+      </div>
+
+      <!-- Trading Strategy -->
+      <div class="strategy-card">
+        <h4>🎯 Suggested Trading Strategy</h4>
+        <div id="tradingStrategy">
+          <!-- Trading strategy will be populated here -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- Footer -->
+<footer>
+  <div class="container">
+    <div class="f-grid">
+      <div class="f-col">
+        <h4>Arowana Profits</h4>
+        <p>Risk-first education and AI-assisted planning for retail traders.</p>
+      </div>
+      <div class="f-col">
+        <h4>Explore</h4>
+        <a href="arowana-trader.html">Arowana Trader</a>
+        <a href="portfolio-advisor.html">Portfolio Advisor</a>
+        <a href="features.html">Features</a>
+        <a href="pricing.html">Plans</a>
+      </div>
+      <div class="f-col">
+        <h4>Company</h4>
+        <a href="about.html">About</a>
+        <a href="contact.html">Contact</a>
+        <a href="security.html">Security</a>
+        <a href="blog.html">Blog</a>
+      </div>
+      <div class="f-col">
+        <h4>Legal</h4>
+        <a href="disclosures.html">Disclosures</a>
+        <a href="terms.html">Terms</a>
+        <a href="privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="f-bottom">
+      &copy; <span id="footYear"></span> Arowana Profits. All rights reserved. Educational purposes only. Not financial advice.
+    </div>
+  </div>
+</footer>
+
+<!-- Toast Container -->
+<div id="toastContainer" class="toast-container"></div>
+
+<script>
+(function(){
+'use strict';
+
+// ─ CONSTANTS ─
+const DEMO_MODE_KEY = 'news_trading_demo_mode';
+const RESULTS_CACHE_KEY = 'news_trading_last_result';
+
+// ─ STATE ─
+let isDemoMode = false;
+let lastAnalysis = null;
+let currentQuery = '';
+let currentSearchType = 'company';
+
+// ─ DOM REFERENCES ─
+const $ = id => document.getElementById(id);
+
+// ─ INITIALIZATION ─
+function init() {
+  // Set footer year
+  const fy = $('footYear');
+  if (fy) fy.textContent = new Date().getFullYear();
+  
+  // Load demo mode preference
+  isDemoMode = localStorage.getItem(DEMO_MODE_KEY) === 'true';
+  updateDemoMode();
+  
+  // Bind events
+  $('demoBtn').addEventListener('click', toggleDemoMode);
+  $('resetBtn').addEventListener('click', resetAll);
+  $('analyzeBtn').addEventListener('click', runAnalysis);
+  $('newsQuery').addEventListener('keydown', e => {
+    if (e.key === 'Enter') runAnalysis();
+  });
+  
+  // Search type radio buttons
+  document.querySelectorAll('input[name="searchType"]').forEach(radio => {
+    radio.addEventListener('change', updateSearchType);
+  });
+  
+  // Load cached result if available
+  loadCachedResult();
+  
+  // Listen for app config ready
+  document.addEventListener('ap:config:ready', () => {
+    // Webhook configuration available
+  });
+}
+
+// ─ SEARCH TYPE HANDLING ─
+function updateSearchType() {
+  currentSearchType = document.querySelector('input[name="searchType"]:checked').value;
+  
+  const label = $('inputLabel');
+  const input = $('newsQuery');
+  const hint = $('inputHint');
+  const manualInput = $('manualNewsInput');
+  
+  switch(currentSearchType) {
+    case 'company':
+      label.textContent = 'Company Name or Ticker';
+      input.placeholder = 'Enter company (e.g., Apple, AAPL, Tesla)';
+      hint.textContent = 'AI will find and analyze the latest company news automatically';
+      manualInput.style.display = 'none';
+      break;
+    case 'sector':
+      label.textContent = 'Sector or Industry';
+      input.placeholder = 'Enter sector (e.g., Technology, EV, Healthcare)';
+      hint.textContent = 'AI will analyze sector-wide news and trends automatically';
+      manualInput.style.display = 'none';
+      break;
+    case 'manual':
+      label.textContent = 'News Title/Subject';
+      input.placeholder = 'Brief description of the news to analyze';
+      hint.textContent = 'Provide a title, then paste the full news content below';
+      manualInput.style.display = 'block';
+      break;
+  }
+}
+
+// ─ DEMO MODE ─
+function toggleDemoMode() {
+  isDemoMode = !isDemoMode;
+  localStorage.setItem(DEMO_MODE_KEY, isDemoMode.toString());
+  updateDemoMode();
+  showToast(isDemoMode ? '🧪 Demo mode enabled' : '🌐 Live mode enabled', 'info');
+}
+
+function updateDemoMode() {
+  const btn = $('demoBtn');
+  const notice = $('demoNotice');
+  
+  if (isDemoMode) {
+    btn.textContent = '🌐 Live Mode';
+    btn.className = 'btn btn-amber btn-sm';
+    notice.style.display = 'block';
+  } else {
+    btn.textContent = '🧪 Demo Mode';
+    btn.className = 'btn btn-ghost btn-sm';
+    notice.style.display = 'none';
+  }
+}
+
+// ─ MAIN ANALYSIS FUNCTION ─
+async function runAnalysis() {
+  const query = $('newsQuery').value.trim();
+  const manualNews = $('manualNewsText').value.trim();
+  
+  if (!query) {
+    showToast('Please enter a search query', 'error');
+    return;
+  }
+  
+  if (currentSearchType === 'manual' && !manualNews) {
+    showToast('Please paste news content for manual analysis', 'error');
+    return;
+  }
+  
+  currentQuery = query;
+  setBusyState(true);
+  
+  try {
+    let analysisData;
+    
+    if (isDemoMode) {
+      // Demo mode - simulated data
+      await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate API delay
+      analysisData = generateDemoData(query, currentSearchType, manualNews);
+    } else {
+      // Live mode - would call actual API
+      analysisData = await callNewsAnalysisAPI(query, currentSearchType, manualNews);
+    }
+    
+    lastAnalysis = analysisData;
+    
+    // Cache the result
+    localStorage.setItem(RESULTS_CACHE_KEY, JSON.stringify({
+      query,
+      searchType: currentSearchType,
+      data: analysisData,
+      timestamp: Date.now()
+    }));
+    
+    displayResults(analysisData);
+    showToast(`✅ News analysis complete for ${query}`, 'success');
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    showToast(`❌ Analysis failed: ${error.message}`, 'error');
+  } finally {
+    setBusyState(false);
+  }
+}
+
+// ─ DEMO DATA GENERATOR ─
+function generateDemoData(query, searchType, manualNews) {
+  const basePrice = 100 + Math.random() * 400; // $100-500 range
+  
+  // Generate realistic news based on search type
+  let newsItems = [];
+  let subject = query;
+  
+  if (searchType === 'company') {
+    newsItems = [
+      {
+        title: `${query} Reports Strong Q4 Earnings, Beats Estimates`,
+        time: '2 hours ago',
+        source: 'MarketWatch',
+        snippet: `${query} exceeded analyst expectations with revenue growth of 12% year-over-year, driven by strong product demand and operational efficiency improvements.`
+      },
+      {
+        title: `Analyst Upgrades ${query} Stock to Buy Rating`,
+        time: '4 hours ago',
+        source: 'Bloomberg',
+        snippet: `Major investment bank raises price target citing improved market position and upcoming product launches expected to drive growth.`
+      },
+      {
+        title: `${query} Announces Strategic Partnership Deal`,
+        time: '1 day ago',
+        source: 'Reuters',
+        snippet: `Partnership expected to expand market reach and create new revenue opportunities in emerging markets.`
+      }
+    ];
+  } else if (searchType === 'sector') {
+    newsItems = [
+      {
+        title: `${query} Sector Shows Resilience Amid Market Volatility`,
+        time: '3 hours ago',
+        source: 'Financial Times',
+        snippet: `Strong fundamentals and growing demand continue to support ${query.toLowerCase()} companies despite broader market concerns.`
+      },
+      {
+        title: `New Regulations May Impact ${query} Industry`,
+        time: '6 hours ago',
+        source: 'Wall Street Journal',
+        snippet: `Proposed regulatory changes could create both challenges and opportunities for companies in the ${query.toLowerCase()} sector.`
+      },
+      {
+        title: `Investment Flows Into ${query} Reach Record Highs`,
+        time: '1 day ago',
+        source: 'CNBC',
+        snippet: `Institutional investors continue to increase allocation to ${query.toLowerCase()} stocks, citing long-term growth prospects.`
+      }
+    ];
+  } else {
+    newsItems = [
+      {
+        title: query,
+        time: 'User provided',
+        source: 'Manual Input',
+        snippet: manualNews.substring(0, 150) + (manualNews.length > 150 ? '...' : '')
+      }
+    ];
+  }
+  
+  // Determine overall sentiment
+  const sentiments = ['positive', 'negative', 'mixed'];
+  const overallSentiment = sentiments[Math.floor(Math.random() * sentiments.length)];
+  
+  // Generate impact analysis
+  const shortTermImpact = generateImpactAnalysis('short', overallSentiment, basePrice);
+  const longTermImpact = generateImpactAnalysis('long', overallSentiment, basePrice);
+  
+  // Generate price targets
+  const priceTargets = generatePriceTargets(basePrice, overallSentiment);
+  
+  // Generate trading strategy
+  const strategy = generateTradingStrategy(overallSentiment, priceTargets, basePrice);
+  
+  return {
+    subject,
+    searchType,
+    newsItems,
+    sentiment: overallSentiment,
+    shortTermImpact,
+    longTermImpact,
+    priceTargets,
+    strategy,
+    isDemo: true
+  };
+}
+
+function generateImpactAnalysis(timeframe, sentiment, basePrice) {
+  const isShort = timeframe === 'short';
+  const templates = {
+    positive: {
+      short: [
+        'Strong earnings beat likely to drive momentum through next week',
+        'Analyst upgrades could attract institutional buying',
+        'Technical breakout above resistance levels expected'
+      ],
+      long: [
+        'Fundamental improvements suggest sustainable growth trajectory',
+        'Market expansion opportunities support higher valuation multiples',
+        'Strong competitive positioning in growing market'
+      ]
+    },
+    negative: {
+      short: [
+        'Earnings miss may trigger near-term selling pressure',
+        'Technical breakdown below support levels likely',
+        'Sector rotation could impact short-term performance'
+      ],
+      long: [
+        'Structural headwinds may persist for several quarters',
+        'Competitive challenges could pressure market share',
+        'Regulatory concerns may limit long-term growth prospects'
+      ]
+    },
+    mixed: {
+      short: [
+        'Conflicting signals suggest range-bound trading ahead',
+        'Market reaction likely to be muted pending further catalysts',
+        'Short-term volatility expected as market digests news'
+      ],
+      long: [
+        'Long-term outlook remains stable despite near-term uncertainties',
+        'Fundamental strength should support gradual recovery',
+        'Market normalization expected as temporary factors resolve'
+      ]
+    }
+  };
+  
+  const messages = templates[sentiment][timeframe];
+  const selectedMessage = messages[Math.floor(Math.random() * messages.length)];
+  
+  const impactLevel = isShort ? 
+    (Math.random() > 0.5 ? 'moderate' : 'high') : 
+    (Math.random() > 0.3 ? 'moderate' : sentiment === 'mixed' ? 'low' : 'high');
+  
+  return {
+    level: impactLevel,
+    sentiment: sentiment,
+    description: selectedMessage,
+    probability: Math.floor(60 + Math.random() * 25) + '%'
+  };
+}
+
+function generatePriceTargets(basePrice, sentiment) {
+  let bearishMultiplier, neutralMultiplier, bullishMultiplier;
+  
+  switch(sentiment) {
+    case 'positive':
+      bearishMultiplier = 0.98; // Still positive, just less upside
+      neutralMultiplier = 1.05;
+      bullishMultiplier = 1.12;
+      break;
+    case 'negative':
+      bearishMultiplier = 0.88;
+      neutralMultiplier = 0.95;
+      bullishMultiplier = 1.02; // Still some downside risk
+      break;
+    default: // mixed
+      bearishMultiplier = 0.92;
+      neutralMultiplier = 1.00;
+      bullishMultiplier = 1.08;
+  }
+  
+  return {
+    current: basePrice.toFixed(2),
+    bearish: (basePrice * bearishMultiplier).toFixed(2),
+    neutral: (basePrice * neutralMultiplier).toFixed(2),
+    bullish: (basePrice * bullishMultiplier).toFixed(2)
+  };
+}
+
+function generateTradingStrategy(sentiment, targets, basePrice) {
+  const strategies = [];
+  
+  switch(sentiment) {
+    case 'positive':
+      strategies.push({
+        title: 'Bullish Entry Strategy',
+        description: 'Enter long position on any dip to support levels. Target recent highs with tight stop-loss below key support.'
+      });
+      strategies.push({
+        title: 'Momentum Play',
+        description: 'Consider call options with 2-4 week expiration to capture upward momentum while limiting downside risk.'
+      });
+      break;
+      
+    case 'negative':
+      strategies.push({
+        title: 'Defensive Positioning',
+        description: 'Exit long positions or hedge with protective puts. Consider short entry on any bounce to resistance.'
+      });
+      strategies.push({
+        title: 'Contrarian Opportunity',
+        description: 'For patient investors, oversold conditions may present buying opportunity near support levels.'
+      });
+      break;
+      
+    default: // mixed
+      strategies.push({
+        title: 'Range Trading',
+        description: 'Trade the expected range with small positions. Buy near support, sell near resistance.'
+      });
+      strategies.push({
+        title: 'Wait and Watch',
+        description: 'Hold current positions and wait for clearer directional signals. Avoid new large positions until trend clarifies.'
+      });
+  }
+  
+  return strategies;
+}
+
+// ─ LIVE API CALL (PLACEHOLDER) ─
+async function callNewsAnalysisAPI(query, searchType, manualNews) {
+  // This would integrate with your n8n webhook or Claude API
+  throw new Error('Live API not configured. Enable demo mode to test.');
+  
+  /* Example implementation:
+  const webhookUrl = getWebhookUrl();
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'news_analysis',
+      query: query,
+      search_type: searchType,
+      manual_content: manualNews,
+      analysis_scope: ['summary', 'impact', 'price_targets', 'strategy']
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return await response.json();
+  */
+}
+
+// ─ DISPLAY RESULTS ─
+function displayResults(data) {
+  $('resultsSection').style.display = 'block';
+  $('newsSubject').textContent = data.subject;
+  
+  // Display news items
+  displayNewsItems(data.newsItems);
+  
+  // Display impact analysis
+  displayImpactAnalysis(data.shortTermImpact, data.longTermImpact);
+  
+  // Display price range
+  displayPriceRange(data.priceTargets);
+  
+  // Display trading strategy
+  displayTradingStrategy(data.strategy);
+  
+  // Scroll to results on mobile
+  if (window.innerWidth < 800) {
+    $('resultsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// ─ DISPLAY FUNCTIONS ─
+function displayNewsItems(newsItems) {
+  const container = $('newsList');
+  container.innerHTML = '';
+  
+  newsItems.forEach(item => {
+    const newsEl = document.createElement('div');
+    newsEl.className = 'news-item';
+    newsEl.innerHTML = `
+      <div class="news-title">${item.title}</div>
+      <div class="news-meta">${item.source} • ${item.time}</div>
+      <div class="news-snippet">${item.snippet}</div>
+    `;
+    container.appendChild(newsEl);
+  });
+}
+
+function displayImpactAnalysis(shortTerm, longTerm) {
+  // Short-term impact
+  const shortContainer = $('shortTermImpact');
+  shortContainer.innerHTML = `
+    <div style="margin-bottom:8px">
+      <span class="impact-indicator impact-${shortTerm.sentiment}">${shortTerm.level} ${shortTerm.sentiment}</span>
+    </div>
+    <p>${shortTerm.description}</p>
+    <div style="font-size:.8rem;color:var(--muted);margin-top:8px">
+      Confidence: ${shortTerm.probability}
+    </div>
+  `;
+  
+  // Long-term impact
+  const longContainer = $('longTermImpact');
+  longContainer.innerHTML = `
+    <div style="margin-bottom:8px">
+      <span class="impact-indicator impact-${longTerm.sentiment}">${longTerm.level} ${longTerm.sentiment}</span>
+    </div>
+    <p>${longTerm.description}</p>
+    <div style="font-size:.8rem;color:var(--muted);margin-top:8px">
+      Confidence: ${longTerm.probability}
+    </div>
+  `;
+}
+
+function displayPriceRange(targets) {
+  $('rangeTitle').textContent = `Price Forecast (Current: $${targets.current})`;
+  $('bearishTarget').textContent = `Bearish: $${targets.bearish}`;
+  $('neutralTarget').textContent = `Neutral: $${targets.neutral}`;
+  $('bullishTarget').textContent = `Bullish: $${targets.bullish}`;
+  
+  // Position current price indicator
+  const current = parseFloat(targets.current);
+  const bearish = parseFloat(targets.bearish);
+  const bullish = parseFloat(targets.bullish);
+  const range = bullish - bearish;
+  const position = ((current - bearish) / range) * 100;
+  
+  const indicator = $('currentPriceIndicator');
+  const label = $('currentPriceLabel');
+  indicator.style.left = `${position}%`;
+  label.textContent = `$${targets.current}`;
+  
+  // Update explanation
+  const change = ((parseFloat(targets.neutral) - current) / current * 100).toFixed(1);
+  const direction = change > 0 ? 'upward' : 'downward';
+  $('rangeExplanation').textContent = 
+    `Based on news analysis, expected ${direction} movement of ${Math.abs(change)}% over the next 2-4 weeks.`;
+}
+
+function displayTradingStrategy(strategies) {
+  const container = $('tradingStrategy');
+  container.innerHTML = '';
+  
+  strategies.forEach(strategy => {
+    const strategyEl = document.createElement('div');
+    strategyEl.className = 'strategy-item';
+    strategyEl.innerHTML = `
+      <h5>${strategy.title}</h5>
+      <p>${strategy.description}</p>
+    `;
+    container.appendChild(strategyEl);
+  });
+}
+
+// ─ UTILITY FUNCTIONS ─
+function setBusyState(busy) {
+  const btn = $('analyzeBtn');
+  const text = $('analyzeText');
+  const spinner = $('analyzeSpinner');
+  const inputs = [$('newsQuery'), $('manualNewsText')];
+  
+  if (busy) {
+    btn.disabled = true;
+    text.style.display = 'none';
+    spinner.style.display = 'block';
+    inputs.forEach(input => input.disabled = true);
+  } else {
+    btn.disabled = false;
+    text.style.display = 'block';
+    spinner.style.display = 'none';
+    inputs.forEach(input => input.disabled = false);
+  }
+}
+
+function resetAll() {
+  $('newsQuery').value = '';
+  $('manualNewsText').value = '';
+  $('resultsSection').style.display = 'none';
+  localStorage.removeItem(RESULTS_CACHE_KEY);
+  lastAnalysis = null;
+  currentQuery = '';
+  document.querySelector('input[value="company"]').checked = true;
+  updateSearchType();
+  showToast('🔄 Analysis reset', 'info');
+}
+
+function loadCachedResult() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(RESULTS_CACHE_KEY) || 'null');
+    if (cached && cached.timestamp && (Date.now() - cached.timestamp) < 1800000) { // 30 minute cache
+      $('newsQuery').value = cached.query;
+      currentQuery = cached.query;
+      lastAnalysis = cached.data;
+      if (cached.searchType) {
+        document.querySelector(`input[value="${cached.searchType}"]`).checked = true;
+        updateSearchType();
+      }
+      displayResults(cached.data);
+    }
+  } catch (e) {
+    // Ignore cache errors
+  }
+}
+
+function showToast(message, type = 'info') {
+  const container = $('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'info' ? 'ℹ️' : '⚠️';
+  
+  toast.innerHTML = `
+    <span>${icon}</span>
+    <span>${message}</span>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 4000);
+}
+
+// Initialize when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+
+<!-- App Config Integration -->
+<script src="app-config.js"></script>
+
+</body>
+</html>

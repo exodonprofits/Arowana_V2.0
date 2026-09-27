@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Assignment Risk Checker &mdash; Will My Option Get Assigned?</title>
+  <meta name="description" content="Free assignment risk checker for option sellers: the chance your short put or covered call finishes in the money, how much time value is left, and when early assignment actually happens. No signup."/>
+  <link rel="canonical" href="https://arowanaprofits.com/assignment-risk.html"/>
+  <meta property="og:title" content="Assignment Risk Checker — will my option get assigned?"/>
+  <meta property="og:description" content="Chance of finishing in the money, time value left, and the real triggers for early assignment. Free, no signup."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--cyan:#35c3dc;
+  --navy-900:#0b2237;--navy-950:#061426;
+  --bg:#f6f8fb;--panel:#fff;--ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;
+  --good:#11a779;--good-bg:#e7f7f1;--warn:#e8a33d;--warn-bg:#fdf3e2;--bad:#dc4c64;--bad-bg:#fdeaed;
+  --radius:16px;--shadow:0 4px 20px rgba(11,79,138,.08);
+  --mono:"JetBrains Mono",ui-monospace,monospace;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+.shell{max-width:1060px;margin:0 auto;padding:0 20px}
+header.top{background:var(--navy-950);color:#fff;padding:14px 0}
+header.top .shell{display:flex;align-items:center;justify-content:space-between;gap:16px}
+header.top strong{font:800 1.05rem "Inter Tight",system-ui,sans-serif;letter-spacing:-.02em}
+header.top a{color:#cfe3f5;font-size:.9rem;font-weight:600}
+.hero{background:linear-gradient(140deg,var(--navy-950),#0b3151);color:#fff;padding:44px 0 38px}
+.hero h1{font:800 clamp(30px,4.4vw,44px)/1.1 "Inter Tight",system-ui,sans-serif;letter-spacing:-.035em;margin-bottom:12px;max-width:22ch}
+.hero p{color:#c4d6e2;max-width:62ch;font-size:16px}
+main{padding:28px 0 56px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.85fr);gap:22px;align-items:start}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
+.card h2{font:800 1.15rem "Inter Tight",system-ui,sans-serif;margin-bottom:4px}
+.card .sub{color:var(--muted);font-size:.86rem;margin-bottom:16px}
+.legs{display:inline-flex;background:#eef3f8;border-radius:999px;padding:4px;margin-bottom:18px}
+.legs button{border:0;background:none;border-radius:999px;padding:8px 16px;font:700 .88rem inherit;color:var(--muted);cursor:pointer}
+.legs button.on{background:var(--brand);color:#fff}
+.fields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 14px}
+.field label{display:block;font-size:.76rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.field input{width:100%;min-height:42px;border:1px solid #c8d5de;border-radius:10px;padding:0 11px;font:500 .95rem var(--mono);color:var(--ink);background:#fff}
+.field input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,79,138,.15)}
+.field .hint{font-size:.72rem;color:var(--muted);margin-top:3px}
+.err{color:var(--bad);font-size:.82rem;min-height:1.2em;margin-top:10px}
+.verdict{border-radius:14px;padding:18px;margin-bottom:14px}
+.verdict.low{background:var(--good-bg);border:1px solid #a5e2cd}
+.verdict.medium{background:var(--warn-bg);border:1px solid #f3d29a}
+.verdict.high{background:var(--bad-bg);border:1px solid #f4b3bf}
+.verdict .pctbig{font:800 2.5rem var(--mono);line-height:1;letter-spacing:-.03em}
+.verdict.low .pctbig{color:var(--good)}
+.verdict.medium .pctbig{color:#a96a12}
+.verdict.high .pctbig{color:var(--bad)}
+.verdict .lbl{font-size:.78rem;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;font-weight:700;margin-bottom:6px}
+.verdict p{font-size:.88rem;margin-top:8px;color:#243b4f}
+.bar{height:10px;border-radius:99px;background:#e3ebf2;overflow:hidden;margin-top:12px}
+.bar span{display:block;height:100%;border-radius:99px}
+.verdict.low .bar span{background:var(--good)}
+.verdict.medium .bar span{background:var(--warn)}
+.verdict.high .bar span{background:var(--bad)}
+.out{display:grid;gap:2px}
+.out .row{display:flex;justify-content:space-between;gap:12px;align-items:baseline;padding:9px 0;border-bottom:1px solid #eef2f6}
+.out .row:last-child{border-bottom:0}
+.out .row span{font-size:.86rem;color:var(--muted)}
+.out .row b{font:700 1rem var(--mono)}
+.flags{margin-top:16px;display:grid;gap:8px}
+.flag{border-radius:10px;padding:10px 12px;font-size:.84rem;line-height:1.5;border:1px solid}
+.flag.warn{background:var(--warn-bg);border-color:#f3d29a;color:#7c4a03}
+.flag.bad{background:var(--bad-bg);border-color:#f4b3bf;color:#991b1b}
+.flag.ok{background:var(--good-bg);border-color:#a5e2cd;color:#0b6b52}
+.rules{margin-top:18px;border:1px solid var(--border);border-radius:12px;background:#fff}
+.rules summary{cursor:pointer;padding:12px 15px;font-weight:700;font-size:.9rem}
+.rules ul{margin:0;padding:0 16px 14px 34px;font-size:.85rem;color:#243b4f;line-height:1.6}
+.cta{background:var(--navy-900);color:#fff;border-radius:var(--radius);padding:22px;margin-top:22px}
+.cta h2{font:800 1.25rem "Inter Tight",system-ui,sans-serif;margin-bottom:8px}
+.cta p{color:#b7cbd8;font-size:.92rem;margin-bottom:14px;max-width:60ch}
+.cta a.btn{display:inline-block;background:var(--cyan);color:#04202c;border-radius:11px;padding:11px 20px;font-weight:700;font-size:.92rem}
+.cta a.ghost{display:inline-block;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:11px;padding:11px 20px;font-weight:700;font-size:.92rem;margin-left:8px}
+.explain{margin-top:26px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:22px}
+.explain h2{font:800 1.2rem "Inter Tight",system-ui,sans-serif;margin-bottom:10px}
+.explain h3{font:700 1rem "Inter Tight",system-ui,sans-serif;margin:16px 0 6px}
+.explain p{font-size:.92rem;color:#243b4f;margin-bottom:8px;max-width:75ch}
+.explain ul{margin:6px 0 6px 20px;font-size:.92rem;color:#243b4f}
+.explain li{margin-bottom:5px}
+footer{border-top:1px solid var(--border);padding:24px 0 40px;color:var(--muted);font-size:.82rem}
+footer .shell{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-between}
+@media(max-width:900px){.grid{grid-template-columns:1fr}}
+@media(max-width:560px){.fields{grid-template-columns:1fr}.cta a.ghost{margin:8px 0 0;display:block;text-align:center}}
+/* V1 Nav */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;text-decoration:none}
+.logo img{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);padding:2px}
+.nav-links{display:flex;align-items:center;gap:3px;flex:1;justify-content:center}
+.nav-links a{color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none;transition:background .15s}
+.nav-links a:hover{background:rgba(255,255,255,.13)}
+.nav-links .agent{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.nav-div{width:1px;height:16px;background:rgba(255,255,255,.18);margin:0 4px;flex-shrink:0}
+.nav-auth{display:flex;align-items:center;gap:7px}
+.nbtn{padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;text-decoration:none;transition:all .15s}
+.nbtn-g{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.nbtn-s{background:#fff;color:var(--brand);font-weight:700}
+.nav-user{position:relative;display:none}.nav-user.show{display:block}
+.nav-user-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600}
+.nav-user-menu{position:absolute;right:0;top:calc(100%+8px);min-width:195px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:6px;display:none;z-index:200}
+.nav-user.open .nav-user-menu{display:block}
+.nav-user-menu a,.nav-user-menu button{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:var(--muted);font-size:.82rem;font-weight:500;background:none;border:none;width:100%;text-align:left;text-decoration:none;cursor:pointer}
+.nav-user-menu a:hover,.nav-user-menu button:hover{color:var(--ink);background:rgba(11,79,138,.06)}
+.menu-sep{height:1px;background:var(--border);margin:3px 0}
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mob-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mob-menu[data-open="true"]{display:block}
+.mob-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mob-link{padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none;display:block}
+.mob-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:700px){.nav-links{display:none}.nbtn-s{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+
+/* Shared shell on the public tools: the nav and footer come from the rest of
+   the site so a visitor who lands here from search sees the same product. */
+.container{width:100%;max-width:1060px;margin:0 auto;padding:0 20px}
+.site-footer .container{max-width:1060px}
+body{display:flex;flex-direction:column;min-height:100vh}
+main{flex:1}
+
+/* Shared footer styles, to match the rest of the site. */
+/* Footer */
+.site-footer{background:var(--brand-dark);color:#94a3b8;padding:36px 0 22px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:4px}
+.footer-tag{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6}
+.fc-title{font-weight:700;color:rgba(255,255,255,.7);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.fl{display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none}
+.fl:hover{color:rgba(255,255,255,.8)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.73rem;color:rgba(255,255,255,.3);margin-bottom:8px}
+.fpill{background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35);margin-left:4px}
+.fdis{font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.6}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div class="nav-wrap">
+<nav class="nav">
+  <a href="index.html" class="logo"><img src="images/arowanalogo.png?v=20260117" alt="" onerror="this.style.display='none'">Arowana Profits</a>
+  <div class="nav-links">
+    <a href="trading-command.html" class="agent">&#9889; Trading Command</a>
+    <a href="options-hub.html" class="agent">&#128200; Options Hub</a>
+    <div class="nav-div"></div>
+    <a href="wheel-calculator.html">&#129518; Wheel calculator</a>
+    <a href="assignment-risk.html" style="background:rgba(255,255,255,.18)">&#9888;&#65039; Assignment risk</a>
+    <a href="pricing.html">&#128179; Pricing</a>
+    <a href="support.html">&#128172; Support</a>
+  </div>
+  <button class="nav-burger" id="navBurger">&#9776;</button>
+  <div class="nav-auth">
+    <a href="login.html" id="navSignIn" class="nbtn nbtn-g">Sign In</a>
+    <a href="signup.html" id="navSignUp" class="nbtn nbtn-s">&#128640; Start Free</a>
+    <div class="nav-user" id="navUserDrop">
+      <button class="nav-user-btn" id="navUserBtn">&#128100; <span id="navUserName">Account</span></button>
+      <div class="nav-user-menu">
+        <a href="account.html">&#128282; My Account</a>
+        <div class="menu-sep"></div>
+        <a href="trading-command.html">&#9889; Trading Command</a>
+        <a href="portfolio-command.html">&#127974; Portfolio Command</a>
+        <div class="menu-sep"></div>
+        <button id="navSignOutBtn">&#128682; Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</div>
+<div class="mob-menu" id="mobMenu" data-open="false">
+  <div class="mob-panel">
+    <a class="mob-link" href="trading-command.html">&#9889; Trading Command</a>
+    <a class="mob-link" href="options-hub.html">&#128200; Options Hub</a>
+    <a class="mob-link" href="wheel-calculator.html">&#129518; Wheel calculator</a>
+    <a class="mob-link" href="pricing.html">&#128179; Pricing</a>
+    <div class="mob-div"></div>
+    <div id="mobAuthLinks"></div>
+  </div>
+</div>
+
+
+
+  <section class="hero">
+    <div class="shell">
+      <h1>Will this option get assigned?</h1>
+      <p>For an option you've sold: the chance it finishes in the money, how much time value is left, and whether early assignment is a real risk. Free, no account, nothing saved.</p>
+    </div>
+  </section>
+
+  <main class="shell">
+    <div class="grid">
+      <section class="card">
+        <h2>Your short option</h2>
+        <p class="sub">Take these from your broker's option chain. Everything updates as you type.</p>
+
+        <div class="legs" role="group" aria-label="Option type">
+          <button type="button" data-type="put" class="on">Short put</button>
+          <button type="button" data-type="call" class="on2">Covered call</button>
+        </div>
+
+        <div class="fields">
+          <div class="field">
+            <label for="price">Stock price</label>
+            <input id="price" type="number" inputmode="decimal" min="0.01" step="any" value="240">
+          </div>
+          <div class="field">
+            <label for="strike">Strike</label>
+            <input id="strike" type="number" inputmode="decimal" min="0.01" step="any" value="220">
+          </div>
+          <div class="field">
+            <label for="iv">Implied volatility %</label>
+            <input id="iv" type="number" inputmode="decimal" min="1" max="500" step="any" value="45">
+            <div class="hint">Shown on your broker's chain, e.g. 45 for 45%</div>
+          </div>
+          <div class="field">
+            <label for="dte">Days to expiration</label>
+            <input id="dte" type="number" inputmode="numeric" min="1" step="1" value="30">
+          </div>
+          <div class="field">
+            <label for="optprice">Option price now</label>
+            <input id="optprice" type="number" inputmode="decimal" min="0" step="any" value="4.20">
+            <div class="hint">The mid, for the time-value check</div>
+          </div>
+          <div class="field" id="divField">
+            <label for="divamt">Dividend per share <span style="font-weight:400">(covered call)</span></label>
+            <input id="divamt" type="number" inputmode="decimal" min="0" step="any" value="0">
+            <div class="hint">0 if none before expiration</div>
+          </div>
+        </div>
+        <div class="err" id="err" role="status" aria-live="polite"></div>
+
+        <div class="flags" id="flags"></div>
+
+        <details class="rules">
+          <summary>How this is worked out</summary>
+          <ul>
+            <li>Chance of finishing in the money uses the standard lognormal model: the same maths behind option pricing, driven by the implied volatility you enter.</li>
+            <li>One standard deviation = stock price × IV × &radic;(days ÷ 365). About 68% of outcomes land inside that range.</li>
+            <li>Time value = what the option costs now, minus how far it is in the money. Early assignment becomes plausible once that reaches roughly zero.</li>
+            <li>American options can be assigned any day, not only at expiration. In practice it happens when the remaining time value is smaller than what the holder gains by exercising early.</li>
+            <li>For covered calls, an upcoming dividend larger than the remaining time value is the classic early-assignment trigger, usually the day before the ex-dividend date.</li>
+            <li>No interest rate is applied, and the model assumes no dividends for puts. Real chances differ; treat this as a guide, not a guarantee.</li>
+          </ul>
+        </details>
+      </section>
+
+      <aside>
+        <div class="verdict low" id="verdict">
+          <div class="lbl" id="verdictLabel">Chance of finishing in the money</div>
+          <div class="pctbig" id="verdictPct">—</div>
+          <div class="bar"><span id="verdictBar" style="width:0%"></span></div>
+          <p id="verdictText"></p>
+        </div>
+
+        <section class="card">
+          <h2>The detail</h2>
+          <p class="sub" id="detailSub">Short put</p>
+          <div class="out" id="out"></div>
+        </section>
+
+        <div class="cta">
+          <h2>Checking one at a time?</h2>
+          <p>The Wheel Strategy Desk checks every option you've sold after each close, and tells you which ones are getting tested, with your choices laid out.</p>
+          <a class="btn" href="index.html#founders">See the desk</a>
+          <a class="ghost" href="wheel-calculator.html">Wheel calculator</a>
+        </div>
+      </aside>
+    </div>
+
+    <section class="explain">
+      <h2>When assignment actually happens</h2>
+      <p>Most option sellers worry about the wrong thing. Being in the money doesn't mean you'll be assigned tomorrow; it means you'll probably be assigned <em>at expiration</em>. Early assignment is rarer and has specific triggers.</p>
+
+      <h3>The three that matter</h3>
+      <ul>
+        <li><b>Time value near zero.</b> Whoever holds your option gives up its remaining time value by exercising early. While that value is meaningful, they'd rather sell the option than exercise it.</li>
+        <li><b>A dividend larger than the remaining time value</b>, for calls. Holders exercise the day before the ex-dividend date to capture the dividend. If you're short a call on a dividend payer, this is the moment to watch.</li>
+        <li><b>Deep in the money near expiration.</b> As expiry approaches, time value drains away, and exercise becomes the rational choice.</li>
+      </ul>
+
+      <h3>If you're assigned on a put</h3>
+      <p>You buy 100 shares per contract at the strike, and the premium you kept lowers your effective cost. For a wheel trader that isn't a failure; it's the point, provided you chose a stock you wanted to own and a strike you were happy to pay. From there you can sell covered calls against the shares.</p>
+
+      <h3>What this checker doesn't know</h3>
+      <p>Your broker's margin rules, pin risk at expiration, dividends on puts, interest rates, or whether the option holder is behaving rationally. It also uses the implied volatility you typed, which changes constantly. Use it to size up risk, not to decide with certainty.</p>
+    </section>
+  </main>
+
+<footer class="site-footer">
+<div class="container">
+  <div class="footer-grid">
+    <div><div class="footer-brand">Arowana Profits</div><div class="footer-tag">The desk for traders who run the wheel. Education only, not financial advice.</div></div>
+    <div><div class="fc-title">Explore</div><a class="fl" href="wheel-calculator.html">Wheel calculator</a><a class="fl" href="assignment-risk.html">Assignment risk</a><a class="fl" href="pricing.html">Pricing</a></div>
+    <div><div class="fc-title">Legal</div><a class="fl" href="disclosures.html">Disclosures</a><a class="fl" href="terms.html">Terms</a><a class="fl" href="privacy.html">Privacy</a></div>
+    <div><div class="fc-title">Account</div><a class="fl" href="signup.html">Sign Up Free</a><a class="fl" href="login.html">Sign In</a><a class="fl" href="account.html">My Account</a></div>
+  </div>
+  <div class="foot-bot"><div>&#169; <span id="footYear"></span> Arowana Profits. All rights reserved.</div><div><span class="fpill">Education-only</span><span class="fpill">Not financial advice</span></div></div>
+  <p class="fdis"><strong>Important:</strong> Arowana Profits is for educational purposes only. Not financial advice.</p>
+</div>
+</footer>
+
+<script>
+(function(){
+  document.getElementById('footYear').textContent = new Date().getFullYear();
+  var aKeys=['gs_auth_user_v1','gs_session','ap_session','sb-access-token'];
+  var u=JSON.parse(localStorage.getItem('gs_auth_user_v1')||'null');
+  var has=u||aKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+  var si=document.getElementById('navSignIn'),su=document.getElementById('navSignUp'),dd=document.getElementById('navUserDrop');
+  if(has){
+    if(si)si.style.display='none'; if(su)su.style.display='none'; if(dd)dd.classList.add('show');
+    var n=u&&(u.name||u.full_name||(u.email?u.email.split('@')[0]:null))||'Account';
+    var nm=document.getElementById('navUserName'); if(nm)nm.textContent=n;
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="account.html">&#128282; My Account</a>';
+  }else{
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="login.html">&#128272; Sign In</a><a class="mob-link" href="signup.html">&#128640; Start Free</a>';
+  }
+  var utog=document.getElementById('navUserBtn'),ddrop=document.getElementById('navUserDrop');
+  if(utog&&ddrop){utog.addEventListener('click',function(e){e.stopPropagation();ddrop.classList.toggle('open');});document.addEventListener('click',function(){ddrop.classList.remove('open');});}
+  var sob=document.getElementById('navSignOutBtn');
+  if(sob)sob.addEventListener('click',function(){aKeys.forEach(function(k){localStorage.removeItem(k);});location.href='index.html';});
+  var burger=document.getElementById('navBurger'),mm=document.getElementById('mobMenu');
+  if(burger&&mm)burger.addEventListener('click',function(){mm.setAttribute('data-open',mm.getAttribute('data-open')==='true'?'false':'true');});
+})();
+</script>
+
+
+  <script>
+  (function () {
+    'use strict';
+    var type = 'put';
+    function el(id) { return document.getElementById(id); }
+    function val(id) { var v = Number(el(id).value); return isFinite(v) ? v : NaN; }
+    function money(v) { return (v < 0 ? '\u2212$' : '$') + Math.abs(v).toFixed(2); }
+    function pct(v, dp) { return (isFinite(v) ? v.toFixed(dp == null ? 1 : dp) : '—') + '%'; }
+
+    // Standard normal CDF (Abramowitz & Stegun 26.2.17)
+    function ncdf(x) {
+      var t = 1 / (1 + 0.2316419 * Math.abs(x));
+      var d = 0.3989422804014327 * Math.exp(-x * x / 2);
+      var p = d * t * (0.319381530 + t * (-0.356563782 + t * (1.781477937 + t * (-1.821255978 + t * 1.330274429))));
+      return x > 0 ? 1 - p : p;
+    }
+
+    function setType(next) {
+      type = next;
+      Array.prototype.forEach.call(document.querySelectorAll('.legs button'), function (b) {
+        b.classList.toggle('on', b.getAttribute('data-type') === type);
+      });
+      el('divField').style.display = type === 'call' ? '' : 'none';
+      el('detailSub').textContent = type === 'put' ? 'Short put' : 'Covered call';
+      render();
+    }
+
+    function validate() {
+      var bad = [];
+      if (!(val('price') > 0)) bad.push('stock price');
+      if (!(val('strike') > 0)) bad.push('strike');
+      if (!(val('iv') > 0)) bad.push('implied volatility');
+      if (!(val('dte') >= 1)) bad.push('days to expiration');
+      if (!(val('optprice') >= 0)) bad.push('option price');
+      return bad;
+    }
+
+    function render() {
+      var bad = validate();
+      el('err').textContent = bad.length ? 'Enter a positive number for: ' + bad.join(', ') + '.' : '';
+      if (bad.length) { el('verdictPct').textContent = '—'; el('out').innerHTML = ''; el('flags').innerHTML = ''; el('verdictBar').style.width = '0%'; el('verdictText').textContent = ''; return; }
+
+      var S = val('price'), K = val('strike'), iv = val('iv') / 100, days = val('dte');
+      var opt = val('optprice'), div = type === 'call' ? (val('divamt') || 0) : 0;
+      var T = days / 365, sd = S * iv * Math.sqrt(T);
+      var d2 = (Math.log(S / K) - (iv * iv / 2) * T) / (iv * Math.sqrt(T));
+      var chance = (type === 'put' ? ncdf(-d2) : ncdf(d2)) * 100;
+
+      var intrinsic = type === 'put' ? Math.max(0, K - S) : Math.max(0, S - K);
+      var timeValue = Math.max(0, opt - intrinsic);
+      var distance = type === 'put' ? (S / K - 1) * 100 : (1 - S / K) * 100;   // positive = in your favour
+      var sdAway = sd > 0 ? Math.abs(S - K) / sd : 0;
+
+      var band = chance < 25 ? 'low' : chance < 55 ? 'medium' : 'high';
+      var v = el('verdict');
+      v.className = 'verdict ' + band;
+      el('verdictPct').textContent = pct(chance);
+      el('verdictBar').style.width = Math.min(100, Math.max(2, chance)) + '%';
+      el('verdictText').textContent =
+        band === 'low' ? 'Unlikely to finish in the money on today\u2019s numbers. Things change, so check again as expiration nears.'
+      : band === 'medium' ? 'A real possibility. Decide now what you would do if it goes against you, rather than in the moment.'
+      : 'More likely than not to finish in the money. Be ready to take assignment, roll, or close.';
+
+      el('out').innerHTML = [
+        ['Stock vs strike', (distance >= 0 ? pct(distance) + ' in your favour' : pct(Math.abs(distance)) + ' past the strike')],
+        ['One standard deviation', money(sd) + ' by expiration'],
+        ['Strike distance', sdAway.toFixed(2) + ' SD away'],
+        ['In the money by', intrinsic > 0 ? money(intrinsic) : 'not in the money'],
+        ['Time value left', money(timeValue)],
+        ['Break-even move needed', money(Math.abs(S - K)) + (type === 'put' ? ' down' : ' up')]
+      ].map(function (r) { return '<div class="row"><span>' + r[0] + '</span><b>' + r[1] + '</b></div>'; }).join('');
+
+      var flags = [];
+      // A dividend worth more than the time value is the stronger signal, so
+      // it decides the message rather than sitting next to a reassuring one.
+      var dividendRisk = type === 'call' && div > 0 && div > timeValue;
+      if (intrinsic > 0 && (timeValue <= 0.25 || dividendRisk)) {
+        flags.push(['bad', 'Early assignment is a live risk: the option is in the money with only ' + money(timeValue) + ' of time value left. Whoever holds it gives up very little by exercising now.']);
+      } else if (intrinsic > 0) {
+        flags.push(['warn', 'In the money, but ' + money(timeValue) + ' of time value remains. Holders usually sell rather than exercise while that is worth keeping, so early assignment is less likely today.']);
+      }
+      if (type === 'call' && div > 0) {
+        if (dividendRisk) {
+          flags.push(['bad', 'The ' + money(div) + ' dividend is larger than the ' + money(timeValue) + ' of time value left. This is the classic early-assignment setup — expect it around the day before the ex-dividend date.']);
+        } else {
+          flags.push(['ok', 'The ' + money(div) + ' dividend is smaller than the ' + money(timeValue) + ' of time value, so exercising early to capture it would cost the holder more than it gains.']);
+        }
+      }
+      if (days <= 7 && intrinsic > 0) flags.push(['warn', 'Under a week to expiration and in the money: time value drains quickly from here.']);
+      if (days <= 3 && chance > 40 && chance < 60) flags.push(['warn', 'Close to the strike in the final days. Either side of it is possible, and being unsure at expiration is itself a risk — consider closing.']);
+      if (!flags.length) flags.push(['ok', 'Nothing unusual. Assignment before expiration is unlikely while the option stays out of the money with time value intact.']);
+      el('flags').innerHTML = flags.map(function (f) { return '<div class="flag ' + f[0] + '">' + f[1] + '</div>'; }).join('');
+    }
+
+    ['price', 'strike', 'iv', 'dte', 'optprice', 'divamt'].forEach(function (id) { el(id).addEventListener('input', render); });
+    Array.prototype.forEach.call(document.querySelectorAll('.legs button'), function (b) {
+      b.addEventListener('click', function () { setType(b.getAttribute('data-type')); });
+    });
+    setType('put');
+  })();
+  </script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>✅ My Rules – Risk & Sizing</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+    /* VARS from volatility-guardrails */
+    :root{
+      --brand:#1a3c5e; --ink:#222; --muted:#667085; --bg:#f9fafb; --panel:#ffffff; --ring:rgba(26,60,94,0.22);
+      --page-width: min(1100px, 92vw);
+      --card:#fff; --text:#111827; --shadow:0 4px 12px rgba(0,0,0,.08); --border:#e5e7eb;
+      --ok:#138a36; --warn:#b45309; --bad:#b00020;
+    }
+    *{box-sizing:border-box}
+    /* Updated body and html to match volatility-guardrails, including background */
+    html,body{margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column}
+    a{color:var(--brand);text-decoration:none}
+    a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:none; box-shadow:0 0 0 4px var(--ring)}
+    .container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+    /* Header (Updated to match volatility-guardrails) */
+    .header{width:100%;background:#1a3c5e;color:#fff;padding:20px 0;margin-bottom:20px;position:relative;transition:background .25s ease}
+    .header.warning{background:#92400e}
+    .header.danger{background:#7f1d1d}
+    .header-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:clamp(18px,4vw,20px);white-space:nowrap}
+    .logo img{width:50px;height:50px;border-radius:6px} /* Added border-radius */
+    .nav{display:flex;gap:12px;align-items:center}
+    .nav a{color:#eaf1f9;padding:8px 10px;border-radius:10px}
+    .nav a[aria-current="page"]{background:rgba(255,255,255,.22);color:#fff}
+    .hamburger{display:none;font-size:24px;cursor:pointer;color:#eaf1f9;padding:8px;border-radius:10px}
+
+    /* Mobile menu (Updated to match volatility-guardrails) */
+    .mobile-menu{display:none;position:absolute;top:100%;left:0;right:0;background:#0f2a44;padding:12px 16px 24px;z-index:60;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+    .mobile-menu a{display:flex;align-items:center;gap:10px;color:#eaf1f9;padding:12px 8px;border-radius:12px}
+    .mobile-menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+    .mobile-menu .grid a{background:rgba(255,255,255,.06);justify-content:center}
+
+
+    /* Footer (Updated to match volatility-guardrails) */
+    footer{margin-top:auto;background:#1a3c5e;color:#d7dae0;padding:28px 0}
+    footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    footer h4{margin:0 0 6px}
+    footer a{color:#b6c3d6}
+    .foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+
+    main{padding:16px 0 24px} /* Adjusted padding to prevent doubling up */
+    main h1{margin:8px 0;font-size:clamp(22px,4.2vw,32px)}
+    .muted{color:#6b7280}
+    .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace}
+
+    /* Card (Updated to match volatility-guardrails) */
+    .card{background:var(--card);border-radius:1.25rem;padding:18px;box-shadow:var(--shadow);margin:12px 0;border:1px solid var(--border)}
+    .card h2{margin:0 0 10px;font-size:1.15rem;color:var(--brand)}
+    .row{display:grid;gap:12px}
+    .row.four{grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:10px}
+    .row.three{grid-template-columns:repeat(3,minmax(0,1fr)); margin-bottom:10px}
+    .row.two{grid-template-columns:repeat(2,minmax(0,1fr)); margin-bottom:10px}
+    .row.single{grid-template-columns:1fr}
+    @media (max-width:980px){.row.four{grid-template-columns:1fr 1fr}}
+    @media (max-width:760px){
+      .row.four,.row.three,.row.two{grid-template-columns:1fr}
+      .hamburger{display:block}
+      .nav{display:none}
+      footer .cols{grid-template-columns:1fr}
+    }
+
+    label{display:block;font-size:.9rem;margin-bottom:4px;color:#1b3350}
+    input,select,textarea{width:100%;padding:10px;border-radius:10px;border:1px solid #d0d7e2;font-size:.95rem;min-height:42px}
+    textarea{min-height:110px;resize:vertical}
+
+    .btn{display:inline-flex;align-items:center;gap:.6rem;border:none;border-radius:9999px;padding:.55rem 1rem;font-weight:600;cursor:pointer}
+    .btn.primary{background:#1a73e8;color:#fff}
+    .btn.green{background:#138a36;color:#fff}
+    .btn.gray{background:#eef2f7;color:#18334f;border:1px solid #d8dee8}
+    .btn.ghost{background:#fff;border:1px solid #dfe5ef;color:#1f2937}
+    .btn.link{background:transparent;color:#1a73e8;text-decoration:underline}
+    .btn + .btn{margin-left:6px}
+
+    /* Updated Pre-Flight checklist layout for horizontal alignment */
+    .checklist{
+      list-style:none;
+      margin:0; padding:0;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      max-width:900px;
+    }
+    .checklist li{
+      display:flex;
+      align-items:center; /* Align items horizontally */
+      gap:6px;
+      padding:6px 0;
+      border-bottom:1px dashed #eef2f6;
+    }
+    .checklist li:last-child{ border-bottom:0; }
+    .checklist input{
+      margin-top:0; /* Remove top margin to align with text */
+      flex-shrink: 0;
+      width: 16px;
+      height: 16px;
+    }
+    .checklist label{
+      margin:0;
+      line-height:1.2;
+      flex-grow: 1;
+      font-size: 0.9rem;
+      white-space: normal;
+    }
+
+    .ok{color:#065f46;background:#ecfdf5;border:1px solid #a7f3d0;padding:10px;border-radius:10px}
+    .warn{color:#b45309;background:#fff7ed;border:1px solid #fde68a;padding:10px;border-radius:10px}
+
+    .stat{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem .6rem;border:1px solid #e5e7eb;border-radius:999px;background:#fff;font-size:.9rem}
+    .stat.bad{border-color:#fecaca;background:#fff1f2;color:#991b1b}
+    .stat.warn{border-color:#fde68a;background:#fffbeb;color:#92400e}
+
+    .switch{display:inline-flex;align-items:center;gap:.4rem}
+    .switch input{width:38px;height:22px;appearance:none;background:#e5e7eb;border-radius:9999px;position:relative;outline:none;cursor:pointer}
+    .switch input:checked{background:#1a73e8}
+    .switch input:before{content:"";position:absolute;top:3px;left:3px;width:16px;height:16px;border-radius:50%;background:#fff;transition:left .2s}
+    .switch input:checked:before{left:19px}
+
+    @media print{
+      .header, .no-print, footer{display:none !important}
+      body{background:#fff}
+      main{padding-top:0}
+      .card{box-shadow:none;border:1px solid #e5e7eb}
+      .print-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}
+    }
+  </style>
+</head>
+<body>
+<header class="header">
+  <div class="container">
+    <div class="header-top">
+      <div class="logo">
+        <img src="images/arowanalogo.png" class="logo-img" alt="Arowana Profits"/>
+        <a class="brand-link" href="index.html">Arowana Profits</a>
+      </div>
+      <nav class="nav" id="nav">
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="short-term-dashboard.html" aria-current="page"><i class="fas fa-bolt"></i> Short-Term</a>
+        <a href="long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+        <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+        <a href="features.html"><i class="fas fa-cogs"></i> Features</a>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+    </div>
+  </div>
+
+  <!-- Mobile menu -->
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div class="grid container">
+      <a href="index.html"><i class="fas fa-home"></i> Home</a>
+      <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+      <a href="long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+      <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+      <a href="features.html"><i class="fas fa-cogs"></i> Features</a>
+    </div>
+  </div>
+</header>
+
+  <main class="container">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0">✅ My Rules</h1>
+        <p class="muted" style="margin:.25rem 0 0">Plain-English rules that drive your sizing & risk. Autosaves. Press <span class="mono">Ctrl/Cmd+S</span> to save anytime.</p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <a class="btn ghost" href="short-term-dashboard.html">← Dashboard</a>
+        <a class="btn ghost" href="position-planner.html">🧭 Position Planner</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Risk Settings</h2>
+      <div class="row four">
+        <div>
+          <label for="riskPct">Risk % / trade</label>
+          <input id="riskPct" type="number" step="0.1" min="0" value="1.0">
+        </div>
+        <div>
+          <label for="dailyLossR">Daily loss cap (R)</label>
+          <input id="dailyLossR" type="number" step="0.5" min="0" value="3">
+        </div>
+        <div>
+          <label for="maxPositions">Max concurrent positions</label>
+          <input id="maxPositions" type="number" step="1" min="1" value="4">
+        </div>
+        <div>
+          <label for="maxAccountDD">Max account drawdown %</label>
+          <input id="maxAccountDD" type="number" step="1" min="0" value="15">
+        </div>
+      </div>
+
+      <div class="row four">
+        <div>
+          <label for="accountSize">Account size (optional)</label>
+          <input id="accountSize" type="number" step="100" min="0" placeholder="e.g., 25000">
+        </div>
+        <div>
+          <label for="slippageBudget">Slippage budget ($/share)</label>
+          <input id="slippageBudget" type="number" step="0.01" min="0" value="0.05">
+        </div>
+        <div>
+          <label for="feesShare">Fees / share ($)</label>
+          <input id="feesShare" type="number" step="0.001" min="0" value="0">
+        </div>
+        <div>
+          <label for="holdOvernight">Hold overnight allowed?</label>
+          <select id="holdOvernight">
+            <option value="no" selected>No (day-trade only)</option>
+            <option value="yes">Yes</option>
+            <option value="case">Case-by-case</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row four">
+        <div>
+          <label for="newsLockout">News lockout (min before/after)</label>
+          <input id="newsLockout" type="number" step="5" min="0" value="30">
+        </div>
+        <div>
+          <label for="lockMode">Lock mode</label>
+          <div class="switch"><input id="lockMode" type="checkbox"/><span class="muted">Disable editing</span></div>
+        </div>
+        <div>
+          <label for="profileName">Profile</label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <input id="profileName" placeholder="e.g., Day-Trading"/>
+            <button id="saveProfile" class="btn gray">💾 Save Profile</button>
+            <button id="loadProfile" class="btn gray">📂 Load</button>
+          </div>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button id="saveBtn" class="btn gray">💾 Save</button>
+            <button id="loadBtn" class="btn gray">📂 Load Last</button>
+            <button id="printBtn" class="btn green"><i class="fas fa-print"></i> Print</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="ok" id="summaryBox" style="margin-top:8px">1% risk/trade • Cap 3R/day • ≤4 positions • Max DD 15%</div>
+      <div id="riskMath" class="muted" style="margin-top:6px"></div>
+      <div id="status" class="muted" style="margin-top:6px">Ready</div>
+    </div>
+
+    <div class="card">
+      <h2>Daily R Meter</h2>
+      <div class="row three">
+        <div>
+          <label for="todayR">Cumulative result today (R)</label>
+          <input id="todayR" type="number" step="0.1" value="0">
+          <div class="hint">Manually type or wire from your trade log.</div>
+        </div>
+        <div>
+          <label>Status</label>
+          <div id="meterBadge" class="stat">Within limits</div>
+        </div>
+        <div class="no-print" style="display:flex;gap:.5rem;align-items:flex-end">
+          <button id="meterReset" class="btn ghost">Reset</button>
+          <button id="meterMinusHalf" class="btn ghost">-0.5R</button>
+          <button id="meterPlusHalf" class="btn ghost">+0.5R</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Plain-English Rules</h2>
+      <div class="row two">
+        <div>
+          <label for="rulesRisk">🛡 Risk</label>
+          <textarea id="rulesRisk" placeholder="How much to risk, when to stop for the day, how to size, when to skip trades…">• Risk ≤ 1% per trade. Daily loss cap 3R; stop trading if hit.
+• Never add to losers. No revenge trades.
+• If first two trades are -2R by 11am, I’m done for the day.</textarea>
+        </div>
+        <div>
+          <label for="rulesEntries">🎯 Entries</label>
+          <textarea id="rulesEntries" placeholder="Valid setup definitions, context, confirmation…">• Only trade playbooks I track: EMA Snapback, Base Breakout, Pullback to 20/50.
+• Trade with market regime; avoid counter-trend unless A+.
+• Require volume confirmation or reclaim/reject signal.</textarea>
+        </div>
+      </div>
+      <div class="row two">
+        <div>
+          <label for="rulesExits">📌 Exits</label>
+          <textarea id="rulesExits" placeholder="Stops, targets, trailing, break-even moves…">• Stop below invalidation (wick/structure) + slippage.
+• T1 partial at 1.5R; move stop to BE (optional).
+• Trail remainder with fast EMA or prior swing to T2/T3.</textarea>
+        </div>
+        <div>
+          <label for="rulesBehavior">🧠 Behavior</label>
+          <textarea id="rulesBehavior" placeholder="Process, mindset, forbidden actions…">• No trading during major economic releases (±30m).
+• If distracted/tired, reduce size by 50% or stand down.
+• Log every trade with screenshots and R result.</textarea>
+        </div>
+      </div>
+      <div class="row single no-print">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button id="copyMd" class="btn link">Copy as Markdown</button>
+          <button id="exportJson" class="btn ghost">Export JSON</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Pre-Flight Checklist</h2><div class="print-head"><div>My Rules</div><div id="printDate"></div></div>
+      <ul id="preFlight" class="checklist"></ul>
+      <div class="muted" style="margin-top:8px">Generated from your settings • <span id="lastSaved">not saved</span></div>
+    </div>
+
+    <div class="card">
+      <h2>Session Notes</h2>
+      <div class="row two">
+        <div>
+          <label for="focusToday">Focus today</label>
+          <textarea id="focusToday" placeholder="Setups to focus on, sectors, catalysts…"></textarea>
+        </div>
+        <div>
+          <label for="avoidToday">Avoid today</label>
+          <textarea id="avoidToday" placeholder="Chop days, low RVOL tickers, news-heavy names…"></textarea>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div><h4>Arowana Profits</h4><p>AI-powered tools for traders and investors.</p></div>
+        <div><h4>Solutions</h4><ul><li><a href="short-term-dashboard.html">Trading Dashboard</a></li><li><a href="long-term-dashboard.html">Long-Term</a></li><li><a href="learn-investing.html">Learning Center</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+        <div><h4>Legal</h4><p><strong>Disclaimer:</strong> This is not investment advice. Trading involves risk.</p></div>
+      </div>
+      <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script>
+    // nav active + mobile (Copied from volatility-guardrails for mobile menu functionality)
+    const ham=document.getElementById("hamburger");
+    const mobileMenu=document.getElementById("mobileMenu");
+    ham?.addEventListener("click", ()=>{
+      const open=mobileMenu.style.display==="grid";
+      mobileMenu.style.display=open?"none":"grid";
+      ham.setAttribute("aria-expanded", open?"false":"true");
+    });
+    const mmq=window.matchMedia("(min-width: 641px)");
+    mmq.addEventListener?.("change", e=>{ if(e.matches){ mobileMenu.style.display="none"; ham.setAttribute("aria-expanded","false"); }});
+    (function(){
+      const path=location.pathname.split("/").pop()||"index.html";
+      document.querySelectorAll(".nav a").forEach(a=>{
+        if((a.getAttribute("href")||"").endsWith(path)){ a.setAttribute("aria-current","page");}
+      });
+    })();
+  </script>
+
+  <script>
+  (function(){
+    const $=s=>document.querySelector(s);
+    const SKEY="my_rules_v2";
+    const PKEY="my_rules_profiles_v1";
+    const CKKEY="my_rules_checklist_v1";
+    const RKEY="my_rules_meter_today_r"; // daily R
+
+    const editableInputs = () => [
+      "riskPct","dailyLossR","maxPositions","maxAccountDD","accountSize",
+      "slippageBudget","feesShare","holdOvernight","newsLockout",
+      "rulesRisk","rulesEntries","rulesExits","rulesBehavior","focusToday","avoidToday"
+    ].map(id=>$("#"+id));
+
+    function fmt(n, d=1){ return (n!=="" && isFinite(n)) ? Number(n).toFixed(d) : "—"; }
+    function money(n){ return isFinite(n) ? "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:2}) : "—"; }
+
+    function updateSummary(){
+      $("#summaryBox").textContent =
+        `${fmt($("#riskPct").value)}% risk/trade • Cap ${fmt($("#dailyLossR").value,1)}R/day • ≤${$("#maxPositions").value} positions • Max DD ${fmt($("#maxAccountDD").value,0)}%`;
+      // risk math
+      const acct=Number($("#accountSize").value||0);
+      const riskPct=Number($("#riskPct").value||0)/100;
+      const rPerTrade=acct>0 ? acct*riskPct : NaN;
+      const dailyCapR=Number($("#dailyLossR").value||0);
+      const dailyLoss$ = isFinite(rPerTrade) ? rPerTrade*dailyCapR : NaN;
+      $("#riskMath").textContent = acct>0 ? `Sizer math: ${fmt($("#riskPct").value)}% of ${money(acct)} = ${money(rPerTrade)} risk/trade • Daily loss cap ≈ ${fmt(dailyCapR,1)}R = ${money(dailyLoss$)}`
+                                       : "Sizer math: set Account size to see $ risk/trade and daily $ cap.";
+    }
+
+    function preFlightItems(){
+      const overnight = $("#holdOvernight").value;
+      const newsLock = Number($("#newsLockout").value||0);
+      return [
+        `Sizer set to ${fmt($("#riskPct").value)}% risk/trade`,
+        `Stop if daily loss reaches ${fmt($("#dailyLossR").value,1)}R`,
+        `No more than ${$("#maxPositions").value} open positions`,
+        `Respect max account drawdown ${fmt($("#maxAccountDD").value,0)}%`,
+        `Slippage budget ≤ $${fmt($("#slippageBudget").value,2)}/share; fees $${fmt($("#feesShare").value,3)}/share`,
+        overnight==="no" ? "No overnight holds" : (overnight==="case" ? "Overnights case-by-case with reduced size" : "Overnights allowed"),
+        newsLock>0 ? `Avoid trading ±${newsLock}m around major news` : "News lockout: none set",
+        "Log every trade with screenshots and R result"
+      ];
+    }
+
+    function renderPreFlight(){
+      const ul = document.querySelector("#preFlight");
+      const saved = JSON.parse(localStorage.getItem(CKKEY) || "{}");
+      const items = [
+        "Sizer set to 1.0% risk/trade",
+        "Stop if daily loss reaches 3.0R",
+        "No more than 4 open positions",
+        "Respect max account drawdown 15%",
+        "Slippage budget ≤ $0.05/share; fees $0/share",
+        "No overnight holds",
+        "Avoid trading ±30m around major news",
+        "Log every trade with screenshots and R result"
+      ];
+
+      ul.innerHTML = items.map((t, i) => {
+        const id = `pf${i}`;
+        const checked = saved[id] ? "checked" : "";
+        return `<li>
+          <input type="checkbox" id="${id}" ${checked}>
+          <label for="${id}">${t}</label>
+        </li>`;
+      }).join("");
+    }
+
+    // One delegated handler that persists check/uncheck
+    document.querySelector("#preFlight").addEventListener("change", (e)=>{
+      if(e.target.matches('input[type="checkbox"]')){
+        const s = JSON.parse(localStorage.getItem(CKKEY) || "{}");
+        s[e.target.id] = e.target.checked;
+        localStorage.setItem(CKKEY, JSON.stringify(s));
+      }
+    });
+    
+    function save(){
+      const data={}; editableInputs().forEach(el=> data[el.id]=el.value);
+      data.savedAt=new Date().toISOString();
+      localStorage.setItem(SKEY, JSON.stringify(data));
+      $("#status").textContent="Saved";
+      $("#lastSaved").textContent="saved " + new Date().toLocaleString();
+    }
+
+    function load(){
+      try{
+        const data=JSON.parse(localStorage.getItem(SKEY)||"{}");
+        Object.entries(data).forEach(([k,v])=>{ const el=$("#"+k); if(el) el.value=v; });
+        $("#lastSaved").textContent=data.savedAt? ("saved "+new Date(data.savedAt).toLocaleString()) : "not saved";
+        updateSummary(); renderPreFlight(); refreshHeader();
+        $("#status").textContent="Loaded";
+      }catch{}
+    }
+
+    // Profiles
+    function saveProfile(){
+      const name = ($("#profileName").value||"").trim(); if(!name){ $("#status").textContent="Profile name required"; return; }
+      const p=JSON.parse(localStorage.getItem(PKEY)||"{}");
+      const data={}; editableInputs().forEach(el=> data[el.id]=el.value);
+      p[name]=data; localStorage.setItem(PKEY, JSON.stringify(p));
+      $("#status").textContent="Profile saved";
+    }
+    function loadProfile(){
+      const p=JSON.parse(localStorage.getItem(PKEY)||"{}");
+      const name=prompt("Load which profile?\n"+Object.keys(p).join(", ")); if(!name||!p[name]) return;
+      Object.entries(p[name]).forEach(([k,v])=>{ const el=$("#"+k); if(el) el.value=v; });
+      updateSummary(); renderPreFlight(); refreshHeader();
+      $("#status").textContent=`Loaded profile: ${name}`;
+    }
+
+    function asMarkdown(){
+      const md = `# My Trading Rules
+
+**Risk Settings** - Risk: ${$("#riskPct").value}% / trade  
+- Daily loss cap: ${$("#dailyLossR").value}R  
+- Max positions: ${$("#maxPositions").value}  
+- Max account DD: ${$("#maxAccountDD").value}%  
+- Account size: ${$("#accountSize").value||"—"}  
+- Slippage budget: $${$("#slippageBudget").value}/share  
+- Fees/share: $${$("#feesShare").value}  
+- Hold overnight: ${$("#holdOvernight").value}  
+- News lockout: ${$("#newsLockout").value} min
+
+## Risk
+${$("#rulesRisk").value}
+
+## Entries
+${$("#rulesEntries").value}
+
+## Exits
+${$("#rulesExits").value}
+
+## Behavior
+${$("#rulesBehavior").value}
+
+## Pre-Flight
+${preFlightItems().map(x=>"- "+x).join("\n")}
+
+## Session Notes
+- Focus: ${($("#focusToday").value||"").replace(/\n/g," ")}
+- Avoid: ${($("#avoidToday").value||"").replace(/\n/g," ")}
+`;
+      return md;
+    }
+
+    // autosave (debounced)
+    let t; function debounceSave(){ clearTimeout(t); t=setTimeout(()=>save(), 600); }
+    editableInputs().forEach(el=> el.addEventListener("input", ()=>{ updateSummary(); renderPreFlight(); debounceSave(); }));
+
+    // Lock mode
+    $("#lockMode").addEventListener("change", e=>{
+      const locked=e.target.checked;
+      editableInputs().forEach(el=> el.disabled=locked);
+      $("#status").textContent = locked? "Locked" : "Unlocked";
+    });
+
+    // daily meter
+    function setTodayR(v){ localStorage.setItem(RKEY, String(v)); $("#todayR").value=v; refreshHeader(); }
+    function refreshHeader(){
+      const cap = Number($("#dailyLossR").value||0);
+      const r = Number(localStorage.getItem(RKEY)||$("#todayR").value||0);
+      const badge=$("#meterBadge");
+      const hdr=document.getElementById("hdr");
+      hdr.classList.remove("warning","danger");
+      badge.classList.remove("bad","warn");
+      let txt="Within limits";
+      if(r <= -cap){ txt="Daily loss cap reached"; badge.classList.add("bad"); hdr.classList.add("danger"); }
+      else if(r <= -cap*0.7){ txt="Approaching loss cap"; badge.classList.add("warn"); hdr.classList.add("warning"); }
+      badge.textContent=txt;
+    }
+
+    document.getElementById("meterReset").addEventListener("click", ()=>{ setTodayR(0); $("#status").textContent="Daily meter reset"; });
+    document.getElementById("meterMinusHalf").addEventListener("click", ()=>{ setTodayR(Number($("#todayR").value||0)-0.5); });
+    document.getElementById("meterPlusHalf").addEventListener("click", ()=>{ setTodayR(Number($("#todayR").value||0)+0.5); });
+    document.getElementById("todayR").addEventListener("input", ()=>{ setTodayR(Number($("#todayR").value||0)); });
+
+    // buttons & shortcuts
+    document.getElementById("saveBtn").addEventListener("click", save);
+    document.getElementById("loadBtn").addEventListener("click", load);
+    document.getElementById("saveProfile").addEventListener("click", saveProfile);
+    document.getElementById("loadProfile").addEventListener("click", loadProfile);
+    document.getElementById("copyMd").addEventListener("click", ()=>{
+      navigator.clipboard.writeText(asMarkdown()).then(()=> $("#status").textContent="Markdown copied");
+    });
+    document.getElementById("exportJson").addEventListener("click", ()=>{
+      const blob=new Blob([localStorage.getItem(SKEY)||"{}"],{type:"application/json"});
+      const url=URL.createObjectURL(blob);
+      const a=Object.assign(document.createElement("a"),{href:url,download:"my-rules.json"}); a.click();
+      setTimeout(()=>URL.revokeObjectURL(url),1000);
+    });
+    document.getElementById("printBtn").addEventListener("click", ()=>window.print());
+    document.addEventListener("keydown", (e)=>{
+      if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==="s"){ e.preventDefault(); save(); }
+    });
+
+    // init
+    $("#printDate").textContent = new Date().toLocaleString();
+    const savedR = Number(localStorage.getItem(RKEY)||0); $("#todayR").value = isFinite(savedR)? savedR : 0;
+    load(); // also sets summary + checklist
+    renderPreFlight(); // ensure checklist is rendered
+    refreshHeader(); // ensure meter reflected now
+  })();
+  </script>
+</body>
+</html>

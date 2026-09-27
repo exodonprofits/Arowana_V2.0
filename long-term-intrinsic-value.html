@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>🧮 Intrinsic Value Calculator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+    :root{
+      --brand:#1a3c5e; --ink:#111827; --muted:#667085; --bg:#f9fafb; --panel:#ffffff; --ring:rgba(26,60,94,.22);
+      --border:#e5e7eb; --shadow:0 8px 24px rgba(16,24,40,.06);
+      --blue:#2563eb; --blue-700:#1d4ed8; --green:#16a34a; --red:#dc2626; --amber:#d97706;
+      --radius:16px; --page: min(1200px, 92vw);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:var(--bg);color:var(--ink);
+      font-family:Inter,system-ui,Segoe UI,Arial,sans-serif}
+    a{color:inherit;text-decoration:none}
+    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+      outline:none; box-shadow:0 0 0 4px var(--ring); border-radius:12px
+    }
+    .container{width:100%;max-width:var(--page);margin:0 auto;padding:0 16px}
+
+    /* Header (matches long-term) */
+    .header{background:#1a3c5e;color:#fff;padding:18px 0;position:relative}
+    .header-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800}
+    .logo img{width:44px;height:44px;border-radius:8px}
+    .nav{display:flex;gap:12px}
+    .nav a{color:#eaf1f9;padding:8px 10px;border-radius:10px}
+    .nav a[aria-current="page"]{background:rgba(255,255,255,.18);color:#fff}
+    .hamburger{display:none;font-size:22px;color:#eaf1f9;padding:8px}
+    @media (max-width:700px){ .nav{display:none} .hamburger{display:block} }
+    .mobile-menu{display:none;position:absolute;left:0;right:0;top:100%;background:#0f2a44;box-shadow:0 18px 40px rgba(0,0,0,.35);z-index:40}
+    .mobile-menu .mm-wrap{display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:14px 16px}
+    .mobile-menu a{color:#eaf1f9;background:rgba(255,255,255,.06);padding:12px;border-radius:12px;text-align:center}
+
+    h1{margin:18px 0 8px;font-size:clamp(22px,4.5vw,32px)}
+    .muted{color:var(--muted)}
+    .card{background:#fff;border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin:12px 0}
+    .grid{display:grid;gap:16px}
+    .two{grid-template-columns:repeat(2,minmax(0,1fr))}
+    @media (max-width:900px){ .two{grid-template-columns:1fr} }
+    label{display:block;font-size:.9rem;color:#334155;margin:.4rem 0 .25rem}
+    input,select{width:100%;padding:.6rem .7rem;border:1px solid var(--border);border-radius:10px}
+    .row{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+    @media (max-width:900px){ .row{grid-template-columns:1fr} }
+    .small-row{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:9999px;padding:.6rem 1rem;font-weight:700;cursor:pointer}
+    .btn.blue{background:var(--blue);color:#fff}.btn.blue:hover{background:var(--blue-700)}
+    .btn.ghost{background:#fff;border:1px solid var(--border)}
+
+    /* Tabs (chip style) */
+    .tabs{display:flex;flex-wrap:wrap;gap:.5rem;margin:.25rem 0 .75rem}
+    .tab{border:1px solid var(--border);background:#fff;border-radius:9999px;padding:.45rem .85rem;font-weight:600;cursor:pointer}
+    .tab[aria-selected="true"]{background:var(--blue);border-color:var(--blue);color:#fff}
+
+    .result{background:#fff;border:1px dashed var(--border);border-radius:14px;padding:12px}
+    .big{font-size:1.8rem;font-weight:800}
+    .pill{display:inline-flex;align-items:center;gap:.4rem;border-radius:9999px;padding:.3rem .65rem;font-weight:700}
+    .pill.green{background:#e8f7ee;color:#065f46}
+    .pill.red{background:#fde7e7;color:#991b1b}
+    .note{font-size:.9rem;color:#64748b}
+
+    footer{margin-top:20px;background:#1a3c5e;color:#d7dae0;padding:22px 0}
+    footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    footer a{color:#b6c3d6}
+    .foot-bottom{margin-top:10px;text-align:center;font-size:12px;color:#9aa6b6}
+    @media (max-width:700px){ footer .cols{grid-template-columns:1fr} }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-top">
+        <div class="logo"><img src="images/arowanalogo.png" alt="logo"><a href="index.html" class="brand-link" style="color:#fff">Arowana Profits</a></div>
+        <nav class="nav">
+          <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+          <a href="long-term-dashboard.html" aria-current="page"><i class="fas fa-chart-line"></i> Long-Term</a>
+          <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+        </nav>
+        <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <div class="mm-wrap container">
+        <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+        <a href="long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+        <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <h1>🧮 Intrinsic Value Calculator</h1>
+    <p class="muted">Choose a method below. Enter simple assumptions and we’ll compute a per-share value and margin of safety versus today’s price.</p>
+
+    <!-- Common inputs -->
+    <div class="card">
+      <div class="small-row">
+        <div>
+          <label>Ticker (optional)</label>
+          <input id="ticker" placeholder="e.g., AAPL"/>
+        </div>
+        <div>
+          <label>Current Price (per share)</label>
+          <input id="px" type="number" step="0.01" placeholder="e.g., 189.72" />
+        </div>
+      </div>
+      <div class="tabs" role="tablist" aria-label="Valuation method">
+        <button class="tab" data-tab="dcf" aria-selected="true">DCF</button>
+        <button class="tab" data-tab="ddm">DDM</button>
+        <button class="tab" data-tab="ri">Residual Income</button>
+        <button class="tab" data-tab="epv">EPV</button>
+        <button class="tab" data-tab="graham">Graham</button>
+      </div>
+
+      <!-- DCF -->
+      <div class="grid two panel" data-panel="dcf">
+        <div class="card" style="margin:0">
+          <h3>Discounted Cash Flow (2-stage)</h3>
+          <div class="row">
+            <div>
+              <label>Free Cash Flow (TTM, $)</label>
+              <input id="dcf_fcf" type="number" step="0.01" placeholder="e.g., 95000000000">
+            </div>
+            <div>
+              <label>Shares Outstanding</label>
+              <input id="dcf_shares" type="number" step="1" placeholder="e.g., 15500000000">
+            </div>
+            <div>
+              <label>Net Debt (Debt − Cash), $</label>
+              <input id="dcf_netdebt" type="number" step="0.01" placeholder="e.g., 10000000000">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Growth Yrs 1–5 (%/yr)</label>
+              <input id="dcf_g1" type="number" step="0.1" placeholder="10">
+            </div>
+            <div>
+              <label>Growth Yrs 6–10 (%/yr)</label>
+              <input id="dcf_g2" type="number" step="0.1" placeholder="5">
+            </div>
+            <div>
+              <label>Terminal Growth g<sub>t</sub> (%/yr)</label>
+              <input id="dcf_gt" type="number" step="0.1" placeholder="2">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Discount Rate r (%/yr)</label>
+              <input id="dcf_r" type="number" step="0.1" placeholder="10">
+            </div>
+            <div>
+              <label>Projection Years</label>
+              <input id="dcf_years" type="number" step="1" value="10">
+            </div>
+            <div style="display:flex;align-items:end">
+              <button class="btn blue" id="runDCF"><i class="fas fa-calculator"></i> Run DCF</button>
+            </div>
+          </div>
+          <div class="note">Assumes linear step from g1 to g2, then terminal value with Gordon at year 10. Equity Value = EV − Net Debt.</div>
+        </div>
+        <div class="card" style="margin:0">
+          <h3>Result</h3>
+          <div class="result" id="dcfOut">
+            <div class="big" id="dcfVal">—</div>
+            <div><span id="dcfMos" class="pill">—</span></div>
+            <div class="note" id="dcfNote">Enter inputs and click Run.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DDM -->
+      <div class="grid two panel" data-panel="ddm" hidden>
+        <div class="card" style="margin:0">
+          <h3>Dividend Discount Model</h3>
+          <div class="row">
+            <div>
+              <label>Dividend (D₀, $/share)</label>
+              <input id="ddm_d0" type="number" step="0.01" placeholder="e.g., 1.00">
+            </div>
+            <div>
+              <label>Dividend Growth g (%/yr)</label>
+              <input id="ddm_g" type="number" step="0.1" placeholder="5">
+            </div>
+            <div>
+              <label>Required Return r (%/yr)</label>
+              <input id="ddm_r" type="number" step="0.1" placeholder="10">
+            </div>
+          </div>
+          <button class="btn blue" id="runDDM"><i class="fas fa-calculator"></i> Run DDM</button>
+          <div class="note">Gordon Growth: V = D₁/(r−g), where D₁ = D₀(1+g). Valid only if r &gt; g.</div>
+        </div>
+        <div class="card" style="margin:0">
+          <h3>Result</h3>
+          <div class="result" id="ddmOut">
+            <div class="big" id="ddmVal">—</div>
+            <div><span id="ddmMos" class="pill">—</span></div>
+            <div class="note" id="ddmNote">Enter inputs and click Run.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Residual Income -->
+      <div class="grid two panel" data-panel="ri" hidden>
+        <div class="card" style="margin:0">
+          <h3>Residual Income (finite horizon)</h3>
+          <div class="row">
+            <div>
+              <label>Book Value per Share B₀ ($)</label>
+              <input id="ri_b0" type="number" step="0.01" placeholder="e.g., 25">
+            </div>
+            <div>
+              <label>ROE (%/yr)</label>
+              <input id="ri_roe" type="number" step="0.1" placeholder="12">
+            </div>
+            <div>
+              <label>Cost of Equity r (%/yr)</label>
+              <input id="ri_r" type="number" step="0.1" placeholder="10">
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Payout Ratio (% of earnings)</label>
+              <input id="ri_payout" type="number" step="1" placeholder="40">
+            </div>
+            <div>
+              <label>Years (N)</label>
+              <input id="ri_years" type="number" step="1" value="10">
+            </div>
+            <div>
+              <label>Persistence φ (0–1) after N</label>
+              <input id="ri_phi" type="number" step="0.05" value="0.6">
+            </div>
+          </div>
+          <button class="btn blue" id="runRI"><i class="fas fa-calculator"></i> Run RI</button>
+          <div class="note">Value ≈ B₀ + Σ RIₜ/(1+r)ᵗ  +  (RI_N · φ)/(r·(1+r)ᴺ). RIₜ = (ROE−r)·Bₜ₋₁, B grows by retained earnings.</div>
+        </div>
+        <div class="card" style="margin:0">
+          <h3>Result</h3>
+          <div class="result" id="riOut">
+            <div class="big" id="riVal">—</div>
+            <div><span id="riMos" class="pill">—</span></div>
+            <div class="note" id="riNote">Enter inputs and click Run.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- EPV -->
+      <div class="grid two panel" data-panel="epv" hidden>
+        <div class="card" style="margin:0">
+          <h3>Earnings Power Value (no growth)</h3>
+          <div class="row">
+            <div>
+              <label>Normalized EPS ($/share)</label>
+              <input id="epv_eps" type="number" step="0.01" placeholder="e.g., 6.00">
+            </div>
+            <div>
+              <label>Cost of Equity r (%/yr)</label>
+              <input id="epv_r" type="number" step="0.1" placeholder="10">
+            </div>
+            <div>
+              <label>Safety haircut to EPS (%)</label>
+              <input id="epv_hair" type="number" step="1" value="0">
+            </div>
+          </div>
+          <button class="btn blue" id="runEPV"><i class="fas fa-calculator"></i> Run EPV</button>
+          <div class="note">EPV per share ≈ EPS<sub>normalized</sub> / r (no growth assumption).</div>
+        </div>
+        <div class="card" style="margin:0">
+          <h3>Result</h3>
+          <div class="result" id="epvOut">
+            <div class="big" id="epvVal">—</div>
+            <div><span id="epvMos" class="pill">—</span></div>
+            <div class="note" id="epvNote">Enter inputs and click Run.</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Graham -->
+      <div class="grid two panel" data-panel="graham" hidden>
+        <div class="card" style="margin:0">
+          <h3>Graham Formula (revised)</h3>
+          <div class="row">
+            <div>
+              <label>EPS (ttm, $)</label>
+              <input id="gr_eps" type="number" step="0.01" placeholder="e.g., 6.50">
+            </div>
+            <div>
+              <label>Growth g (%/yr, next 5)</label>
+              <input id="gr_g" type="number" step="0.1" placeholder="10">
+            </div>
+            <div>
+              <label>AAA Bond Yield Y (%)</label>
+              <input id="gr_y" type="number" step="0.1" value="4.4">
+            </div>
+          </div>
+          <button class="btn blue" id="runGraham"><i class="fas fa-calculator"></i> Run Graham</button>
+          <div class="note">V = EPS × (8.5 + 2g) × 4.4 / Y.</div>
+        </div>
+        <div class="card" style="margin:0">
+          <h3>Result</h3>
+          <div class="result" id="grOut">
+            <div class="big" id="grVal">—</div>
+            <div><span id="grMos" class="pill">—</span></div>
+            <div class="note" id="grNote">Enter inputs and click Run.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div><h4>Arowana Profits</h4><div>AI-powered tools and education.</div></div>
+        <div><h4>Dashboards</h4><div><a href="short-term-dashboard.html">Short-Term</a></div><div><a href="long-term-dashboard.html">Long-Term</a></div></div>
+        <div><h4>Learn</h4><div><a href="learn-investing.html">Guides</a></div></div>
+        <div><h4>Legal</h4><div>Educational only. Not investment advice.</div></div>
+      </div>
+      <div class="foot-bottom">© <span id="yr"></span> Arowana Profits · Investment Genie</div>
+    </div>
+  </footer>
+
+  <script>
+    // Header mobile menu
+    (function(){
+      const burger=document.getElementById('hamburger');
+      const menu=document.getElementById('mobileMenu');
+      document.getElementById('yr').textContent=new Date().getFullYear();
+      burger?.addEventListener('click',()=>{
+        const open=menu.style.display==='block';
+        menu.style.display=open?'none':'block';
+        burger.setAttribute('aria-expanded', String(!open));
+        menu.setAttribute('aria-hidden', String(open));
+      });
+    })();
+
+    // Tab logic
+    (function(){
+      const tabs=[...document.querySelectorAll('.tab')];
+      const panels=[...document.querySelectorAll('.panel')];
+      function select(name){
+        tabs.forEach(t=>t.setAttribute('aria-selected', String(t.dataset.tab===name)));
+        panels.forEach(p=>p.hidden = p.dataset.panel!==name);
+        save();
+      }
+      tabs.forEach(t=>t.addEventListener('click',()=>select(t.dataset.tab)));
+      // restore last used tab
+      const saved = JSON.parse(localStorage.getItem('ivc_state')||'{}');
+      if(saved.tab && panels.some(p=>p.dataset.panel===saved.tab)) select(saved.tab);
+    })();
+
+    // Helpers
+    function val(id){ return Number(document.getElementById(id).value||0); }
+    function fmt(v){ return isFinite(v)? '$'+v.toFixed(2) : '—'; }
+    function mos(value, price){
+      if(!price || !isFinite(value)) return {text:'—', cls:''};
+      const diff=(value-price)/price*100;
+      const cls = diff>=0 ? 'pill green' : 'pill red';
+      const text = (diff>=0? 'Upside ':'Downside ') + diff.toFixed(1) + '%';
+      return {text, cls};
+    }
+    function save(){
+      const data={
+        tab: document.querySelector('.tab[aria-selected="true"]')?.dataset.tab,
+        px: document.getElementById('px').value,
+        inputs: [...document.querySelectorAll('input')].reduce((a,i)=>{a[i.id]=i.value;return a;}, {})
+      };
+      localStorage.setItem('ivc_state', JSON.stringify(data));
+    }
+    function restore(){
+      try{
+        const s=JSON.parse(localStorage.getItem('ivc_state')||'{}');
+        if(s.inputs){ for(const [k,v] of Object.entries(s.inputs)){ const el=document.getElementById(k); if(el) el.value=v; } }
+        if(s.px) document.getElementById('px').value=s.px;
+      }catch{}
+    }
+    restore();
+
+    // DCF (2-stage, 10y default)
+    document.getElementById('runDCF').addEventListener('click', ()=>{
+      const F0=val('dcf_fcf'); const shares=val('dcf_shares'); const netDebt=val('dcf_netdebt');
+      const g1=val('dcf_g1')/100; const g2=val('dcf_g2')/100; const gt=val('dcf_gt')/100;
+      const r=val('dcf_r')/100;   const N=Math.max(1, Math.floor(val('dcf_years')||10));
+      if(r<=gt){ document.getElementById('dcfNote').textContent='Discount rate must be > terminal growth.'; return; }
+
+      // growth path from g1 to g2 over N years
+      const flows=[];
+      let F=F0;
+      for(let t=1;t<=N;t++){
+        const g = g1 + (g2-g1)*((t-1)/(N-1));
+        F = F*(1+g);
+        flows.push(F);
+      }
+      // Discount flows
+      const pvFlows = flows.reduce((s,ft,idx)=> s + ft/Math.pow(1+r, idx+1), 0);
+      const Fterm = flows[flows.length-1]*(1+gt);
+      const TV = Fterm/(r-gt);
+      const pvTV = TV/Math.pow(1+r, N);
+      const EV = pvFlows + pvTV;
+      const equity = EV - netDebt;
+      const perShare = equity / Math.max(1,shares);
+      const price = val('px');
+
+      document.getElementById('dcfVal').textContent = fmt(perShare);
+      const m = mos(perShare, price);
+      const pill=document.getElementById('dcfMos'); pill.textContent=m.text; pill.className=m.cls;
+      document.getElementById('dcfNote').textContent =
+        `PV Flows ${fmt(pvFlows)} + PV Terminal ${fmt(pvTV)} − Net Debt ${fmt(netDebt)} = Equity ${fmt(equity)}.`;
+      save();
+    });
+
+    // DDM
+    document.getElementById('runDDM').addEventListener('click', ()=>{
+      const D0=val('ddm_d0'); const g=val('ddm_g')/100; const r=val('ddm_r')/100;
+      if(r<=g){ document.getElementById('ddmNote').textContent='r must be > g for Gordon formula.'; return; }
+      const D1 = D0*(1+g);
+      const V = D1/(r-g);
+      document.getElementById('ddmVal').textContent = fmt(V);
+      const m = mos(V, val('px')); const pill=document.getElementById('ddmMos'); pill.textContent=m.text; pill.className=m.cls;
+      document.getElementById('ddmNote').textContent = `D₁=${fmt(D1)}; V=D₁/(r−g).`;
+      save();
+    });
+
+    // Residual Income
+    document.getElementById('runRI').addEventListener('click', ()=>{
+      let B=val('ri_b0'); const ROE=val('ri_roe')/100; const r=val('ri_r')/100;
+      const payout=val('ri_payout')/100; const N=Math.max(1, Math.floor(val('ri_years')||10)); const phi=val('ri_phi');
+      const retain = 1 - payout;
+
+      let pv = 0, RI_N = 0;
+      for(let t=1;t<=N;t++){
+        const RI = (ROE - r) * B;
+        pv += RI/Math.pow(1+r, t);
+        // update book value: B_t = B_{t-1} + retained earnings
+        B = B + (ROE*B*retain);
+        if(t===N) RI_N = RI;
+      }
+      // terminal RI with persistence phi
+      const term = (RI_N * phi) / r / Math.pow(1+r, N);
+      const V = val('ri_b0') + pv + term;
+
+      document.getElementById('riVal').textContent = fmt(V);
+      const m = mos(V, val('px')); const pill=document.getElementById('riMos'); pill.textContent=m.text; pill.className=m.cls;
+      document.getElementById('riNote').textContent = `B₀ added plus PV of residual income (${N}y) + terminal with φ=${phi}.`;
+      save();
+    });
+
+    // EPV
+    document.getElementById('runEPV').addEventListener('click', ()=>{
+      const eps = val('epv_eps'); const hair = val('epv_hair')/100; const r = val('epv_r')/100;
+      const epsAdj = eps*(1-hair);
+      const V = epsAdj / Math.max(0.0001, r);
+      document.getElementById('epvVal').textContent = fmt(V);
+      const m = mos(V, val('px')); const pill=document.getElementById('epvMos'); pill.textContent=m.text; pill.className=m.cls;
+      document.getElementById('epvNote').textContent = `EPV assumes no growth: EPS_norm / r.`;
+      save();
+    });
+
+    // Graham
+    document.getElementById('runGraham').addEventListener('click', ()=>{
+      const eps=val('gr_eps'); const g=val('gr_g'); const Y=val('gr_y');
+      const V = eps * (8.5 + 2*g) * 4.4 / Math.max(0.1, Y);
+      document.getElementById('grVal').textContent = fmt(V);
+      const m = mos(V, val('px')); const pill=document.getElementById('grMos'); pill.textContent=m.text; pill.className=m.cls;
+      document.getElementById('grNote').textContent = `V = EPS × (8.5 + 2g) × 4.4 / Y.`;
+      save();
+    });
+  </script>
+</body>
+</html>

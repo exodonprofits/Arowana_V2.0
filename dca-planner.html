@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>DCA Planner — Arowana Profits</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+    :root{
+      --brand:#1a3c5e; --ink:#222; --muted:#667085; --bg:#f9fafb; --panel:#ffffff; --ring:rgba(26,60,94,0.22);
+      --page-width:min(1200px,92vw);
+      --card:#fff; --text:#111827; --shadow:0 4px 12px rgba(0,0,0,.08); --border:#e5e7eb;
+      --blue:#2563eb; --blue-700:#1d4ed8; --green:#16a34a; --amber:#d97706; --red:#dc2626;
+      --radius-lg:1.25rem; --radius-sm:.625rem;
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial; background:var(--bg); color:var(--text); min-height:100vh; display:flex; flex-direction:column}
+    a{color:var(--brand);text-decoration:none}
+    a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring)}
+    .container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+    /* Header */
+    .header{width:100%;background:#1a3c5e;color:#fff;padding:20px 0;margin-bottom:20px}
+    .header-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:clamp(18px,4vw,20px);white-space:nowrap}
+    .logo-img{width:50px;height:50px;border-radius:6px}
+    .nav{display:flex;gap:12px;align-items:center}
+    .nav a{color:#eaf1f9;padding:8px 10px;border-radius:10px}
+    .nav a[aria-current="page"]{background:rgba(255,255,255,.22);color:#fff}
+    .hamburger{display:none;font-size:24px;cursor:pointer;color:#eaf1f9;padding:8px;border-radius:10px}
+
+    /* Mobile menu */
+    .mobile-menu{display:none;position:absolute;top:100%;left:0;right:0;background:#0f2a44;padding:12px 16px 24px;z-index:60;box-shadow:0 12px 30px rgba(0,0,0,.35)}
+    .mobile-menu a{display:flex;align-items:center;gap:10px;color:#eaf1f9;padding:12px 8px;border-radius:12px}
+    .mobile-menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+    .mobile-menu .grid a{background:rgba(255,255,255,.06);justify-content:center}
+
+    /* Footer */
+    footer{margin-top:auto;background:#1a3c5e;color:#d7dae0;padding:28px 0}
+    footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+    footer a{color:#b6c3d6}
+    .foot-bottom{margin-top:14px;font-size:12px;text-align:center;color:#9aa6b6}
+
+    /* Page */
+    main h1{margin:8px 0;font-size:clamp(22px,4.2vw,32px)}
+    .muted{color:#6b7280}
+    .card{background:var(--card);border-radius:var(--radius-lg);padding:18px;box-shadow:var(--shadow);margin:12px 0;border:1px solid var(--border)}
+    .card h2{margin:0 0 10px;font-size:1.2rem;color:var(--brand)}
+    .hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+    .pill{display:inline-flex;align-items:center;gap:6px;background:#f8fafc;border:1px solid #e5e7eb;border-radius:9999px;padding:.3rem .55rem;font-weight:700;font-size:.8rem}
+
+    .form-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))}
+    label{display:block;font-size:.9rem;margin-bottom:4px;color:#1b3350}
+    input,select{width:100%;padding:10px;border-radius:10px;border:1px solid #d0d7e2;font-size:.95rem;min-height:42px}
+
+    .btn{display:inline-flex;align-items:center;gap:.5rem;border:none;border-radius:9999px;padding:.55rem 1rem;font-weight:600;cursor:pointer}
+    .btn.primary{background:var(--brand);color:#fff}
+    .btn.ghost{background:#fff;border:1px solid #dfe5ef;color:#1f2937}
+    .btn.gray{background:#f3f6fb;border:1px solid #e3e8f2;color:#1a3550}
+
+    .stat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:.75rem;margin-top:.5rem}
+    @media(min-width:700px){.stat-grid{grid-template-columns:repeat(4,1fr)}}
+    .stat{background:#f6f8fb;border:1px solid #e5e7eb;border-radius:.9rem;padding:.65rem .75rem;text-align:center}
+    .stat b{display:block;font-size:1.05rem}
+    .stat span{color:var(--muted);font-size:.85rem}
+
+    .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}
+    table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;min-width:780px}
+    th,td{padding:.6rem .7rem;text-align:left;border-bottom:1px solid #eef1f5}
+    th{position:sticky;top:0;background:#f6f8fb;color:#1a3550;font-weight:700;z-index:1}
+    td.right,th.right{text-align:right}
+    tr:hover td{background:#fbfdff}
+
+    canvas{width:100% !important;height:auto !important}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="container">
+      <div class="header-top">
+        <div class="logo">
+          <span><img src="../shared/images/arowanalogo.png" class="logo-img" alt="Arowana Profits logo"/></span>
+          <a href="../index.html" style="color:#fff;text-decoration:none;">Arowana Profits</a>
+        </div>
+        <nav class="nav" id="nav">
+          <a href="../index.html">Home</a>
+          <a href="../short-term-dashboard.html">Short-Term</a>
+          <a href="../long-term-dashboard.html" aria-current="page">Long-Term</a>
+          <a href="../learn-investing.html">Learn</a>
+        </nav>
+        <div class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
+      </div>
+    </div>
+    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+      <div class="grid">
+        <a href="../index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="../short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+        <a href="../long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+        <a href="../learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main -->
+  <main class="container">
+    <!-- Title row -->
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+      <div>
+        <h1 style="margin:0">📆 DCA Planner</h1>
+        <p class="muted" style="margin:.25rem 0 0">Plan automated, recurring contributions. Generate a schedule, optionally split by your allocation / ETF plan, and export to CSV.</p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <a class="btn ghost" href="../long-term-dashboard.html">← Dashboard</a>
+        <button class="btn ghost" id="btnExportTop"><i class="fas fa-file-csv"></i> Export CSV</button>
+      </div>
+    </div>
+
+    <!-- Inputs -->
+    <section class="card" aria-label="Inputs">
+      <h2>Schedule Setup</h2>
+      <div class="form-grid">
+        <div>
+          <label for="startDate">Start Date</label>
+          <input type="date" id="startDate">
+        </div>
+        <div>
+          <label for="endDate">End Date</label>
+          <input type="date" id="endDate">
+        </div>
+        <div>
+          <label for="months">Or Months</label>
+          <input type="number" id="months" value="12" min="1" max="120">
+        </div>
+        <div>
+          <label for="freq">Frequency</label>
+          <select id="freq">
+            <option value="monthly" selected>Monthly</option>
+            <option value="semimonthly">Semi-Monthly (1st & 15th)</option>
+            <option value="biweekly">Bi-Weekly (every 2 weeks)</option>
+            <option value="weekly">Weekly</option>
+          </select>
+        </div>
+        <div>
+          <label for="day">Preferred Day (Monthly/Weekly)</label>
+          <input type="number" id="day" value="1" min="1" max="28">
+        </div>
+        <div>
+          <label for="amount">Amount per Contribution ($)</label>
+          <input type="number" id="amount" value="500" min="0" step="10">
+        </div>
+        <div>
+          <label for="stepUp">Annual Step-Up % (optional)</label>
+          <input type="number" id="stepUp" value="0" min="0" max="50" step="0.5">
+        </div>
+        <div>
+          <label for="skip">Skip Months (comma-sep)</label>
+          <input type="text" id="skip" placeholder="e.g., 7,12 for July & Dec">
+        </div>
+        <div>
+          <label for="tag">Tag / Account</label>
+          <input type="text" id="tag" placeholder="Brokerage, Roth IRA, 529...">
+        </div>
+      </div>
+
+      <div style="margin-top:12px">
+        <button class="btn primary" onclick="generate()"><i class="fas fa-play"></i> Generate Schedule</button>
+        <button class="btn ghost" onclick="saveScenario()">💾 Save</button>
+        <button class="btn ghost" onclick="loadScenario()">📥 Load</button>
+        <button class="btn ghost" id="btnExportBottom">⬇️ Export CSV</button>
+      </div>
+    </section>
+
+    <!-- Mapping -->
+    <section class="card">
+      <h2>Allocation Mapping <span class="pill">Optional</span></h2>
+      <p class="muted">Import your saved <b>Allocation</b> and/or <b>ETF Plan</b> so each contribution splits by targets.</p>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <button class="btn gray" onclick="importAllocation()">📥 Import Allocation</button>
+        <button class="btn gray" onclick="loadETFPlan()">🧩 Load ETF Plan (from Screener)</button>
+        <button class="btn gray" onclick="clearPlan()">🧹 Clear Mapping</button>
+      </div>
+      <div id="planBox" class="card" style="margin-top:12px;background:#f8fafc;border:1px dashed #e3e8f2">
+        No mapping loaded. Contributions will be a single amount with no split.
+      </div>
+      <div class="hint" style="margin-top:8px">Tip: the ETF plan is read from <code>localStorage</code> keys set by your ETF screener.</div>
+    </section>
+
+    <!-- Results -->
+    <section class="card" aria-label="Results">
+      <h2>Results</h2>
+      <div class="stat-grid">
+        <div class="stat"><b id="nTrades">—</b><span>Number of Contributions</span></div>
+        <div class="stat"><b id="totalAmt">—</b><span>Total Contributed</span></div>
+        <div class="stat"><b id="avgAmt">—</b><span>Average / Trade</span></div>
+        <div class="stat"><b id="finalMonthly">—</b><span>Final Monthly Amount</span></div>
+      </div>
+
+      <div style="margin-top:14px"><canvas id="chart"></canvas></div>
+    </section>
+
+    <!-- Schedule -->
+    <section class="card">
+      <h2>Schedule</h2>
+      <div class="table-wrap">
+        <table id="tbl">
+          <thead>
+            <tr>
+              <th>#</th><th>Date</th><th>Account/Tag</th><th class="right">Total ($)</th><th>Breakdown</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="hint" style="margin-top:6px">Educational tool only. Broker holidays/weekends are not auto-adjusted.</div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div><h4>Arowana Profits</h4><p>AI-powered tools for traders and investors.</p></div>
+        <div><h4>Solutions</h4><ul><li><a href="short-term-dashboard.html">Trading Dashboard</a></li><li><a href="long-term-dashboard.html">Long-Term</a></li><li><a href="learn-investing.html">Learning Center</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
+        <div><h4>Legal</h4><p><strong>Disclaimer:</strong> Not investment advice. Consider your own circumstances.</p></div>
+      </div>
+      <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Mobile menu
+    const hamburger = document.getElementById('hamburger');
+    const mobileMenu = document.getElementById('mobileMenu');
+    hamburger?.addEventListener('click', ()=>{
+      const isOpen = mobileMenu.getAttribute('aria-hidden')==='false';
+      mobileMenu.setAttribute('aria-hidden', isOpen ? 'true' : 'false');
+      mobileMenu.style.display = isOpen ? 'none' : 'grid';
+      hamburger.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+    });
+    (function(){const path=location.pathname.split('/').pop()||'index.html'; document.querySelectorAll('.nav a').forEach(a=>{ if((a.getAttribute('href')||'').endsWith(path)){ a.setAttribute('aria-current','page'); } });})();
+  </script>
+
+  <script>
+    // === State ===
+    let chart; // Chart.js instance
+    let plan=[]; // [{ticker,sleeve,target_pct}]
+    let alloc=null; // {targets:{stocks,bonds,cash}, ...}
+
+    // === Init defaults ===
+    document.addEventListener('DOMContentLoaded',()=>{
+      const d=new Date();
+      const today=d.toISOString().slice(0,10);
+      document.getElementById('startDate').value=today;
+      const d2=new Date(d.getFullYear()+1,d.getMonth(),d.getDate());
+      document.getElementById('endDate').value=d2.toISOString().slice(0,10);
+      updatePlanBox();
+      generate();
+    });
+
+    // === Mapping actions ===
+    function importAllocation(){
+      try{
+        alloc = JSON.parse(localStorage.getItem('asset_allocation_builder_v1')||'null');
+        if(!alloc) return alert('No saved allocation found.');
+        updatePlanBox();
+      }catch(e){ alert('Import failed.'); }
+    }
+    function loadETFPlan(){
+      try{
+        plan = JSON.parse(localStorage.getItem('etf_core_plan_v1')||'null')||[];
+        if(!plan.length) return alert('No ETF plan found from Screener.');
+        updatePlanBox();
+      }catch(e){ alert('Could not load ETF plan.'); }
+    }
+    function clearPlan(){ plan=[]; alloc=null; updatePlanBox(); }
+
+    function updatePlanBox(){
+      const box=document.getElementById('planBox');
+      if(plan && plan.length){
+        const total = plan.reduce((s,p)=>s + (+p.target_pct||0),0).toFixed(2);
+        box.innerHTML = `<b>ETF Plan Loaded</b> (sum ${total}%)<br>`+
+          `<small>${plan.map(p=>`${p.ticker} — ${p.sleeve}: ${(+p.target_pct).toFixed(2)}%`).join(' • ')}</small>`;
+      } else if(alloc){
+        const t=alloc.targets||{}; const st=+t.stocks||0, bd=+t.bonds||0, cs=+t.cash||0;
+        box.innerHTML = `<b>Allocation Loaded</b> — Stocks ${st}%, Bonds ${bd}%, Cash ${cs}%`;
+      } else {
+        box.textContent = 'No mapping loaded. Contributions will be a single amount with no split.';
+      }
+    }
+
+    // === Core generation ===
+    function generate(){
+      const start = valDate('startDate');
+      const endUser = valDate('endDate');
+      const months = +document.getElementById('months').value||0;
+      const freq = document.getElementById('freq').value;
+      const day = +document.getElementById('day').value||1;
+      const amount = +document.getElementById('amount').value||0;
+      const stepUp = (+document.getElementById('stepUp').value||0)/100; // annual
+      const tag = document.getElementById('tag').value.trim();
+      const skip = (document.getElementById('skip').value||'').split(',').map(s=>parseInt(s.trim(),10)).filter(n=>!isNaN(n));
+
+      const end = endUser || (months>0 ? addMonths(start, months) : addMonths(start, 12));
+
+      const dates = buildSchedule(start, end, freq, day, skip);
+      const rows = buildRows(dates, amount, stepUp, tag);
+
+      renderTable(rows);
+      renderStats(rows);
+      renderChart(rows);
+    }
+
+    function buildSchedule(start, end, freq, day, skipMonths){
+      const dates=[];
+      const d=new Date(start.getTime());
+      const isSkipped=(dt)=> skipMonths.includes(dt.getMonth()+1);
+
+      if(freq==='monthly'){
+        while(d<=end){
+          const dt=new Date(d.getFullYear(), d.getMonth(), Math.min(day, daysInMonth(d.getFullYear(), d.getMonth())));
+          if(!isSkipped(dt) && dt>=start && dt<=end) dates.push(dt);
+          d.setMonth(d.getMonth()+1);
+        }
+      } else if(freq==='semimonthly'){
+        while(d<=end){
+          const d1=new Date(d.getFullYear(), d.getMonth(), 1);
+          const d2=new Date(d.getFullYear(), d.getMonth(), 15);
+          [d1,d2].forEach(dt=>{ if(!isSkipped(dt) && dt>=start && dt<=end) dates.push(dt); });
+          d.setMonth(d.getMonth()+1);
+        }
+      } else if(freq==='biweekly'){
+        let cur=new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        while(cur<=end){ if(!isSkipped(cur)) dates.push(new Date(cur)); cur=setDaysAhead(cur,14); }
+      } else if(freq==='weekly'){
+        let cur=new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        while(cur<=end){ if(!isSkipped(cur)) dates.push(new Date(cur)); cur=setDaysAhead(cur,7); }
+      }
+      return dates.sort((a,b)=>a-b);
+    }
+
+    function buildRows(dates, baseAmount, stepUp, tag){
+      const rows=[];
+      dates.forEach((dt,i)=>{
+        const yearsElapsed = dt.getFullYear() - dates[0].getFullYear();
+        const stepped = +(baseAmount * Math.pow(1+stepUp, yearsElapsed)).toFixed(2);
+        const breakdown = splitAmount(stepped);
+        rows.push({idx:i+1, date:iso(dt), tag, amount:stepped, breakdown});
+      });
+      return rows;
+    }
+
+    function splitAmount(total){
+      if(plan && plan.length){
+        const sum = plan.reduce((s,p)=>s + (+p.target_pct||0),0) || 1;
+        return plan.map(p=>({label:`${p.ticker} (${p.sleeve})`, pct:+p.target_pct, dollars: +(total * (+p.target_pct||0)/sum).toFixed(2)}));
+      } else if(alloc){
+        const t=alloc.targets||{stocks:60,bonds:30,cash:10};
+        const parts=[['Stocks',t.stocks||0],['Bonds',t.bonds||0],['Cash',t.cash||0]];
+        const sum = parts.reduce((s,[,v])=>s+v,0) || 1;
+        return parts.map(([name,pct])=>({label:name, pct, dollars:+(total*(pct/sum)).toFixed(2)}));
+      }
+      return [];
+    }
+
+    // === Render ===
+    function renderTable(rows){
+      const tb=document.querySelector('#tbl tbody'); tb.innerHTML='';
+      rows.forEach(r=>{
+        const tr=document.createElement('tr');
+        const bd = r.breakdown.length? r.breakdown.map(b=>`${b.label}: $${b.dollars.toLocaleString()}`).join(' • ') : '—';
+        tr.innerHTML = `<td>${r.idx}</td><td>${r.date}</td><td>${r.tag||'—'}</td><td class="right">$${r.amount.toLocaleString()}</td><td>${bd}</td>`;
+        tb.appendChild(tr);
+      });
+    }
+    function renderStats(rows){
+      const n=rows.length;
+      const total=rows.reduce((s,r)=>s+r.amount,0);
+      const avg=n? total/n : 0;
+      const monthly=estimateFinalMonthly(rows);
+      document.getElementById('nTrades').textContent=n.toLocaleString();
+      document.getElementById('totalAmt').textContent='$'+total.toLocaleString();
+      document.getElementById('avgAmt').textContent='$'+Math.round(avg).toLocaleString();
+      document.getElementById('finalMonthly').textContent='$'+Math.round(monthly).toLocaleString();
+    }
+    function estimateFinalMonthly(rows){
+      if(!rows.length) return 0;
+      const last = rows[rows.length-1].date;
+      const lastMonth = parseInt(last.slice(5,7));
+      const lastYear = parseInt(last.slice(0,4));
+      const monthRows = rows.filter(r=>parseInt(r.date.slice(0,4))===lastYear && parseInt(r.date.slice(5,7))===lastMonth);
+      return monthRows.reduce((s,r)=>s+r.amount,0);
+    }
+    function renderChart(rows){
+      const labels=rows.map(r=>r.date);
+      let cum=0; const data=rows.map(r=>{cum+=r.amount; return cum;});
+      const ctx=document.getElementById('chart');
+      const cfg={type:'line',data:{labels,datasets:[{label:'Cumulative Contributions',data,borderColor:'#2563eb',backgroundColor:'rgba(37,99,235,.15)',fill:true,tension:.25}]},options:{responsive:true,plugins:{legend:{position:'bottom'}},scales:{y:{ticks:{callback:v=>'$'+v.toLocaleString()}}}}};
+      if(chart){ chart.destroy(); }
+      chart=new Chart(ctx,cfg);
+    }
+
+    // === CSV Export (top & bottom buttons) ===
+    function exportCSV(){
+      const rows=[...document.querySelectorAll('#tbl tbody tr')].map(tr=>[...tr.children].map(td=>td.textContent));
+      const hdr=['#','Date','Tag','Total','Breakdown'];
+      const csv=[hdr].concat(rows).map(r=>r.join(',')).join('\n');
+      const blob=new Blob([csv],{type:'text/csv'});
+      const url=URL.createObjectURL(blob);
+      const a=document.createElement('a'); a.href=url; a.download='dca-schedule.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+    }
+    document.getElementById('btnExportTop').addEventListener('click', exportCSV);
+    document.getElementById('btnExportBottom').addEventListener('click', exportCSV);
+
+    // === Save/Load Scenario ===
+    function saveScenario(){
+      const obj={
+        startDate:val('startDate'), endDate:val('endDate'), months:+val('months')||0, freq:val('freq'), day:+val('day')||1, amount:+val('amount')||0, stepUp:+val('stepUp')||0, tag:val('tag'), skip:val('skip'),
+      };
+      localStorage.setItem('dca_planner_v1', JSON.stringify(obj));
+      alert('Saved to this browser.');
+    }
+    function loadScenario(){
+      try{
+        const obj=JSON.parse(localStorage.getItem('dca_planner_v1')||'null');
+        if(!obj) return alert('No saved scenario.');
+        setVal('startDate',obj.startDate); setVal('endDate',obj.endDate); setVal('months',obj.months); setVal('freq',obj.freq); setVal('day',obj.day); setVal('amount',obj.amount); setVal('stepUp',obj.stepUp); setVal('tag',obj.tag); setVal('skip',obj.skip);
+        generate();
+      }catch(e){ alert('Load failed.'); }
+    }
+
+    // === Helpers ===
+    function val(id){ return document.getElementById(id).value; }
+    function setVal(id,v){ if(v!==undefined && v!==null) document.getElementById(id).value=v; }
+    function iso(dt){ return dt.toISOString().slice(0,10); }
+    function valDate(id){ const s=val(id); return s? new Date(s+'T00:00:00') : null; }
+    function daysInMonth(y,m){ return new Date(y, m+1, 0).getDate(); }
+    function addMonths(date, n){ const d=new Date(date.getTime()); d.setMonth(d.getMonth()+n); return d; }
+    function setDaysAhead(date, days){ const d=new Date(date.getTime()); d.setDate(d.getDate()+days); return d; }
+  </script>
+</body>
+</html>

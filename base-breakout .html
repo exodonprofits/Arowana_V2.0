@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>Base Breakout Scanner — Arowana Profits</title>
+<style>
+:root{--brand:#0b4f8a;--brand-dk:#083d6e;--brand-lt:#e8f2fb;--bg:#f6f8fb;--panel:#fff;--text:#111827;--muted:#64748b;--border:#e5e7eb;--shadow:0 4px 24px rgba(11,79,138,.08);--radius:14px;--ring:rgba(11,79,138,.22);--green:#16a34a;--red:#dc2626;--amber:#d97706;--page-width:min(1200px,92vw)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+.nav-shell{background:var(--brand);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;font-size:1.2rem;white-space:nowrap}
+.nav-logo{width:34px;height:34px;border-radius:8px;object-fit:contain;background:rgba(255,255,255,.15);padding:2px}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{color:rgba(255,255,255,.75);padding:7px 11px;border-radius:8px;font-size:.875rem;font-weight:600;transition:.15s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nav-btn{color:rgba(255,255,255,.8);padding:6px 12px;border-radius:8px;font-size:.85rem;font-weight:600;transition:.15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.nav-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-btn.cta{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.nav-btn.cta:hover{background:rgba(255,255,255,.28)}
+.nav-burger{display:none;background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:8px}
+@media(max-width:800px){.nav-links{display:none}.nav-burger{display:flex}}
+.nav-mobile{display:none;background:#063264;border-top:1px solid rgba(255,255,255,.1)}
+.nav-mobile.open{display:block}
+.nav-mobile a,.nav-mobile button{display:block;color:rgba(255,255,255,.8);padding:12px 20px;font-size:.9rem;font-weight:600;width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:inherit}
+.nav-mobile a:hover,.nav-mobile button:hover{background:rgba(255,255,255,.07);color:#fff}
+footer{background:var(--brand);color:#cfe0f5;padding:28px 0;margin-top:auto}
+.f-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:720px){.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.f-grid{grid-template-columns:1fr}}
+.f-col h4{color:#fff;font-size:.875rem;font-weight:700;margin:0 0 8px}
+.f-col a{display:block;color:#94bad8;font-size:.8rem;margin-bottom:4px}
+.f-col a:hover{color:#fff}
+.f-col p{font-size:.78rem;margin:0;line-height:1.6}
+.f-bottom{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);text-align:center;font-size:.73rem;color:#6b94b8}
+.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:1rem;font-weight:700;margin:0}
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.875rem;font-family:inherit;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dk)}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:#f8fafc}
+.btn-sm{padding:5px 10px;font-size:.8rem}
+input[type=number],select{padding:8px 11px;border:1px solid var(--border);border-radius:8px;font-size:.875rem;font-family:inherit;color:var(--text);background:#fff;width:100%}
+input[type=number]:focus,select:focus{outline:none;box-shadow:0 0 0 3px var(--ring);border-color:var(--brand)}
+label{display:block;font-size:.78rem;font-weight:600;color:var(--muted);margin-bottom:3px}
+.page-hero{background:linear-gradient(135deg,#0b4f8a 0%,#1565a8 60%,#0d7bc4 100%);color:#fff;padding:28px 0 24px}
+.page-hero h1{margin:0 0 4px;font-size:1.7rem;font-weight:800}
+.page-hero p{margin:0;opacity:.8;font-size:.9rem}
+/* Filter grid */
+.filter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:12px}
+/* Stats row */
+.stats-strip{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}
+.stat-chip{background:var(--brand-lt);border-radius:8px;padding:8px 12px;flex:1;min-width:80px;text-align:center}
+.stat-num{font-size:1.1rem;font-weight:800;color:var(--brand);display:block}
+.stat-lbl{font-size:.72rem;color:var(--muted);display:block}
+/* Table */
+.tbl-wrap{overflow-x:auto;border-radius:10px;border:1px solid var(--border)}
+table{width:100%;border-collapse:collapse;font-size:.85rem;min-width:960px}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--border)}
+th{background:#f8fafc;font-size:.73rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);white-space:nowrap;position:sticky;top:0}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:#f0f7ff}
+td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}
+/* Status badges */
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:999px;font-size:.73rem;font-weight:700}
+.badge-breaking{background:#dcfce7;color:#166534}
+.badge-near{background:#dbeafe;color:#1e40af}
+.badge-building{background:#f1f5f9;color:var(--muted)}
+/* Squeeze bar */
+.sq-wrap{display:flex;align-items:center;gap:5px}
+.sq-bar{height:6px;background:#e5e7eb;border-radius:999px;width:40px;display:inline-block}
+.sq-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#f59e0b,#16a34a)}
+/* Webhook row */
+.wh-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap;padding:10px 14px;background:#f8fafc;border-radius:10px;margin-bottom:14px}
+.wh-input{flex:1;min-width:220px;padding:7px 11px;border:1px solid var(--border);border-radius:8px;font-size:.83rem;font-family:inherit}
+.wh-input:focus{outline:none;box-shadow:0 0 0 3px var(--ring)}
+/* Playbook */
+.pb-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.pb-card{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px}
+.pb-card h3{margin:0 0 6px;font-size:.875rem;color:var(--brand)}
+.pb-card p{margin:0;font-size:.82rem;color:#374151;line-height:1.55}
+.toast-stack{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 16px;border-radius:10px;color:#fff;font-size:.875rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:tin .2s ease;pointer-events:auto}
+.toast-ok{background:#166534}.toast-err{background:#991b1b}.toast-info{background:#1e40af}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="nav-shell">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <img src="images/arowanalogo.png" alt="" class="nav-logo" onerror="this.style.display='none'">
+      Arowana Profits
+    </a>
+    <nav class="nav-links">
+      <a href="short-term-dashboard.html" class="nav-link active">⚡ Short-Term</a>
+      <a href="long-term-dashboard.html" class="nav-link">📈 Long-Term</a>
+      <a href="learn-investing.html" class="nav-link">📚 Learn</a>
+      <a href="master-journal.html" class="nav-link">📒 Journal</a>
+      <a href="account.html" class="nav-link">🪪 Account</a>
+    </nav>
+    <div class="nav-right" id="navRight">
+      <a href="login.html" class="nav-btn" id="navSignIn">Sign In</a>
+      <a href="signup.html" class="nav-btn cta" id="navSignUp">Get Started</a>
+    </div>
+    <button class="nav-burger" id="navBurger">☰</button>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <a href="short-term-dashboard.html">⚡ Short-Term Dashboard</a>
+    <a href="buy-sell-signal.html">🧭 Buy/Sell Signal</a>
+    <a href="atr-stop-planner.html">📏 ATR Stop Planner</a>
+    <a href="base-breakout.html">📦 Base Breakout</a>
+    <a href="bb-snapback.html">📎 BB Snapback</a>
+    <div style="height:1px;background:rgba(255,255,255,.1);margin:6px 0"></div>
+    <a href="login.html" id="mSignIn">🔑 Sign In</a>
+    <a href="signup.html" id="mSignUp">🚀 Get Started</a>
+    <button onclick="doSignOut()" id="mSignOut" style="display:none;color:#fca5a5">🚪 Sign Out</button>
+  </div>
+</div>
+
+<div class="page-hero">
+  <div class="container">
+    <h1>📦 Base Breakout Scanner</h1>
+    <p>Find tight multi-day bases with volatility contraction near a breakout pivot.</p>
+  </div>
+</div>
+
+<main class="container" style="padding:24px 0 48px">
+
+  <!-- FILTERS -->
+  <div class="card">
+    <div class="card-hd">
+      <h2 class="card-title">🎛 Filters</h2>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-ghost btn-sm" onclick="savePreset()">💾 Save</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadPreset()">📂 Load</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearRows()">✕ Clear</button>
+        <button class="btn btn-ghost btn-sm" id="autoBtn" onclick="toggleAuto()">⏱ Auto 30s</button>
+        <button class="btn btn-ghost btn-sm" onclick="exportCSV()">⬇ CSV</button>
+        <button class="btn btn-primary" onclick="runScan()">🔍 Scan Now</button>
+      </div>
+    </div>
+
+    <div class="filter-grid">
+      <div><label>Min Base Days</label><input id="minDays" type="number" min="1" max="90" value="5"></div>
+      <div><label>Max Base Days</label><input id="maxDays" type="number" min="1" max="120" value="25"></div>
+      <div><label>Max Tightness %</label><input id="maxTight" type="number" step="0.1" min="0" value="1.8"></div>
+      <div><label>Min Rel. Volume ×</label><input id="minRvol" type="number" step="0.1" min="0" value="1.5"></div>
+      <div><label>Max % to Pivot</label><input id="prox" type="number" step="0.1" min="0" value="1.0"></div>
+      <div><label>Timeframe</label><select id="tf"><option value="Daily" selected>Daily</option><option value="Weekly">Weekly</option><option value="4h">4 Hour</option></select></div>
+      <div><label>Price Band</label><select id="priceBand"><option value="all">All Prices</option><option value="0-5">Under $5</option><option value="5-20">$5–$20</option><option value="20-100">$20–$100</option><option value="100+">Over $100</option></select></div>
+      <div><label>Sort By</label><select id="sortBy"><option value="prox">% to Pivot</option><option value="rvol">Rel. Volume</option><option value="squeeze">Squeeze Score</option><option value="days">Days in Base</option></select></div>
+    </div>
+
+    <!-- Active filter pills -->
+    <div style="display:flex;gap:6px;flex-wrap:wrap;font-size:.75rem">
+      <span style="color:var(--muted)">Active:</span>
+      <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px">Days <span id="pbMin">5</span>–<span id="pbMax">25</span></span>
+      <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px">Tight ≤ <span id="pbTight">1.8</span>%</span>
+      <span style="background:#dbeafe;color:#1e40af;padding:2px 8px;border-radius:999px">RVol ≥ <span id="pbRvol">1.5</span>×</span>
+      <span id="scanStatus" style="color:var(--muted);margin-left:auto"></span>
+    </div>
+  </div>
+
+  <!-- WEBHOOK STATUS -->
+  <div style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:9px;padding:9px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;font-size:.85rem">
+    <span style="flex:1;color:#0369a1">🔗 Live data: <span id="whStatusText">checking…</span></span>
+    <a href="account.html#webhookSettings" style="font-size:.8rem;font-weight:700;color:#0369a1;text-decoration:none">⚙️ Configure in Account →</a>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-strip">
+    <div class="stat-chip"><span class="stat-num" id="sTotal">—</span><span class="stat-lbl">Matching</span></div>
+    <div class="stat-chip"><span class="stat-num" id="sBreaking" style="color:var(--green)">—</span><span class="stat-lbl">Breaking</span></div>
+    <div class="stat-chip"><span class="stat-num" id="sNear" style="color:var(--brand)">—</span><span class="stat-lbl">Near Pivot</span></div>
+    <div class="stat-chip"><span class="stat-num" id="sBuilding">—</span><span class="stat-lbl">Building</span></div>
+  </div>
+
+  <!-- RESULTS TABLE -->
+  <div class="card">
+    <h2 class="card-title" style="margin-bottom:12px">📊 Results</h2>
+    <div class="tbl-wrap">
+      <table>
+        <thead><tr>
+          <th>Symbol</th><th class="num">Price</th><th class="num">Base Low</th><th class="num">Base High</th>
+          <th class="num">Pivot</th><th class="num">% to Pivot</th><th class="num">Days</th>
+          <th class="num">Tight%</th><th class="num">RVol</th><th class="num">Squeeze</th>
+          <th>Status</th><th>Notes</th><th>Action</th>
+        </tr></thead>
+        <tbody id="tbody"><tr><td colspan="13" style="text-align:center;color:var(--muted);padding:24px">Click Scan Now to load results.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- PLAYBOOK -->
+  <div class="card">
+    <h2 class="card-title" style="margin-bottom:12px">📚 Base Breakout Playbook</h2>
+    <div class="pb-grid">
+      <div class="pb-card"><h3>✅ Ideal Setup</h3><p>5–25 day base, tightness &lt;2%, RVol ≥1.5× on break, within 1% of pivot. Squeeze score ≥70 = strong contraction.</p></div>
+      <div class="pb-card"><h3>📐 Entry Rule</h3><p>Buy within 1% above base high (pivot). Never chase if already 2%+ above. Limit order just above pivot = best execution.</p></div>
+      <div class="pb-card"><h3>🛑 Stop Placement</h3><p>Stop below the base low, or 1×ATR below pivot. Exit if stock closes back inside the base on volume.</p></div>
+      <div class="pb-card"><h3>📈 Target</h3><p>Minimum 2R. Mark prior highs and multi-month bases as natural resistance for scale-out levels.</p></div>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="container">
+    <div class="f-grid">
+      <div class="f-col"><h4>Arowana Profits</h4><p>Risk-first tools for traders and investors.</p></div>
+      <div class="f-col"><h4>Short-Term</h4>
+        <a href="buy-sell-signal.html">Buy/Sell Signal</a>
+        <a href="atr-stop-planner.html">ATR Stop Planner</a>
+        <a href="base-breakout.html">Base Breakout</a>
+        <a href="bb-snapback.html">BB Snapback</a>
+      </div>
+      <div class="f-col"><h4>Long-Term</h4>
+        <a href="intrinsic-value.html">Intrinsic Value</a>
+        <a href="asset-allocation-builder.html">Asset Allocation</a>
+      </div>
+      <div class="f-col"><h4>Legal</h4><p>Educational only. Not financial advice. Trading involves risk of loss.</p></div>
+    </div>
+    <div class="f-bottom">© <span id="yr"></span> Arowana Profit LLC. All rights reserved.</div>
+  </div>
+</footer>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script type="module">
+import { supabase } from './js/supabase-init.js';
+window.doSignOut = async () => { try { await supabase.auth.signOut(); } catch(e){} location.href = 'index.html'; };
+const { data: { user } } = await supabase.auth.getUser();
+if (user) {
+  const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+  document.getElementById('navSignIn').style.display = 'none';
+  document.getElementById('navSignUp').style.display = 'none';
+  document.getElementById('mSignOut').style.display = 'block';
+  const nr = document.getElementById('navRight'); nr.innerHTML = '';
+  const nb = document.createElement('button'); nb.className='nav-btn cta'; nb.textContent='🪪 '+name; nb.onclick=()=>location.href='account.html';
+  const so = document.createElement('button'); so.className='nav-btn'; so.textContent='Sign Out'; so.onclick=window.doSignOut;
+  nr.append(nb,so);
+}
+</script>
+
+<script>
+const $=id=>document.getElementById(id);
+$('yr').textContent=new Date().getFullYear();
+$('navBurger').addEventListener('click',()=>$('navMobile').classList.toggle('open'));
+function toast(msg,type='ok'){const s=$('toastStack');const t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;s.appendChild(t);setTimeout(()=>t.remove(),3400);}
+
+// Load saved webhook
+const WH_KEY='arowana_base_breakout_webhook';
+const PRESET_KEY='base_breakout_preset_v1';
+// Webhook URL read from account.html settings
+function showWhStatus(){
+  const wh = localStorage.getItem(WH_KEY)||'';
+  const el = document.getElementById('whStatusText');
+  if(el){ el.textContent = wh ? '✓ Active' : 'Not set — using demo data'; el.style.color = wh ? 'var(--green)' : 'var(--muted)'; }
+}
+showWhStatus();
+
+let autoTimer=null;
+
+function mockData(){
+  return [
+    {symbol:'ANET',price:287.40,baseLow:272.10,baseHigh:286.80,days:14,tightPct:1.4,rvol:1.9,squeeze:78,notes:'Tight upper base'},
+    {symbol:'CRWD',price:383.60,baseLow:370.20,baseHigh:385.00,days:11,tightPct:1.6,rvol:2.2,squeeze:82,notes:'VCP feel'},
+    {symbol:'NVDA',price:127.10,baseLow:121.20,baseHigh:127.50,days:9,tightPct:2.1,rvol:1.4,squeeze:65,notes:'Slightly loose'},
+    {symbol:'TSLA',price:255.30,baseLow:242.50,baseHigh:258.00,days:8,tightPct:1.9,rvol:1.7,squeeze:59,notes:'Needs contraction'},
+    {symbol:'AAPL',price:181.05,baseLow:176.90,baseHigh:182.30,days:16,tightPct:1.2,rvol:1.6,squeeze:74,notes:'Flat base'},
+    {symbol:'META',price:512.80,baseLow:498.00,baseHigh:515.00,days:12,tightPct:1.3,rvol:1.8,squeeze:81,notes:'Clean flag'},
+    {symbol:'AMZN',price:189.40,baseLow:183.00,baseHigh:191.00,days:20,tightPct:1.1,rvol:1.5,squeeze:76,notes:'Low vol base'},
+    {symbol:'SMCI',price:746.20,baseLow:702.00,baseHigh:748.00,days:6,tightPct:1.7,rvol:2.5,squeeze:69,notes:'High beta'},
+  ].map(x=>{
+    x.trigger=+(x.baseHigh*1.001).toFixed(2);
+    x.proxPct=+(((x.trigger-x.price)/x.trigger)*100).toFixed(2);
+    x.status=x.price>=x.trigger?'Breaking':(x.proxPct>=0&&x.proxPct<=3?'Near':'Building');
+    return x;
+  });
+}
+
+function priceBandOk(p,b){if(b==='all')return true;if(b==='0-5')return p<5;if(b==='5-20')return p>=5&&p<20;if(b==='20-100')return p>=20&&p<100;if(b==='100+')return p>=100;return true;}
+
+function filterRows(rows){
+  const [minD,maxD,maxT,minR,prx,band,sort]=[+$('minDays').value,+$('maxDays').value,+$('maxTight').value,+$('minRvol').value,+$('prox').value,$('priceBand').value,$('sortBy').value];
+  let out=rows.filter(r=>r.days>=minD&&r.days<=maxD&&r.tightPct<=maxT&&r.rvol>=minR&&priceBandOk(r.price,band)&&(Math.abs(r.proxPct)<=prx||r.status==='Breaking'));
+  out.sort((a,b)=>sort==='prox'?Math.abs(a.proxPct)-Math.abs(b.proxPct):sort==='rvol'?b.rvol-a.rvol:sort==='squeeze'?b.squeeze-a.squeeze:b.days-a.days);
+  return out;
+}
+
+function sqBar(s){return`<div class="sq-wrap"><div class="sq-bar"><div class="sq-fill" style="width:${s}%"></div></div><span style="font-size:.73rem">${s}</span></div>`;}
+
+function statusBadge(s){
+  if(s==='Breaking')return'<span class="badge badge-breaking">↑ Breaking</span>';
+  if(s==='Near')return'<span class="badge badge-near">Near Pivot</span>';
+  return'<span class="badge badge-building">Building</span>';
+}
+
+function renderRows(rows){
+  $('tbody').innerHTML=rows.length?rows.map(r=>`<tr>
+    <td><strong>${r.symbol}</strong></td>
+    <td class="num">$${r.price.toFixed(2)}</td>
+    <td class="num">$${r.baseLow.toFixed(2)}</td>
+    <td class="num">$${r.baseHigh.toFixed(2)}</td>
+    <td class="num">$${r.trigger.toFixed(2)}</td>
+    <td class="num" style="${Math.abs(r.proxPct)<=0.5?'color:var(--green);font-weight:700':''}">${r.proxPct.toFixed(2)}%</td>
+    <td class="num">${r.days}d</td>
+    <td class="num">${r.tightPct.toFixed(1)}%</td>
+    <td class="num" style="${r.rvol>=2?'color:var(--brand);font-weight:700':''}">${r.rvol.toFixed(1)}×</td>
+    <td class="num">${sqBar(r.squeeze)}</td>
+    <td>${statusBadge(r.status)}</td>
+    <td style="font-size:.78rem;color:var(--muted);max-width:120px">${r.notes||''}</td>
+    <td><button class="btn btn-ghost btn-sm" onclick="addWatch('${r.symbol}')" style="font-size:.73rem;padding:3px 8px">+Watch</button></td>
+  </tr>`).join(''):'<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:20px">No matches — try relaxing filters.</td></tr>';
+  
+  $('sTotal').textContent=rows.length;
+  $('sBreaking').textContent=rows.filter(r=>r.status==='Breaking').length;
+  $('sNear').textContent=rows.filter(r=>r.status==='Near').length;
+  $('sBuilding').textContent=rows.filter(r=>r.status==='Building').length;
+  $('scanStatus').textContent=`${rows.length} result${rows.length!==1?'s':''} · ${new Date().toLocaleTimeString()}`;
+}
+
+async function runScan(){
+  const wh=(localStorage.getItem(WH_KEY)||'').trim();
+  if(wh&&!wh.includes('your-n8n')){
+    try{
+      const res=await fetch(wh,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({minDays:$('minDays').value,maxDays:$('maxDays').value,maxTight:$('maxTight').value,minRvol:$('minRvol').value})});
+      if(res.ok){const d=await res.json();const rows=Array.isArray(d)?d:(d.results||d.data||[]);if(rows.length){renderRows(filterRows(rows));return;}}
+    }catch(e){console.error('Webhook error:',e);}
+  }
+  renderRows(filterRows(mockData()));
+}
+
+function addWatch(sym){
+  try{
+    let list=JSON.parse(localStorage.getItem('arowana_watchlist_v2')||'[]');
+    if(!Array.isArray(list))list=[];
+    if(!list.some(x=>x.symbol===sym)){list.unshift({symbol:sym,note:'from Base Breakout',created:Date.now()});localStorage.setItem('arowana_watchlist_v2',JSON.stringify(list));toast(sym+' added to watchlist ✓');}
+    else toast(sym+' already on watchlist','info');
+  }catch{toast('Error updating watchlist','err');}
+}
+
+function savePreset(){
+  const p={minDays:$('minDays').value,maxDays:$('maxDays').value,maxTight:$('maxTight').value,minRvol:$('minRvol').value,prox:$('prox').value,tf:$('tf').value,priceBand:$('priceBand').value,sortBy:$('sortBy').value};
+  localStorage.setItem(PRESET_KEY,JSON.stringify(p));toast('Preset saved ✓');
+}
+function loadPreset(){
+  const p=JSON.parse(localStorage.getItem(PRESET_KEY)||'{}');
+  if(!Object.keys(p).length){toast('No preset saved','info');return;}
+  ['minDays','maxDays','maxTight','minRvol','prox','tf','priceBand','sortBy'].forEach(k=>{if(p[k]!=null)$(k).value=p[k];});
+  updatePills();toast('Preset loaded ✓');
+}
+function clearRows(){$('tbody').innerHTML='<tr><td colspan="13" style="text-align:center;color:var(--muted);padding:20px">Cleared.</td></tr>';$('scanStatus').textContent='';}
+function toggleAuto(){
+  if(autoTimer){clearInterval(autoTimer);autoTimer=null;$('autoBtn').textContent='⏱ Auto 30s';toast('Auto-scan off','info');return;}
+  runScan();autoTimer=setInterval(runScan,30000);$('autoBtn').textContent='⏹ Stop Auto';toast('Auto-scan every 30s ON ✓');
+}
+function exportCSV(){
+  const rows=[['Symbol','Price','Base Low','Base High','Pivot','% to Pivot','Days','Tightness','RVol','Squeeze','Status','Notes']];
+  document.querySelectorAll('#tbody tr').forEach(tr=>{
+    const tds=tr.querySelectorAll('td');if(!tds.length)return;
+    rows.push([tds[0].textContent.trim(),tds[1].textContent.replace('$',''),tds[2].textContent.replace('$',''),tds[3].textContent.replace('$',''),tds[4].textContent.replace('$',''),tds[5].textContent.replace('%',''),tds[6].textContent,tds[7].textContent.replace('%',''),tds[8].textContent.replace('×',''),tds[9].textContent.trim(),tds[10].textContent.trim(),tds[11].textContent.trim()]);
+  });
+  const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a=Object.assign(document.createElement('a'),{href:URL.createObjectURL(new Blob([csv],{type:'text/csv'})),download:'base-breakout.csv'});
+  a.click();toast('CSV exported ✓');
+}
+function updatePills(){
+  $('pbMin').textContent=$('minDays').value;$('pbMax').textContent=$('maxDays').value;
+  $('pbTight').textContent=$('maxTight').value;$('pbRvol').textContent=$('minRvol').value;
+}
+['minDays','maxDays','maxTight','minRvol'].forEach(id=>$(id).addEventListener('input',updatePills));
+loadPreset();updatePills();runScan();
+</script>
+</body>
+</html>

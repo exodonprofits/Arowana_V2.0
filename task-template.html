@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>⚡ Short‑Term Trading — Smart Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  
+<style>
+  /* ===== Minimal tokens used on this page ===== */
+  :root{
+    --brand:#1a3c5e;
+    --ink:#222;
+    --bg:#f9fafb;
+    --ring:rgba(26,60,94,0.22);
+    --page-width: min(1100px, 92vw);
+  }
+
+  /* ===== Base ===== */
+  *{box-sizing:border-box}
+  html,body{
+    margin:0; padding:0;
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI",
+                 Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+    color:var(--ink);
+    background:var(--bg);
+  }
+  a{color:var(--brand); text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+    outline:none; box-shadow:0 0 0 4px var(--ring);
+  }
+  .container{width:100%; max-width:var(--page-width); margin:0 auto; padding:0 16px}
+
+  /* ===== Header / Nav ===== */
+  .header{
+    width:100%; max-width:none;           /* full-bleed background */
+    margin-top:0;
+    background:#1a3c5e; color:#fff;
+    padding:28px 0;
+    position:relative; display:block;
+  }
+  .header-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .logo{display:flex; align-items:center; gap:10px; font-weight:800; font-size:clamp(18px, 4vw, 28px)}
+  .nav{display:flex; gap:18px; align-items:center}
+  .nav a{color:#eaf1f9; padding:8px 10px; border-radius:10px}
+  .nav a[aria-current="page"]{background:rgba(255,255,255,.22); color:#fff}
+  .nav a:active{background:rgba(255,255,255,.15)}
+  .hamburger{display:none; font-size:24px; cursor:pointer; color:#eaf1f9; padding:8px; border-radius:10px}
+
+  /* ===== Mobile bottom menu ===== */
+  .mobile-menu{
+    display:none; position:fixed; inset:auto 0 0 0; z-index:60;
+    background:#0f2a44; padding:12px 16px 24px;
+    box-shadow:0 -12px 30px rgba(0,0,0,.35);
+    border-top-left-radius:14px; border-top-right-radius:14px;
+  }
+  .mobile-menu a{display:flex; align-items:center; gap:10px; color:#eaf1f9; padding:12px 8px; border-radius:12px}
+  .mobile-menu .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:8px}
+  .mobile-menu .grid a{background:rgba(255,255,255,.06); justify-content:center}
+
+  /* ===== Footer ===== */
+  footer{background:#16181d; color:#d7dae0; padding:28px 0; margin-top:28px}
+  footer .cols{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+  footer h4{margin:0 0 6px}
+  footer a{color:#b6c3d6}
+  .foot-bottom{margin-top:14px; font-size:12px; text-align:center; color:#9aa6b6}
+
+  /* ===== Responsive ===== */
+  @media (max-width: 640px){
+    .hamburger{display:block}
+    .nav{display:none}
+    .mobile-menu{display:grid}
+    body{padding-bottom:82px}
+  }
+  @supports(padding: max(0px)){
+    @media (max-width: 640px){
+      body{ padding-bottom: max(82px, env(safe-area-inset-bottom)); }
+    }
+  }
+</style>
+
+</head>
+<body>
+  <header class="header">
+  <div class="container">
+    <div class="header-top">
+      <div class="logo">
+        <span>🟦</span>
+        <a href="index.html" style="color:#fff; text-decoration:none">Arowana Profits</a>
+      </div>
+      <nav class="nav" id="nav">
+        <a href="index.html">Home</a>
+        <a href="short-term-dashboard.html" aria-current="page">Short-Term</a>
+        <a href="long-term-dashboard.html">Long-Term</a>
+        <a href="learn-investing.html">Learn</a>
+      </nav>
+      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+    </div>
+  </div>
+</header>
+  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="grid">
+    <a href="index.html"><i class="fas fa-home"></i> Home</a>
+    <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+    <a href="long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+    <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+  </div>
+</div>
+
+  <main class="container" style="padding:16px 0 24px">
+    <!-- Original dashboard content begins -->
+    
+    body go here
+
+    <!-- Original dashboard content ends -->
+  </main>
+
+  <footer>
+  <div class="container">
+    <div class="cols">
+      <div>
+        <h4>Arowana Profits</h4>
+        <p>AI-powered tools and education for traders and investors.</p>
+      </div>
+      <div>
+        <h4>Solutions</h4>
+        <ul>
+          <li><a href="short-term-dashboard.html">Trading Dashboard</a></li>
+          <li><a href="long-term-dashboard.html">Long-Term Dashboard</a></li>
+          <li><a href="learn-investing.html">Learning Center</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Company</h4>
+        <ul>
+          <li><a href="about.html">About</a></li>
+          <li><a href="contact.html">Contact</a></li>
+          <li><a href="careers.html">Careers</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4>Legal</h4>
+        <p><strong>Disclaimer:</strong> We do not provide investment advice. Investing involves risk, including loss of principal.</p>
+      </div>
+    </div>
+    <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
+  </div>
+</footer>
+
+<script>
+  // Mobile menu toggling
+  const ham = document.getElementById("hamburger");
+  const mobileMenu = document.getElementById("mobileMenu");
+  ham?.addEventListener("click", ()=>{
+    const open = mobileMenu.getAttribute("aria-hidden")==="false";
+    mobileMenu.setAttribute("aria-hidden", open ? "true" : "false");
+    mobileMenu.style.display = open ? "none" : "grid";
+    ham.setAttribute("aria-expanded", open ? "false" : "true");
+  });
+  const mmq = window.matchMedia("(min-width: 641px)");
+  mmq.addEventListener?.("change", e=>{ if(e.matches){ mobileMenu.style.display="none"; mobileMenu.setAttribute("aria-hidden","true"); ham.setAttribute("aria-expanded","false"); } });
+
+  // Active state helper (reinforce aria-current if file renamed)
+  (function(){
+    const path = location.pathname.split("/").pop() || "index.html";
+    document.querySelectorAll(".nav a").forEach(a=>{
+      if((a.getAttribute("href")||"").endsWith(path)){
+        a.setAttribute("aria-current","page");
+      }
+    });
+  })();
+</script>
+
+
+</body>
+</html>

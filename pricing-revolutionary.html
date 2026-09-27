@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Revolutionary Pricing &#x2014; Arowana Profits</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--brand-light:#1a6bbb;
+  --accent:#16a34a;--bg:#f6f8fb;--panel:#ffffff;
+  --ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;
+  --max:1160px;--radius:16px;
+  --shadow:0 4px 20px rgba(11,79,138,.08);
+  --shadow-lg:0 8px 32px rgba(11,79,138,.13);
+  --gradient: linear-gradient(135deg, rgba(6,52,99,.97), rgba(11,79,138,.90));
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.6;-webkit-text-size-adjust:100%}
+a{color:var(--brand);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+::selection{background:rgba(11,79,138,.15)}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* NAV */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--gradient);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;flex:0 0 auto;text-decoration:none}
+.logo-img{width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px}
+.nav-links{display:flex;align-items:center;gap:3px;flex:1;justify-content:center;overflow-x:auto}
+.nav-links::-webkit-scrollbar{height:0}
+.nav-links a{color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;transition:background .18s,color .18s;text-decoration:none}
+.nav-links a:hover{background:rgba(255,255,255,.13);color:#fff}
+.nav-links a.active{background:rgba(255,255,255,.18);color:#fff}
+.nav-divider{width:1px;height:16px;background:rgba(255,255,255,.18);flex:0 0 1px;margin:0 4px}
+.nav-links a.nav-agent{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.nav-links a.nav-agent:hover{background:rgba(255,255,255,.18)}
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mobile-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mobile-menu[data-open="true"]{display:block}
+.mobile-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mobile-link{display:flex;align-items:center;gap:9px;padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none}
+.mobile-link:hover{background:rgba(255,255,255,.08);color:#fff}
+.mobile-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+.nav-auth{display:flex;align-items:center;gap:7px;flex:0 0 auto}
+.nav-btn{padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;text-decoration:none;transition:all .15s}
+.nav-btn-ghost{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}.nav-btn-ghost:hover{background:rgba(255,255,255,.18)}
+.nav-btn-solid{background:#fff;color:var(--brand);font-weight:700}.nav-btn-solid:hover{background:rgba(255,255,255,.92)}
+.nav-user{position:relative;display:none}.nav-user.show{display:block}
+.nav-user-toggle{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600}
+.nav-user-toggle:hover{background:rgba(255,255,255,.18)}
+.nav-user-menu{position:absolute;right:0;top:calc(100% + 8px);min-width:180px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:6px;display:none;z-index:200}
+.nav-user.open .nav-user-menu{display:block}
+.nav-user-menu a,.nav-user-menu button{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:var(--muted);font-size:.82rem;font-weight:500;background:none;border:none;width:100%;text-align:left;text-decoration:none;transition:all .12s}
+.nav-user-menu a:hover,.nav-user-menu button:hover{color:var(--ink);background:rgba(11,79,138,.06)}
+.menu-sep{height:1px;background:var(--border);margin:3px 0}
+@media(max-width:700px){.nav-links{display:none}.nav-btn-solid{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* HERO */
+.page-hero{
+  background:radial-gradient(circle at 20% 50%,rgba(26,107,187,.1),transparent 55%),
+    radial-gradient(circle at 80% 20%,rgba(22,163,74,.08),transparent 50%),
+    linear-gradient(180deg,#fff,var(--bg));
+  border-bottom:1px solid var(--border);padding:56px 0 48px;text-align:center;
+}
+.hero-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 20px;border-radius:999px;background:rgba(11,79,138,.08);border:2px solid rgba(11,79,138,.15);font-size:.78rem;font-weight:800;color:var(--brand);text-transform:uppercase;letter-spacing:.08em;margin-bottom:20px}
+.hero-badge-icon{font-size:1rem}
+.hero-title{font-family:"Inter Tight",sans-serif;font-size:clamp(28px,4.5vw,48px);font-weight:900;color:var(--ink);letter-spacing:-.8px;line-height:1.1;margin-bottom:16px}
+.hero-title .highlight{background:linear-gradient(135deg,var(--brand),var(--brand-light));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:1.1rem;color:var(--muted);max-width:580px;margin:0 auto 32px;line-height:1.65;font-weight:500}
+.hero-sub .emphasis{color:var(--brand);font-weight:700}
+
+/* REVOLUTIONARY PRICING GRID */
+.pricing-section{padding:48px 0 24px}
+.section-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 16px;border-radius:999px;background:rgba(22,163,74,.08);border:1px solid rgba(22,163,74,.15);font-size:.72rem;font-weight:800;color:#059669;text-transform:uppercase;letter-spacing:.06em;margin-bottom:16px}
+.section-title{font-family:"Inter Tight",sans-serif;font-size:1.8rem;font-weight:800;color:var(--ink);margin-bottom:8px;text-align:center}
+.section-sub{font-size:1rem;color:var(--muted);text-align:center;margin-bottom:56px;max-width:600px;margin-left:auto;margin-right:auto;line-height:1.6} /* Increased bottom margin to 56px */
+
+.pricing-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:24px;max-width:1000px;margin:0 auto 48px;}
+@media(max-width:1000px){.pricing-grid{max-width:800px}}
+@media(max-width:800px){.pricing-grid{grid-template-columns:1fr;max-width:400px}}
+
+.pricing-card{
+  background:var(--panel);border:2px solid var(--border);
+  border-radius:24px;padding:32px 28px;display:flex;flex-direction:column;
+  position:relative;transition:all .25s ease;overflow:visible; /* Changed from hidden to visible */
+  margin-top:32px; /* Increased from 20px to 32px */
+}
+.pricing-card:hover{box-shadow:var(--shadow-lg);transform:translateY(-3px)}
+.pricing-card.featured{
+  border-color:var(--brand);
+  box-shadow:0 0 0 4px rgba(11,79,138,.08),var(--shadow-lg);
+  background:linear-gradient(180deg,#fff,rgba(11,79,138,.01));
+}
+.pricing-card.featured:hover{transform:translateY(-4px);box-shadow:0 0 0 6px rgba(11,79,138,.12),0 12px 40px rgba(11,79,138,.2)}
+
+.pricing-badge{
+  position:absolute;top:-16px;left:50%;transform:translateX(-50%); /* Moved up 2px more */
+  background:var(--gradient);color:#fff;
+  padding:6px 18px;border-radius:999px;font-size:.72rem;font-weight:800;
+  white-space:nowrap;letter-spacing:.05em;text-transform:uppercase;
+  box-shadow:0 4px 16px rgba(11,79,138,.3);
+  z-index:10; /* Ensure badge appears above everything */
+}
+
+.plan-header{text-align:center;margin-bottom:24px;padding-bottom:24px;border-bottom:1px solid var(--border)}
+.plan-name{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.2rem;color:var(--ink);margin-bottom:8px}
+.plan-tagline{font-size:.85rem;color:var(--muted);margin-bottom:16px;font-weight:500}
+.plan-price{font-family:"Inter Tight",sans-serif;font-size:2.8rem;font-weight:900;color:var(--ink);line-height:1;margin-bottom:4px;display:flex;align-items:baseline;justify-content:center;gap:8px}
+.plan-price .currency{font-size:1.6rem;color:var(--muted);font-weight:600}
+.plan-price .period{font-size:.9rem;color:var(--muted);font-weight:600}
+.plan-price.free{font-size:3.2rem;color:var(--accent)}
+.plan-price.payg{color:var(--brand)}
+.plan-per{font-size:.78rem;color:var(--muted);margin-bottom:4px;text-align:center}
+.plan-desc{font-size:.88rem;color:var(--muted);line-height:1.5;margin-bottom:24px;text-align:center}
+
+.plan-features{list-style:none;display:flex;flex-direction:column;gap:12px;margin-bottom:28px;flex:1}
+.plan-features li{display:flex;align-items:flex-start;gap:10px;font-size:.86rem;color:var(--ink);line-height:1.5}
+.plan-features li .check{color:var(--accent);font-weight:800;flex-shrink:0;margin-top:2px;font-size:.9rem}
+.plan-features li .premium{color:var(--brand);font-weight:800;flex-shrink:0;margin-top:2px;font-size:.9rem}
+.plan-features li .star{color:#f59e0b;font-weight:800;flex-shrink:0;margin-top:2px;font-size:.9rem}
+.feature-highlight{font-weight:600;color:var(--brand)}
+.feature-tag{display:inline-flex;padding:2px 8px;border-radius:999px;font-size:.64rem;font-weight:700;margin-left:6px;vertical-align:middle}
+.tag-new{background:#dbeafe;color:#1e40af}
+.tag-popular{background:#fef3c7;color:#854d0e}
+.tag-pro{background:#f3e8ff;color:#7c3aed}
+
+.plan-cta{margin-top:auto}
+.plan-cta .btn{width:100%;justify-content:center;min-height:48px;font-size:.9rem;font-weight:800;text-transform:uppercase;letter-spacing:.04em}
+
+/* CREDIT PACKAGES */
+.credit-packages{background:linear-gradient(135deg,rgba(11,79,138,.03),rgba(22,163,74,.02));padding:48px 0;margin:32px 0}
+.credit-title{font-family:"Inter Tight",sans-serif;font-size:1.6rem;font-weight:800;color:var(--ink);margin-bottom:8px;text-align:center}
+.credit-sub{font-size:.95rem;color:var(--muted);text-align:center;margin-bottom:32px;max-width:500px;margin-left:auto;margin-right:auto}
+.credit-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:20px;max-width:800px;margin:0 auto}
+.credit-card{background:#fff;border:2px solid var(--border);border-radius:16px;padding:24px 20px;text-align:center;transition:all .2s}
+.credit-card:hover{border-color:var(--brand);transform:translateY(-2px);box-shadow:var(--shadow)}
+.credit-card.popular{border-color:var(--brand);background:linear-gradient(180deg,#fff,rgba(11,79,138,.02))}
+.credit-amount{font-family:"Inter Tight",sans-serif;font-size:1.4rem;font-weight:800;color:var(--brand);margin-bottom:4px}
+.credit-bonus{font-size:.76rem;color:var(--accent);font-weight:700;margin-bottom:8px}
+.credit-price{font-family:"Inter Tight",sans-serif;font-size:1.8rem;font-weight:800;color:var(--ink);margin-bottom:12px}
+.credit-desc{font-size:.82rem;color:var(--muted);margin-bottom:16px}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:14px 28px;border-radius:999px;font-size:.88rem;font-weight:700;border:none;cursor:pointer;font-family:inherit;white-space:nowrap;transition:all .2s ease;text-decoration:none;min-height:48px}
+.btn:active{transform:scale(.98)}
+.btn-brand{background:var(--brand);color:#fff}.btn-brand:hover{background:var(--brand-light);transform:translateY(-1px);box-shadow:0 8px 25px rgba(11,79,138,.25)}
+.btn-outline{background:transparent;color:var(--brand);border:2px solid var(--brand)}.btn-outline:hover{background:rgba(11,79,138,.06);transform:translateY(-1px)}
+.btn-success{background:var(--accent);color:#fff}.btn-success:hover{background:#059669;transform:translateY(-1px);box-shadow:0 8px 25px rgba(5,150,105,.25)}
+.btn-ghost{background:var(--panel);color:var(--muted);border:2px solid var(--border)}.btn-ghost:hover{color:var(--ink);border-color:var(--brand);transform:translateY(-1px)}
+.btn-pro{background:linear-gradient(135deg,var(--brand),var(--brand-light));color:#fff;font-weight:800}.btn-pro:hover{transform:translateY(-1px);box-shadow:0 8px 25px rgba(11,79,138,.3)}
+
+/* COMPARISON TABLE */
+.compare-section{padding:48px 0}
+.comparison-table{background:#fff;border:2px solid var(--border);border-radius:20px;overflow:hidden;max-width:900px;margin:0 auto}
+.table-header{background:var(--gradient);color:#fff;padding:20px;text-align:center}
+.table-header h3{font-family:"Inter Tight",sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:4px}
+.table-header p{font-size:.9rem;opacity:.9}
+
+.comparison-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:0}
+.comp-row{display:contents}
+.comp-cell{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center}
+.comp-feature{font-weight:600;color:var(--ink)}
+.comp-check{color:var(--accent);font-size:1.1rem;font-weight:800;justify-content:center}
+.comp-premium{color:var(--brand);font-size:1.1rem;font-weight:800;justify-content:center}
+.comp-cross{color:var(--muted);font-size:1.1rem;justify-content:center}
+.comp-header{background:rgba(11,79,138,.04);font-weight:700;color:var(--brand);justify-content:center;text-align:center;font-size:.85rem;text-transform:uppercase;letter-spacing:.04em}
+
+/* FAQ */
+.faq-section{padding:48px 0;background:linear-gradient(180deg,transparent,rgba(11,79,138,.02))}
+.faq-container{max-width:800px;margin:0 auto}
+.faq-title{font-family:"Inter Tight",sans-serif;font-size:1.6rem;font-weight:800;color:var(--ink);margin-bottom:8px;text-align:center}
+.faq-sub{font-size:.95rem;color:var(--muted);text-align:center;margin-bottom:32px}
+.faq-item{background:#fff;border:2px solid var(--border);border-radius:16px;margin-bottom:16px;overflow:hidden;transition:border-color .2s}
+.faq-item:hover{border-color:rgba(11,79,138,.3)}
+.faq-question{width:100%;padding:20px 24px;background:none;border:none;text-align:left;font-size:.95rem;font-weight:700;color:var(--ink);cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:background .2s}
+.faq-question:hover{background:rgba(11,79,138,.02)}
+.faq-chevron{transition:transform .2s ease;color:var(--brand);font-weight:800}
+.faq-question[aria-expanded="true"] .faq-chevron{transform:rotate(180deg)}
+.faq-answer{padding:0 24px;max-height:0;overflow:hidden;transition:all .3s ease}
+.faq-answer.open{padding:0 24px 20px;max-height:200px}
+.faq-answer p{color:var(--muted);line-height:1.6;font-size:.9rem}
+
+/* CTA BANNER */
+.cta-banner{
+  background:var(--gradient);color:#fff;
+  border-radius:24px;padding:48px 32px;text-align:center;margin:48px auto;
+  max-width:800px;position:relative;overflow:hidden;
+}
+.cta-banner::before{
+  content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+  background:radial-gradient(circle,rgba(255,255,255,.1),transparent 60%);
+  animation:shine 8s linear infinite;pointer-events:none;
+}
+@keyframes shine{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.cta-title{font-family:"Inter Tight",sans-serif;font-size:1.8rem;font-weight:800;margin-bottom:8px;position:relative;z-index:1}
+.cta-sub{font-size:1rem;opacity:.9;margin-bottom:24px;line-height:1.6;position:relative;z-index:1}
+.cta-btns{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;position:relative;z-index:1}
+.btn-white{background:#fff;color:var(--brand);font-weight:800}.btn-white:hover{background:rgba(255,255,255,.92);transform:translateY(-2px)}
+.btn-outline-w{background:rgba(255,255,255,.15);color:#fff;border:2px solid rgba(255,255,255,.3)}.btn-outline-w:hover{background:rgba(255,255,255,.25);transform:translateY(-2px)}
+
+/* FOOTER */
+.site-footer{background:#021d36;color:#fff;padding:48px 0 24px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:32px;margin-bottom:32px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.1rem;margin-bottom:8px}
+.footer-tagline{font-size:.85rem;color:rgba(255,255,255,.7);line-height:1.5;margin-bottom:16px}
+.footer-col-title{font-weight:700;font-size:.9rem;margin-bottom:12px;color:rgba(255,255,255,.9)}
+.footer-link{display:block;color:rgba(255,255,255,.7);font-size:.85rem;margin-bottom:6px;transition:color .2s}
+.footer-link:hover{color:#fff}
+.footer-bottom{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;font-size:.8rem;color:rgba(255,255,255,.6)}
+.footer-pills{display:flex;gap:8px;flex-wrap:wrap}
+.footer-pill{background:rgba(255,255,255,.1);padding:3px 8px;border-radius:999px;font-size:.7rem}
+.footer-disclaimer{font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.5;margin-top:16px;border-top:1px solid rgba(255,255,255,.05);padding-top:16px}
+@media(max-width:600px){.footer-bottom{flex-direction:column;text-align:center}}
+</style>
+</head>
+<body>
+  <!-- NAVIGATION -->
+  <div class="nav-wrap">
+    <nav class="nav">
+      <a href="index.html" class="logo">
+        <img src="https://app.arowanaprofits.com/favicon.ico" alt="Arowana" class="logo-img">
+        Arowana Profits
+      </a>
+      
+      <div class="nav-links">
+        <a href="trading-command.html">Trading</a>
+        <a href="portfolio-command.html">Portfolio</a>
+        <a href="analysis-central.html">Analysis</a>
+        <a href="options-hub.html">Options</a>
+        <div class="nav-divider"></div>
+        <a href="features.html">Features</a>
+        <a href="pricing.html" class="active">Pricing</a>
+        <a href="about.html">About</a>
+      </div>
+      
+      <div class="nav-auth">
+        <a href="login.html" class="nav-btn nav-btn-ghost" id="navSignIn">Sign In</a>
+        <a href="signup.html" class="nav-btn nav-btn-solid" id="navSignUp">Start Free</a>
+        
+        <div class="nav-user" id="navUserDropdown">
+          <button class="nav-user-toggle" id="navUserToggle">
+            <span id="navUserName">Account</span>
+            <span>&#9662;</span>
+          </button>
+          <div class="nav-user-menu">
+            <a href="account.html">Account Settings</a>
+            <a href="pricing.html">Upgrade</a>
+            <div class="menu-sep"></div>
+            <a href="trading-command.html">Trading Command</a>
+            <a href="portfolio-command.html">Portfolio Command</a>
+            <a href="analysis-central.html">Analysis Central</a>
+            <a href="options-hub.html">Options Hub</a>
+            <div class="menu-sep"></div>
+            <a href="support.html">Support</a>
+            <button id="navSignOutBtn">Sign Out</button>
+          </div>
+        </div>
+      </div>
+      
+      <button class="nav-burger" id="navBurger">&#9776;</button>
+    </nav>
+    
+    <div class="mobile-menu" id="mobileMenu" data-open="false">
+      <div class="mobile-panel">
+        <a class="mobile-link" href="trading-command.html">🎯 Trading Command</a>
+        <a class="mobile-link" href="portfolio-command.html">📊 Portfolio Command</a>
+        <a class="mobile-link" href="analysis-central.html">🔍 Analysis Central</a>
+        <a class="mobile-link" href="options-hub.html">⚡ Options Hub</a>
+        <div class="mobile-div"></div>
+        <a class="mobile-link" href="features.html">Features</a>
+        <a class="mobile-link" href="pricing.html">Pricing</a>
+        <a class="mobile-link" href="about.html">About</a>
+        <div class="mobile-div"></div>
+        <div id="mobileAuthLinks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HERO -->
+  <section class="page-hero">
+    <div class="container">
+      <div class="hero-badge">
+        <span class="hero-badge-icon">🚀</span>
+        Revolutionary Three-Tier Architecture
+      </div>
+      <h1 class="hero-title">
+        Choose Your <span class="highlight">Trading Power</span>
+      </h1>
+      <p class="hero-sub">
+        Start with <span class="emphasis">BYOK Free</span>, upgrade to <span class="emphasis">Credits</span> for backup, 
+        or go <span class="emphasis">Professional</span> for unlimited everything. No contracts, no surprises.
+      </p>
+    </div>
+  </section>
+
+  <!-- REVOLUTIONARY PRICING -->
+  <section class="pricing-section">
+    <div class="container">
+      <div class="section-badge">💎 Game-Changing Pricing</div>
+      <h2 class="section-title">Three Tiers, Unlimited Possibilities</h2>
+      <p class="section-sub">
+        Our revolutionary pricing adapts to your needs. Start free with your own API keys, 
+        add credit backup for peace of mind, or go professional for unlimited access.
+      </p>
+      
+      <div class="pricing-grid">
+        
+        <!-- BYOK + CREDITS (MOST POPULAR - MOVED TO TOP) -->
+        <div class="pricing-card featured">
+          <div class="pricing-badge">🔥 Most Popular</div>
+          <div class="plan-header">
+            <div class="plan-name">BYOK + Credits</div>
+            <div class="plan-tagline">Best of Both Worlds</div>
+            <div class="plan-price payg">Pay-as-you-go</div>
+            <div class="plan-per">Credits start at $5</div>
+            <div class="plan-desc">BYOK freedom with credit backup when your keys hit rate limits</div>
+          </div>
+          
+          <ul class="plan-features">
+            <li><span class="check">✓</span> <span class="feature-highlight">Everything in BYOK Free</span></li>
+            <li><span class="star">★</span> <span class="feature-highlight">Credit Backup System</span></li>
+            <li><span class="star">★</span> Pay-as-you-go Pricing</li>
+            <li><span class="star">★</span> Credits Never Expire</li>
+            <li><span class="star">★</span> Priority Support</li>
+            <li><span class="star">★</span> Advanced Analytics</li>
+            <li><span class="star">★</span> Smart Rate Limit Handling</li>
+          </ul>
+          
+          <div class="plan-cta">
+            <a href="signup.html?tier=credits" class="btn btn-brand">Start with Credits</a>
+          </div>
+        </div>
+
+        <!-- BYOK FREE -->
+        <div class="pricing-card">
+          <div class="plan-header">
+            <div class="plan-name">BYOK Free</div>
+            <div class="plan-tagline">Bring Your Own Keys</div>
+            <div class="plan-price free">FREE</div>
+            <div class="plan-per">Forever</div>
+            <div class="plan-desc">Perfect for developers and power users who want complete control</div>
+          </div>
+          
+          <ul class="plan-features">
+            <li><span class="check">✓</span> Full Platform Access</li>
+            <li><span class="check">✓</span> All 4 Super-Tools</li>
+            <li><span class="check">✓</span> Your API Keys, Your Control</li>
+            <li><span class="check">✓</span> Zero Monthly Fees</li>
+            <li><span class="check">✓</span> Community Support</li>
+            <li><span class="check">✓</span> Basic Usage Analytics</li>
+            <li><span class="check">✓</span> Mobile Optimized</li>
+          </ul>
+          
+          <div class="plan-cta">
+            <a href="signup.html" class="btn btn-ghost">Start Free</a>
+          </div>
+        </div>
+
+        <!-- PROFESSIONAL -->
+        <div class="pricing-card">
+          <div class="plan-header">
+            <div class="plan-name">Professional</div>
+            <div class="plan-tagline">Unlimited Everything</div>
+            <div class="plan-price">
+              <span class="currency">$</span>99<span class="period">/mo</span>
+            </div>
+            <div class="plan-per">Billed monthly</div>
+            <div class="plan-desc">Managed infrastructure with unlimited API calls and premium features</div>
+          </div>
+          
+          <ul class="plan-features">
+            <li><span class="premium">◆</span> <span class="feature-highlight">Unlimited API Calls</span></li>
+            <li><span class="premium">◆</span> No API Keys Required</li>
+            <li><span class="premium">◆</span> Premium Tool Features <span class="tag-pro">Pro</span></li>
+            <li><span class="premium">◆</span> Advanced Dashboards <span class="tag-new">New</span></li>
+            <li><span class="premium">◆</span> Priority Support</li>
+            <li><span class="premium">◆</span> Custom Alerts</li>
+            <li><span class="premium">◆</span> Export Capabilities</li>
+            <li><span class="premium">◆</span> Beta Feature Access</li>
+          </ul>
+          
+          <div class="plan-cta">
+            <a href="signup.html?tier=professional" class="btn btn-pro">Upgrade to Pro</a>
+          </div>
+        </div>
+        
+      </div>
+    </div>
+  </section>
+
+  <!-- CREDIT PACKAGES -->
+  <section class="credit-packages">
+    <div class="container">
+      <h3 class="credit-title">Credit Packages</h3>
+      <p class="credit-sub">
+        Credits never expire and give you access when your API keys hit rate limits
+      </p>
+      
+      <div class="credit-grid">
+        <div class="credit-card">
+          <div class="credit-amount">250 Credits</div>
+          <div class="credit-bonus">+0 Bonus</div>
+          <div class="credit-price">$5</div>
+          <div class="credit-desc">Perfect for light usage</div>
+          <a href="#" class="btn btn-outline">Purchase</a>
+        </div>
+        
+        <div class="credit-card popular">
+          <div class="credit-amount">550 Credits</div>
+          <div class="credit-bonus">+50 Bonus</div>
+          <div class="credit-price">$10</div>
+          <div class="credit-desc">Most popular package</div>
+          <a href="#" class="btn btn-brand">Purchase</a>
+        </div>
+        
+        <div class="credit-card">
+          <div class="credit-amount">1,500 Credits</div>
+          <div class="credit-bonus">+250 Bonus</div>
+          <div class="credit-price">$25</div>
+          <div class="credit-desc">Great value for power users</div>
+          <a href="#" class="btn btn-outline">Purchase</a>
+        </div>
+        
+        <div class="credit-card">
+          <div class="credit-amount">3,200 Credits</div>
+          <div class="credit-bonus">+800 Bonus</div>
+          <div class="credit-price">$50</div>
+          <div class="credit-desc">Maximum value package</div>
+          <a href="#" class="btn btn-outline">Purchase</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPARISON TABLE -->
+  <section class="compare-section">
+    <div class="container">
+      <div class="comparison-table">
+        <div class="table-header">
+          <h3>Feature Comparison</h3>
+          <p>See exactly what you get with each tier</p>
+        </div>
+        
+        <div class="comparison-grid">
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Feature</div>
+            <div class="comp-cell comp-header">BYOK + Credits</div>
+            <div class="comp-cell comp-header">BYOK Free</div>
+            <div class="comp-cell comp-header">Professional</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Trading Command Center</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Portfolio Command Center</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Analysis Central</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Options Hub</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">API Rate Limit Backup</div>
+            <div class="comp-cell comp-check">✓</div>
+            <div class="comp-cell comp-cross">✗</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Unlimited API Calls</div>
+            <div class="comp-cell comp-cross">✗</div>
+            <div class="comp-cell comp-cross">✗</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Premium Features</div>
+            <div class="comp-cell comp-cross">✗</div>
+            <div class="comp-cell comp-cross">✗</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Advanced Dashboards</div>
+            <div class="comp-cell comp-cross">✗</div>
+            <div class="comp-cell comp-cross">✗</div>
+            <div class="comp-cell comp-premium">◆</div>
+          </div>
+          
+          <div class="comp-row">
+            <div class="comp-cell comp-feature">Support Level</div>
+            <div class="comp-cell comp-feature">Priority</div>
+            <div class="comp-cell comp-feature">Community</div>
+            <div class="comp-cell comp-feature">Premium</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ -->
+  <section class="faq-section">
+    <div class="container">
+      <div class="faq-container">
+        <h2 class="faq-title">Frequently Asked Questions</h2>
+        <p class="faq-sub">Everything you need to know about our revolutionary pricing</p>
+        
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            What is BYOK (Bring Your Own Keys)? <span class="faq-chevron">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>BYOK means you provide your own API keys for services like Finnhub (market data) and Claude (AI analysis). This gives you complete control over costs and ensures you're not sharing rate limits with other users. You pay the API providers directly at their rates.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            How does the credit backup system work? <span class="faq-chevron">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>When your personal API keys hit rate limits, our platform automatically switches to using platform credits to continue your session seamlessly. Credits are deducted only when used as backup. If your keys are working fine, no credits are consumed.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Why is Professional $99/month worth it? <span class="faq-chevron">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>Professional eliminates API key management entirely. You get unlimited API calls, premium features, advanced dashboards, and priority support. For active traders, this typically costs less than managing multiple API subscriptions while providing better performance.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Do credits expire? <span class="faq-chevron">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>No! Credits never expire. Purchase them when convenient and use them whenever your API keys hit limits. This gives you the flexibility to handle usage spikes without upgrading to Professional immediately.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Can I switch between tiers? <span class="faq-chevron">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>Absolutely! Start with BYOK Free, add credits as needed, or upgrade to Professional anytime. Downgrade from Professional with 30 days notice. Your account and data are preserved across all tier changes.</p>
+          </div>
+        </div>
+
+        <div class="faq-item">
+          <button class="faq-question" aria-expanded="false">
+            Is there a money-back guarantee? <span class="faq-chevron">▼</span>
+          </button>
+          <div class="faq-answer">
+            <p>Yes! Professional subscribers get a full 30-day money-back guarantee. Credit purchases are final (since credits never expire), but we offer refunds for technical issues or billing errors within 48 hours.</p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA BANNER -->
+  <div class="container">
+    <div class="cta-banner">
+      <div class="cta-title">Start Free, Scale Smart</div>
+      <div class="cta-sub">Begin with BYOK Free, add credits when needed, or go Professional for unlimited power. Your choice, your timeline.</div>
+      <div class="cta-btns">
+        <a href="signup.html" class="btn btn-white">🚀 Start BYOK Free</a>
+        <a href="signup.html?tier=professional" class="btn btn-outline-w">⚡ Try Professional</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div>
+        <div class="footer-brand">Arowana Profits</div>
+        <div class="footer-tagline">Revolutionary three-tier pricing for retail traders and investors. Start free, scale smart.</div>
+      </div>
+      <div>
+        <div class="footer-col-title">Super-Tools</div>
+        <a class="footer-link" href="trading-command.html">Trading Command</a>
+        <a class="footer-link" href="portfolio-command.html">Portfolio Command</a>
+        <a class="footer-link" href="analysis-central.html">Analysis Central</a>
+        <a class="footer-link" href="options-hub.html">Options Hub</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Platform</div>
+        <a class="footer-link" href="account.html">Account</a>
+        <a class="footer-link" href="pricing.html">Pricing</a>
+        <a class="footer-link" href="features.html">Features</a>
+        <a class="footer-link" href="about.html">About</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Support</div>
+        <a class="footer-link" href="support.html">Help Center</a>
+        <a class="footer-link" href="contact.html">Contact</a>
+        <a class="footer-link" href="terms.html">Terms</a>
+        <a class="footer-link" href="privacy.html">Privacy</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <div>&copy; <span id="yearNow"></span> Arowana Profits. All rights reserved.</div>
+      <div class="footer-pills"><span class="footer-pill">Education-only</span><span class="footer-pill">No performance claims</span><span class="footer-pill">Not financial advice</span></div>
+    </div>
+    <p class="footer-disclaimer"><strong>Revolutionary Pricing:</strong> Our three-tier system adapts to your needs. BYOK Free gives you complete control, Credits provide seamless backup, and Professional offers unlimited access. Choose what works for you.</p>
+  </div>
+  </footer>
+
+  <!-- SCRIPTS -->
+  <script src="/js/supabase.min.js"></script>
+  <script>window.GS_CONFIG_URL="/js/config.json";</script>
+  <script src="app-config.js"></script>
+  <script src="/js/auth-header.js"></script>
+  <script>window.GSAuthHeader&&window.GSAuthHeader.init({loginUrl:"./login.html",afterLogoutUrl:"./index.html"});</script>
+  <script>
+  (function(){
+  'use strict';
+  var yn=document.getElementById('yearNow');if(yn)yn.textContent=new Date().getFullYear();
+
+  /* Nav auth */
+  (function(){
+    var KEY='gs_auth_user_v1';
+    var u=JSON.parse(localStorage.getItem(KEY)||'null');
+    var authKeys=[KEY,'gs_session','ap_session','sb-access-token'];
+    var hasSession=u||authKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+    var signIn=document.getElementById('navSignIn'),signUp=document.getElementById('navSignUp');
+    var dd=document.getElementById('navUserDropdown'),toggle=document.getElementById('navUserToggle'),name=document.getElementById('navUserName');
+    if(hasSession){
+      if(signIn)signIn.style.display='none';
+      if(signUp)signUp.style.display='none';
+      if(dd)dd.classList.add('show');
+      var n=u&&(u.name||u.full_name||(u.email?u.email.split('@')[0]:null))||'Account';
+      if(name)name.textContent=n;
+      var mob=document.getElementById('mobileAuthLinks');
+      if(mob)mob.innerHTML='<a class="mobile-link" href="account.html">My Account</a><a class="mobile-link" id="mobOut" href="#">Sign Out</a>';
+      var mo=document.getElementById('mobOut');if(mo)mo.addEventListener('click',function(e){e.preventDefault();var b=document.getElementById('navSignOutBtn');if(b)b.click();});
+    }else{
+      var mob=document.getElementById('mobileAuthLinks');
+      if(mob)mob.innerHTML='<a class="mobile-link" href="login.html">Sign In</a><a class="mobile-link" href="signup.html">Start Free</a>';
+    }
+    if(toggle&&dd){toggle.addEventListener('click',function(e){e.stopPropagation();dd.classList.toggle('open');});document.addEventListener('click',function(){if(dd)dd.classList.remove('open');});}
+    var sob=document.getElementById('navSignOutBtn');if(sob)sob.addEventListener('click',function(){authKeys.forEach(function(k){try{localStorage.removeItem(k);}catch(e){}});location.href='index.html';});
+    var burger=document.getElementById('navBurger');if(burger)burger.addEventListener('click',function(){var m=document.getElementById('mobileMenu');m.setAttribute('data-open',m.getAttribute('data-open')==='true'?'false':'true');});
+  })();
+
+  /* FAQ accordion */
+  document.querySelectorAll('.faq-question').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var expanded=btn.getAttribute('aria-expanded')==='true';
+      /* Close all */
+      document.querySelectorAll('.faq-question').forEach(function(b){
+        b.setAttribute('aria-expanded','false');
+        var ans=b.nextElementSibling;if(ans)ans.classList.remove('open');
+      });
+      /* Open clicked if it was closed */
+      if(!expanded){
+        btn.setAttribute('aria-expanded','true');
+        var answer=btn.nextElementSibling;if(answer)answer.classList.add('open');
+      }
+    });
+  });
+
+  /* Credit purchase handlers */
+  document.querySelectorAll('.credit-card .btn').forEach(function(btn, index) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      var packages = ['starter', 'popular', 'value', 'max'];
+      var packageType = packages[index];
+      
+      if (window.purchaseCredits) {
+        btn.textContent = 'Processing...';
+        btn.disabled = true;
+        
+        window.purchaseCredits(packageType)
+          .then(function(result) {
+            btn.textContent = '✓ Purchased';
+            btn.style.background = 'var(--accent)';
+            setTimeout(function() {
+              btn.textContent = 'Purchase';
+              btn.style.background = '';
+              btn.disabled = false;
+            }, 3000);
+          })
+          .catch(function(error) {
+            btn.textContent = 'Error';
+            btn.style.background = 'var(--danger)';
+            console.error('Purchase failed:', error);
+            setTimeout(function() {
+              btn.textContent = 'Purchase';
+              btn.style.background = '';
+              btn.disabled = false;
+            }, 3000);
+          });
+      } else {
+        alert('Credit system not yet initialized. Please wait or refresh the page.');
+      }
+    });
+  });
+
+  /* Professional upgrade handlers */
+  document.querySelectorAll('.btn-pro').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      
+      if (window.upgradeToProfessional) {
+        btn.textContent = 'Processing...';
+        btn.disabled = true;
+        
+        window.upgradeToProfessional()
+          .then(function(result) {
+            btn.textContent = '✓ Upgraded';
+            setTimeout(function() {
+              window.location.href = 'account.html';
+            }, 2000);
+          })
+          .catch(function(error) {
+            btn.textContent = 'Error';
+            console.error('Upgrade failed:', error);
+            setTimeout(function() {
+              btn.textContent = 'Upgrade to Pro';
+              btn.disabled = false;
+            }, 3000);
+          });
+      } else {
+        // Fallback to signup for new users
+        window.location.href = 'signup.html?tier=professional';
+      }
+    });
+  });
+
+  /* Listen for credit system events */
+  document.addEventListener('ap:purchase:success', function(e) {
+    console.log('Credit purchase successful:', e.detail);
+    // Could trigger analytics, notifications, etc.
+  });
+
+  document.addEventListener('ap:upgrade:success', function(e) {
+    console.log('Professional upgrade successful:', e.detail);
+    // Could trigger analytics, notifications, etc.
+  });
+
+  })();
+  </script>
+</body>
+</html>

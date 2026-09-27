@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Long-Term Portfolio — Arowana Profits</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+  :root{
+    --brand:#1a3c5e;--ink:#222;--muted:#667085;
+    --bg:#f9fafb;--panel:#fff;--ring:rgba(26,60,94,.22);
+    --page-width:min(1200px,92vw);
+    --card:#fff;--text:#111827;--shadow:0 4px 12px rgba(0,0,0,.08);
+    --blue:#2563eb;--blue-700:#1d4ed8;--green:#16a34a;--green-700:#15803d;
+    --amber:#d97706;--red:#dc2626;--border:#e5e7eb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0;font-family:Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text)}
+  a{color:var(--brand);text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring)}
+  .container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+  /* ── Header ── */
+  .header-bar{width:100%;background:var(--brand);color:#fff;position:relative;z-index:40}
+  .ap-nav{max-width:1200px;margin:0 auto;padding:10px 16px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+  .ap-left{display:flex;align-items:center;gap:16px;min-width:0}
+  .ap-right{display:flex;align-items:center;gap:10px}
+  .ap-brand{display:flex;align-items:center;gap:9px;text-decoration:none;white-space:nowrap}
+  .ap-logo{width:36px;height:36px;border-radius:7px}
+  .ap-title{font-weight:800;font-size:1rem;color:#fff}
+  .ap-nav-main{display:flex;align-items:center;gap:2px}
+  .ap-tab{color:rgba(255,255,255,.85);font-size:.8rem;font-weight:600;padding:7px 11px;border-radius:7px;white-space:nowrap;transition:background .15s;text-decoration:none;display:inline-flex;align-items:center;gap:5px}
+  .ap-tab:hover{background:rgba(255,255,255,.13);color:#fff}
+  .ap-tab.is-active{background:rgba(255,255,255,.2);color:#fff}
+  .ap-toplink{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.85);font-size:.8rem;font-weight:600;padding:7px 11px;border-radius:7px;white-space:nowrap;transition:background .15s;text-decoration:none}
+  .ap-toplink:hover{background:rgba(255,255,255,.13);color:#fff}
+
+  /* Dropdown */
+  .dropdown{position:relative;display:inline-flex;align-items:center}
+  .dropdown-content{display:none;position:absolute;top:calc(100% + 6px);left:0;min-width:210px;background:#0d3357;border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:6px;z-index:300;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+  .dropdown:hover .dropdown-content{display:block}
+  .dropdown-content a{display:flex;align-items:center;gap:8px;padding:8px 10px;color:#eaf1f9;border-radius:7px;font-size:.82rem;font-weight:500;white-space:nowrap;text-decoration:none}
+  .dropdown-content a:hover{background:rgba(255,255,255,.1)}
+  .dropdown-header{font-size:.64rem;font-weight:800;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.09em;padding:8px 10px 4px}
+  .dropdown-separator{height:1px;background:rgba(255,255,255,.1);margin:4px 0}
+
+  /* User dropdown */
+  .user-dropdown{position:relative}
+  .user-toggle{appearance:none;-webkit-appearance:none;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.09);color:#e8f2fb;cursor:pointer;display:inline-flex;align-items:center;gap:7px;padding:7px 11px;border-radius:7px;font-size:.8rem;font-weight:600;transition:background .2s;font-family:inherit}
+  .user-toggle:hover{background:rgba(255,255,255,.17)}
+  .user-toggle::after{content:'▼';font-size:7px;margin-left:3px;opacity:.75}
+  .user-dropdown .dropdown-content{left:auto;right:0;background:#063f73;min-width:185px}
+  .user-dropdown.show .dropdown-content{display:block}
+  .user-sep{height:1px;background:rgba(255,255,255,.12);margin:4px 0}
+
+  /* Burger + Mobile menu */
+  .ap-burger{display:none;font-size:1rem;cursor:pointer;color:#eaf1f9;padding:7px 10px;border-radius:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14);font-family:inherit}
+  @media(max-width:900px){.ap-nav-main{display:none}#navTop{display:none}.ap-burger{display:inline-flex;align-items:center}}
+  #mobileMenu{display:none;position:absolute;top:100%;left:0;right:0;background:#0f2a44;border-top:1px solid rgba(255,255,255,.1);padding:14px 16px 20px;z-index:1200;box-shadow:0 18px 40px rgba(0,0,0,.4)}
+  #mobileMenu[data-open="true"]{display:block}
+  .mobile-main-links{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+  .ap-ix{display:flex;align-items:center;gap:8px;color:#eaf1f9;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.07);text-decoration:none;font-weight:600;font-size:.84rem}
+  .ap-ix:hover{background:rgba(255,255,255,.13)}
+  .mobile-divider{height:1px;background:rgba(255,255,255,.1);margin:2px 0 10px}
+  #mobileAuthGrid{display:flex;flex-wrap:wrap;gap:8px}
+
+  /* ── Layout ── */
+  main{padding:16px 0 32px}
+  .page-head{margin:14px 0 16px}
+  .page-head h1{margin:0 0 4px;font-size:1.55rem}
+  .page-head p{margin:0;color:var(--muted);font-size:.9rem}
+  .card{background:var(--card);border-radius:1.25rem;box-shadow:var(--shadow);padding:1rem;margin-bottom:1rem}
+  .row{display:grid;gap:1rem}
+  .row.cols-5-7{grid-template-columns:repeat(12,1fr);gap:1rem}
+  @media(min-width:860px){.col-5{grid-column:span 5}.col-7{grid-column:span 7}}
+  @media(max-width:859px){.col-5,.col-7{grid-column:1/-1}}
+
+  /* ── Buttons ── */
+  .btn{display:inline-flex;align-items:center;gap:.45rem;border:none;border-radius:9999px;padding:.55rem 1rem;font-weight:600;cursor:pointer;font-size:.83rem;transition:background .15s,opacity .15s;font-family:inherit;line-height:1}
+  .btn.blue{background:var(--blue);color:#fff}.btn.blue:hover{background:var(--blue-700)}
+  .btn.green{background:var(--green);color:#fff}.btn.green:hover{background:var(--green-700)}
+  .btn.outline{background:#fff;color:#374151;border:1px solid var(--border)}.btn.outline:hover{background:#f9fafb}
+  .btn.red{background:var(--red);color:#fff}.btn.red:hover{opacity:.88}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+
+  /* ── Toolbar ── */
+  .toolbar{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap;justify-content:space-between;margin-bottom:.65rem}
+  .toolbar .left,.toolbar .right{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+
+  /* ── Form inputs ── */
+  input:not([type=file]),select,textarea{
+    width:100%;padding:.58rem .8rem;border-radius:.7rem;border:1px solid var(--border);
+    background:#fff;color:var(--text);font-size:.88rem;font-family:inherit
+  }
+  input:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(37,99,235,.1)}
+
+  /* ── KPIs ── */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:.65rem;margin-top:.75rem}
+  .kpi{background:#fff;border:1px solid var(--border);border-radius:1rem;padding:.75rem .85rem}
+  .kpi .label{color:var(--muted);font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
+  .kpi .value{font-weight:800;font-size:1.12rem;margin-top:.2rem}
+  .kpi .sub{color:var(--muted);font-size:.75rem;margin-top:.15rem}
+  .pos{color:#15803d}.neg{color:#dc2626}
+
+  /* ── Allocation ── */
+  .alloc-list{display:flex;flex-direction:column;gap:.45rem;max-height:420px;overflow:auto}
+  .alloc-item{display:flex;align-items:center;gap:.65rem;background:#fff;border:1px solid var(--border);border-radius:.85rem;padding:.5rem .7rem}
+  .alloc-ticker{min-width:68px;font-weight:700;font-size:.86rem}
+  .bar-wrap{flex:1;background:#f3f4f6;border-radius:999px;height:8px;overflow:hidden}
+  .bar{height:100%;background:linear-gradient(90deg,#16a34a,#22c55e);border-radius:999px}
+
+  /* ── Table ── */
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:separate;border-spacing:0 .45rem}
+  thead th{font-size:.7rem;color:var(--muted);text-align:left;padding:.3rem .55rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;white-space:nowrap}
+  tbody td{background:#fff;border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:.48rem .55rem;font-size:.85rem;white-space:nowrap}
+  tbody td:first-child{border-left:1px solid var(--border);border-radius:.7rem 0 0 .7rem}
+  tbody td:last-child{border-right:1px solid var(--border);border-radius:0 .7rem .7rem 0}
+  tbody tr:hover td{background:#f9fafb}
+  .num{text-align:right;font-variant-numeric:tabular-nums;font-family:'Courier New',monospace;font-size:.82rem}
+
+  /* ── Dialogs ── */
+  dialog::backdrop{background:rgba(0,0,0,.45)}
+  dialog{border:none;border-radius:1.1rem;box-shadow:0 20px 60px rgba(0,0,0,.2);padding:1.25rem;max-width:min(680px,94vw);width:100%}
+  dialog header{display:flex;align-items:center;justify-content:space-between;margin-bottom:.75rem;gap:12px}
+  dialog header h3{margin:0;font-size:.98rem}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:.6rem}
+  @media(max-width:580px){.grid-2{grid-template-columns:1fr}}
+  label{display:flex;flex-direction:column;gap:.25rem;font-size:.8rem;font-weight:600;color:var(--muted)}
+
+  /* ── Toast ── */
+  .toast-stack{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:7px;z-index:9999}
+  .toast{background:#1e293b;color:#f1f5f9;padding:10px 15px;border-radius:10px;font-size:.8rem;font-weight:500;box-shadow:0 8px 24px rgba(0,0,0,.35);animation:fadeUp .2s ease both;max-width:280px}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+  /* ── Skeleton / Empty ── */
+  .empty-state{text-align:center;padding:32px 20px;color:var(--muted)}
+  .empty-icon{font-size:1.8rem;margin-bottom:8px;opacity:.4}
+  .skel{background:linear-gradient(90deg,#f0f0f0 25%,#e8e8e8 50%,#f0f0f0 75%);background-size:200% 100%;border-radius:.7rem;animation:shimmer 1.4s ease infinite}
+  @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
+  .skel-row{height:42px;margin-bottom:.5rem}
+
+  /* ── Key bar ── */
+  .key-bar{display:flex;align-items:center;gap:10px;padding:8px 13px;border-radius:10px;border:1px solid;font-size:.78rem;margin-bottom:.75rem;flex-wrap:wrap}
+  .key-bar.missing{background:#fff7ed;border-color:#fed7aa;color:#9a3412}
+  .key-bar-status{flex:1;line-height:1.5}
+  .key-bar a{color:#9a3412;font-weight:700;text-decoration:underline}
+
+  /* ── Footer ── */
+  footer{background:#1a3c5e;color:#d7dae0;padding:22px 0;margin-top:24px}
+  footer .cols{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  footer h4{margin:0 0 7px;color:#fff;font-size:.9rem}
+  footer ul{list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:5px}
+  footer a{color:#b6c3d6;font-size:.83rem}
+  footer a:hover{color:#fff}
+  footer p{font-size:.83rem;margin:0}
+  .foot-bottom{margin-top:14px;font-size:.73rem;text-align:center;color:#9aa6b6}
+  @media(max-width:640px){footer .cols{grid-template-columns:1fr 1fr}}
+  @media(max-width:400px){footer .cols{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header class="header-bar">
+  <div class="ap-nav">
+    <div class="ap-left">
+      <a class="ap-brand" href="index.html" aria-label="Arowana Profits Home">
+        <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" class="ap-logo">
+        <span class="ap-title">Arowana Profits</span>
+      </a>
+      <nav class="ap-nav-main" id="navMain" aria-label="Primary">
+        <div class="dropdown">
+          <a href="short-term-dashboard.html" class="ap-tab">⚡ Short-Term</a>
+          <div class="dropdown-content">
+            <div class="dropdown-header">Intraday &amp; Momentum</div>
+            <a href="orb-scanner.html">⚡ Opening Range Breakout</a>
+            <a href="rvol-scanner.html">📈 Relative Volume Surge</a>
+            <a href="hod-scanner.html">⏫ HOD Continuation</a>
+            <a href="vwap-pullback.html">📉 VWAP Pullback</a>
+            <a href="gap-fade-scanner.html">🕳️ Gap Fade</a>
+            <a href="rsi-reversal-scanner.html">🔁 RSI Reversal</a>
+            <div class="dropdown-separator"></div>
+            <div class="dropdown-header">Options &amp; Risk</div>
+            <a href="options-analyzer.html">📊 Options Analyzer</a>
+            <a href="position-sizer.html">🧮 Position Sizer</a>
+            <a href="trade-journal-pro.html">📓 Trade Journal</a>
+          </div>
+        </div>
+        <div class="dropdown">
+          <a href="long-term-dashboard.html" class="ap-tab is-active">💰 Long-Term</a>
+          <div class="dropdown-content">
+            <a href="long-term-portfolio.html">📊 Portfolio Tracker</a>
+            <a href="portfolio-advisor.html">🏦 Portfolio Advisor</a>
+            <div class="dropdown-separator"></div>
+            <a href="intrinsic-value.html">🧮 Intrinsic Value Calc</a>
+            <a href="strategy-backtester.html">📊 Strategy Backtester</a>
+            <a href="economic-calendar.html">📅 Economic Calendar</a>
+          </div>
+        </div>
+      </nav>
+    </div>
+    <div class="ap-right">
+      <nav id="navTop" aria-label="Account actions"></nav>
+      <button class="ap-burger" id="apBurger" aria-label="Toggle navigation" aria-expanded="false">☰</button>
+    </div>
+  </div>
+</header>
+
+<!-- Mobile menu -->
+<div id="mobileMenu" data-open="false" aria-hidden="true">
+  <div class="mobile-main-links">
+    <a href="short-term-dashboard.html" class="ap-ix">⚡ Short-Term</a>
+    <a href="long-term-dashboard.html" class="ap-ix">📈 Long-Term</a>
+    <a href="long-term-portfolio.html" class="ap-ix">📊 Portfolio</a>
+    <a href="portfolio-advisor.html" class="ap-ix">🏦 Advisor</a>
+    <a href="learn-investing.html" class="ap-ix">📚 Learn</a>
+    <a href="pricing.html" class="ap-ix">💳 Plans</a>
+  </div>
+  <div class="mobile-divider"></div>
+  <div id="mobileAuthGrid"></div>
+</div>
+
+<!-- ── Main ── -->
+<main class="container">
+
+  <div class="page-head">
+    <h1>📊 Long-Term Portfolio</h1>
+    <p>Track holdings, monitor allocation drift, and refresh prices via Finnhub or your n8n webhook.</p>
+  </div>
+
+  <div class="card">
+    <div class="key-bar missing" id="fhKeyBar" style="display:none">
+      <div class="key-bar-status">
+        ⚠️ No Finnhub key — <a href="account.html#apiKeysCard">Add your free key →</a> to enable one-click live price refresh.
+      </div>
+    </div>
+
+    <div class="toolbar">
+      <div class="left">
+        <button class="btn green" id="btnAdd"><i class="fas fa-plus"></i> Add Holding</button>
+        <button class="btn blue" id="btnRefresh"><i class="fas fa-sync-alt"></i> Refresh Prices</button>
+      </div>
+      <div class="right">
+        <a href="portfolio-advisor.html" class="btn outline" style="text-decoration:none" title="AI analysis for your holdings"><i class="fas fa-chart-line"></i> Portfolio Advisor</a>
+        <button class="btn outline" id="btnImport"><i class="fas fa-file-import"></i> Import CSV</button>
+        <button class="btn outline" id="btnExport"><i class="fas fa-file-export"></i> Export CSV</button>
+        <button class="btn outline" id="btnSettings"><i class="fas fa-cog"></i> Settings</button>
+      </div>
+    </div>
+
+    <div class="kpis">
+      <div class="kpi"><div class="label">Market Value</div><div class="value" id="kpiMarketValue">—</div><div class="sub">All holdings</div></div>
+      <div class="kpi"><div class="label">Cost Basis</div><div class="value" id="kpiCostBasis">—</div><div class="sub">Shares × Avg Cost</div></div>
+      <div class="kpi"><div class="label">Unrealized P/L</div><div class="value" id="kpiPL">—</div><div class="sub" id="kpiPLPct">—</div></div>
+      <div class="kpi"><div class="label">Annual Dividends</div><div class="value" id="kpiDivIncome">—</div><div class="sub">Per-share × shares</div></div>
+      <div class="kpi"><div class="label">Cash (Manual)</div><div class="value" id="kpiCash">—</div><div class="sub">Set in Settings</div></div>
+    </div>
+  </div>
+
+  <div class="row cols-5-7">
+    <section class="card col-5">
+      <div class="toolbar" style="margin-bottom:.5rem">
+        <h3 style="margin:0;font-size:.95rem">🎯 Allocation &amp; Drift</h3>
+        <button class="btn outline" id="btnRecalc" style="padding:.32rem .75rem;font-size:.76rem">Recalc</button>
+      </div>
+      <div class="alloc-list" id="allocList">
+        <div class="empty-state"><div class="empty-icon">📊</div>No holdings yet</div>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.5rem">Set a target % per holding — drift guides rebalancing.</p>
+    </section>
+
+    <section class="card col-7">
+      <div class="toolbar">
+        <input id="search" placeholder="🔎 Search ticker, name, sector, account…" style="flex:1;min-width:180px"/>
+        <label style="flex-direction:row;align-items:center;gap:.3rem;width:auto;white-space:nowrap;color:var(--muted);font-size:.8rem;margin:0">
+          Sort
+          <select id="sortBy" style="width:auto;padding:.38rem .55rem;font-size:.8rem">
+            <option value="ticker">Ticker</option>
+            <option value="name">Name</option>
+            <option value="value">Market Value</option>
+            <option value="gain">Unrealized Gain</option>
+            <option value="drift">Drift %</option>
+          </select>
+        </label>
+      </div>
+      <div class="table-wrap">
+        <table id="tbl">
+          <thead><tr>
+            <th>Ticker</th><th>Name</th>
+            <th class="num">Shares</th><th class="num">Avg Cost</th>
+            <th class="num">Price</th><th class="num">Value</th>
+            <th class="num">Cost</th><th class="num">P/L</th>
+            <th class="num">P/L %</th><th class="num">Target %</th>
+            <th class="num">Actual %</th><th class="num">Drift</th>
+            <th>Tags</th><th></th>
+          </tr></thead>
+          <tbody id="tbody">
+            <tr><td colspan="14">
+              <div style="padding:8px 0">
+                <div class="skel skel-row"></div>
+                <div class="skel skel-row"></div>
+                <div class="skel skel-row"></div>
+              </div>
+            </td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p style="font-size:.75rem;color:var(--muted);margin-top:.4rem" id="rowCount">0 holdings</p>
+    </section>
+  </div>
+
+</main>
+
+<!-- ── Footer ── -->
+<footer>
+  <div class="container">
+    <div class="cols">
+      <div><h4>Arowana Profits</h4><p>AI-powered tools for traders and investors.</p></div>
+      <div><h4>Solutions</h4><ul>
+        <li><a href="arowana-trader.html">Arowana Trader</a></li>
+        <li><a href="long-term-dashboard.html">Long-Term Dashboard</a></li>
+        <li><a href="portfolio-advisor.html">Portfolio Advisor</a></li>
+      </ul></div>
+      <div><h4>Company</h4><ul>
+        <li><a href="about.html">About</a></li>
+        <li><a href="contact.html">Contact</a></li>
+        <li><a href="pricing.html">Plans</a></li>
+      </ul></div>
+      <div><h4>Legal</h4><p><strong>Disclaimer:</strong> Not investment advice. Investing involves risk of loss.</p></div>
+    </div>
+    <div class="foot-bottom">© 2025 Arowana Profits LLC. All rights reserved.</div>
+  </div>
+</footer>
+
+<!-- ── Toast stack ── -->
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- ── Dialogs ── -->
+<dialog id="dlgEdit">
+  <header>
+    <h3 id="editTitle">Add Holding</h3>
+    <button class="btn outline" data-close="dlgEdit" style="padding:.3rem .7rem;font-size:.78rem">✕ Close</button>
+  </header>
+  <div class="grid-2">
+    <label>Ticker <input id="f_ticker" placeholder="AAPL" autocapitalize="characters" spellcheck="false"/></label>
+    <label>Company Name <input id="f_name" placeholder="Apple Inc."/></label>
+    <label>Shares <input id="f_shares" type="number" step="0.0001" placeholder="10"/></label>
+    <label>Average Cost $ <input id="f_avg_cost" type="number" step="0.01" placeholder="150.00"/></label>
+    <label>Current Price $
+      <input id="f_price" type="number" step="0.01" placeholder="175.00"/>
+      <span id="priceHint" style="font-size:.72rem;color:var(--muted);font-weight:400;margin-top:2px;min-height:16px"></span>
+    </label>
+    <label>Annual Dividend / Share $ <input id="f_div_ps" type="number" step="0.0001" placeholder="0.96"/></label>
+    <label>Target Allocation % <input id="f_target_pct" type="number" step="0.1" placeholder="10"/></label>
+    <label>Sector / Tags <input id="f_sector" placeholder="Technology, LargeCap"/></label>
+    <label>Account <input id="f_account" placeholder="Brokerage, IRA, 401k…"/></label>
+    <label>Notes <input id="f_notes" placeholder="Core holding / DRIP enabled"/></label>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.85rem">
+    <button class="btn red" id="btnDelete" style="display:none"><i class="fas fa-trash"></i> Delete</button>
+    <button class="btn green" id="btnSave"><i class="fas fa-save"></i> Save</button>
+  </div>
+</dialog>
+
+<dialog id="dlgSettings">
+  <header>
+    <h3>⚙️ Portfolio Settings</h3>
+    <button class="btn outline" data-close="dlgSettings" style="padding:.3rem .7rem;font-size:.78rem">✕ Close</button>
+  </header>
+  <div class="grid-2">
+    <div>
+      <label>Manual Cash Balance $<input id="s_cash" type="number" step="0.01" placeholder="0"/></label>
+      <p style="font-size:.75rem;color:var(--muted);margin:.3rem 0 0">Shown in KPI card; not tied to a holding.</p>
+    </div>
+    <div>
+      <label>Price Updater Webhook (optional)<input id="s_webhook" placeholder="https://your-n8n/webhook/update-prices"/></label>
+      <p style="font-size:.75rem;color:var(--muted);margin:.3rem 0 0">Used as fallback when no Finnhub key is set. Called on "Refresh".</p>
+    </div>
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.85rem">
+    <button class="btn green" id="settingsSave"><i class="fas fa-save"></i> Save</button>
+  </div>
+</dialog>
+
+<dialog id="dlgImport">
+  <header>
+    <h3>📥 Import CSV</h3>
+    <button class="btn outline" data-close="dlgImport" style="padding:.3rem .7rem;font-size:.78rem">✕ Close</button>
+  </header>
+  <p style="font-size:.82rem;color:var(--muted);margin-bottom:.6rem">
+    Header row required. Expected columns:<br>
+    <code style="font-size:.76rem;background:#f3f4f6;padding:2px 5px;border-radius:4px">ticker, name, shares, avg_cost, price, div_ps, target_pct, sector, account, notes</code>
+  </p>
+  <input type="file" id="csvFile" accept=".csv" style="padding:.4rem;border-radius:.5rem;border:1px solid var(--border);width:100%;cursor:pointer"/>
+  <div id="importStatus" style="display:none;margin-top:.5rem;font-size:.8rem;padding:.5rem .75rem;border-radius:.5rem"></div>
+  <div style="display:flex;justify-content:flex-end;gap:.5rem;margin-top:.75rem">
+    <button class="btn blue" id="importRun"><i class="fas fa-file-import"></i> Import</button>
+  </div>
+</dialog>
+
+<!-- ── Script (single module block) ── -->
+<script type="module">
+import * as db from "./js/supabase-init.js";
+const client = db.client || db.sb || db.default || db["supabase"] || db.supabase;
+
+/* ═══════════════════════════════
+   UTILITIES
+═══════════════════════════════ */
+function toast(msg, type='ok'){
+  const colors={ok:'#16a34a',err:'#dc2626',info:'#2563eb',warn:'#d97706'};
+  const el=document.createElement('div');
+  el.className='toast';
+  el.style.borderLeft='3px solid '+(colors[type]||colors.ok);
+  el.textContent=msg;
+  document.getElementById('toastStack').appendChild(el);
+  setTimeout(()=>el.remove(),4200);
+}
+const $=sel=>document.querySelector(sel);
+const fmt=(n,dp=2)=>isFinite(n)?n.toLocaleString(undefined,{minimumFractionDigits:dp,maximumFractionDigits:dp}):'—';
+
+/* ═══════════════════════════════
+   AUTH (single block — fix #3)
+═══════════════════════════════ */
+const navTop=document.getElementById('navTop');
+const mobileGrid=document.getElementById('mobileAuthGrid');
+const nextParam=encodeURIComponent(location.pathname+location.search);
+
+function mkLink(href,text,emoji){
+  const a=document.createElement('a');
+  a.href=href; a.className='ap-toplink';
+  a.innerHTML=`<span>${emoji}</span><span>${text}</span>`;
+  return a;
+}
+function closeAllUserMenus(){
+  document.querySelectorAll('.user-dropdown.show').forEach(d=>d.classList.remove('show'));
+}
+function buildUserMenu(label){
+  const wrap=document.createElement('div');
+  wrap.className='dropdown user-dropdown';
+  const btn=document.createElement('button');
+  btn.type='button'; btn.className='user-toggle';
+  btn.setAttribute('aria-haspopup','menu');
+  btn.setAttribute('aria-expanded','false');
+  btn.innerHTML=`<span>🪪</span><span>${label}</span>`;
+  const menu=document.createElement('div');
+  menu.className='dropdown-content';
+  menu.setAttribute('role','menu');
+  [['account.html','🧾','Account'],['profile-settings.html','⚙️','Settings']].forEach(([href,e,t])=>{
+    const a=document.createElement('a'); a.href=href; a.setAttribute('role','menuitem');
+    a.innerHTML=`<span>${e}</span><span>${t}</span>`; menu.appendChild(a);
+  });
+  const sep=document.createElement('div'); sep.className='user-sep'; menu.appendChild(sep);
+  const aOut=document.createElement('a');
+  aOut.href='#'; aOut.setAttribute('role','menuitem');
+  aOut.innerHTML='<span>🚪</span><span>Sign out</span>';
+  aOut.addEventListener('click',async e=>{
+    e.preventDefault();
+    try{await client?.auth?.signOut?.();}finally{location.reload();}
+  });
+  menu.appendChild(aOut);
+  wrap.append(btn,menu);
+  btn.addEventListener('click',e=>{
+    e.preventDefault(); e.stopPropagation();
+    const open=wrap.classList.contains('show');
+    closeAllUserMenus();
+    wrap.classList.toggle('show',!open);
+    btn.setAttribute('aria-expanded',String(!open));
+  });
+  return wrap;
+}
+
+async function renderAuth(){
+  if(!navTop)return;
+  navTop.innerHTML=''; if(mobileGrid)mobileGrid.innerHTML='';
+  let user=null;
+  try{const res=await client?.auth?.getUser?.(); user=res?.data?.user||null;}catch(_){}
+  if(user){
+    const label=(user.email?.split('@')[0]||'Account').trim();
+    navTop.appendChild(buildUserMenu(label));
+    if(mobileGrid){
+      mobileGrid.append(mkLink('account.html','Account','🧾'),mkLink('profile-settings.html','Settings','⚙️'));
+      const out=mkLink('#','Sign out','🚪');
+      out.addEventListener('click',async e=>{e.preventDefault();try{await client?.auth?.signOut?.();}finally{location.reload();}});
+      mobileGrid.appendChild(out);
+    }
+  } else {
+    const loginUrl=`login.html?next=${nextParam}`;
+    const signupUrl=`signup.html?next=${nextParam}`;
+    if(navTop)navTop.append(mkLink(loginUrl,'Sign in','🔑'),mkLink(signupUrl,'Sign up','🆕'));
+    if(mobileGrid)mobileGrid.append(mkLink(loginUrl,'Sign in','🔑'),mkLink(signupUrl,'Sign up','🆕'));
+  }
+}
+
+document.addEventListener('click',e=>{if(!e.target.closest?.('.user-dropdown'))closeAllUserMenus();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeAllUserMenus();});
+renderAuth();
+
+/* ── Mobile burger ── */
+(function(){
+  const burger=document.getElementById('apBurger');
+  const menu=document.getElementById('mobileMenu');
+  if(!burger||!menu)return;
+  function setOpen(open){
+    menu.setAttribute('data-open',open?'true':'false');
+    menu.setAttribute('aria-hidden',open?'false':'true');
+    burger.setAttribute('aria-expanded',open?'true':'false');
+  }
+  burger.addEventListener('click',()=>setOpen(menu.getAttribute('data-open')!=='true'));
+  window.matchMedia('(min-width:901px)').addEventListener?.('change',e=>{if(e.matches)setOpen(false);});
+})();
+
+/* ═══════════════════════════════
+   FINNHUB BYOK (fix #6)
+═══════════════════════════════ */
+function getFinnhubKey(){
+  if(window.AP_USER_KEYS?.finnhub)return window.AP_USER_KEYS.finnhub;
+  try{return JSON.parse(localStorage.getItem('ap_user_api_keys')||'{}').finnhub||null;}catch{return null;}
+}
+function updateFhKeyBar(){
+  const bar=document.getElementById('fhKeyBar');
+  if(!bar)return;
+  bar.style.display=getFinnhubKey()?'none':'';
+}
+const priceCache={};
+async function fetchLivePrice(ticker){
+  const key=getFinnhubKey();
+  if(!key)return null;
+  if(priceCache[ticker]&&priceCache[ticker].ts>Date.now()-120000)return priceCache[ticker].price;
+  try{
+    const r=await fetch(`https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(ticker)}&token=${key}`);
+    if(!r.ok)return null;
+    const d=await r.json();
+    if(!d?.c)return null;
+    priceCache[ticker]={price:d.c,ts:Date.now()};
+    return d.c;
+  }catch{return null;}
+}
+
+/* ═══════════════════════════════
+   AUTH GUARD (fix #2 + #4)
+═══════════════════════════════ */
+let sessionUser=null;
+try{
+  const{data:{user}={user:null}}=await(client?.auth?.getUser?.()??Promise.resolve({data:{user:null}}));
+  sessionUser=user;
+}catch(_){}
+if(!sessionUser){
+  // fix #4: single consistent login path
+  location.href='login.html?next='+encodeURIComponent(location.pathname+location.search);
+}
+
+/* ═══════════════════════════════
+   STATE
+═══════════════════════════════ */
+let holdings=[];
+let editing=null;
+let sortBy='ticker';
+
+const dlgEdit=$('#dlgEdit');
+const dlgSettings=$('#dlgSettings');
+const dlgImport=$('#dlgImport');
+
+const settings={
+  cash:Number(localStorage.getItem('ltp_cash')||'0'),
+  webhook:localStorage.getItem('ltp_webhook')||''
+};
+function saveSettings(){
+  localStorage.setItem('ltp_cash',String(settings.cash||0));
+  localStorage.setItem('ltp_webhook',settings.webhook||'');
+}
+
+/* ═══════════════════════════════
+   CRUD
+═══════════════════════════════ */
+async function loadHoldings(){
+  // fix #2: was `supabase.from(...)` — must use `client`
+  const{data,error}=await client.from('portfolio').select('*')
+    .eq('user_id',sessionUser.id).order('ticker',{ascending:true});
+  if(error){console.error(error);toast('Failed to load holdings','err');return;}
+  holdings=data||[];
+}
+
+async function upsertHolding(payload){
+  const row={...payload,user_id:sessionUser.id};
+  if(payload.id){
+    const{data,error}=await client.from('portfolio').update(row).eq('id',payload.id).select().single();
+    if(error)throw error; return data;
+  }else{
+    const{data,error}=await client.from('portfolio').insert(row).select().single();
+    if(error)throw error; return data;
+  }
+}
+
+async function deleteHolding(id){
+  const{error}=await client.from('portfolio').delete().eq('id',id);
+  if(error)throw error;
+}
+
+/* ═══════════════════════════════
+   DIALOG HELPERS
+═══════════════════════════════ */
+function openEdit(row){
+  editing=row;
+  $('#editTitle').textContent=row?`Edit ${row.ticker}`:'Add Holding';
+  $('#btnDelete').style.display=row?'inline-flex':'none';
+  $('#f_ticker').value=row?.ticker??'';
+  $('#f_name').value=row?.name??'';
+  $('#f_shares').value=row?.shares??'';
+  $('#f_avg_cost').value=row?.avg_cost??'';
+  $('#f_price').value=row?.price??'';
+  $('#f_div_ps').value=row?.div_ps??'';
+  $('#f_target_pct').value=row?.target_pct??'';
+  $('#f_sector').value=row?.sector??'';
+  $('#f_account').value=row?.account??'';
+  $('#f_notes').value=row?.notes??'';
+  const hint=document.getElementById('priceHint');
+  hint.textContent='';
+  dlgEdit.showModal();
+
+  // Auto-fetch live price when user enters ticker (fix #6 for add dialog)
+  const tickerInput=$('#f_ticker');
+  async function tryFetchPrice(){
+    const t=tickerInput.value.trim().toUpperCase();
+    if(!t)return;
+    hint.textContent='Fetching live price…';
+    const p=await fetchLivePrice(t);
+    if(p!=null){
+      hint.textContent=`Live price: $${p.toFixed(2)}`;
+      if(!$('#f_price').value||$('#f_price').value==='0')$('#f_price').value=p.toFixed(2);
+    } else {
+      hint.textContent=getFinnhubKey()?'Price unavailable — enter manually':'Add Finnhub key to auto-fill';
+    }
+  }
+  tickerInput.addEventListener('blur',tryFetchPrice,{once:true});
+}
+
+function openSettings(){
+  $('#s_cash').value=settings.cash||0;
+  $('#s_webhook').value=settings.webhook||'';
+  dlgSettings.showModal();
+}
+
+/* ── Save / Delete ── */
+$('#btnSave').addEventListener('click',async()=>{
+  const ticker=$('#f_ticker').value.trim().toUpperCase();
+  // fix #11: use toast instead of alert()
+  if(!ticker){toast('Ticker is required','err');return;}
+  const payload={
+    id:editing?.id,
+    ticker,
+    name:$('#f_name').value.trim(),
+    shares:Number($('#f_shares').value||0),
+    avg_cost:Number($('#f_avg_cost').value||0),
+    price:Number($('#f_price').value||0),
+    div_ps:Number($('#f_div_ps').value||0),
+    target_pct:Number($('#f_target_pct').value||0),
+    sector:$('#f_sector').value.trim(),
+    account:$('#f_account').value.trim(),
+    notes:$('#f_notes').value.trim()
+  };
+  const btn=$('#btnSave');
+  btn.disabled=true; btn.textContent='Saving…';
+  try{
+    await upsertHolding(payload);
+    await loadHoldings(); renderAll();
+    dlgEdit.close();
+    toast(editing?`${ticker} updated`:`${ticker} added`);
+  }catch(e){
+    toast('Save failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false; btn.innerHTML='<i class="fas fa-save"></i> Save';
+  }
+});
+
+$('#btnDelete').addEventListener('click',async()=>{
+  if(!editing?.id)return;
+  // fix #11: use confirm only for destructive action (this one is appropriate)
+  if(!confirm(`Delete ${editing.ticker}? This cannot be undone.`))return;
+  try{
+    await deleteHolding(editing.id);
+    await loadHoldings(); renderAll();
+    dlgEdit.close();
+    toast(`${editing.ticker} deleted`,'warn');
+  }catch(e){toast('Delete failed: '+e.message,'err');}
+});
+
+/* ═══════════════════════════════
+   REFRESH PRICES (fix #7 + #9)
+═══════════════════════════════ */
+async function onRefresh(){
+  const btn=$('#btnRefresh');
+  btn.disabled=true; btn.innerHTML='<i class="fas fa-sync-alt fa-spin"></i> Refreshing…';
+  try{
+    const fhKey=getFinnhubKey();
+    if(fhKey&&holdings.length){
+      // Finnhub path: fetch live prices and write back to Supabase
+      const tickers=[...new Set(holdings.map(h=>h.ticker))];
+      let updated=0;
+      await Promise.all(tickers.map(async t=>{
+        const price=await fetchLivePrice(t);
+        if(price==null)return;
+        await client.from('portfolio').update({price}).eq('ticker',t).eq('user_id',sessionUser.id);
+        updated++;
+      }));
+      await loadHoldings(); renderAll();
+      toast(`Refreshed prices for ${updated} ticker${updated!==1?'s':''} via Finnhub`);
+    } else if(settings.webhook){
+      // Webhook fallback — POST tickers, then wait 3s for webhook to write to Supabase
+      const tickers=holdings.map(h=>h.ticker).join(',');
+      await fetch(settings.webhook,{
+        method:'POST', headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({user_id:sessionUser.id,tickers})
+      });
+      toast('Webhook called — reloading in 3s…','info');
+      await new Promise(r=>setTimeout(r,3000));
+      await loadHoldings(); renderAll();
+      toast('Holdings refreshed via webhook');
+    } else {
+      toast('Add a Finnhub key or configure a webhook in Settings to refresh prices','warn');
+    }
+  }catch(e){
+    toast('Refresh error: '+e.message,'err');
+  }finally{
+    btn.disabled=false; btn.innerHTML='<i class="fas fa-sync-alt"></i> Refresh Prices';
+  }
+}
+
+/* ── Settings save ── */
+$('#settingsSave').addEventListener('click',()=>{
+  settings.cash=Number($('#s_cash').value||0);
+  settings.webhook=$('#s_webhook').value.trim();
+  saveSettings(); renderAll(); dlgSettings.close();
+  toast('Settings saved');
+});
+
+/* ═══════════════════════════════
+   CSV IMPORT (fix #8)
+═══════════════════════════════ */
+async function onImport(){
+  const f=$('#csvFile').files?.[0];
+  if(!f){toast('Choose a CSV file first','warn');return;}
+  const btn=$('#importRun');
+  const statusEl=$('#importStatus');
+  btn.disabled=true; btn.textContent='Importing…';
+  statusEl.style.display='none';
+  try{
+    const text=await f.text();
+    const rows=text.split(/\r?\n/).filter(Boolean);
+    if(!rows.length){toast('File appears empty','err');return;}
+    const head=rows.shift().split(',').map(s=>s.trim().toLowerCase());
+    const get=(arr,k)=>arr[head.indexOf(k)]?.trim()??'';
+    let added=0, skipped=0, errors=0;
+    for(const r of rows){
+      const cols=r.split(',').map(s=>s.trim());
+      const ticker=(get(cols,'ticker')||'').toUpperCase();
+      if(!ticker){skipped++;continue;}
+      const payload={
+        ticker,
+        name:get(cols,'name')||'',
+        shares:Number(get(cols,'shares')||0),
+        avg_cost:Number(get(cols,'avg_cost')||0),
+        price:Number(get(cols,'price')||0),
+        div_ps:Number(get(cols,'div_ps')||0),
+        target_pct:Number(get(cols,'target_pct')||0),
+        sector:get(cols,'sector')||'',
+        account:get(cols,'account')||'',
+        notes:get(cols,'notes')||''
+      };
+      try{await upsertHolding(payload); added++;}
+      catch(e){errors++; console.warn('[import] row failed:',ticker,e.message);}
+    }
+    await loadHoldings(); renderAll();
+    dlgImport.close();
+    const msg=`Imported ${added} row${added!==1?'s':''}${skipped?`, ${skipped} skipped`:''}${errors?`, ${errors} errors`:''}`;
+    toast(msg, errors>0?'warn':'ok');
+  }catch(e){
+    toast('Import failed: '+e.message,'err');
+  }finally{
+    btn.disabled=false; btn.innerHTML='<i class="fas fa-file-import"></i> Import';
+  }
+}
+
+/* ── CSV Export ── */
+function onExport(){
+  const cols=['ticker','name','shares','avg_cost','price','div_ps','target_pct','sector','account','notes'];
+  const blob=new Blob([cols.join(',')+'\n'+holdings.map(h=>cols.map(c=>(h[c]??'')).join(',')).join('\n')],{type:'text/csv'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a'); a.href=url; a.download='long_term_portfolio.csv'; a.click();
+  URL.revokeObjectURL(url);
+  toast('CSV exported');
+}
+
+/* ═══════════════════════════════
+   COMPUTE / RENDER
+═══════════════════════════════ */
+function compute(h){
+  const totalValue=h.reduce((s,x)=>s+(x.shares*(x.price||0)),0);
+  const totalCost=h.reduce((s,x)=>s+(x.shares*(x.avg_cost||0)),0);
+  const divIncome=h.reduce((s,x)=>s+(x.shares*(x.div_ps||0)),0);
+  const withAlloc=h.map(x=>{
+    const value=x.shares*(x.price||0);
+    const cost=x.shares*(x.avg_cost||0);
+    const pl=value-cost;
+    const plPct=cost>0?(pl/cost*100):0;
+    const actualPct=totalValue>0?(value/totalValue*100):0;
+    const drift=actualPct-(x.target_pct||0);
+    return{...x,value,cost,pl,plPct,actualPct,drift};
+  });
+  return{totalValue,totalCost,divIncome,withAlloc};
+}
+
+function renderKPIs(stats){
+  $('#kpiMarketValue').textContent='$'+fmt(stats.totalValue);
+  $('#kpiCostBasis').textContent='$'+fmt(stats.totalCost);
+  const pl=stats.totalValue-stats.totalCost;
+  const plPct=stats.totalCost>0?(pl/stats.totalCost*100):0;
+  const kpiPL=$('#kpiPL');
+  kpiPL.textContent=(pl>=0?'▲ $':'▼ $')+fmt(Math.abs(pl));
+  kpiPL.className='value '+(pl>=0?'pos':'neg');
+  const kpiPct=$('#kpiPLPct');
+  kpiPct.textContent=fmt(plPct,2)+'%';
+  kpiPct.className='sub '+(pl>=0?'pos':'neg');
+  $('#kpiDivIncome').textContent='$'+fmt(stats.divIncome);
+  $('#kpiCash').textContent='$'+fmt(settings.cash||0);
+}
+
+function renderAlloc(stats){
+  const root=$('#allocList');
+  if(!stats.withAlloc.length){
+    root.innerHTML='<div class="empty-state"><div class="empty-icon">📊</div>No holdings yet</div>';
+    return;
+  }
+  root.innerHTML='';
+  [...stats.withAlloc].sort((a,b)=>b.actualPct-a.actualPct).forEach(r=>{
+    const item=document.createElement('div');
+    item.className='alloc-item';
+    item.innerHTML=`
+      <div class="alloc-ticker">${r.ticker}</div>
+      <div class="bar-wrap"><div class="bar" style="width:${Math.max(2,r.actualPct).toFixed(1)}%"></div></div>
+      <div style="text-align:right;min-width:95px;font-size:.77rem">
+        <div style="color:var(--muted)">Target ${fmt(r.target_pct||0,1)}%</div>
+        <div><b>${fmt(r.actualPct,1)}%</b> <span class="${r.drift>=0?'pos':'neg'}">(${r.drift>=0?'+':''}${fmt(r.drift,1)}%)</span></div>
+      </div>`;
+    root.appendChild(item);
+  });
+}
+
+function renderTable(stats){
+  const q=$('#search').value.trim().toLowerCase();
+  let rows=stats.withAlloc.filter(h=>[h.ticker,h.name,h.sector,h.account].join(' ').toLowerCase().includes(q));
+  switch(sortBy){
+    case 'ticker': rows.sort((a,b)=>a.ticker.localeCompare(b.ticker)); break;
+    case 'name':   rows.sort((a,b)=>(a.name||'').localeCompare(b.name||'')); break;
+    case 'value':  rows.sort((a,b)=>b.value-a.value); break;
+    case 'gain':   rows.sort((a,b)=>b.pl-a.pl); break;
+    case 'drift':  rows.sort((a,b)=>Math.abs(b.drift)-Math.abs(a.drift)); break;
+  }
+  const tbody=$('#tbody');
+  tbody.innerHTML='';
+  if(!rows.length){
+    const tr=document.createElement('tr');
+    tr.innerHTML=`<td colspan="14"><div class="empty-state"><div class="empty-icon">${q?'🔎':'📋'}</div>${q?`No results for "${q}"`:'Add your first holding to get started'}</div></td>`;
+    tbody.appendChild(tr);
+    $('#rowCount').textContent='0 holdings';
+    return;
+  }
+  rows.forEach(r=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-weight:700">${r.ticker}</td>
+      <td style="color:var(--muted);max-width:110px;overflow:hidden;text-overflow:ellipsis">${r.name||''}</td>
+      <td class="num">${fmt(r.shares,4)}</td>
+      <td class="num">$${fmt(r.avg_cost)}</td>
+      <td class="num">$${fmt(r.price)}</td>
+      <td class="num">$${fmt(r.value)}</td>
+      <td class="num">$${fmt(r.cost)}</td>
+      <td class="num ${r.pl>=0?'pos':'neg'}">${r.pl>=0?'▲ $':'▼ $'}${fmt(Math.abs(r.pl))}</td>
+      <td class="num ${r.plPct>=0?'pos':'neg'}">${fmt(r.plPct,1)}%</td>
+      <td class="num">${fmt(r.target_pct||0,1)}%</td>
+      <td class="num">${fmt(r.actualPct,1)}%</td>
+      <td class="num ${r.drift>=0?'pos':'neg'}">${r.drift>=0?'+':''}${fmt(r.drift,1)}%</td>
+      <td style="font-size:.76rem;color:var(--muted)">${r.sector||'—'}</td>
+      <td>
+        <div style="display:flex;gap:.3rem;justify-content:flex-end;flex-wrap:wrap">
+          <a href="portfolio-advisor.html?analyze=${r.ticker}" class="btn outline" style="text-decoration:none;font-size:.72rem;padding:.28rem .55rem" title="Analyze in Portfolio Advisor">📊 Analyze</a>
+          <button class="btn outline" data-edit="${r.id}" style="font-size:.76rem;padding:.28rem .55rem">Edit</button>
+          <button class="btn red" data-del="${r.id}" style="font-size:.76rem;padding:.28rem .55rem">Del</button>
+        </div>
+      </td>`;
+    tbody.appendChild(tr);
+  });
+  $('#rowCount').textContent=`${rows.length} holding${rows.length===1?'':'s'}`;
+
+  tbody.querySelectorAll('[data-edit]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      openEdit(holdings.find(h=>String(h.id)===String(btn.getAttribute('data-edit'))));
+    });
+  });
+  tbody.querySelectorAll('[data-del]').forEach(btn=>{
+    btn.addEventListener('click',async()=>{
+      const id=btn.getAttribute('data-del');
+      const h=holdings.find(x=>String(x.id)===String(id));
+      if(!confirm(`Delete ${h?.ticker||'this holding'}?`))return;
+      try{
+        await deleteHolding(id);
+        await loadHoldings(); renderAll();
+        toast(`${h?.ticker||'Holding'} deleted`,'warn');
+      }catch(e){toast('Delete failed: '+e.message,'err');}
+    });
+  });
+}
+
+function renderAll(){
+  const stats=compute(holdings);
+  renderKPIs(stats); renderAlloc(stats); renderTable(stats);
+}
+
+/* ── Wire UI events ── */
+$('#btnAdd').addEventListener('click',()=>openEdit(null));
+$('#btnRefresh').addEventListener('click',onRefresh);
+$('#btnSettings').addEventListener('click',()=>openSettings());
+$('#btnImport').addEventListener('click',()=>dlgImport.showModal());
+$('#btnExport').addEventListener('click',onExport);
+$('#btnRecalc').addEventListener('click',renderAll);
+$('#importRun').addEventListener('click',onImport);
+$('#search').addEventListener('input',renderAll);
+$('#sortBy').addEventListener('change',e=>{sortBy=e.target.value;renderAll();});
+document.querySelectorAll('[data-close]').forEach(b=>{
+  b.addEventListener('click',()=>document.getElementById(b.dataset.close).close());
+});
+
+/* ═══════════════════════════════
+   BOOT
+═══════════════════════════════ */
+updateFhKeyBar();
+await loadHoldings();
+renderAll();
+</script>
+
+</body>
+</html>

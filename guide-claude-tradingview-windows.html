@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>Connect Claude to TradingView on Windows — Arowana Profits</title>
+<meta name="description" content="Step-by-step Windows setup for connecting Claude Code to TradingView Desktop via the TradingView MCP: install, debug port, scanners, Task Scheduler automation, and Telegram alerts."/>
+<link rel="canonical" href="https://arowanaprofits.com/guide-claude-tradingview-windows.html"/>
+
+<!-- Open Graph -->
+<meta property="og:type" content="article"/>
+<meta property="og:title" content="Connect Claude to TradingView on Windows"/>
+<meta property="og:description" content="The Windows version of the Claude + TradingView MCP setup — install commands, the MSIX debug-port workaround, Task Scheduler automation, and Telegram alerts."/>
+<meta property="og:site_name" content="Arowana Profits"/>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ===============================================
+   Tokens — mirrors trade-journal-pro / analysis-central
+   =============================================== */
+:root{
+  --brand:#0b4f8a;
+  --brand-light:#1e40af;
+  --brand-dark:#083c69;
+
+  --bg:#f8fafc;
+  --surface:#ffffff;
+  --panel:#ffffff;
+  --card-hover:#f1f5f9;
+
+  --text:#1e293b;
+  --text-primary:#0f172a;
+  --text-muted:#64748b;
+  --text-dim:#94a3b8;
+
+  --border:#e2e8f0;
+  --border-light:#f1f5f9;
+  --border-strong:#cbd5e1;
+
+  --hover:rgba(11,79,138,0.04);
+  --focus:rgba(11,79,138,0.2);
+
+  --success:#059669;
+  --success-light:#d1fae5;
+  --warning:#d97706;
+  --warning-light:#fef3c7;
+  --danger:#dc2626;
+  --danger-light:#fee2e2;
+  --info:#0284c7;
+  --info-light:#dbeafe;
+
+  --font-sans:'Plus Jakarta Sans', system-ui, sans-serif;
+  --font-mono:'JetBrains Mono','SF Mono','Monaco',monospace;
+
+  --radius:12px;
+  --radius-sm:8px;
+  --radius-lg:16px;
+  --shadow:0 4px 12px rgba(0,0,0,0.08);
+  --shadow-lg:0 8px 25px rgba(0,0,0,0.15);
+
+  --content-max:1180px;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;scroll-padding-top:100px;overflow-x:clip}
+body{
+  font-family:var(--font-sans);
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.65;
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+  overflow-x:clip;
+}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+a:focus-visible,button:focus-visible{outline:none;box-shadow:0 0 0 4px var(--focus);border-radius:6px}
+
+/* ===============================================
+   Header
+   =============================================== */
+.header{background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2);position:sticky;top:0;z-index:1000}
+.nav-container{max-width:var(--content-max);margin:0 auto;padding:0 20px;display:flex;align-items:center;justify-content:space-between;height:70px;gap:20px}
+.nav-brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:800;font-size:1.15rem;white-space:nowrap}
+.nav-brand:hover{text-decoration:none}
+.brand-logo{width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.15);padding:2px;object-fit:contain;display:block}
+.nav-links{display:flex;align-items:center;gap:2px;flex:1;justify-content:center}
+.nav-link{color:rgba(255,255,255,.82);text-decoration:none;padding:7px 12px;border-radius:8px;font-weight:600;font-size:.85rem;transition:all .18s ease;white-space:nowrap}
+.nav-link:hover{color:#fff;background:rgba(255,255,255,.10);text-decoration:none}
+.nav-link.active{color:#fff;background:rgba(255,255,255,.20)}
+.nav-auth{display:flex;align-items:center;gap:10px;flex:0 0 auto}
+.auth-btn{color:rgba(255,255,255,.85);text-decoration:none;font-size:.85rem;font-weight:600;padding:8px 14px;border-radius:8px;transition:all .18s ease}
+.auth-btn:hover{color:#fff;background:rgba(255,255,255,.10);text-decoration:none}
+.auth-cta{background:rgba(255,255,255,.15);color:#fff;border:1px solid rgba(255,255,255,.3);font-weight:700}
+.auth-cta:hover{background:rgba(255,255,255,.25);border-color:rgba(255,255,255,.5)}
+@media (max-width:900px){.nav-links{display:none}}
+
+/* ===============================================
+   Hero
+   =============================================== */
+.hero{background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;padding:44px 20px 52px}
+.hero-inner{max-width:var(--content-max);margin:0 auto}
+.crumb{font-size:.8rem;color:rgba(255,255,255,.7);margin-bottom:14px}
+.crumb a{color:rgba(255,255,255,.9)}
+.hero h1{font-size:clamp(1.7rem,4vw,2.5rem);font-weight:800;line-height:1.2;letter-spacing:-.02em;margin-bottom:14px;max-width:22ch}
+.hero-sub{font-size:1.02rem;color:rgba(255,255,255,.86);max-width:70ch}
+.hero-meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:22px}
+.chip{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.24);color:#fff;font-size:.76rem;font-weight:600;padding:5px 11px;border-radius:999px}
+
+/* ===============================================
+   Layout
+   =============================================== */
+.wrap{max-width:var(--content-max);margin:0 auto;padding:32px 20px 64px;display:grid;grid-template-columns:minmax(0,1fr) 264px;gap:36px;align-items:start;flex:1;width:100%}
+@media (max-width:980px){.wrap{grid-template-columns:1fr;gap:24px}}
+
+/* TOC */
+.toc{position:sticky;top:92px;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;box-shadow:var(--shadow)}
+@media (max-width:980px){.toc{position:static;order:-1}}
+.toc h4{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--text-muted);font-weight:700;margin-bottom:10px}
+.toc ol{list-style:none;counter-reset:toc}
+.toc li{counter-increment:toc;margin-bottom:3px}
+.toc a{display:block;font-size:.83rem;color:var(--text);padding:5px 8px;border-radius:6px;line-height:1.35}
+.toc a:hover{background:var(--hover);color:var(--brand);text-decoration:none}
+.toc a::before{content:counter(toc) ". ";color:var(--text-dim);font-variant-numeric:tabular-nums}
+.toc .toc-plain a::before{content:none}
+
+/* Article */
+.article{min-width:0}
+.article h2{font-size:1.4rem;font-weight:800;color:var(--text-primary);letter-spacing:-.01em;margin:40px 0 12px;padding-bottom:8px;border-bottom:2px solid var(--border)}
+.article h2:first-child{margin-top:0}
+.article h3{font-size:1.05rem;font-weight:700;color:var(--text-primary);margin:26px 0 8px}
+.article p{margin-bottom:14px;color:var(--text)}
+.article ul,.article ol{margin:0 0 16px 22px}
+.article li{margin-bottom:7px}
+.article strong{color:var(--text-primary);font-weight:700}
+.step-label{display:inline-block;font-size:.72rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--brand);background:var(--info-light);padding:3px 9px;border-radius:999px;margin-bottom:8px}
+
+/* Cards / callouts */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;box-shadow:var(--shadow);margin-bottom:20px}
+.note{border-left:4px solid var(--info);background:var(--info-light);border-radius:var(--radius-sm);padding:14px 16px;margin:16px 0;font-size:.92rem}
+.warn{border-left:4px solid var(--warning);background:var(--warning-light);border-radius:var(--radius-sm);padding:14px 16px;margin:16px 0;font-size:.92rem}
+.danger{border-left:4px solid var(--danger);background:var(--danger-light);border-radius:var(--radius-sm);padding:14px 16px;margin:16px 0;font-size:.92rem}
+.note strong,.warn strong,.danger strong{display:block;margin-bottom:4px}
+
+/* Code blocks */
+.codewrap{position:relative;margin:14px 0 18px}
+.codewrap pre{background:#0f172a;color:#e2e8f0;border-radius:var(--radius-sm);padding:16px 56px 16px 18px;overflow-x:auto;font-family:var(--font-mono);font-size:.83rem;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.codewrap pre code{font-family:inherit;background:none;padding:0;color:inherit}
+.copy-btn{position:absolute;top:9px;right:9px;background:rgba(255,255,255,.10);color:#cbd5e1;border:1px solid rgba(255,255,255,.20);border-radius:6px;font-family:var(--font-sans);font-size:.72rem;font-weight:600;padding:4px 9px;cursor:pointer;transition:all .16s ease}
+.copy-btn:hover{background:rgba(255,255,255,.2);color:#fff}
+.copy-btn.done{background:var(--success);border-color:var(--success);color:#fff}
+.codewrap.prompt pre{background:#082f49;border:1px solid #0e4a6e}
+.code-tag{display:inline-block;font-size:.68rem;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--text-muted);margin-bottom:5px}
+code.inline{font-family:var(--font-mono);font-size:.86em;background:var(--border-light);border:1px solid var(--border);border-radius:5px;padding:1px 5px;color:var(--brand-dark);word-break:break-word}
+
+/* Table */
+.table-scroll{overflow-x:auto;border:1px solid var(--border);border-radius:var(--radius);margin:16px 0}
+table{width:100%;border-collapse:collapse;font-size:.88rem;min-width:520px}
+thead{background:var(--border-light)}
+th{text-align:left;padding:10px 14px;font-weight:700;color:var(--text-primary);font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+td{padding:10px 14px;border-top:1px solid var(--border);vertical-align:top}
+
+/* Comparison */
+.compare{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0}
+@media (max-width:640px){.compare{grid-template-columns:1fr}}
+.compare-col{border:1px solid var(--border);border-radius:var(--radius);padding:16px 18px;background:var(--surface)}
+.compare-col.ours{border-color:var(--brand);background:#f5f9fd}
+.compare-col h4{font-size:.95rem;font-weight:800;margin-bottom:4px;color:var(--text-primary)}
+.compare-col .price{font-family:var(--font-mono);font-size:1.25rem;font-weight:500;color:var(--brand-dark);margin-bottom:10px}
+.compare-col ul{list-style:none;margin:0;font-size:.86rem}
+.compare-col li{margin-bottom:6px;padding-left:20px;position:relative;color:var(--text-muted)}
+.compare-col li::before{content:"—";position:absolute;left:0;color:var(--text-dim)}
+.compare-col li.yes::before{content:"✓";color:var(--success);font-weight:700}
+.compare-col li.no::before{content:"✕";color:var(--danger);font-weight:700}
+
+/* FAQ */
+details.faq{border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--surface);margin-bottom:8px;overflow:hidden}
+details.faq summary{cursor:pointer;padding:13px 16px;font-weight:700;font-size:.92rem;color:var(--text-primary);list-style:none;display:flex;justify-content:space-between;gap:12px;align-items:center}
+details.faq summary::-webkit-details-marker{display:none}
+details.faq summary::after{content:"+";font-size:1.15rem;color:var(--text-muted);font-weight:600;flex:0 0 auto}
+details.faq[open] summary::after{content:"−"}
+details.faq summary:hover{background:var(--hover)}
+details.faq .faq-body{padding:0 16px 15px;font-size:.9rem;color:var(--text-muted)}
+details.faq .faq-body p{margin-bottom:9px;color:inherit}
+details.faq .faq-body p:last-child{margin-bottom:0}
+
+/* CTA */
+.cta{background:linear-gradient(135deg,var(--brand-dark),var(--brand));color:#fff;border-radius:var(--radius-lg);padding:32px;margin:40px 0 0;box-shadow:var(--shadow-lg)}
+.cta h3{color:#fff;font-size:1.35rem;font-weight:800;margin-bottom:10px}
+.cta p{color:rgba(255,255,255,.88);margin-bottom:18px;max-width:62ch}
+.cta-row{display:flex;flex-wrap:wrap;gap:10px}
+.btn{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;border-radius:var(--radius-sm);font-weight:700;font-size:.9rem;cursor:pointer;border:1px solid transparent;transition:all .18s ease;text-decoration:none}
+.btn:hover{text-decoration:none;transform:translateY(-1px)}
+.btn-white{background:#fff;color:var(--brand-dark)}
+.btn-ghost{background:rgba(255,255,255,.12);color:#fff;border-color:rgba(255,255,255,.35)}
+
+/* Footer */
+.footer{background:var(--text-primary);color:rgba(255,255,255,.7);padding:28px 20px;font-size:.83rem;margin-top:auto}
+.footer-inner{max-width:var(--content-max);margin:0 auto;display:flex;flex-wrap:wrap;gap:14px;justify-content:space-between;align-items:center}
+.footer a{color:rgba(255,255,255,.85)}
+.disclaimer{max-width:var(--content-max);margin:0 auto;padding:18px 20px 0;font-size:.76rem;color:var(--text-dim);line-height:1.55}
+</style>
+</head>
+
+<body>
+
+<!-- ══════════════════════════════════════════════
+     HEADER  (adjust hrefs to match live site routes)
+     ══════════════════════════════════════════════ -->
+<header class="header">
+  <nav class="nav-container">
+    <a href="index.html" class="nav-brand" aria-label="Arowana Profits Home">
+      <img src="images/arowanalogo.png?v=20260501" alt="Arowana Profits" class="brand-logo" onerror="this.style.display='none'">
+      <span>Arowana Profits</span>
+    </a>
+
+    <div class="nav-links">
+      <a href="features-tools-directory.html" class="nav-link">🧰 Platform</a>
+      <a href="trading-command.html" class="nav-link">⚡ Trading Command</a>
+      <a href="trade-journal-pro.html" class="nav-link">📝 Trade Journal</a>
+      <a href="education.html" class="nav-link active">🎓 Education</a>
+    </div>
+
+    <div class="nav-auth">
+      <a href="login.html" class="auth-btn" id="navAuthLink">Log in</a>
+      <a href="signup.html" class="auth-btn auth-cta" id="navCtaLink">Get Started</a>
+    </div>
+  </nav>
+</header>
+
+<!-- ══════════════════════════════════════════════
+     HERO
+     ══════════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="crumb"><a href="index.html">Home</a> &rsaquo; <a href="education.html">Education</a> &rsaquo; AI &amp; Automation</div>
+    <h1>Connect Claude to TradingView on Windows</h1>
+    <p class="hero-sub">
+      Most write-ups of this setup are Mac-only — they assume Homebrew paths and macOS scheduling.
+      This is the Windows version: the PowerShell install, the debug-port workaround for Microsoft Store
+      installs of TradingView, Task Scheduler instead of launchd, and the PowerShell fix for Telegram alerts.
+    </p>
+    <div class="hero-meta">
+      <span class="chip">🪟 Windows 10 / 11</span>
+      <span class="chip">⏱️ ~45 min setup</span>
+      <span class="chip">🧩 Third-party tool — not an Arowana feature</span>
+      <span class="chip">📅 Updated <span id="updatedDate">September 2026</span></span>
+    </div>
+  </div>
+</section>
+
+<div class="wrap">
+
+  <!-- ═══════════════ ARTICLE ═══════════════ -->
+  <article class="article">
+
+    <div class="warn">
+      <strong>Read this first</strong>
+      This guide documents a free, open-source community tool that bridges Claude Code and TradingView Desktop.
+      It is not built, maintained, or supported by Arowana Profits, and it relies on an undocumented debug
+      interface inside TradingView's desktop app — meaning a TradingView update can break it without warning.
+      We publish it because our users keep asking. If something here stops working, the tool's GitHub issue
+      tracker is the right place to go, not our support inbox.
+    </div>
+
+    <h2 id="what">What this actually builds</h2>
+    <p>
+      TradingView Desktop is an Electron app, which means it exposes the same Chrome DevTools Protocol (CDP)
+      debug interface that VS Code, Slack, and Discord do. An open-source MCP server — built by
+      <a href="https://github.com/tradesdontlie/tradingview-mcp" rel="nofollow noopener" target="_blank">@tradesdontlie</a> —
+      connects to that interface on your own machine and gives an AI agent the ability to read and drive your charts.
+      Wire it to Claude Code and you can ask, in plain English, for things like:
+    </p>
+    <ul>
+      <li>Switch the chart to a symbol and timeframe, and add indicators</li>
+      <li>Read your watchlist and rank what's moving</li>
+      <li>Pull OHLCV data and compute levels — premarket high, prior-day high, a 200 SMA</li>
+      <li>Write, compile, and backtest a PineScript strategy, then read the Strategy Tester results back</li>
+      <li>Run all of the above on a schedule and text you the output</li>
+    </ul>
+    <p>
+      The workflow below is adapted for Windows from Shay's original Mac walkthrough at
+      <a href="https://www.humbledtrader.com/" rel="nofollow noopener" target="_blank">Humbled Trader</a>,
+      whose FAQ notes the scheduling layer is the only genuinely Mac-specific piece. That's accurate — and
+      it's the part we've rewritten below.
+    </p>
+
+    <h2 id="foryou">Is this worth doing for you?</h2>
+    <p>
+      Be honest with yourself about the cost before you spend a Saturday on it. This is a developer-grade
+      setup with a real monthly bill and real maintenance.
+    </p>
+
+    <div class="compare">
+      <div class="compare-col">
+        <h4>DIY: Claude Code + TradingView MCP</h4>
+        <div class="price">$33–113 / mo</div>
+        <ul>
+          <li class="yes">Fully customizable — it's your code</li>
+          <li class="yes">Direct access to your own charts and watchlists</li>
+          <li class="no">Requires Node.js, Git, PowerShell comfort</li>
+          <li class="no">TradingView Essential ($12.95/mo) + Claude Pro ($20/mo) minimum</li>
+          <li class="no">Running scanners all day needs Claude Max ($100/mo)</li>
+          <li class="no">Breaks on TradingView updates; you own the fix</li>
+          <li class="no">No journal, no risk controls, no trade history</li>
+        </ul>
+      </div>
+      <div class="compare-col ours">
+        <h4>Arowana Pro Desk</h4>
+        <div class="price">$29 / mo</div>
+        <ul>
+          <li class="yes">Nothing to install — log in and it runs</li>
+          <li class="yes">Journal, scanners, and AI coaching in one place</li>
+          <li class="yes">Risk Lockout stops you after a defined loss</li>
+          <li class="yes">Every trade logged, tagged, and reviewed against your plan</li>
+          <li class="yes">We maintain it when data sources change</li>
+        </ul>
+      </div>
+    </div>
+
+    <p>
+      They're not really substitutes. The DIY stack is a chart-reading and scanning layer. What it doesn't
+      do — and what most traders actually lose money for lacking — is enforce discipline after the signal
+      fires. If you want to tinker, build it. If you want the guardrails, that's a different tool.
+    </p>
+
+    <h2 id="prereqs">Before you start</h2>
+    <p>Install these first — every step below assumes them:</p>
+    <ul>
+      <li><strong><a href="https://nodejs.org/en/download" rel="nofollow noopener" target="_blank">Node.js</a></strong> — the MCP server is a Node app and you'll run <code class="inline">npm install</code>.</li>
+      <li><strong><a href="https://git-scm.com/downloads/win" rel="nofollow noopener" target="_blank">Git for Windows</a></strong> — needed to clone the repo. It also gives Claude Code its Bash tool. Without it Claude Code falls back to PowerShell as its shell, which works fine, but you'll want your automation scripts written as <code class="inline">.ps1</code> instead of <code class="inline">.sh</code>.</li>
+      <li><strong>A paid Claude plan.</strong> Claude Code has no free tier. Pro is enough to follow this guide by hand.</li>
+      <li><strong>A paid TradingView plan.</strong> The entry tier covers the scanner workflow; PineScript backtesting with bar replay needs a higher tier.</li>
+    </ul>
+
+    <h2 id="step1">Step 1 — Install Claude Code</h2>
+    <span class="step-label">Windows PowerShell</span>
+    <p>Open PowerShell (press <strong>Win</strong>, type "PowerShell", hit Enter) and run:</p>
+    <div class="codewrap"><pre><code>irm https://claude.ai/install.ps1 | iex</code></pre></div>
+    <p>Prefer a package manager? WinGet works too, though it won't auto-update:</p>
+    <div class="codewrap"><pre><code>winget install Anthropic.ClaudeCode</code></pre></div>
+
+    <div class="note">
+      <strong>Close and reopen your terminal before continuing.</strong>
+      The installer adds itself to your PATH, and Windows doesn't push that change into terminal windows
+      that are already open. Skipping this is the number-one reason people see "command not found" here.
+    </div>
+
+    <p>In a fresh window, confirm it worked:</p>
+    <div class="codewrap"><pre><code>claude --version</code></pre></div>
+    <p>You should get a version number back. If not, run <code class="inline">claude doctor</code> for diagnostics.</p>
+
+    <h2 id="step2">Step 2 — Install TradingView Desktop</h2>
+    <p>
+      Download the <strong>desktop app</strong> from your TradingView account page and sign in. The browser
+      version will not work — the bridge talks to the Electron app on your machine, and there's no equivalent
+      hook in a browser tab.
+    </p>
+    <p>Open a chart on any symbol and leave it there. A blank "New Tab" welcome screen doesn't count; the tools need a live chart to read.</p>
+
+    <h2 id="step3">Step 3 — Install the TradingView MCP</h2>
+    <p>
+      This is the bridge. Installation takes two prompts with a Claude Code restart between them — the restart
+      is what loads the new server into your session.
+    </p>
+
+    <span class="code-tag">Prompt 1 — paste into Claude Code</span>
+    <div class="codewrap prompt"><pre><code>Install the TradingView MCP server from https://github.com/tradesdontlie/tradingview-mcp
+
+I'm on Windows. Clone it to %USERPROFILE%\tradingview-mcp, run npm install, and register
+it in my Claude Code MCP config at user scope. Then launch TradingView Desktop with the
+remote debugging port enabled on port 9222 — use the tv_launch tool if it's available,
+otherwise detect whether my install is a Microsoft Store (MSIX) install or a legacy install
+and use the correct launch method for that. Tell me when you're done.</code></pre></div>
+
+    <p>
+      Claude will ask permission before each shell command — the clone, the npm install, the config write,
+      and the TradingView launch. Approve each one.
+    </p>
+    <p><strong>Now quit Claude Code</strong> (Ctrl+C or close the window) and relaunch it. In the new session:</p>
+
+    <span class="code-tag">Prompt 2 — paste into the new session</span>
+    <div class="codewrap prompt"><pre><code>Run tv_health_check and tell me if TradingView is connected.</code></pre></div>
+
+    <p>
+      You're looking for <code class="inline">cdp_connected: true</code> and
+      <code class="inline">api_available: true</code>. If you get those, the hard part is done.
+    </p>
+
+    <h2 id="debugport">Step 3b — The Windows debug-port problem</h2>
+    <p>
+      This is where Windows genuinely differs, so it's worth understanding rather than just pasting.
+      TradingView must be launched with the <code class="inline">--remote-debugging-port=9222</code> flag.
+      Nothing happens without that flag — the port is off by default.
+    </p>
+    <p>
+      The complication: TradingView's Windows desktop app now ships as an MSIX (Microsoft Store) package,
+      installed under <code class="inline">C:\Program Files\WindowsApps</code>. Launching an executable
+      directly from that folder with custom arguments throws <em>Access is denied</em>.
+    </p>
+
+    <h3>If you have a legacy (pre-MSIX) install</h3>
+    <div class="codewrap"><pre><code>%LOCALAPPDATA%\TradingView\TradingView.exe --remote-debugging-port=9222</code></pre></div>
+
+    <h3>If you have the Microsoft Store / MSIX install</h3>
+    <p>
+      The documented workaround is to copy the package out to a normal folder and run the copy. Reading files
+      out of WindowsApps by exact path is permitted even where executing them isn't:
+    </p>
+    <div class="codewrap"><pre><code>$pkg = (Get-AppxPackage TradingView.Desktop).InstallLocation
+Copy-Item "$pkg\*" "$env:LOCALAPPDATA\tradingview-mcp\TradingView" -Recurse -Force
+&amp; "$env:LOCALAPPDATA\tradingview-mcp\TradingView\TradingView.exe" --remote-debugging-port=9222</code></pre></div>
+
+    <div class="danger">
+      <strong>Do not run icacls against WindowsApps.</strong>
+      It's the first "fix" search results will suggest for the access-denied error. It doesn't work, and it
+      can break Windows app servicing on your machine. Use the copy approach above instead.
+    </div>
+
+    <p>
+      Simplest path of all: once the MCP is connected, just ask Claude to run the <code class="inline">tv_launch</code>
+      tool. It auto-detects your install location, MSIX included, and handles the fallback for you.
+    </p>
+
+    <h2 id="step4">Step 4 — Try a few basic prompts</h2>
+    <p>Before automating anything, get a feel for what the bridge can reach. Open your watchlist panel in TradingView first, then try these one at a time:</p>
+    <div class="codewrap prompt"><pre><code>Switch the chart to NVDA on a 5-minute timeframe and add the 200 SMA and RSI.
+
+Read my TradingView watchlist and tell me which names are up the most today.
+
+Look at NVDA on the daily. Mark the support and resistance levels you consider
+most important, plus today's premarket high.
+
+Give me an end-of-day briefing on NVDA: what happened, which levels held or broke,
+and what to watch tomorrow.</code></pre></div>
+    <p>If all four work, the connection is solid and you can move on to the real workflow.</p>
+
+    <h2 id="step5">Step 5 — Build a premarket gap scanner</h2>
+    <p>
+      This one doesn't touch TradingView at all — it fetches public gainer data and news, filters it, and saves
+      a JSON file. It's the foundation: candidates in, junk out, with a catalyst attached to each name so you
+      can decide in seconds whether it's worth charting.
+    </p>
+
+    <span class="code-tag">Prompt — Scanner A</span>
+    <div class="codewrap prompt"><pre><code>Build me a premarket gappers scanner as a single PowerShell script (.ps1) in this directory.
+I'm on Windows — no bash, and use Invoke-RestMethod / Invoke-WebRequest rather than curl.
+
+DATA SOURCE: fetch the public Yahoo Finance stock gainers page and parse out
+ticker, price, gap %, and volume for each row.
+
+FILTERS:
+- gap_pct greater than 5
+- price above $3
+- premarket_volume above 50000
+- keep the top 10 by gap_pct descending
+
+NEWS CATALYST: for each of the top 10, fetch the Benzinga quote page for that ticker
+and extract a one-sentence summary of what's driving the move, plus up to 2 recent
+headlines. Data only, no commentary. If a single ticker's lookup fails, set catalyst
+to null and headlines to an empty array for that ticker — do not abort the whole scan.
+
+OUTPUT: save to .\premarket_gappers_YYYY-MM-DD.json with this schema:
+{
+  "scanned_at": "",
+  "gappers": [
+    {"rank": 1, "symbol": "AAPL", "price": 175.20, "gap_pct": 7.5,
+     "premarket_volume": 1200000, "catalyst": "Beat Q1 earnings, raised guidance",
+     "headlines": ["...", "..."]}
+  ]
+}
+
+After saving, print a one-line summary naming the top 3 with their gap % and catalyst.
+Expected runtime 60-90 seconds. Do not run it more than once unless I ask.</code></pre></div>
+
+    <div class="note">
+      <strong>Tune the volume filter to your account size.</strong>
+      50,000 shares is a reasonable default. Drop to 20,000 for a wider net, raise above 100,000 if you trade
+      size and need the liquidity. Names below your threshold will show up with spreads you can't trade around.
+    </div>
+
+    <h2 id="step6">Step 6 — Schedule it with Task Scheduler</h2>
+    <p>
+      Here's the piece Mac guides can't help you with. macOS uses launchd; Windows uses Task Scheduler, and
+      for this particular job Windows actually handles the sleeping-laptop case more gracefully.
+    </p>
+
+    <span class="code-tag">Prompt</span>
+    <div class="codewrap prompt"><pre><code>This works. Now I don't want to run it manually every morning.
+
+Schedule it with Windows Task Scheduler to fire every weekday at 8:30am New York time.
+My laptop is sometimes asleep then. Don't wake the machine — instead enable "run task as
+soon as possible after a scheduled start is missed" so it catches up when I open the
+laptop, but add a guard so it won't run if it's already past market close.
+
+Skip weekends, never run twice in the same day, and skip if the premarket data on disk
+is already current. Register it with Register-ScheduledTask and show me the exact command
+you used so I can inspect the task myself.</code></pre></div>
+
+    <p>Verify the task registered:</p>
+    <div class="codewrap"><pre><code>Get-ScheduledTask | Where-Object TaskName -like "*premarket*"</code></pre></div>
+
+    <div class="note">
+      <strong>Windows equivalents, if you're translating a Mac guide yourself:</strong>
+      <code class="inline">launchd</code> → Task Scheduler ·
+      <code class="inline">launchctl list</code> → <code class="inline">Get-ScheduledTask</code> ·
+      <code class="inline">open -a AppName --args</code> → the executable path plus arguments ·
+      <code class="inline">~/</code> → <code class="inline">%USERPROFILE%\</code>
+    </div>
+
+    <h2 id="step7">Step 7 — Build a strategy scanner</h2>
+    <p>
+      The gap scanner gives you candidates. A strategy scanner tells you which of them actually meet your
+      entry criteria right now. This one <em>does</em> use the TradingView bridge, so the desktop app has to be
+      running with the debug port live.
+    </p>
+    <p>
+      The example below encodes a trend-continuation long: a name trading above its prior-day high with the
+      prior close above the 200 SMA, that has also broken above both the premarket high and the intraday high.
+      Swap the criteria for your own setup — the structure stays the same.
+    </p>
+
+    <span class="code-tag">Prompt — Scanner B</span>
+    <div class="codewrap prompt"><pre><code>Build me a trend-continuation long scanner that filters tickers down to which ones meet
+my entry criteria right now. Write it as a PowerShell script.
+
+TEST UNIVERSE: 3 tickers — AMD, NVDA, MU. Keep it small so the first run finishes quickly.
+
+PREREQ: TradingView Desktop must be running with CDP port 9222 enabled. First call
+tv_health_check. If cdp_connected or api_available is false, launch TradingView in debug
+mode using tv_launch, then re-check. If it still fails, stop and tell me — don't proceed.
+
+TIME GATE: only proceed between 10:00am and 3:30pm New York time. Otherwise write an
+error JSON and exit cleanly.
+
+FOR EACH TICKER, sequentially (do not parallelize):
+1. chart_set_symbol to the bare ticker
+2. chart_set_timeframe to "D", then data_get_ohlcv count=210 and compute:
+   prev_daily_high, prev_daily_close, and sma200 (mean close of the last 200 bars)
+3. quote_get for the current intraday price
+4. chart_set_timeframe to "1", then data_get_ohlcv count=400 and compute:
+   pmh  = highest high between 04:00 and 09:30 ET today
+   hod  = highest high from 09:30 ET to now, excluding the current forming bar
+5. Evaluate:
+   daily_ok    = current price above prev_daily_high AND prev_daily_close above sma200
+   intraday_ok = current price above pmh AND above hod
+   result = PASS if both, otherwise fail_daily or fail_intraday
+
+OUTPUT: save to .\strategy_watchlist_YYYY-MM-DD_HHMMET.json with scanned_at,
+candidates_checked, a hits array with the computed levels, and an all_results array.
+
+Then print one line per ticker: TICKER: PASS | fail_daily | fail_intraday — reason.</code></pre></div>
+
+    <div class="warn">
+      <strong>This one is slow by design.</strong>
+      Each ticker takes several minutes — the agent loads the chart, pulls two timeframes of data, and computes
+      the levels, one symbol at a time. A ten-name list is a half-hour of waiting. That's exactly why you
+      schedule it rather than babysit it.
+    </div>
+
+    <h3>Schedule it for the rest of the session</h3>
+    <p>A single 10am snapshot misses setups that develop at 10:45, 11:30, or after lunch:</p>
+    <div class="codewrap prompt"><pre><code>Run this strategy scanner every 30 minutes from 10am to 2pm New York time via Task Scheduler.
+
+Before each run, check tv_health_check — if TradingView isn't up with the debug port,
+launch it with tv_launch first, then proceed.
+
+Don't blow up my phone with 9 messages a day. Only notify me on the first run of the day,
+when there's a new hit that wasn't in the previous run, or on error. Otherwise stay quiet.</code></pre></div>
+
+    <h2 id="step8">Step 8 — Backtest it in PineScript</h2>
+    <p>
+      The obvious next question is whether the setup makes money. Claude can write the PineScript, inject it
+      into TradingView's Pine editor, compile it, apply it to the chart, and read the Strategy Tester numbers back.
+    </p>
+
+    <span class="code-tag">Prompt</span>
+    <div class="codewrap prompt"><pre><code>Build a backtest of my trend-continuation long strategy in TradingView, end to end:
+
+1. Call tv_health_check and confirm the connection. If it fails, launch TradingView with
+   tv_launch and retry.
+2. chart_set_symbol("AMD"), chart_set_timeframe("5"), and confirm Extended Hours is enabled —
+   the strategy needs premarket bars to compute the premarket high.
+3. Open the existing Pine slot named "Demo Strategy" with pine_open using that exact name.
+   Do NOT use pine_new — I don't want other Pine slots overwritten.
+4. Write the strategy in Pine v5 implementing the same entry rules as my scanner, inject it
+   with pine_set_source, then pine_smart_compile. If has_errors is true, show me the error
+   and stop — don't auto-fix without telling me what changed.
+5. Once it compiles clean, find the "Add to chart" button and click it to apply the strategy.
+6. Read the Strategy Tester results. If the results tool returns empty, screenshot the
+   Strategy Tester panel and read the numbers off the image instead.
+7. Report win rate, total trades, total P&amp;L, profit factor, and max drawdown.</code></pre></div>
+
+    <div class="note">
+      <strong>Expect two or three compile cycles.</strong>
+      Pine is picky about types. Claude will write, hit a syntax error, read the error back from TradingView,
+      fix it, and recompile. That loop is normal — let it run rather than interrupting mid-fix.
+    </div>
+
+    <h3>Then test your assumptions, not just your strategy</h3>
+    <p>
+      The most valuable thing this setup buys you isn't the scanner — it's how cheap it becomes to test an
+      idea you'd otherwise just believe. A worked example: most traders assume a momentum long works better
+      when SPY and QQQ are also green, so they'd add that filter without testing it.
+    </p>
+    <div class="codewrap prompt"><pre><code>Test whether adding an SPY/QQQ regime filter improves this strategy. Modify the SAME
+"Demo Strategy" Pine slot — add the filter on top of the existing entry logic, don't
+rewrite the strategy — then re-run and compare against the numbers you just gave me.
+
+REGIME FILTER: at the first 5-minute bar at or after 10:00am ET each day, latch a flag
+that is true only if SPY's current close is above its previous daily close AND QQQ's
+current close is above its previous daily close. Use request.security with
+lookahead=barmerge.lookahead_off. Hold the flag for the rest of the day, reset on a new
+day, and require it as an additional entry condition. Tint the background faintly red on
+days the filter gates us out so it's visible.
+
+Report back a table comparing total trades, win rate, total P&amp;L, and profit factor with
+and without the filter — then tell me in plain English whether it helped or hurt, and
+whether the difference is large enough to change how I trade.</code></pre></div>
+    <p>
+      When Shay ran this test, the "obvious" filter <em>hurt</em> — meaningfully. The reasoning holds up:
+      a momentum name breaking out on a red-tape day is showing relative strength, which is the exact
+      condition you want, and the filter throws those trades away. Worth running yourself on your own
+      universe before you trust either result. Test the obvious stuff.
+    </p>
+
+    <h2 id="step9">Step 9 — Send alerts to your phone</h2>
+    <p>Telegram is the least-friction option — no business verification, no SMS carrier, free.</p>
+    <ol>
+      <li>In Telegram, message <strong>@BotFather</strong>, send <code class="inline">/newbot</code>, and copy the token it gives you.</li>
+      <li>Open the <code class="inline">t.me/</code> link BotFather returns and send <code class="inline">/start</code> so the bot is allowed to message you.</li>
+      <li>Visit <code class="inline">https://api.telegram.org/bot&lt;YOUR_TOKEN&gt;/getUpdates</code> in a browser and find the <code class="inline">"chat":{"id":</code> value. That number is your chat ID.</li>
+    </ol>
+
+    <div class="danger">
+      <strong>Your bot token is a password.</strong>
+      Anyone holding it can send messages as your bot. Keep it in a <code class="inline">.env</code> file or a
+      password manager — never in a shared chat, a screenshot, or a committed file.
+    </div>
+
+    <span class="code-tag">Prompt</span>
+    <div class="codewrap prompt"><pre><code>Wire up Telegram notifications for both scanners. I'm on Windows.
+
+CREDENTIALS: my bot token and chat ID are in .env in this directory as TELEGRAM_BOT_TOKEN
+and TELEGRAM_CHAT_ID. Read them at runtime. Never print the token to stdout or write it
+into any file.
+
+IMPORTANT: in PowerShell, curl is an alias for Invoke-WebRequest and will not accept curl
+flags. Use Invoke-RestMethod against the Telegram sendMessage endpoint instead, posting
+chat_id, text, and parse_mode=Markdown as the body.
+
+Modify both scanner scripts to send a message after saving their JSON:
+- Gap scanner: a dated header, then one bullet per name with ticker, price, gap %, and
+  catalyst. Omit the catalyst portion when it's null.
+- Strategy scanner: a header with the time in ET, then one bullet per hit with ticker,
+  price, and the computed levels. If there are no hits, say so in one line.
+
+GATING: send the gap scanner result on every run. Send the strategy scanner only on the
+first run of the day, on a new hit, or on error. If a send fails, log it but don't fail
+the scan.
+
+Then run the gap scanner once so I can confirm the message lands on my phone.</code></pre></div>
+
+    <p>
+      Email, Discord, and Slack all follow the same pattern — give Claude the credentials and the format, and
+      it wires the rest. WhatsApp is the exception: it needs the Business API, Meta verification, and a paid
+      carrier. Not worth it unless you have a specific reason.
+    </p>
+
+    <h2 id="step10">Step 10 — Stop here, for now</h2>
+    <p>
+      The natural next step is connecting a broker so the agent can place orders. Before you go there:
+      forward-test on a paper account for at least a month, and build the safety layer first — position sizing
+      caps, a daily loss limit that halts trading, and a hard stop on order size. An automation bug with live
+      buying power is a different category of problem from a scanner that returns bad data.
+    </p>
+    <div class="danger">
+      <strong>Never point this at a live account you haven't paper-traded for a month.</strong>
+      If something goes wrong — and with an unofficial interface, something eventually will — you want it to
+      cost you pretend money.
+    </div>
+
+    <h2 id="troubleshooting">Troubleshooting</h2>
+    <div class="table-scroll">
+      <table>
+        <thead>
+          <tr><th>Symptom</th><th>Fix</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><code class="inline">claude</code> not recognized after install</td>
+            <td>Close and reopen your terminal. The PATH change doesn't reach already-open windows. Then try <code class="inline">claude doctor</code>.</td>
+          </tr>
+          <tr>
+            <td><code class="inline">'irm' is not recognized</code></td>
+            <td>You're in CMD, not PowerShell. Your prompt shows <code class="inline">PS C:\</code> in PowerShell. Use the CMD installer variant or open PowerShell.</td>
+          </tr>
+          <tr>
+            <td><code class="inline">cdp_connected: false</code></td>
+            <td>TradingView isn't running with <code class="inline">--remote-debugging-port=9222</code>. Quit it completely first — a background instance without the flag will block the relaunch — then use <code class="inline">tv_launch</code>.</td>
+          </tr>
+          <tr>
+            <td>"Access is denied" launching TradingView</td>
+            <td>MSIX/Store install. Use the copy-to-LOCALAPPDATA snippet in Step 3b. Do not use icacls on WindowsApps.</td>
+          </tr>
+          <tr>
+            <td><code class="inline">ECONNREFUSED</code></td>
+            <td>TradingView isn't running, or port 9222 is taken. Ask Claude to move both the MCP config and the launch flag to 9223.</td>
+          </tr>
+          <tr>
+            <td>MCP server doesn't appear in Claude Code</td>
+            <td>Check your MCP config file for a JSON syntax error, then fully restart Claude Code — servers load only at startup.</td>
+          </tr>
+          <tr>
+            <td>Tools return stale or empty data</td>
+            <td>TradingView may still be loading. Give it a few seconds and make sure a real chart tab is open, not the welcome screen.</td>
+          </tr>
+          <tr>
+            <td>Pine editor tools fail</td>
+            <td>Open the Pine Editor panel in TradingView first, then retry.</td>
+          </tr>
+          <tr>
+            <td>Scheduled task never fires</td>
+            <td>Check that the task is registered with <code class="inline">Get-ScheduledTask</code>, and that its "run whether user is logged on or not" and missed-start settings match what you asked for.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="faq">FAQ</h2>
+
+    <details class="faq">
+      <summary>Do I need to know how to code?</summary>
+      <div class="faq-body"><p>No. Every prompt here is plain English and Claude writes the code. You do need to be comfortable pasting commands into PowerShell and approving permission prompts. If that sentence makes you uneasy, this isn't the right project for you.</p></div>
+    </details>
+
+    <details class="faq">
+      <summary>Does this place trades?</summary>
+      <div class="faq-body"><p>No. Reading and analysis only. Order execution requires a separate broker integration, which is a much bigger safety problem and shouldn't be attempted until the read-only layer has been stable for a while.</p></div>
+    </details>
+
+    <details class="faq">
+      <summary>Is my data safe?</summary>
+      <div class="faq-body">
+        <p>The bridge runs locally — it talks to TradingView Desktop on your own machine over a local port. Your TradingView credentials are never sent to Claude or Anthropic.</p>
+        <p>One thing to be clear about: anything the AI reasons over — chart data, your levels, your strategy code — is sent to Anthropic's API, the same as any Claude conversation. That's how the model works at all. If you have signals you don't want passing through a cloud model, that matters.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>Will TradingView updates break this?</summary>
+      <div class="faq-body"><p>Likely, eventually. The bridge uses an internal debug interface, not a supported public API. If stability matters more than new features to you, pin your TradingView Desktop version once the setup is working.</p></div>
+    </details>
+
+    <details class="faq">
+      <summary>Is this allowed under TradingView's terms?</summary>
+      <div class="faq-body">
+        <p>Reading your own paid TradingView Desktop app on your own machine for personal use is doing automatically what you'd otherwise do by hand. What is clearly not allowed: redistributing the data, running a paid signals service off it, or accessing data your plan doesn't cover. TradingView's terms restrict automated collection and non-display usage.</p>
+        <p>If you plan to build anything commercial on top of this, read the terms yourself or contact TradingView directly. Nothing here is legal advice.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>What does the whole stack cost?</summary>
+      <div class="faq-body">
+        <p>To follow this guide and run scanners by hand: entry-tier TradingView plus Claude Pro, roughly $33/month.</p>
+        <p>To run it automated all session: the strategy scanner firing every 30 minutes will exhaust a Pro plan's usage before lunch, so you're looking at Claude Max, putting the stack near $113/month. Deep multi-year PineScript backtesting pushes the TradingView tier up as well.</p>
+        <p>The MCP server itself is free and open source.</p>
+      </div>
+    </details>
+
+    <details class="faq">
+      <summary>Can I use a different AI model?</summary>
+      <div class="faq-body"><p>You need a coding agent that runs locally and speaks MCP. Consumer chat apps in a browser can't reach a local MCP server. Other CLI coding agents support MCP and could plausibly run a similar setup, though the prompts here were written against Claude Code.</p></div>
+    </details>
+
+    <details class="faq">
+      <summary>Does Arowana Profits support this?</summary>
+      <div class="faq-body"><p>No. We publish it as education because our users ask about it, but it's a third-party open-source tool and we can't troubleshoot it. Issues belong on the project's GitHub tracker. Our support covers Arowana Pro Desk only.</p></div>
+    </details>
+
+    <!-- CTA -->
+    <div class="cta">
+      <h3>Or skip the setup entirely</h3>
+      <p>
+        Everything above is a signal layer. Arowana Pro Desk is what happens after the signal — a trade journal
+        that scores every entry against your written plan, scanners that already run, an AI coach that flags the
+        patterns costing you money, and a risk lockout that stops you trading after a defined loss. No terminal,
+        no Node, no debug ports.
+      </p>
+      <div class="cta-row">
+        <a href="signup.html" class="btn btn-white">Start free →</a>
+        <a href="features-tools-directory.html" class="btn btn-ghost">See the platform</a>
+      </div>
+    </div>
+
+  </article>
+
+  <!-- ═══════════════ TOC ═══════════════ -->
+  <aside class="toc" aria-label="On this page">
+    <h4>On this page</h4>
+    <ol>
+      <li class="toc-plain"><a href="#what">What this builds</a></li>
+      <li class="toc-plain"><a href="#foryou">Is it worth it?</a></li>
+      <li class="toc-plain"><a href="#prereqs">Before you start</a></li>
+      <li><a href="#step1">Install Claude Code</a></li>
+      <li><a href="#step2">TradingView Desktop</a></li>
+      <li><a href="#step3">Install the MCP</a></li>
+      <li class="toc-plain"><a href="#debugport">↳ Windows debug port</a></li>
+      <li><a href="#step4">Basic prompts</a></li>
+      <li><a href="#step5">Gap scanner</a></li>
+      <li><a href="#step6">Task Scheduler</a></li>
+      <li><a href="#step7">Strategy scanner</a></li>
+      <li><a href="#step8">PineScript backtest</a></li>
+      <li><a href="#step9">Telegram alerts</a></li>
+      <li><a href="#step10">Before going live</a></li>
+      <li class="toc-plain"><a href="#troubleshooting">Troubleshooting</a></li>
+      <li class="toc-plain"><a href="#faq">FAQ</a></li>
+    </ol>
+  </aside>
+
+</div>
+
+<div class="disclaimer">
+  <p>
+    <strong>Disclaimer:</strong> This guide is published for educational purposes. Arowana Profits is not
+    affiliated with TradingView, Anthropic, or the maintainers of the open-source TradingView MCP server, and
+    provides no support for those tools. Third-party software described here relies on undocumented interfaces
+    and may stop working at any time. You are responsible for ensuring your use complies with the terms of
+    service of every platform involved. Nothing on this page is investment, tax, or legal advice. Trading
+    involves substantial risk of loss; automated trading adds execution risk on top of that. Past backtest
+    results do not indicate future performance.
+  </p>
+</div>
+
+<footer class="footer">
+  <div class="footer-inner">
+    <div>&copy; <span id="footerYear">2026</span> Arowana Profits. All rights reserved.</div>
+    <div>
+      <a href="education.html">Education</a> &nbsp;·&nbsp;
+      <a href="features-tools-directory.html">Platform</a> &nbsp;·&nbsp;
+      <a href="terms.html">Terms</a> &nbsp;·&nbsp;
+      <a href="privacy.html">Privacy</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function () {
+  'use strict';
+
+  // ── Footer year ────────────────────────────────────────────────
+  var fy = document.getElementById('footerYear');
+  if (fy) { fy.textContent = String(new Date().getFullYear()); }
+
+  // ── Signed-in nav swap ─────────────────────────────────────────
+  // Public page: no auth gate. If a session exists in the canonical
+  // key, point the header at the app instead of the marketing funnel.
+  try {
+    var raw = localStorage.getItem('gs_auth_user_v1') || sessionStorage.getItem('gs_auth_user_v1');
+    if (raw) {
+      var user = JSON.parse(raw);
+      if (user && (user.id || user.email)) {
+        var link = document.getElementById('navAuthLink');
+        var cta  = document.getElementById('navCtaLink');
+        if (link) { link.textContent = 'Dashboard'; link.setAttribute('href', 'trading-command.html'); }
+        if (cta)  { cta.textContent  = 'Trade Journal'; cta.setAttribute('href', 'trade-journal-pro.html'); }
+      }
+    }
+  } catch (e) { /* not signed in, or unreadable cache — leave defaults */ }
+
+  // ── Copy buttons on every code block ───────────────────────────
+  // Built with createElement rather than template strings so nothing
+  // in the code sample can collide with markup quoting.
+  var blocks = document.querySelectorAll('.codewrap');
+
+  Array.prototype.forEach.call(blocks, function (wrap) {
+    var pre = wrap.querySelector('pre');
+    if (!pre) { return; }
+
+    var btn = document.createElement('button');
+    btn.className = 'copy-btn';
+    btn.type = 'button';
+    btn.textContent = 'Copy';
+    btn.setAttribute('aria-label', 'Copy code to clipboard');
+
+    btn.addEventListener('click', function () {
+      var text = pre.textContent || '';
+
+      function done() {
+        btn.textContent = 'Copied';
+        btn.classList.add('done');
+        window.setTimeout(function () {
+          btn.textContent = 'Copy';
+          btn.classList.remove('done');
+        }, 1600);
+      }
+
+      function fallback() {
+        // execCommand path for non-secure origins / older browsers
+        var ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.opacity = '0';
+        document.body.appendChild(ta);
+        ta.select();
+        var ok = false;
+        try { ok = document.execCommand('copy'); } catch (err) { ok = false; }
+        document.body.removeChild(ta);
+        if (ok) { done(); } else { btn.textContent = 'Copy failed'; }
+      }
+
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done, fallback);
+      } else {
+        fallback();
+      }
+    });
+
+    wrap.appendChild(btn);
+  });
+
+  // ── TOC active-section highlight ───────────────────────────────
+  var tocLinks = document.querySelectorAll('.toc a');
+  if (!('IntersectionObserver' in window) || !tocLinks.length) { return; }
+
+  var linkFor = {};
+  Array.prototype.forEach.call(tocLinks, function (a) {
+    var href = a.getAttribute('href') || '';
+    if (href.charAt(0) === '#') { linkFor[href.slice(1)] = a; }
+  });
+
+  var observer = new IntersectionObserver(function (entries) {
+    entries.forEach(function (entry) {
+      var a = linkFor[entry.target.id];
+      if (!a) { return; }
+      if (entry.isIntersecting) {
+        Array.prototype.forEach.call(tocLinks, function (x) {
+          x.style.background = '';
+          x.style.color = '';
+          x.style.fontWeight = '';
+        });
+        a.style.background = 'var(--hover)';
+        a.style.color = 'var(--brand)';
+        a.style.fontWeight = '700';
+      }
+    });
+  }, { rootMargin: '-90px 0px -70% 0px', threshold: 0 });
+
+  Object.keys(linkFor).forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) { observer.observe(el); }
+  });
+})();
+</script>
+
+</body>
+</html>

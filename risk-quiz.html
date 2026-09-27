@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Risk Tolerance Quiz • Long-Term Dashboard</title>
+  <style>
+    :root{
+      --bg:#f9fafb; --card:#ffffff; --ink:#0f172a; --muted:#6b7280; --ring:#d1d5db;
+      --brand:#0ea5e9; --brand-strong:#0284c7; --accent:#22c55e; --danger:#ef4444; --warn:#f59e0b;
+      --soft:rgba(0,0,0,.06); --radius-lg:1.25rem; --radius-sm:.625rem; --shadow:0 8px 24px rgba(0,0,0,.08); --shadow-soft:0 4px 14px rgba(0,0,0,.07); --focus:0 0 0 4px rgba(14,165,233,.25);
+      --font:'Segoe UI', system-ui, -apple-system, "Inter", Roboto, Helvetica, Arial, sans-serif;
+      --input-h:44px; --input-px:.85rem; --input-py:.7rem;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);display:flex;flex-direction:column;min-height:100vh}
+    .wrap{width:100%;max-width:1200px;margin:0 auto;padding:1.25rem}
+
+    header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:1rem 0 1.25rem;flex-wrap:wrap}
+    .title{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap}
+    .title h1{margin:0;font-size:clamp(1.3rem,2.4vw,1.9rem);font-weight:800;letter-spacing:.2px}
+    .title .sub{color:var(--muted);font-size:.95rem}
+    nav a.btn.link{background:transparent;box-shadow:none;padding:.4rem .2rem;color:var(--brand-strong);border-radius:.5rem;text-decoration:none}
+
+    .grid{display:grid;gap:1rem;grid-template-columns:1fr}
+    .card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:1.25rem}
+    .card h2{margin:0 0 .75rem;font-size:1.05rem;letter-spacing:.2px}
+    .sep{height:1px;background:var(--ring);opacity:.5;margin:.75rem 0 1rem}
+
+    form{display:grid;gap:1rem}
+    label{font-weight:700;font-size:.92rem;display:flex;align-items:center;gap:.5rem}
+    .hint{color:var(--muted);font-size:.85rem;margin-top:.15rem}
+    input[type="text"], input[type="number"], select, textarea{
+      width:100%; background:#fff; border:1px solid var(--ring); border-radius:var(--radius-sm);
+      padding:var(--input-py) var(--input-px); height:var(--input-h); line-height:calc(var(--input-h)-2px);
+      font-size:1rem; color:var(--ink);
+    }
+    input:focus,select:focus,textarea:focus{ outline:none;border-color:var(--brand);box-shadow:var(--focus)}
+    .row{display:grid;grid-template-columns:1fr;gap:.85rem}
+    @media(min-width:960px){.row.two{grid-template-columns:1fr 1fr}}
+
+    .actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.25rem}
+    .btn{appearance:none;border:0;cursor:pointer;padding:.75rem 1.15rem;font-weight:700;border-radius:999px;box-shadow:var(--shadow-soft);display:inline-flex;align-items:center;gap:.5rem}
+    .btn.primary{background:var(--brand);color:#fff}.btn.primary:hover{background:var(--brand-strong)}
+    .btn.gray{background:#e5e7eb;color:#111827}.btn.gray:hover{background:#d1d5db}
+    .btn.warn{background:var(--warn);color:#111827}
+    .btn.link{background:transparent;box-shadow:none;padding:.4rem .2rem;color:var(--brand-strong);border-radius:.5rem}
+
+    .kpis{display:grid;grid-template-columns:1fr;gap:.75rem}
+    @media(min-width:720px){.kpis{grid-template-columns:repeat(4,1fr)}}
+    .kpi{background:#f8fafc;border:1px solid var(--ring);border-radius:12px;padding:12px 14px}
+    .kpi .k{font-size:.82rem;color:var(--muted)} .kpi .v{font-size:1.15rem;font-weight:800;color:#0f172a}
+
+    .table-wrap{overflow:auto}
+    table{width:100%;border-collapse:separate;border-spacing:0 8px}
+    thead th{font-size:.9rem;color:#475569;text-align:left;padding:8px 10px}
+    tbody td{background:#ffffff;border:1px solid #e5e7eb;border-left:none;border-right:none;padding:10px;border-radius:8px}
+    tbody tr td:first-child{border-left:1px solid #e5e7eb;border-top-left-radius:12px;border-bottom-left-radius:12px}
+    tbody tr td:last-child{border-right:1px solid #e5e7eb;border-top-right-radius:12px;border-bottom-right-radius:12px}
+
+    .badge{display:inline-block;padding:.25rem .5rem;border-radius:999px;background:#ecfeff;border:1px solid var(--brand);color:#0369a1;font-weight:700;font-size:.8rem}
+    footer{margin:1.5rem 0 2.5rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:#6b7280;font-size:.9rem}
+    .mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,"Liberation Mono","Courier New",monospace}
+    canvas{width:100%;height:220px;border:1px solid var(--ring);border-radius:12px;background:#f8fafc}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title">
+        <h1>🧪 Risk Tolerance Quiz</h1>
+        <span class="sub">Answer the questions • See your risk band & sample allocation</span>
+      </div>
+      <nav><a class="btn link" href="long-term-dashboard.html">⬅️ Back</a></nav>
+    </header>
+
+    <div class="grid">
+      <!-- Questions -->
+      <section class="card">
+        <h2>🧠 Questions</h2>
+        <p class="hint">This is a simplified, educational quiz. It is not advice. Your score maps to a **risk band** with a suggested stock/bond mix.</p>
+
+        <div id="quiz"></div>
+
+        <div class="actions" style="justify-content:flex-end;margin-top:.5rem">
+          <button type="button" id="loadSample" class="btn gray">🧪 Load Sample</button>
+          <button type="button" id="reset" class="btn warn">🗑️ Reset</button>
+          <button type="button" id="submit" class="btn primary">▶️ Calculate</button>
+          <button type="button" id="saveJSON" class="btn gray">💾 Save</button>
+          <input type="file" id="filePicker" accept="application/json" style="display:none" />
+          <button type="button" id="loadJSON" class="btn gray">⬆️ Load</button>
+          <button type="button" id="exportCSV" class="btn gray">⬇️ Export CSV</button>
+        </div>
+      </section>
+
+      <!-- Results -->
+      <section class="card">
+        <h2>📊 Result</h2>
+        <div class="kpis">
+          <div class="kpi"><div class="k">Raw Score</div><div class="v" id="kScore">—</div></div>
+          <div class="kpi"><div class="k">Risk Band</div><div class="v" id="kBand">—</div></div>
+          <div class="kpi"><div class="k">Suggested Stocks/Bonds</div><div class="v" id="kMix">—</div></div>
+          <div class="kpi"><div class="k">Glide Suggestion</div><div class="v" id="kGlide">—</div></div>
+        </div>
+
+        <div class="row two" style="margin-top:10px">
+          <div>
+            <h3 style="margin:.25rem 0">Allocation Preview</h3>
+            <canvas id="pie" width="420" height="220" aria-label="Allocation preview"></canvas>
+          </div>
+          <div>
+            <h3 style="margin:.25rem 0">Implementation Ideas</h3>
+            <div id="ideas" class="note">Run the quiz to see sample ETF blends per risk band.</div>
+          </div>
+        </div>
+
+        <div class="table-wrap" style="margin-top:10px">
+          <table id="tbl">
+            <thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Points</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <div>GenieSphere • Risk Tolerance Quiz</div>
+      <div><a class="btn link" href="long-term-dashboard.html">⬅️ Back to Dashboard</a></div>
+    </footer>
+  </div>
+
+<script>
+const $ = (q,ctx=document)=>ctx.querySelector(q);
+const $$ = (q,ctx=document)=>[...ctx.querySelectorAll(q)];
+const questions = [
+  { q: "Investment time horizon for your main goal?", choices:[
+      ["< 3 years", 1], ["3–5 years", 2], ["6–10 years", 3], ["> 10 years", 4]
+    ]},
+  { q: "How would you react to a -20% market drop?", choices:[
+      ["Sell to stop further losses", 1], ["Wait it out", 3], ["Buy more at lower prices", 4]
+    ]},
+  { q: "Primary objective?", choices:[
+      ["Capital preservation", 1], ["Balanced growth and income", 3], ["Maximize long-run growth", 4]
+    ]},
+  { q: "Experience with market volatility?", choices:[
+      ["Little to none", 1], ["Some experience", 3], ["Very comfortable", 4]
+    ]},
+  { q: "Income stability & emergency fund?", choices:[
+      ["Unstable income / <3 months cash", 1], ["Stable income / 3–6 months cash", 3], ["Very stable / >6 months cash", 4]
+    ]},
+  { q: "Need for withdrawals from this portfolio?", choices:[
+      ["Likely within 3–5 years", 1], ["Maybe in 6–10 years", 2], ["Unlikely before 10 years", 4]
+    ]},
+  { q: "Which return path do you prefer for the same average?", choices:[
+      ["Smaller ups & downs (lower risk)", 2], ["Moderate swings", 3], ["Big swings okay (higher risk)", 4]
+    ]},
+  { q: "If your portfolio doubled then fell 35%, how do you feel?", choices:[
+      ["Devastated; would sell", 1], ["Concerned but stay invested", 3], ["Unfazed; markets do that", 4]
+    ]},
+  { q: "What stock % would feel uncomfortable?", choices:[
+      ["> 70% stocks feels too high", 2], ["~60% stocks is okay", 3], ["~80–100% stocks is fine", 4]
+    ]},
+  { q: "Age group (rough glide proxy — optional)", choices:[
+      ["65+", 1], ["45–64", 2], ["30–44", 3], ["< 30", 4]
+    ]},
+];
+
+function renderQuiz(){
+  const host = $('#quiz'); host.innerHTML='';
+  questions.forEach((item, idx)=>{
+    const card = document.createElement('div'); card.className='card'; card.style.padding='1rem'; card.style.boxShadow='var(--shadow-soft)';
+    const h = document.createElement('div'); h.innerHTML = '<div class="badge">Q'+(idx+1)+'</div> '+item.q; h.style.fontWeight='800'; h.style.marginBottom='.5rem';
+    const g = document.createElement('div'); g.style.display='grid'; g.style.gap='.5rem'; g.style.gridTemplateColumns='1fr'; if(window.innerWidth>720) g.style.gridTemplateColumns='1fr 1fr';
+    item.choices.forEach((c,i)=>{
+      const id = 'q'+idx+'_'+i;
+      const lab = document.createElement('label'); lab.setAttribute('for', id); lab.style.display='flex'; lab.style.alignItems='center'; lab.style.gap='.5rem';
+      const inp = document.createElement('input'); inp.type='radio'; inp.name='q'+idx; inp.id=id; inp.value=c[1];
+      const span = document.createElement('span'); span.textContent = c[0];
+      lab.prepend(inp); g.appendChild(lab); lab.appendChild(span);
+    });
+    card.appendChild(h); card.appendChild(g); host.appendChild(card);
+  });
+}
+
+function getAnswers(){
+  const answers = [];
+  for(let i=0;i<questions.length;i++){
+    const sel = $('input[name="q'+i+'"]:checked');
+    answers.push(sel? {i, text: sel.parentElement.textContent.trim(), pts: Number(sel.value)} : null);
+  }
+  return answers;
+}
+
+function scoreToBand(score){
+  // Max per Q is 4, 10 Qs -> max 40
+  if(score <= 18) return {band:'Conservative', mix:[30,70], glide:'Consider 20–40% stocks; more bonds/short-term.'};
+  if(score <= 26) return {band:'Moderate', mix:[50,50], glide:'Consider 40–60% stocks; balanced core.'};
+  if(score <= 33) return {band:'Growth', mix:[70,30], glide:'Consider 60–80% stocks; long horizon needed.'};
+  return {band:'Aggressive', mix:[85,15], glide:'Consider 80–95% stocks; expect deep drawdowns.'};
+}
+
+function drawPie(stocks, bonds){
+  const c = $('#pie'); const ctx = c.getContext('2d');
+  ctx.clearRect(0,0,c.width,c.height);
+  const cx=c.width/2, cy=c.height/2, r=Math.min(cx,cy)-10;
+  const total = stocks + bonds || 1;
+  let start=-Math.PI/2;
+  const segs=[{v:stocks, color:'#0ea5e9', label:'Stocks'},{v:bonds, color:'#10b981', label:'Bonds'}];
+  segs.forEach(s=>{
+    const ang = 2*Math.PI*(s.v/total);
+    ctx.beginPath(); ctx.moveTo(cx,cy); ctx.arc(cx,cy,r,start,start+ang); ctx.closePath(); ctx.fillStyle=s.color; ctx.fill();
+    start += ang;
+  });
+  // labels
+  ctx.fillStyle='#0f172a'; ctx.font='12px system-ui';
+  ctx.fillText('Stocks '+Math.round(stocks)+'%', 10, 18);
+  ctx.fillText('Bonds '+Math.round(bonds)+'%', 10, 34);
+}
+
+function calc(){
+  const answers = getAnswers();
+  if(answers.some(a=>!a)){ alert('Please answer all questions.'); return; }
+  const score = answers.reduce((a,b)=> a + b.pts, 0);
+  const band = scoreToBand(score);
+  $('#kScore').textContent = score + ' / 40';
+  $('#kBand').textContent = band.band;
+  $('#kMix').textContent = band.mix[0]+'% / '+band.mix[1]+'%';
+  $('#kGlide').textContent = band.glide;
+  drawPie(band.mix[0], band.mix[1]);
+
+  // ideas
+  const ideas = {
+    'Conservative': 'Example: 30% VT / 70% BND (or local equivalents). Keep 6–12 months cash.',
+    'Moderate': 'Example: 50% VT / 50% BND. Optional tilt: 10% intl value within equities.',
+    'Growth': 'Example: 70% VT / 30% BND. Optional tilt: 10–20% small/value.',
+    'Aggressive': 'Example: 90% VT / 10% BND. Ensure adequate emergency fund.'
+  };
+  $('#ideas').textContent = ideas[band.band] || 'Run the quiz to see ideas.';
+
+  // table
+  const tb = $('#tbody'); tb.innerHTML='';
+  answers.forEach((a, idx)=>{
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td>${idx+1}</td><td>${questions[idx].q}</td><td>${a.text}</td><td>${a.pts}</td>`;
+    tb.appendChild(tr);
+  });
+
+  window._riskQuiz = {answers, score, band, mix:band.mix};
+}
+
+$('#submit').addEventListener('click', calc);
+$('#reset').addEventListener('click', ()=>{
+  renderQuiz();
+  $$('#kScore,#kBand,#kMix,#kGlide').forEach(e=> e.textContent='—');
+  $('#ideas').textContent='Run the quiz to see sample ETF blends per risk band.';
+  $('#tbody').innerHTML=''; const ctx=$('#pie').getContext('2d'); ctx.clearRect(0,0,420,220);
+});
+$('#loadSample').addEventListener('click', ()=>{
+  renderQuiz();
+  // Pick mid-to-high answers for a "Growth" profile
+  for(let i=0;i<questions.length;i++){
+    const radios = $$('input[name="q'+i+'"]');
+    (radios[Math.min(radios.length-1, 2)]||radios[radios.length-1]).checked = true;
+  }
+  calc();
+});
+
+// Save/Load/Export
+$('#saveJSON').addEventListener('click', ()=>{
+  if(!window._riskQuiz){ alert('Calculate first.'); return; }
+  const blob = new Blob([JSON.stringify(window._riskQuiz,null,2)], {type:'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='risk-quiz-results.json'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),800);
+});
+$('#loadJSON').addEventListener('click', ()=> $('#filePicker').click());
+$('#filePicker').addEventListener('change', (e)=>{
+  const f = e.target.files[0]; if(!f) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{
+    try{
+      const data = JSON.parse(reader.result);
+      renderQuiz();
+      // naive fill: choose answers that sum toward score band mid-point
+      // (for simplicity, we won't repopulate per-question choices)
+      $$('#kScore,#kBand,#kMix,#kGlide').forEach(e=> e.textContent='—');
+      $('#ideas').textContent='Loaded saved results. Click Calculate to recompute if needed.';
+      window._riskQuiz = data;
+    }catch{ alert('Invalid JSON'); }
+  };
+  reader.readAsText(f);
+});
+$('#exportCSV').addEventListener('click', ()=>{
+  if(!window._riskQuiz){ alert('Calculate first.'); return; }
+  const lines = ['#;Question;Answer;Points'];
+  window._riskQuiz.answers.forEach((a,i)=> lines.push([i+1, questions[i].q, a.text, a.pts].join(';')));
+  lines.push('Score;;'+window._riskQuiz.score+';');
+  lines.push('Band;;'+window._riskQuiz.band.band+';');
+  lines.push('Mix;;'+window._riskQuiz.mix.join('/')+';');
+  const blob = new Blob([lines.join('\n')], {type:'text/csv'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download='risk-quiz.csv'; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),800);
+});
+
+// Init
+renderQuiz();
+</script>
+</body>
+</html>

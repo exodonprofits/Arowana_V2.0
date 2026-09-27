@@ -1,0 +1,367 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Short-Term Dashboard</title>
+
+<style>
+  /* ===== Base (no inline styles; all here) ===== */
+  :root{
+    --bg:#f6f8fb; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --border:#e5e7eb;
+    --blue:#2563eb; --blue-600:#2563eb; --blue-700:#1d4ed8; --green:#16a34a;
+    --amber:#f59e0b; --red:#ef4444; --shadow:0 10px 25px rgba(0,0,0,.07);
+    --radius:16px; --radius-sm:10px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.4 system-ui,-apple-system,"Segoe UI",Inter,Roboto,Arial,sans-serif;}
+  a{color:var(--blue);text-decoration:none}
+
+  /* Header/Nav */
+  header{background:#0b1530;color:#fff;position:sticky;top:0;z-index:50;box-shadow:0 6px 18px rgba(0,0,0,.2)}
+  .nav{max-width:1200px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:14px 16px}
+  .brand{display:flex;gap:10px;align-items:center;font-weight:800;letter-spacing:.2px}
+  .tabs{display:flex;gap:18px;align-items:center}
+  .tabs a{color:#c7d2fe}
+  .tabs a.active{color:#fff;font-weight:700}
+
+  main.container{max-width:1200px;margin:18px auto;padding:0 16px}
+
+  /* Cards / buttons */
+  .section{margin:12px 0}
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:14px}
+  .btn{border:1px solid var(--border);border-radius:9999px;padding:.6rem 1rem;cursor:pointer;background:#fff}
+  .btn.blue{background:var(--blue-600);border-color:var(--blue-600);color:#fff}
+  .btn.blue:hover{background:var(--blue-700)}
+  .btn.ghost{background:#fff}
+  .muted{color:var(--muted)}
+
+  /* ===== Alerts Add-On ===== */
+  .ai-brief .ai-brief-row{display:flex;justify-content:space-between;gap:.75rem;align-items:flex-start;flex-wrap:wrap}
+  .brief-chips{display:flex;flex-wrap:wrap;gap:.4rem}
+  .chip{background:#fff;border:1px solid var(--border);border-radius:9999px;padding:.35rem .7rem;font-size:.85rem}
+
+  .alerts-card{margin-top:.75rem}
+  .alerts-head{display:flex;align-items:center;justify-content:space-between;gap:.75rem;margin-bottom:.35rem}
+  .alerts-ctl{display:flex;gap:.5rem;align-items:center;flex-wrap:wrap}
+  .alerts-list{list-style:none;margin:0;padding:0;display:grid;gap:.5rem;max-height:220px;overflow:auto}
+  .alert-item{display:grid;grid-template-columns:auto 1fr auto;gap:.6rem;align-items:center;border:1px solid var(--border);background:#fff;border-radius:12px;padding:.55rem .7rem}
+  .alert-item .sym{font-weight:800}
+  .alert-item .msg{color:#334155}
+  .alert-badge{font-size:.75rem;border-radius:999px;padding:.15rem .5rem;border:1px solid var(--border)}
+  .alert-lv1{background:#fef3c7;border-color:#fde68a;color:#92400e}   /* caution */
+  .alert-lv2{background:#dcfce7;border-color:#bbf7d0;color:#065f46}   /* positive */
+  .alert-lv3{background:#fee2e2;border-color:#fecaca;color:#991b1b}   /* risk */
+  .alert-time{color:#64748b;font-size:.8rem}
+
+  .events-card{margin-top:.75rem}
+  .events-row{display:flex;flex-wrap:wrap;gap:.5rem}
+  .events-row .chip{background:#eef2ff;border:1px dashed #c7d2fe;color:#1e3a8a}
+
+  .toast-stack{position:fixed;right:16px;bottom:16px;display:grid;gap:.5rem;z-index:1000}
+  .toast{background:#111827;color:#fff;padding:.6rem .8rem;border-radius:12px;box-shadow:0 8px 22px rgba(0,0,0,.25);display:flex;align-items:center;gap:.6rem;max-width:66vw}
+  .toast .pill{font-size:.75rem;padding:.15rem .5rem;border-radius:999px;background:rgba(255,255,255,.12)}
+  .toast .lv1{background:#92400e} .toast .lv2{background:#065f46} .toast .lv3{background:#991b1b}
+
+  /* ===== Quick Gauge ===== */
+  .qg-wrap{display:grid;place-items:center;padding:.5rem}
+  .qg-svg{width:min(560px,100%);height:auto}
+  .qg-row{display:flex;gap:.5rem;align-items:center;margin:.5rem 0;flex-wrap:wrap}
+  .input{padding:.65rem 1rem;border:1px solid var(--border);border-radius:9999px;font-size:1rem;min-width:220px}
+
+  /* ===== Layout for below-the-fold (placeholders) ===== */
+  .grid{display:grid;gap:14px}
+  @media (min-width:980px){
+    .grid.cols-2{grid-template-columns:1fr 1fr}
+    .grid.cols-3{grid-template-columns:2fr 1.2fr 1fr}
+  }
+  .table{width:100%;border-collapse:collapse}
+  .table th,.table td{border-bottom:1px solid var(--border);padding:10px 8px;text-align:left}
+</style>
+</head>
+
+<body>
+<header>
+  <div class="nav">
+    <div class="brand">⚡ <span>Short-Term Trading</span></div>
+    <nav class="tabs">
+      <a class="active" href="#">Dashboard</a>
+      <a href="#">Intraday Momentum</a>
+      <a href="#">Portfolio</a>
+    </nav>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- ===== Day-Trade Alerts Add-On (Above-the-Fold) ===== -->
+  <section class="section" id="alertsTop">
+    <!-- AI Brief -->
+    <div class="card ai-brief">
+      <div class="ai-brief-row">
+        <div>
+          <h3 style="margin:.15rem 0">🧭 AI Brief</h3>
+          <div id="briefLine" class="muted">Loading market brief…</div>
+        </div>
+        <div class="brief-chips" id="briefChips"></div>
+      </div>
+    </div>
+
+    <!-- Live Alerts Rail -->
+    <div class="card alerts-card">
+      <div class="alerts-head">
+        <h3 style="margin:0">🔔 Live Alerts</h3>
+        <div class="alerts-ctl">
+          <label class="muted" style="display:flex;gap:.35rem;align-items:center;">
+            <input type="checkbox" id="muteToasts" /> Mute popups
+          </label>
+          <button class="btn ghost" id="clearAlerts">Clear</button>
+        </div>
+      </div>
+      <ul id="alertsList" class="alerts-list" aria-live="polite" aria-relevant="additions"></ul>
+    </div>
+
+    <!-- Session Events / Earnings -->
+    <div class="card events-card">
+      <div class="events-row" id="eventsRow"><!-- chips injected --></div>
+    </div>
+  </section>
+
+  <!-- Toast stack (fixed, non-intrusive) -->
+  <div id="toastStack" class="toast-stack" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ===== Quick Buy/Sell Gauge (just above Ask Genie) ===== -->
+  <section class="section card" id="quickGauge">
+    <h3>🎯 Quick Buy/Sell Signal</h3>
+    <div class="qg-row">
+      <input id="qgTicker" class="input" placeholder="Enter ticker (e.g., NVDA)" />
+      <button class="btn blue" id="qgCheck">Check Signal</button>
+      <button class="btn ghost" id="qgDemo">Demo</button>
+    </div>
+    <div class="qg-wrap">
+      <svg class="qg-svg" viewBox="0 0 200 120" aria-label="Signal gauge">
+        <path d="M10 110 A90 90 0 0 1 190 110" fill="none" stroke="#e5e7eb" stroke-width="16" stroke-linecap="round"/>
+        <path id="qgArc" d="M10 110 A90 90 0 0 1 190 110" fill="none" stroke="#94a3b8" stroke-width="16" stroke-linecap="round" stroke-dasharray="0 999"/>
+        <circle id="qgDot" cx="10" cy="110" r="6" fill="#94a3b8"/>
+        <text x="10"  y="118" font-size="10" text-anchor="start"  fill="#64748b">SELL</text>
+        <text x="190" y="118" font-size="10" text-anchor="end"    fill="#64748b">BUY</text>
+        <text id="qgScore" x="100" y="86" font-size="24" text-anchor="middle" font-weight="700" fill="#0f172a">—</text>
+        <text id="qgMsg"   x="100" y="106" font-size="12" text-anchor="middle" fill="#334155">Enter a ticker</text>
+      </svg>
+    </div>
+    <div id="qgDetails" class="muted" style="margin-top:.5rem;white-space:pre-wrap"></div>
+  </section>
+
+  <!-- ===== Ask Investment Genie ===== -->
+  <section class="section card" id="askGenie">
+    <h3>🧠 Ask Investment Genie</h3>
+    <input class="input" id="askInput" placeholder="How can I help you today?" />
+    <div class="muted" style="margin-top:.35rem">try: “what’s the trend for AAPL?”, “find momentum stocks”, “analyze banking sector”</div>
+  </section>
+
+  <!-- ===== Your existing tools and tasks (placeholders) ===== -->
+  <section class="section">
+    <div class="grid cols-2">
+      <div class="card">
+        <h3>Explore Tasks</h3>
+        <!-- 🧩 Paste your existing Explore Tasks markup here -->
+        <div class="grid" style="grid-template-columns:repeat(2,minmax(140px,1fr))">
+          <button class="btn ghost">Scan Setups</button>
+          <button class="btn ghost">View Charts</button>
+          <button class="btn ghost">Check History</button>
+          <button class="btn ghost">Upcoming Events</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3>Market Movers</h3>
+        <!-- 🧩 Replace with your real movers widget -->
+        <table class="table">
+          <thead><tr><th>Symbol</th><th>Change</th><th>RVOL</th></tr></thead>
+          <tbody id="demoMovers">
+            <tr><td>ALPHA</td><td style="color:var(--green)">+7.8%</td><td>2.4</td></tr>
+            <tr><td>BETA</td><td style="color:var(--green)">+4.2%</td><td>1.9</td></tr>
+            <tr><td>GAMMA</td><td style="color:var(--red)">-2.4%</td><td>0.8</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- More sections… (watchlist, chart, planner, news, etc.) -->
+  <section class="section grid cols-3">
+    <div class="card">
+      <h3>Watchlist</h3>
+      <!-- 🧩 Replace with your live table -->
+      <table class="table" id="watchlist">
+        <thead><tr><th>Ticker</th><th>Price</th><th>%</th><th>RVOL</th><th>VWAP Δ</th></tr></thead>
+        <tbody>
+          <tr><td>NVDA</td><td>120.40</td><td style="color:var(--green)">+3.2%</td><td>2.1</td><td>+0.8</td></tr>
+          <tr><td>TSLA</td><td>242.10</td><td style="color:var(--green)">+1.1%</td><td>1.6</td><td>+0.4</td></tr>
+          <tr><td>AAPL</td><td>195.05</td><td style="color:var(--red)">-0.6%</td><td>1.2</td><td>-0.2</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card">
+      <h3>Chart Panel</h3>
+      <div class="muted">Embed your chart component here (1m/5m/15m; VWAP, 9/21 EMA, RSI)</div>
+    </div>
+    <div class="card">
+      <h3>Trade Planner</h3>
+      <div class="muted">Entry / Stop / Target → Auto size & R:R (hook to broker later)</div>
+    </div>
+  </section>
+
+</main>
+
+<script>
+/* ===== Shims: Settings + callWebhook (demo-friendly) ===== */
+window.S = window.S || {
+  _cfg:{},
+  get(){return this._cfg},
+  set(patch){Object.assign(this._cfg, patch)}
+};
+window.callWebhook = window.callWebhook || async function(urlOrPayload, maybePayload){
+  // supports callWebhook(url, payload) or callWebhook(payload)
+  const payload = (typeof urlOrPayload==='string') ? maybePayload : urlOrPayload;
+  // In real app, perform fetch(url,{method:'POST',body:JSON.stringify(payload)})
+  await new Promise(r=>setTimeout(r,300)); // simulate latency
+  return null; // force demo mode unless you wire your URL
+};
+
+/* ===== Alerts Add-On Logic ===== */
+(function(){
+  const $ = s => document.querySelector(s);
+  function chip(text){ const span=document.createElement('span'); span.className='chip'; span.textContent=text; return span; }
+  function renderBrief(data){
+    const brief = data?.brief || 'Bias: slightly bullish. Focus NVDA, SMCI, TSLA (RVOL > 2).';
+    const chips = data?.chips || [
+      {t:'Open',v:'Strong'}, {t:'VIX',v:'17.1'}, {t:'Breadth',v:'0.66'}, {t:'Econ',v:'2pm FOMC Min'}
+    ];
+    $('#briefLine').textContent = brief;
+    const row = $('#briefChips'); row.innerHTML='';
+    chips.forEach(c=> row.appendChild(chip(`${c.t}: ${c.v}`)));
+  }
+  function levelClass(level){ return level>=3?'alert-lv3':(level>=2?'alert-lv2':'alert-lv1'); }
+  function toast(a){
+    const box = document.createElement('div');
+    box.className='toast';
+    const lv = a.level>=3?'lv3':(a.level>=2?'lv2':'lv1');
+    box.innerHTML = `<span class="pill ${lv}">${a.type}</span><b>${a.symbol||''}</b> ${a.msg||''}`;
+    document.getElementById('toastStack').appendChild(box);
+    setTimeout(()=> box.remove(), 5500);
+  }
+  function pushAlert(a){
+    const li = document.createElement('li'); li.className='alert-item';
+    li.innerHTML = `
+      <span class="alert-badge ${levelClass(a.level||1)}">${a.type||'ALERT'}</span>
+      <div>
+        <div><span class="sym">${a.symbol||''}</span> <span class="msg">${a.msg||''}</span></div>
+        <div class="alert-time">${new Date(a.ts||Date.now()).toLocaleTimeString()}</div>
+      </div>
+      <button class="btn ghost" data-clear="${a.id||''}">Dismiss</button>`;
+    document.getElementById('alertsList').prepend(li);
+    if (!document.getElementById('muteToasts').checked) toast(a);
+    const items = document.getElementById('alertsList').querySelectorAll('.alert-item');
+    if (items.length>30) items[items.length-1].remove();
+  }
+  function renderEvents(list){
+    const row = document.getElementById('eventsRow'); row.innerHTML='';
+    (list||[]).forEach(e=> row.appendChild(chip(`${e.at} • ${e.label}`)));
+  }
+
+  let lastId = 0;
+  async function fetchAlerts(){
+    const s = (window.S && S.get? S.get(): {});
+    const url = s.whAlerts || s.whUrl || '';
+    const payload = { kind:'shortterm_alerts', since:lastId };
+    const res = await (window.callWebhook ? callWebhook(url, payload) : null);
+    if (!res){
+      // Demo
+      const t = Date.now();
+      const demo = {
+        brief: 'Bias: bullish. Focus NVDA, TSLA, SMCI (VWAP reclaim + RVOL).',
+        chips: [{t:'Open',v:'Strong'}, {t:'VIX',v:'17.0'}, {t:'Breadth',v:'0.64'}, {t:'Earnings',v:'AAPL (pm)'}],
+        alerts: [
+          {id:++lastId, ts:t-20000, symbol:'NVDA', type:'VWAP ↑',      msg:'reclaim w/ RVOL 2.1',  level:2},
+          {id:++lastId, ts:t-12000, symbol:'TSLA', type:'HOD Break',   msg:'new high w/ surge',    level:2},
+          {id:++lastId, ts:t-8000,  symbol:'COIN', type:'Halt',        msg:'LUDP down',            level:3},
+          {id:++lastId, ts:t-2000,  symbol:'AAPL', type:'RVOL > 2',    msg:'accel on news',        level:1},
+        ],
+        events: [{at:'10:00',label:'ISM Mfg'}, {at:'14:00',label:'Powell speaks'}]
+      };
+      applyPayload(demo); return;
+    }
+    applyPayload(res);
+  }
+  function applyPayload(data){
+    if (data?.brief || data?.chips) renderBrief(data);
+    if (Array.isArray(data?.alerts)){ data.alerts.forEach(a=>{ lastId=Math.max(lastId,a.id||0); pushAlert(a); }); }
+    if (Array.isArray(data?.events)) renderEvents(data.events);
+  }
+  document.getElementById('clearAlerts').addEventListener('click', ()=> document.getElementById('alertsList').innerHTML='');
+  document.getElementById('alertsList').addEventListener('click', (e)=>{
+    const id = e.target?.dataset?.clear; if(!id) return;
+    e.target.closest('.alert-item')?.remove();
+  });
+  fetchAlerts(); setInterval(fetchAlerts, 15000);
+})();
+
+/* ===== Quick Gauge Logic ===== */
+(function(){
+  const $ = s=>document.querySelector(s);
+  const arc    = $('#qgArc');
+  const dot    = $('#qgDot');
+  const scoreT = $('#qgScore');
+  const msgT   = $('#qgMsg');
+  const details= $('#qgDetails');
+  const R = 90, CX=100, CY=110, L = Math.PI*R;
+
+  function setGauge(v=50, msg='Neutral'){
+    const clamped = Math.max(0, Math.min(100, v));
+    const len = (clamped/100) * L;
+    arc.setAttribute('stroke-dasharray', `${len} ${999}`);
+    const theta = Math.PI - (clamped/100)*Math.PI;
+    const x = CX + R*Math.cos(theta);
+    const y = CY - R*Math.sin(theta);
+    dot.setAttribute('cx', x.toFixed(2));
+    dot.setAttribute('cy', y.toFixed(2));
+    const c = clamped<35 ? '#ef4444' : (clamped<65 ? '#f59e0b' : '#16a34a');
+    arc.setAttribute('stroke', c); dot.setAttribute('fill', c);
+    scoreT.textContent = Math.round(clamped);
+    msgT.textContent   = msg;
+  }
+
+  async function fetchSignal(sym){
+    const s = (sym||'').trim().toUpperCase();
+    if(!s){ setGauge(50,'Enter a ticker'); details.textContent=''; return; }
+    const cfg = (window.S && S.get)? S.get() : {};
+    const payload = { kind:'signal', subtype:'buy_sell', symbol:s, features:['price','vwap','ema','rsi','rvol','atr'] };
+    const res = await (window.callWebhook ? callWebhook(cfg.whUrl||'', payload) : null);
+    const data = res && (res.signal || res.data || res);
+
+    let score=50, label='Neutral', notes='';
+    if (data && typeof data==='object'){
+      score = Number(data.score ?? 50);
+      label = String(data.label ?? 'Neutral');
+      notes = String(data.notes ?? '');
+    } else {
+      // demo mode heuristic
+      const seed = s.split('').reduce((a,c)=>a+c.charCodeAt(0),0)%100;
+      score = seed; label = seed>65?'Buy':(seed<35?'Sell':'Neutral');
+      notes = 'Demo mode: configure webhook in Settings.';
+    }
+    setGauge(score, `${label} signal`);
+    details.textContent = notes ? (`${s} • ${label}\n`+notes) : '';
+  }
+
+  document.getElementById('qgCheck').addEventListener('click', ()=> fetchSignal(document.getElementById('qgTicker').value));
+  document.getElementById('qgDemo').addEventListener('click', ()=> fetchSignal( (document.getElementById('qgTicker').value||'AAPL') ));
+  document.getElementById('qgTicker').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); fetchSignal(e.target.value); }});
+
+  const pre = new URLSearchParams(location.search).get('ticker');
+  if(pre){ document.getElementById('qgTicker').value = pre.toUpperCase(); fetchSignal(pre); }
+})();
+</script>
+</body>
+</html>

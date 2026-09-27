@@ -1,0 +1,573 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"/>
+<title>Asset Allocation Builder — Arowana Profits</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>🥧</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+:root{
+  --brand:#0b4f8a;--brand-dark:#083c69;--brand-light:#1a6bbb;
+  --bg:#f6f8fb;--panel:#fff;--ink:#0d1b2a;--muted:#64748b;--border:#e2e8f0;
+  --radius:14px;--max:1160px;
+  --green:#16a34a;--red:#ef4444;--amber:#f59e0b;
+  --shadow:0 4px 20px rgba(11,79,138,.08);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;display:flex;flex-direction:column;line-height:1.6}
+a{color:var(--brand);text-decoration:none}
+button{font-family:inherit;cursor:pointer}
+.container{width:100%;max-width:var(--max);margin:0 auto;padding:0 20px}
+
+/* ── NAV ── */
+.nav-wrap{position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto}
+.logo{display:flex;align-items:center;gap:10px;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;text-decoration:none}
+.logo img{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);padding:2px}
+.nav-links{display:flex;align-items:center;gap:3px;flex:1;justify-content:center}
+.nav-links a{color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none;transition:background .15s}
+.nav-links a:hover{background:rgba(255,255,255,.13)}
+.nav-links a.active{background:rgba(255,255,255,.18);color:#fff}
+.nav-links .agent{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.14)}
+.nav-div{width:1px;height:16px;background:rgba(255,255,255,.18);margin:0 4px;flex-shrink:0}
+.nav-auth{display:flex;align-items:center;gap:7px}
+.nbtn{padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;text-decoration:none;transition:all .15s}
+.nbtn-g{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.nbtn-s{background:#fff;color:var(--brand);font-weight:700}
+.nav-user{position:relative;display:none}.nav-user.show{display:block}
+.nav-user-btn{display:inline-flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;font-size:.76rem;font-weight:600}
+.nav-user-menu{position:absolute;right:0;top:calc(100%+8px);min-width:195px;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:0 20px 50px rgba(0,0,0,.15);padding:6px;display:none;z-index:200}
+.nav-user.open .nav-user-menu{display:block}
+.nav-user-menu a,.nav-user-menu button{display:flex;align-items:center;gap:7px;padding:9px 11px;border-radius:7px;color:var(--muted);font-size:.82rem;font-weight:500;background:none;border:none;width:100%;text-align:left;text-decoration:none;cursor:pointer;transition:all .12s;font-family:inherit}
+.nav-user-menu a:hover,.nav-user-menu button:hover{color:var(--ink);background:rgba(11,79,138,.06)}
+.menu-sep{height:1px;background:var(--border);margin:3px 0}
+.nav-burger{display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem}
+.mob-menu{display:none;position:fixed;top:60px;left:0;right:0;z-index:80;background:var(--brand-dark);border-top:1px solid rgba(255,255,255,.12)}
+.mob-menu[data-open="true"]{display:block}
+.mob-panel{padding:10px 20px 16px;display:flex;flex-direction:column;gap:2px}
+.mob-link{padding:10px 12px;color:rgba(255,255,255,.85);font-size:.88rem;font-weight:500;border-radius:8px;text-decoration:none;display:block}
+.mob-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
+@media(max-width:700px){.nav-links{display:none}.nbtn-s{display:none}.nav-burger{display:inline-flex;align-items:center}}
+
+/* ── HERO ── */
+.page-hero{background:linear-gradient(135deg,#fff,var(--bg));border-bottom:1px solid var(--border);padding:28px 0 20px}
+.hero-inner{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;flex-wrap:wrap}
+.hero-kicker{font-size:.72rem;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.1em;margin-bottom:6px}
+.hero-title{font-family:"Inter Tight",sans-serif;font-size:clamp(20px,3vw,28px);font-weight:800;letter-spacing:-.3px;margin-bottom:4px}
+.hero-sub{font-size:.88rem;color:var(--muted);line-height:1.6;max-width:540px}
+.badge-row{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.badge{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;border-radius:999px;font-size:.72rem;font-weight:700}
+.badge-green{background:#dcfce7;color:#166534}
+.badge-blue{background:#dbeafe;color:#1e40af}
+.badge-amber{background:#fef3c7;color:#92400e}
+
+/* ── LAYOUT ── */
+main{flex:1;padding:24px 0 56px}
+.tool-grid{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+@media(max-width:860px){.tool-grid{grid-template-columns:1fr}}
+
+/* ── CARDS ── */
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow);margin-bottom:16px}
+.card:last-child{margin-bottom:0}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-family:"Inter Tight",sans-serif;font-size:.95rem;font-weight:800;color:var(--ink)}
+.sec-label{font-size:.68rem;font-weight:700;color:var(--brand);text-transform:uppercase;letter-spacing:.12em;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.sec-label::after{content:"";flex:1;height:1px;background:var(--border)}
+
+/* ── BUTTONS ── */
+.btn{display:inline-flex;align-items:center;gap:5px;padding:7px 14px;border-radius:8px;font-size:.8rem;font-weight:600;border:none;cursor:pointer;transition:all .15s;text-decoration:none;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-light)}
+.btn-ghost{background:var(--panel);color:var(--muted);border:1.5px solid var(--border)}.btn-ghost:hover{border-color:var(--brand);color:var(--brand)}
+.btn-red{background:#fff5f5;color:var(--red);border:1.5px solid #fecaca}.btn-red:hover{background:var(--red);color:#fff}
+.btn-sm{padding:5px 10px;font-size:.75rem}
+
+/* ── PRESET CHIPS ── */
+.preset-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.preset-chip{padding:5px 12px;border-radius:999px;font-size:.76rem;font-weight:600;border:1.5px solid var(--border);background:var(--panel);color:var(--muted);cursor:pointer;transition:all .15s}
+.preset-chip:hover{border-color:var(--brand);color:var(--brand)}
+
+/* ── SLIDERS ── */
+.slider-group{margin-bottom:16px}
+.slider-label{display:flex;align-items:center;justify-content:space-between;font-size:.82rem;font-weight:600;margin-bottom:6px}
+.slider-lbl-left{display:flex;align-items:center;gap:6px}
+.slider-row{display:flex;align-items:center;gap:8px}
+.slider-row input[type=range]{flex:1;accent-color:var(--brand);height:4px;cursor:pointer}
+.slider-num{width:56px;padding:5px 8px;border-radius:7px;border:1.5px solid var(--border);background:var(--bg);font-size:.85rem;font-weight:700;text-align:center;color:var(--ink);font-family:inherit}
+.slider-num:focus{outline:none;border-color:var(--brand)}
+.sub-sliders{margin-left:12px;padding-left:12px;border-left:2px solid var(--border);margin-top:10px;display:flex;flex-direction:column;gap:10px}
+.sub-row{display:flex;align-items:center;gap:8px}
+.sub-label{font-size:.76rem;color:var(--muted);width:100px;flex-shrink:0}
+.sub-row input[type=range]{flex:1;accent-color:var(--muted);height:3px;cursor:pointer}
+.sub-num{width:48px;padding:4px 6px;border-radius:6px;border:1.5px solid var(--border);background:var(--bg);font-size:.78rem;font-weight:700;text-align:center;color:var(--ink);font-family:inherit}
+.sub-num:focus{outline:none;border-color:var(--brand)}
+.warn-ok{font-size:.74rem;color:var(--green);font-weight:600;margin-top:5px}
+.warn-err{font-size:.74rem;color:var(--red);font-weight:600;margin-top:5px}
+
+/* ── TOTALS BAR ── */
+.totals-bar{display:flex;align-items:center;gap:16px;padding:12px 14px;border-radius:10px;background:var(--bg);border:1px solid var(--border);margin-bottom:14px;flex-wrap:wrap}
+.total-item{display:flex;flex-direction:column;align-items:center;gap:2px}
+.total-lbl{font-size:.65rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.total-val{font-family:"Inter Tight",sans-serif;font-size:1.1rem;font-weight:800}
+
+/* ── PROJECTION INPUTS ── */
+.proj-inputs{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px}
+.field{display:flex;flex-direction:column;gap:5px}
+.lbl{font-size:.76rem;font-weight:700;color:var(--ink)}
+.inp{width:100%;padding:8px 11px;border-radius:8px;border:1.5px solid var(--border);background:var(--bg);font-size:.88rem;color:var(--ink);font-family:inherit;outline:none;transition:border-color .15s}
+.inp:focus{border-color:var(--brand);background:#fff;box-shadow:0 0 0 3px rgba(11,79,138,.08)}
+
+/* ── ETF TABLE ── */
+.etf-tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.etf-tbl th{padding:7px 10px;background:#f8fafc;font-size:.68rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:1px solid var(--border);text-align:left}
+.etf-tbl td{padding:8px 10px;border-bottom:1px solid var(--border)}
+.etf-tbl tr:last-child td{border-bottom:none}
+.etf-tbl tr:hover td{background:rgba(11,79,138,.02)}
+
+/* ── POLICY LIST ── */
+.policy-list{list-style:none;display:flex;flex-direction:column;gap:8px}
+.policy-list li{font-size:.84rem;color:var(--ink);padding:8px 12px;background:rgba(11,79,138,.03);border-left:3px solid var(--brand);border-radius:0 8px 8px 0;line-height:1.6}
+
+/* ── FOOTER ── */
+.site-footer{background:var(--brand-dark);color:#94a3b8;padding:36px 0 22px;margin-top:auto}
+.footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
+.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:4px}
+.footer-tag{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6}
+.fc-title{font-weight:700;color:rgba(255,255,255,.7);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.fl{display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none}
+.fl:hover{color:rgba(255,255,255,.8)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.73rem;color:rgba(255,255,255,.3);margin-bottom:8px}
+.fpill{background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35);margin-left:4px}
+.fdis{font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.6}
+@media(max-width:700px){.footer-grid{grid-template-columns:1fr 1fr}}
+
+/* ── TOAST ── */
+.toast-stack{position:fixed;right:16px;bottom:16px;display:flex;flex-direction:column;gap:7px;z-index:1000}
+.toast{background:var(--panel);color:var(--ink);padding:10px 14px;border-radius:10px;border:1px solid var(--border);box-shadow:0 12px 30px rgba(0,0,0,.15);font-size:.82rem;max-width:300px;animation:fadeUp .2s ease}
+.toast-ok{border-left:4px solid var(--green)}
+.toast-err{border-left:4px solid var(--red)}
+.toast-info{border-left:4px solid var(--brand)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<div class="nav-wrap">
+<nav class="nav">
+  <a href="index.html" class="logo"><img src="images/arowanalogo.png?v=20260117" alt="" onerror="this.style.display='none'">Arowana Profits</a>
+  <div class="nav-links" id="navLinks">
+    <a href="arowana-trader.html" class="agent">&#9889; Arowana Trader</a>
+    <a href="portfolio-advisor.html" class="agent">&#127974; Portfolio Advisor</a>
+    <div class="nav-div"></div>
+    <a href="short-term-dashboard.html">&#9889; Short-Term</a>
+    <a href="long-term-dashboard.html" class="active">&#128200; Long-Term</a>
+    <a href="learn-investing.html">&#128218; Learn</a>
+    <a href="features.html">&#128296; Features</a>
+    <a href="pricing.html">&#128179; Plans</a>
+  </div>
+  <button class="nav-burger" id="navBurger">&#9776;</button>
+  <div class="nav-auth">
+    <a href="login.html" id="navSignIn" class="nbtn nbtn-g">Sign In</a>
+    <a href="signup.html" id="navSignUp" class="nbtn nbtn-s">&#128640; Start Free</a>
+    <div class="nav-user" id="navUserDrop">
+      <button class="nav-user-btn" id="navUserBtn">&#128100; <span id="navUserName">Account</span></button>
+      <div class="nav-user-menu" id="navUserMenu">
+        <a href="account.html">&#128282; My Account</a>
+        <div class="menu-sep"></div>
+        <a href="arowana-trader.html">&#9889; Arowana Trader</a>
+        <a href="portfolio-advisor.html">&#127974; Portfolio Advisor</a>
+        <div class="menu-sep"></div>
+        <a href="short-term-dashboard.html">&#9889; Short-Term Dashboard</a>
+        <a href="long-term-dashboard.html">&#128200; Long-Term Dashboard</a>
+        <div class="menu-sep"></div>
+        <button id="navSignOutBtn">&#128682; Sign Out</button>
+      </div>
+    </div>
+  </div>
+</nav>
+</div>
+<div class="mob-menu" id="mobMenu" data-open="false">
+  <div class="mob-panel">
+    <a class="mob-link" href="arowana-trader.html">&#9889; Arowana Trader</a>
+    <a class="mob-link" href="portfolio-advisor.html">&#127974; Portfolio Advisor</a>
+    <a class="mob-link" href="short-term-dashboard.html">&#9889; Short-Term</a>
+    <a class="mob-link" href="long-term-dashboard.html">&#128200; Long-Term</a>
+    <div class="mob-div"></div>
+    <a class="mob-link" href="features.html">&#128296; Features</a>
+    <a class="mob-link" href="pricing.html">&#128179; Plans</a>
+    <div class="mob-div"></div>
+    <div id="mobAuthLinks"></div>
+  </div>
+</div>
+
+<!-- HERO -->
+<div class="page-hero">
+  <div class="container">
+    <div class="hero-inner">
+      <div>
+        <div class="hero-kicker">&#128200; Long-Term Investing</div>
+        <h1 class="hero-title">Asset Allocation Builder</h1>
+        <p class="hero-sub">Design your target portfolio — stocks, bonds, cash. Get ETF suggestions, a written investment policy, and a 20-year growth projection.</p>
+        <div class="badge-row">
+          <span class="badge badge-green">&#9989; No API needed</span>
+          <span class="badge badge-blue">&#128202; Works entirely in browser</span>
+          <span class="badge badge-amber">&#128203; Saves to your browser</span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center;margin-top:4px">
+        <a href="long-term-dashboard.html" class="btn btn-ghost btn-sm">&#8592; Dashboard</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<main>
+<div class="container">
+<div class="tool-grid">
+
+  <!-- ── LEFT: CONTROLS ── -->
+  <div>
+
+    <!-- Totals bar -->
+    <div class="totals-bar">
+      <div class="total-item"><div class="total-lbl">Total</div><div class="total-val" id="totalPct" style="color:var(--green)">100%</div></div>
+      <div class="total-item"><div class="total-lbl">Risk</div><div class="total-val" id="riskLbl">Medium</div></div>
+      <div class="total-item"><div class="total-lbl">Rebalance</div><div class="total-val" id="rebalLbl">12 mo</div></div>
+      <div class="total-item"><div class="total-lbl">Exp. Return</div><div class="total-val" id="expRetLbl">—</div></div>
+    </div>
+
+    <!-- Presets -->
+    <div class="card">
+      <div class="sec-label">&#9889; Quick Presets</div>
+      <div class="preset-chips">
+        <span class="preset-chip" onclick="applyPreset('conservative')">&#128274; Conservative</span>
+        <span class="preset-chip" onclick="applyPreset('60_40')">60/40 Classic</span>
+        <span class="preset-chip" onclick="applyPreset('balanced')">&#9878; Balanced</span>
+        <span class="preset-chip" onclick="applyPreset('threeFund')">&#127381; Three-Fund</span>
+        <span class="preset-chip" onclick="applyPreset('growth')">&#128640; Growth</span>
+        <span class="preset-chip" onclick="applyPreset('aggressive')">&#128308; Aggressive</span>
+      </div>
+    </div>
+
+    <!-- Major allocation -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">&#128202; Allocation Targets</div>
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <button class="btn btn-primary btn-sm" onclick="saveToLocal()">&#128190; Save</button>
+          <button class="btn btn-ghost btn-sm" onclick="exportJSON()">&#8681; JSON</button>
+          <button class="btn btn-red btn-sm" onclick="resetAll()">&#8635; Reset</button>
+        </div>
+      </div>
+
+      <!-- Stocks -->
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-lbl-left">&#128200; Stocks</span>
+          <span style="font-size:.75rem;color:var(--muted)">growth engine</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="sR" min="0" max="100" value="60" oninput="sRange('stocks')">
+          <input type="number" class="slider-num" id="sN" min="0" max="100" value="60" oninput="sNum('stocks')">
+          <span style="font-size:.8rem;color:var(--muted)">%</span>
+        </div>
+        <!-- Stock tilts -->
+        <div class="sub-sliders">
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Stock Tilts (must sum to 100%)</div>
+          <div class="sub-row"><span class="sub-label">US Core</span><input type="range" id="usCoreR" min="0" max="100" value="40" oninput="sTilt('usCore')"><input type="number" class="sub-num" id="usCoreN" value="40" oninput="sTiltN('usCore')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div class="sub-row"><span class="sub-label">Intl Dev.</span><input type="range" id="intlDevR" min="0" max="100" value="25" oninput="sTilt('intlDev')"><input type="number" class="sub-num" id="intlDevN" value="25" oninput="sTiltN('intlDev')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div class="sub-row"><span class="sub-label">Emerging</span><input type="range" id="emR" min="0" max="100" value="10" oninput="sTilt('em')"><input type="number" class="sub-num" id="emN" value="10" oninput="sTiltN('em')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div class="sub-row"><span class="sub-label">Small Value</span><input type="range" id="svR" min="0" max="100" value="15" oninput="sTilt('sv')"><input type="number" class="sub-num" id="svN" value="15" oninput="sTiltN('sv')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div class="sub-row"><span class="sub-label">Quality</span><input type="range" id="qualityR" min="0" max="100" value="10" oninput="sTilt('quality')"><input type="number" class="sub-num" id="qualityN" value="10" oninput="sTiltN('quality')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div id="tiltWarn" class="warn-ok">✓ Tilts sum to 100%</div>
+        </div>
+      </div>
+
+      <!-- Bonds -->
+      <div class="slider-group">
+        <div class="slider-label">
+          <span class="slider-lbl-left">&#127968; Bonds</span>
+          <span style="font-size:.75rem;color:var(--muted)">stability &amp; income</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="bR" min="0" max="100" value="30" oninput="sRange('bonds')">
+          <input type="number" class="slider-num" id="bN" min="0" max="100" value="30" oninput="sNum('bonds')">
+          <span style="font-size:.8rem;color:var(--muted)">%</span>
+        </div>
+        <div class="sub-sliders">
+          <div style="font-size:.72rem;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px">Bond Mix (must sum to 100%)</div>
+          <div class="sub-row"><span class="sub-label">US Aggregate</span><input type="range" id="aggR" min="0" max="100" value="70" oninput="sBond('agg')"><input type="number" class="sub-num" id="aggN" value="70" oninput="sBondN('agg')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div class="sub-row"><span class="sub-label">TIPS</span><input type="range" id="tipsR" min="0" max="100" value="15" oninput="sBond('tips')"><input type="number" class="sub-num" id="tipsN" value="15" oninput="sBondN('tips')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div class="sub-row"><span class="sub-label">Intl Bonds</span><input type="range" id="intlBondR" min="0" max="100" value="15" oninput="sBond('intlBond')"><input type="number" class="sub-num" id="intlBondN" value="15" oninput="sBondN('intlBond')"><span style="font-size:.74rem;color:var(--muted)">%</span></div>
+          <div id="bondWarn" class="warn-ok">✓ Bond mix sums to 100%</div>
+        </div>
+      </div>
+
+      <!-- Cash -->
+      <div class="slider-group" style="margin-bottom:0">
+        <div class="slider-label">
+          <span class="slider-lbl-left">&#128181; Cash</span>
+          <span style="font-size:.75rem;color:var(--muted)">liquidity buffer</span>
+        </div>
+        <div class="slider-row">
+          <input type="range" id="cR" min="0" max="100" value="10" oninput="sRange('cash')">
+          <input type="number" class="slider-num" id="cN" min="0" max="100" value="10" oninput="sNum('cash')">
+          <span style="font-size:.8rem;color:var(--muted)">%</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Projection inputs -->
+    <div class="card">
+      <div class="sec-label">&#128202; Growth Projection</div>
+      <div class="proj-inputs">
+        <div class="field"><label class="lbl">Starting Amount $</label><input class="inp" type="number" id="initAmt" value="10000" min="0" oninput="renderProjection()"></div>
+        <div class="field"><label class="lbl">Monthly Add $</label><input class="inp" type="number" id="monthly" value="500" min="0" oninput="renderProjection()"></div>
+        <div class="field"><label class="lbl">Years</label><input class="inp" type="number" id="projYrs" value="20" min="1" max="50" oninput="renderProjection()"></div>
+        <div class="field"><label class="lbl">Custom Return % <span style="font-weight:400;color:var(--muted);font-size:.72rem">blank=auto</span></label><input class="inp" type="number" id="custReturn" placeholder="auto" oninput="renderProjection()"></div>
+      </div>
+      <div style="font-size:.74rem;color:var(--muted)">&#9888;&#65039; Historical estimates only. Past returns don't guarantee future results.</div>
+    </div>
+
+  </div>
+
+  <!-- ── RIGHT: CHARTS & RESULTS ── -->
+  <div>
+
+    <!-- Pie chart + projection side by side on wide -->
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title" style="margin-bottom:12px">&#129395; Allocation</div>
+        <canvas id="pieChart" style="max-height:200px"></canvas>
+      </div>
+      <div class="card" style="margin-bottom:0">
+        <div class="card-title" style="margin-bottom:12px">&#128200; Growth Projection</div>
+        <canvas id="projChart" style="max-height:170px"></canvas>
+        <div id="projSummary" style="font-size:.76rem;color:var(--muted);margin-top:8px;line-height:1.5"></div>
+      </div>
+    </div>
+
+    <!-- ETF suggestions -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">&#128203; Suggested ETFs</div>
+        <span style="font-size:.76rem;color:var(--muted)">low-cost building blocks</span>
+      </div>
+      <p style="font-size:.8rem;color:var(--muted);margin-bottom:10px">These are illustrative examples only — compare expense ratios and tax implications before buying. Educational purposes only.</p>
+      <div style="overflow-x:auto">
+        <table class="etf-tbl">
+          <thead><tr><th>Sleeve</th><th>ETF</th><th>Exp. Ratio</th><th>Focus</th></tr></thead>
+          <tbody id="etfBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Investment policy -->
+    <div class="card">
+      <div class="card-hd">
+        <div class="card-title">&#128220; Investment Policy Statement</div>
+        <span style="font-size:.76rem;color:var(--muted)">auto-generated from your targets</span>
+      </div>
+      <ul class="policy-list" id="policyNotes"></ul>
+    </div>
+
+    <!-- Disclaimer -->
+    <div style="background:rgba(245,158,11,.06);border:1px solid rgba(245,158,11,.2);border-radius:10px;padding:12px 14px;font-size:.8rem;color:#92400e;line-height:1.65">
+      <strong>Educational only.</strong> This tool uses historical return estimates (Stocks ~7%, Bonds ~3.5%, Cash ~1.5%). Actual returns will vary. This is not investment advice. Consult a qualified financial advisor before making allocation decisions.
+    </div>
+
+  </div>
+</div>
+</div>
+</main>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<!-- FOOTER -->
+<footer class="site-footer">
+<div class="container">
+  <div class="footer-grid">
+    <div><div class="footer-brand">Arowana Profits</div><div class="footer-tag">Risk-first education and AI-assisted planning for retail traders.</div></div>
+    <div><div class="fc-title">Explore</div><a class="fl" href="arowana-trader.html">Arowana Trader</a><a class="fl" href="portfolio-advisor.html">Portfolio Advisor</a><a class="fl" href="features.html">Features</a><a class="fl" href="pricing.html">Plans</a><a class="fl" href="learn-investing.html">Learn</a></div>
+    <div><div class="fc-title">Company</div><a class="fl" href="about.html">About</a><a class="fl" href="contact.html">Contact</a><a class="fl" href="security.html">Security</a><a class="fl" href="blog.html">Blog</a></div>
+    <div><div class="fc-title">Legal</div><a class="fl" href="disclosures.html">Disclosures</a><a class="fl" href="risk-disclosure.html">Risk Disclosure</a><a class="fl" href="terms.html">Terms</a><a class="fl" href="privacy.html">Privacy</a><a class="fl" href="refunds.html">Refunds</a></div>
+  </div>
+  <div class="foot-bot"><div>&#169; <span id="footYear"></span> Arowana Profits. All rights reserved.</div><div><span class="fpill">Education-only</span><span class="fpill">Not financial advice</span></div></div>
+  <p class="fdis"><strong>Important:</strong> Asset allocation tools are for educational purposes only. Not financial advice. Past returns do not guarantee future results.</p>
+</div>
+</footer>
+
+<script>
+/* ── Helpers ── */
+const $=id=>document.getElementById(id);
+function toast(msg,type='ok'){const s=$('toastStack');const t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;s.appendChild(t);setTimeout(()=>t.remove(),3400);}
+
+/* ── State ── */
+const state={stocks:60,bonds:30,cash:10,tilts:{usCore:40,intlDev:25,em:10,sv:15,quality:10},bondsMix:{agg:70,tips:15,intlBond:15}};
+const LS='asset_allocation_builder_v2';
+let pieChart,projChart;
+
+const clamp=x=>Math.max(0,Math.min(100,x));
+
+/* ── Major slider handlers ── */
+function sRange(key){const r=$(`${key[0]}R`),n=$(`${key[0]}N`);n.value=r.value;state[key]=+r.value;normMajor(key);render();}
+function sNum(key){const r=$(`${key[0]}R`),n=$(`${key[0]}N`);state[key]=clamp(+n.value||0);r.value=state[key];normMajor(key);render();}
+function normMajor(changed){const{stocks,bonds,cash}=state;const tot=stocks+bonds+cash;if(tot===100)return;const diff=tot-100;const keys=['stocks','bonds','cash'].filter(k=>k!==changed);const sum=keys.reduce((s,k)=>s+state[k],0)||1;keys.forEach(k=>{state[k]=clamp(state[k]-diff*(state[k]/sum));[$(`${k[0]}R`),$(`${k[0]}N`)].forEach(el=>{if(el)el.value=state[k].toFixed(0);});});}
+
+/* ── Tilt handlers ── */
+function sTilt(id){const r=$(id+'R'),n=$(id+'N');n.value=r.value;state.tilts[id]=+r.value;checkTilts();render();}
+function sTiltN(id){const r=$(id+'R'),n=$(id+'N');state.tilts[id]=clamp(+n.value||0);r.value=state.tilts[id];checkTilts();render();}
+function checkTilts(){const s=Object.values(state.tilts).reduce((a,b)=>a+b,0);const w=$('tiltWarn');w.textContent=s!==100?`Tilts sum to ${s}% — must equal 100%.`:'✓ Tilts sum to 100%';w.className=s!==100?'warn-err':'warn-ok';}
+
+/* ── Bond mix handlers ── */
+function sBond(id){const r=$(id+'R'),n=$(id+'N');n.value=r.value;state.bondsMix[id]=+r.value;checkBonds();render();}
+function sBondN(id){const r=$(id+'R'),n=$(id+'N');state.bondsMix[id]=clamp(+n.value||0);r.value=state.bondsMix[id];checkBonds();render();}
+function checkBonds(){const s=Object.values(state.bondsMix).reduce((a,b)=>a+b,0);const w=$('bondWarn');w.textContent=s!==100?`Bond mix sums to ${s}% — must equal 100%.`:'✓ Bond mix sums to 100%';w.className=s!==100?'warn-err':'warn-ok';}
+
+/* ── Calculated values ── */
+function calcRisk(){const s=state.stocks;return s<=30?'Low':s<=50?'Low–Med':s<=65?'Medium':s<=80?'Med–High':'High';}
+function rebalFreq(){const r=calcRisk();return(r==='High'||r==='Med–High')?'6 mo':'12 mo';}
+function expReturn(){return(state.stocks/100*7.0+state.bonds/100*3.5+state.cash/100*1.5).toFixed(1);}
+
+/* ── ETF data ── */
+const ETF_DATA=[
+  {sleeve:'Stocks',etf:'VTI',er:'0.03',focus:'US Total Market'},
+  {sleeve:'Stocks',etf:'VXUS',er:'0.07',focus:'Intl ex-US'},
+  {sleeve:'Stocks',etf:'VEA',er:'0.05',focus:'Developed Mkts'},
+  {sleeve:'Stocks',etf:'VWO',er:'0.08',focus:'Emerging Mkts'},
+  {sleeve:'Bonds',etf:'BND',er:'0.03',focus:'US Aggregate'},
+  {sleeve:'Bonds',etf:'VTIP',er:'0.04',focus:'Inflation (TIPS)'},
+  {sleeve:'Bonds',etf:'BNDX',er:'0.07',focus:'Intl Bonds (hedged)'},
+  {sleeve:'Cash',etf:'SGOV',er:'0.07',focus:'T-Bills ETF'},
+];
+
+function renderETF(){
+  const filtered=ETF_DATA.filter(r=>(r.sleeve==='Stocks'&&state.stocks>0)||(r.sleeve==='Bonds'&&state.bonds>0)||(r.sleeve==='Cash'&&state.cash>0));
+  $('etfBody').innerHTML=filtered.map(r=>`<tr><td style="font-size:.75rem;color:var(--muted)">${r.sleeve}</td><td style="font-weight:700">${r.etf}</td><td>${r.er}%</td><td style="color:var(--muted)">${r.focus}</td></tr>`).join('');
+}
+
+function renderPolicy(){
+  const exp=expReturn();
+  const notes=[
+    `Rebalance every <strong>${rebalFreq()}</strong> or when any sleeve drifts ±5% from target.`,
+    `Keep <strong>${state.cash}%</strong> in cash / money-market (e.g. SGOV) for liquidity and emergencies.`,
+    `Expected blended return: ~<strong>${exp}%/yr</strong> based on historical averages (Stocks 7%, Bonds 3.5%, Cash 1.5%).`,
+    `Risk level: <strong>${calcRisk()}</strong> — revisit allocation if life circumstances or timeline change.`,
+    `Prefer ETFs with expense ratio &lt;0.10%. Review fees annually and switch if cheaper alternatives exist.`,
+    `Automate DCA contributions — invest into the most underweight sleeve each month.`,
+  ];
+  $('policyNotes').innerHTML=notes.map(n=>`<li>${n}</li>`).join('');
+}
+
+/* ── Main render ── */
+function render(){
+  const tot=state.stocks+state.bonds+state.cash;
+  const tp=$('totalPct');
+  tp.textContent=Math.round(tot)+'%';
+  tp.style.color=tot===100?'var(--green)':tot>100?'var(--red)':'var(--amber)';
+  $('riskLbl').textContent=calcRisk();
+  $('rebalLbl').textContent=rebalFreq();
+  $('expRetLbl').textContent=expReturn()+'%';
+
+  // Pie chart
+  const data=[state.stocks,state.bonds,state.cash];
+  const colors=['#0b4f8a','#16a34a','#f59e0b'];
+  if(pieChart){pieChart.data.datasets[0].data=data;pieChart.update({duration:300});}
+  else{pieChart=new Chart($('pieChart'),{type:'pie',data:{labels:['Stocks','Bonds','Cash'],datasets:[{data,backgroundColor:colors,borderWidth:2,borderColor:'#fff'}]},options:{plugins:{legend:{position:'bottom',labels:{font:{size:11},padding:8,color:'#0d1b2a'}}},animation:{duration:400}}});}
+
+  renderETF();
+  renderPolicy();
+  renderProjection();
+}
+
+function renderProjection(){
+  const init=Math.max(0,+$('initAmt').value||0);
+  const monthly=Math.max(0,+$('monthly').value||0);
+  const years=Math.max(1,Math.min(50,+$('projYrs').value||20));
+  const custR=$('custReturn').value;
+  const annR=(custR!==''?+custR:+expReturn())/100;
+  const mR=Math.pow(1+annR,1/12)-1;
+  let bal=init;
+  const pts=[init];
+  for(let m=1;m<=years*12;m++){bal=bal*(1+mR)+monthly;if(m%12===0)pts.push(Math.round(bal));}
+  const labels=Array.from({length:years+1},(_,i)=>i===0?'Now':i+'yr');
+  const totalDep=init+monthly*years*12;
+  const finalVal=pts[years];
+  const gain=finalVal-totalDep;
+  $('projSummary').textContent=`${(annR*100).toFixed(1)}% return → $${finalVal.toLocaleString()} in ${years}yr (deposited $${totalDep.toLocaleString()}, gain $${gain.toLocaleString()})`;
+  if(projChart){projChart.data.labels=labels;projChart.data.datasets[0].data=pts;projChart.update({duration:200});}
+  else{projChart=new Chart($('projChart'),{type:'line',data:{labels,datasets:[{label:'Value',data:pts,borderColor:'#0b4f8a',backgroundColor:'rgba(11,79,138,.08)',fill:true,tension:.3,pointRadius:1,borderWidth:2}]},options:{plugins:{legend:{display:false}},scales:{y:{ticks:{callback:v=>v>=1e6?'$'+(v/1e6).toFixed(1)+'M':v>=1e3?'$'+(v/1e3).toFixed(0)+'K':'$'+v,font:{size:10}},grid:{color:'rgba(0,0,0,.04)'}},x:{ticks:{font:{size:10}},grid:{display:false}}},animation:{duration:200}}});}
+}
+
+/* ── Presets ── */
+const PRESETS={conservative:{s:30,b:55,c:15},balanced:{s:60,b:30,c:10},growth:{s:75,b:20,c:5},aggressive:{s:90,b:8,c:2},threeFund:{s:70,b:25,c:5},'60_40':{s:60,b:40,c:0}};
+function applyPreset(name){
+  const p=PRESETS[name]||PRESETS.balanced;
+  state.stocks=p.s;state.bonds=p.b;state.cash=p.c;
+  [['stocks','s'],['bonds','b'],['cash','c']].forEach(([key,k])=>{
+    [$(`${key[0]}R`),$(`${key[0]}N`)].forEach(el=>{if(el)el.value=state[key];});
+  });
+  render();
+  const labels={conservative:'Conservative',balanced:'Balanced',growth:'Growth',aggressive:'Aggressive',threeFund:'Three-Fund','60_40':'60/40 Classic'};
+  toast('Preset: '+(labels[name]||name));
+}
+
+/* ── Save/Export ── */
+function snapshot(){return{targets:{stocks:state.stocks,bonds:state.bonds,cash:state.cash},stock_tilts:state.tilts,bond_mix:state.bondsMix,policy:{rebalance:rebalFreq(),expected_return:expReturn()+'%',risk:calcRisk()},ts:new Date().toISOString()};}
+function saveToLocal(){localStorage.setItem(LS,JSON.stringify(snapshot()));toast('Saved to browser ✓');}
+function exportJSON(){const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'}));a.download='asset-allocation.json';a.click();toast('JSON exported ✓');}
+function resetAll(){
+  applyPreset('balanced');
+  state.tilts={usCore:40,intlDev:25,em:10,sv:15,quality:10};
+  state.bondsMix={agg:70,tips:15,intlBond:15};
+  ['usCore','intlDev','em','sv','quality'].forEach(id=>{[$(id+'R'),$(id+'N')].forEach(el=>{if(el)el.value=state.tilts[id];});});
+  ['agg','tips','intlBond'].forEach(id=>{[$(id+'R'),$(id+'N')].forEach(el=>{if(el)el.value=state.bondsMix[id];});});
+  checkTilts();checkBonds();render();toast('Reset to Balanced','info');
+}
+
+/* ── Init ── */
+document.addEventListener('DOMContentLoaded',()=>{
+  try{
+    const saved=JSON.parse(localStorage.getItem(LS)||'null');
+    if(saved?.targets){
+      Object.assign(state,saved.targets);
+      ['stocks','bonds','cash'].forEach(k=>{[$(`${k[0]}R`),$(`${k[0]}N`)].forEach(el=>{if(el)el.value=state[k];});});
+    }
+  }catch(e){}
+  render();checkTilts();checkBonds();
+});
+</script>
+
+<script>
+/* ── V1 Auth/Nav JS ── */
+(function(){
+  var fy=document.getElementById('footYear'); if(fy) fy.textContent=new Date().getFullYear();
+  var aKeys=['gs_auth_user_v1','gs_session','ap_session','sb-access-token'];
+  var u=JSON.parse(localStorage.getItem('gs_auth_user_v1')||'null');
+  var has=u||aKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
+  var si=document.getElementById('navSignIn'),su=document.getElementById('navSignUp'),dd=document.getElementById('navUserDrop');
+  if(has){
+    if(si)si.style.display='none';if(su)su.style.display='none';if(dd)dd.classList.add('show');
+    var n=u&&(u.name||u.full_name||(u.email?u.email.split('@')[0]:null))||'Account';
+    var nm=document.getElementById('navUserName');if(nm)nm.textContent=n;
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="account.html">&#128282; My Account</a><a class="mob-link" id="v1MobOut" href="#">&#128682; Sign Out</a>';
+    var mo=document.getElementById('v1MobOut');if(mo)mo.addEventListener('click',function(e){e.preventDefault();aKeys.forEach(function(k){localStorage.removeItem(k);});location.href='index.html';});
+  }else{
+    var mob=document.getElementById('mobAuthLinks');
+    if(mob)mob.innerHTML='<a class="mob-link" href="login.html">&#128272; Sign In</a><a class="mob-link" href="signup.html">&#128640; Start Free</a>';
+  }
+  var utog=document.getElementById('navUserBtn'),drop=document.getElementById('navUserDrop');
+  if(utog&&drop){utog.addEventListener('click',function(e){e.stopPropagation();drop.classList.toggle('open');});document.addEventListener('click',function(){drop.classList.remove('open');});}
+  var sob=document.getElementById('navSignOutBtn');
+  if(sob)sob.addEventListener('click',function(){aKeys.forEach(function(k){localStorage.removeItem(k);});location.href='index.html';});
+  var burger=document.getElementById('navBurger'),mm=document.getElementById('mobMenu');
+  if(burger&&mm)burger.addEventListener('click',function(){mm.setAttribute('data-open',mm.getAttribute('data-open')==='true'?'false':'true');});
+})();
+</script>
+
+</body>
+</html>

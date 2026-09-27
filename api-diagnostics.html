@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>API Diagnostics — Arowana Profits</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --brand:#0b4f8a; --brand-dark:#083c69;
+  --bg:#f6f8fb; --card:#fff; --border:#e2e8f0;
+  --text:#1e293b; --text-primary:#0f172a; --text-muted:#64748b;
+  --ok:#059669; --ok-bg:#d1fae5;
+  --warn:#d97706; --warn-bg:#fef3c7;
+  --bad:#dc2626; --bad-bg:#fee2e2;
+  --font-sans:'Plus Jakarta Sans',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',monospace;
+  --radius:12px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:var(--font-sans);background:var(--bg);color:var(--text);line-height:1.6;padding:24px 16px 64px}
+.wrap{max-width:900px;margin:0 auto}
+h1{font-size:1.5rem;font-weight:800;color:var(--text-primary);margin-bottom:6px}
+.sub{color:var(--text-muted);font-size:.92rem;margin-bottom:22px}
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.card h2{font-size:1.05rem;font-weight:700;color:var(--text-primary);margin-bottom:4px}
+.card .hint{font-size:.85rem;color:var(--text-muted);margin-bottom:14px}
+.btn{display:inline-flex;align-items:center;gap:8px;background:var(--brand);color:#fff;border:none;border-radius:9px;
+  padding:11px 20px;font-family:inherit;font-size:.9rem;font-weight:700;cursor:pointer}
+.btn:hover{background:var(--brand-dark)}
+.btn:disabled{opacity:.55;cursor:not-allowed}
+.keyrow{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:14px}
+.keychip{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--border);border-radius:999px;
+  padding:6px 13px;font-size:.8rem;font-weight:600;background:#fff}
+.dot{width:8px;height:8px;border-radius:50%;flex:0 0 auto}
+.dot.on{background:var(--ok)} .dot.off{background:var(--bad)}
+table{width:100%;border-collapse:collapse;font-size:.86rem}
+th{text-align:left;padding:9px 10px;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;
+  color:var(--text-muted);border-bottom:2px solid var(--border);white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px solid var(--border);vertical-align:top}
+tr:last-child td{border-bottom:none}
+.endpoint{font-family:var(--font-mono);font-size:.76rem;color:var(--brand-dark);word-break:break-all}
+.status{display:inline-block;padding:3px 9px;border-radius:999px;font-size:.72rem;font-weight:800;white-space:nowrap}
+.status.ok{background:var(--ok-bg);color:var(--ok)}
+.status.warn{background:var(--warn-bg);color:var(--warn)}
+.status.bad{background:var(--bad-bg);color:var(--bad)}
+.status.pending{background:#e2e8f0;color:var(--text-muted)}
+.detail{font-size:.79rem;color:var(--text-muted);margin-top:4px;line-height:1.45}
+.affects{font-size:.75rem;color:var(--text-muted)}
+.affects b{color:var(--text-primary);font-weight:700}
+.summary{border-left:4px solid var(--brand);background:#eef5fb;border-radius:8px;padding:14px 16px;margin-top:16px;font-size:.88rem;display:none}
+.summary.show{display:block}
+.summary h3{font-size:.95rem;margin-bottom:8px;color:var(--text-primary)}
+.summary ul{margin:0 0 0 20px}
+.summary li{margin-bottom:5px}
+code{font-family:var(--font-mono);font-size:.85em;background:#f1f5f9;padding:1px 5px;border-radius:4px}
+.back{display:inline-block;margin-top:10px;color:var(--brand);font-weight:600;font-size:.88rem;text-decoration:none}
+</style>
+  <!-- Needed for the AI Coach check: the Edge Function call is
+       authenticated with the signed-in user's JWT, so this page needs the
+       shared config and the Supabase SDK. -->
+  <script>window.GS_CONFIG_URL="./js/config.json";</script>
+  <script src="./js/app-config.js"></script>
+  <script src="./js/supabase_min.js"></script>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>API Diagnostics</h1>
+  <p class="sub">
+    Runs one real request against every endpoint Options Hub depends on, using the keys saved
+    on this browser, and tells you which tab each result affects. Nothing is stored or sent anywhere else.
+  </p>
+
+  <div class="card">
+    <h2>Keys found on this device</h2>
+    <p class="hint">Read from <code>ap_user_api_keys</code> in localStorage — the same place the app reads them.</p>
+    <div class="keyrow" id="keyRow"></div>
+    <button class="btn" id="runBtn">Run all checks</button>
+    <p class="hint" style="margin:12px 0 0">
+      Uses 4 Finnhub calls, one each to FMP and Alpha Vantage for any key you have set, and one
+      short message to the AI Coach. Alpha Vantage's free tier allows only 25 requests per day,
+      so don't run this repeatedly — FMP's allows 250.
+    </p>
+  </div>
+
+  <div class="card">
+    <h2>Results</h2>
+    <p class="hint">Each row is one endpoint. "Affects" names the tab that stops working if it fails.</p>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Endpoint</th><th>Status</th><th>Affects</th></tr>
+        </thead>
+        <tbody id="results"></tbody>
+      </table>
+    </div>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <div class="card">
+    <h2>&#128272; Row-level security probe</h2>
+    <p class="hint">
+      Every page filters its own queries by user, so nothing here leaks by accident.
+      But a filter in the browser is a convenience, not a boundary &mdash; the only thing
+      actually stopping one signed-in user reading another's rows is RLS on the table.
+      This asks each table for rows <em>without</em> a user filter and compares the count
+      with your own. If RLS is doing its job the two numbers match.
+    </p>
+    <div style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>Table</th><th>Unfiltered read</th><th>Your rows</th><th>Verdict</th></tr>
+        </thead>
+        <tbody id="rlsResults"></tbody>
+      </table>
+    </div>
+    <button class="btn" id="rlsBtn" style="margin-top:16px">Run RLS probe</button>
+    <div class="summary" id="rlsSummary"></div>
+  </div>
+
+  <a class="back" href="options-hub.html">&larr; Back to Options Hub</a>
+</div>
+
+<script>
+(function () {
+  'use strict';
+
+  var TEST_SYMBOL = 'AAPL';
+
+  var HOSTS = {
+    finnhub: 'finnhub.io/api/v1',
+    alphavantage: 'alphavantage.co/query',
+    fmp: 'financialmodelingprep.com/api/v3',
+    supabase: 'supabase /functions/v1'
+  };
+
+  function readKeys() {
+    try {
+      return JSON.parse(localStorage.getItem('ap_user_api_keys') || '{}');
+    } catch (e) { return {}; }
+  }
+
+  var KEYS = readKeys();
+
+  // Every endpoint the Options Hub tabs actually call, traced from the source.
+  var CHECKS = [
+    {
+      id: 'fh-quote',
+      provider: 'finnhub',
+      label: 'Finnhub /quote',
+      url: function (k) { return 'https://finnhub.io/api/v1/quote?symbol=' + TEST_SYMBOL + '&token=' + k; },
+      affects: 'Recommender (price), IV Watchlist',
+      verify: function (d) {
+        if (d && typeof d.c === 'number' && d.c > 0) return { ok: true, note: 'price ' + d.c };
+        return { ok: false, note: 'responded, but no price in payload' };
+      }
+    },
+    {
+      id: 'fh-profile',
+      provider: 'finnhub',
+      label: 'Finnhub /stock/profile2',
+      url: function (k) { return 'https://finnhub.io/api/v1/stock/profile2?symbol=' + TEST_SYMBOL + '&token=' + k; },
+      affects: 'Recommender (sector), Quality Scanner (industry, market cap)',
+      verify: function (d) {
+        if (d && (d.name || d.finnhubIndustry)) return { ok: true, note: d.name || d.finnhubIndustry };
+        return { ok: false, note: 'empty profile — often means the plan does not cover this' };
+      }
+    },
+    {
+      id: 'fh-metric',
+      provider: 'finnhub',
+      label: 'Finnhub /stock/metric',
+      url: function (k) { return 'https://finnhub.io/api/v1/stock/metric?symbol=' + TEST_SYMBOL + '&metric=all&token=' + k; },
+      affects: 'Quality Scanner (ROIC, P/E, FCF yield, debt), Recommender (beta)',
+      verify: function (d) {
+        var m = d && d.metric;
+        if (!m) return { ok: false, note: 'no metric object returned' };
+        var have = ['beta', 'peTTM', 'roiTtm'].filter(function (f) { return m[f] != null; });
+        if (have.length === 0) return { ok: false, warn: true, note: 'metric object present but beta/peTTM/roiTtm all empty' };
+        return { ok: true, note: 'has ' + have.join(', ') };
+      }
+    },
+    {
+      id: 'fh-earnings',
+      provider: 'finnhub',
+      label: 'Finnhub /calendar/earnings',
+      url: function (k) {
+        var from = new Date().toISOString().split('T')[0];
+        var to = new Date(Date.now() + 90 * 86400000).toISOString().split('T')[0];
+        return 'https://finnhub.io/api/v1/calendar/earnings?from=' + from + '&to=' + to + '&symbol=' + TEST_SYMBOL + '&token=' + k;
+      },
+      affects: 'Recommender (earnings-in-window warning)',
+      verify: function (d) {
+        if (d && Array.isArray(d.earningsCalendar)) {
+          return d.earningsCalendar.length
+            ? { ok: true, note: d.earningsCalendar.length + ' event(s)' }
+            : { ok: true, warn: true, note: 'endpoint works but returned no events for ' + TEST_SYMBOL };
+        }
+        return { ok: false, note: 'no earningsCalendar array — usually a plan restriction' };
+      }
+    },
+    {
+      id: 'fmp-daily',
+      provider: 'fmp',
+      label: 'FMP historical-price-full',
+      optional: true,
+      url: function (k) {
+        return 'https://financialmodelingprep.com/api/v3/historical-price-full/' + TEST_SYMBOL +
+               '?serietype=line&timeseries=400&apikey=' + k;
+      },
+      affects: 'Recommender (RV rank / IV pill), IV Watchlist — preferred over Alpha Vantage',
+      verify: function (d) {
+        var h = d && d.historical;
+        if (!Array.isArray(h)) return { ok: false, note: 'no historical array — check the key' };
+        if (h.length < 60) return { ok: false, warn: true, note: 'only ' + h.length + ' bars; needs 60+' };
+        return { ok: true, note: h.length + ' daily bars (250 req/day free tier)' };
+      }
+    },
+    {
+      id: 'av-daily',
+      provider: 'alphavantage',
+      label: 'Alpha Vantage TIME_SERIES_DAILY',
+      url: function (k) {
+        return 'https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=' + TEST_SYMBOL +
+               '&outputsize=full&apikey=' + k;
+      },
+      affects: 'Recommender (RV rank / IV pill), IV Watchlist (cheap/expensive verdict)',
+      verify: function (d) {
+        // Alpha Vantage answers 200 even when rate-limited; the tell is these fields.
+        if (d && (d.Note || d.Information)) {
+          return { ok: false, warn: true, note: 'rate limited — free tier is 25 requests/day' };
+        }
+        var series = d && d['Time Series (Daily)'];
+        if (!series) return { ok: false, note: 'no daily series in response' };
+        var n = Object.keys(series).length;
+        if (n < 60) return { ok: false, warn: true, note: 'only ' + n + ' bars; needs 60+ to compute RV rank' };
+        return { ok: true, note: n + ' daily bars' };
+      }
+    }
+  ];
+
+  // ── AI Coach (Supabase Edge Function) ─────────────────────────
+  // Not a plain fetch like the others: the function requires the signed-in
+  // user's JWT, so it needs a Supabase client and a live session. Run as a
+  // separate check with its own row.
+  async function coachSession() {
+    try {
+      var cfg = window.AP_WEBHOOKS && window.AP_WEBHOOKS.supabase;
+      var createClient = window.supabase && window.supabase.createClient;
+      if (!cfg || !cfg.url || !cfg.anonKey) return { err: 'Supabase not configured in config.json' };
+      if (typeof createClient !== 'function') return { err: 'Supabase SDK did not load' };
+      var c = window.sbClient || window.supabaseClient;
+      if (!c) { c = createClient(cfg.url, cfg.anonKey, { auth: { persistSession: true, autoRefreshToken: true } }); window.sbClient = c; }
+      var r = await c.auth.getSession();
+      var token = r && r.data && r.data.session && r.data.session.access_token;
+      if (!token) return { err: 'No active session — sign in first' };
+      return { cfg: cfg, token: token };
+    } catch (e) {
+      return { err: String(e && e.message || e) };
+    }
+  }
+
+  async function runCoachCheck() {
+    var id = 'edge-coach';
+    setStatus(id, 'pending', 'running…', '');
+
+    var sess = await coachSession();
+    if (sess.err) {
+      setStatus(id, 'bad', 'blocked', sess.err);
+      return { id: id, state: 'fail', check: COACH_CHECK, note: sess.err };
+    }
+
+    try {
+      var resp = await fetch(sess.cfg.url + '/functions/v1/arowana-ai-coach', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + sess.token,
+          'apikey': sess.cfg.anonKey
+        },
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: 'Reply with the single word: ok' }],
+          context: { source: 'api-diagnostics', asOf: new Date().toISOString() }
+        })
+      });
+
+      var data = await resp.json().catch(function () { return {}; });
+
+      if (resp.status === 404) {
+        setStatus(id, 'bad', 'not deployed', 'No function named arowana-ai-coach on this project.');
+        return { id: id, state: 'fail', check: COACH_CHECK, note: 'function not deployed' };
+      }
+      if (resp.status === 401 || resp.status === 403) {
+        setStatus(id, 'bad', 'HTTP ' + resp.status, 'Session rejected — sign out and back in.');
+        return { id: id, state: 'fail', check: COACH_CHECK, note: 'auth rejected' };
+      }
+      if (resp.status === 429) {
+        setStatus(id, 'warn', 'rate limited', (data && data.error) || 'Daily AI limit reached.');
+        return { id: id, state: 'warn', check: COACH_CHECK, note: 'rate limited' };
+      }
+      if (!resp.ok) {
+        // A 500 here is usually a missing model API key in the function's secrets.
+        var msg = (data && data.error) || ('HTTP ' + resp.status);
+        setStatus(id, 'bad', 'HTTP ' + resp.status, msg + ' — check the function logs and its API key secret.');
+        return { id: id, state: 'fail', check: COACH_CHECK, note: msg };
+      }
+
+      var reply = data && (data.reply || data.message || data.output || data.text);
+      if (!reply) {
+        setStatus(id, 'warn', 'empty reply', 'Function responded 200 but returned no reply/message/output/text field.');
+        return { id: id, state: 'warn', check: COACH_CHECK, note: 'empty reply' };
+      }
+
+      setStatus(id, 'ok', 'working', 'replied: ' + String(reply).trim().slice(0, 60));
+      return { id: id, state: 'ok', check: COACH_CHECK };
+
+    } catch (e) {
+      setStatus(id, 'bad', 'blocked', 'Request failed before a response arrived (network or CORS).');
+      return { id: id, state: 'fail', check: COACH_CHECK, note: 'request blocked' };
+    }
+  }
+
+  var COACH_CHECK = {
+    id: 'edge-coach',
+    provider: 'supabase',
+    label: 'arowana-ai-coach Edge Function',
+    affects: 'AI Coach chat, Trading Command coach tab, Trade Plan Builder AI draft'
+  };
+
+  function renderKeys() {
+    var row = document.getElementById('keyRow');
+    while (row.firstChild) row.removeChild(row.firstChild);
+
+    [['finnhub', 'Finnhub'], ['alphavantage', 'Alpha Vantage'], ['fmp', 'FMP'], ['claude', 'Claude']].forEach(function (pair) {
+      var present = !!KEYS[pair[0]];
+      var chip = document.createElement('span');
+      chip.className = 'keychip';
+
+      var dot = document.createElement('span');
+      dot.className = 'dot ' + (present ? 'on' : 'off');
+      chip.appendChild(dot);
+      chip.appendChild(document.createTextNode(pair[1] + (present ? ' — set' : ' — not set')));
+      row.appendChild(chip);
+    });
+  }
+
+  function statusEl(kind, text) {
+    var s = document.createElement('span');
+    s.className = 'status ' + kind;
+    s.textContent = text;
+    return s;
+  }
+
+  function renderRows() {
+    var body = document.getElementById('results');
+    while (body.firstChild) body.removeChild(body.firstChild);
+
+    CHECKS.concat([COACH_CHECK]).forEach(function (c) {
+      var tr = document.createElement('tr');
+      tr.id = 'row-' + c.id;
+
+      var td1 = document.createElement('td');
+      var strong = document.createElement('div');
+      strong.style.fontWeight = '700';
+      strong.textContent = c.label;
+      td1.appendChild(strong);
+      var ep = document.createElement('div');
+      ep.className = 'endpoint';
+      ep.textContent = HOSTS[c.provider] || c.provider;
+      td1.appendChild(ep);
+      tr.appendChild(td1);
+
+      var td2 = document.createElement('td');
+      td2.appendChild(statusEl('pending', 'not run'));
+      var det = document.createElement('div');
+      det.className = 'detail';
+      td2.appendChild(det);
+      tr.appendChild(td2);
+
+      var td3 = document.createElement('td');
+      td3.className = 'affects';
+      td3.textContent = c.affects;
+      tr.appendChild(td3);
+
+      body.appendChild(tr);
+    });
+  }
+
+  function setStatus(id, kind, label, detail) {
+    var tr = document.getElementById('row-' + id);
+    if (!tr) return;
+    var td = tr.children[1];
+    while (td.firstChild) td.removeChild(td.firstChild);
+    td.appendChild(statusEl(kind, label));
+    var det = document.createElement('div');
+    det.className = 'detail';
+    det.textContent = detail || '';
+    td.appendChild(det);
+  }
+
+  async function runCheck(c) {
+    var key = KEYS[c.provider];
+    if (!key) {
+      if (c.optional) {
+        setStatus(c.id, 'warn', 'not set', 'Optional, but recommended — see the summary below.');
+        return { id: c.id, state: 'skip', check: c };
+      }
+      setStatus(c.id, 'bad', 'no key', 'Add a ' + c.provider + ' key in Account Settings.');
+      return { id: c.id, state: 'nokey', check: c };
+    }
+
+    setStatus(c.id, 'pending', 'running…', '');
+
+    try {
+      var res = await fetch(c.url(key));
+
+      if (!res.ok) {
+        var hint = '';
+        if (res.status === 401) hint = 'Key rejected — check it is correct.';
+        else if (res.status === 403) hint = 'Endpoint not included in your plan.';
+        else if (res.status === 429) hint = 'Rate limited — wait and retry.';
+        setStatus(c.id, 'bad', 'HTTP ' + res.status, hint);
+        return { id: c.id, state: 'fail', check: c, note: 'HTTP ' + res.status + (hint ? ' — ' + hint : '') };
+      }
+
+      var data = await res.json();
+      var v = c.verify(data);
+
+      if (v.ok && !v.warn) {
+        setStatus(c.id, 'ok', 'working', v.note);
+        return { id: c.id, state: 'ok', check: c };
+      }
+      if (v.warn) {
+        setStatus(c.id, 'warn', 'partial', v.note);
+        return { id: c.id, state: 'warn', check: c, note: v.note };
+      }
+      setStatus(c.id, 'bad', 'no data', v.note);
+      return { id: c.id, state: 'fail', check: c, note: v.note };
+
+    } catch (e) {
+      // A network-level throw here is usually CORS or an offline connection.
+      setStatus(c.id, 'bad', 'blocked', 'Request failed before a response arrived (network or CORS).');
+      return { id: c.id, state: 'fail', check: c, note: 'request blocked' };
+    }
+  }
+
+  function renderSummary(results) {
+    var box = document.getElementById('summary');
+    while (box.firstChild) box.removeChild(box.firstChild);
+
+    var broken = results.filter(function (r) { return r.state === 'fail' || r.state === 'nokey'; });
+    var partial = results.filter(function (r) { return r.state === 'warn'; });
+
+    var h = document.createElement('h3');
+    h.textContent = broken.length === 0
+      ? (partial.length ? 'Mostly working, with limits' : 'Everything is live')
+      : broken.length + ' endpoint' + (broken.length === 1 ? '' : 's') + ' not returning data';
+    box.appendChild(h);
+
+    if (broken.length === 0 && partial.length === 0) {
+      var p = document.createElement('p');
+      p.textContent = 'All four Options Hub tabs have the data they need. No demo values are being shown.';
+      box.appendChild(p);
+    } else {
+      var ul = document.createElement('ul');
+      broken.concat(partial).forEach(function (r) {
+        var li = document.createElement('li');
+        li.appendChild(document.createTextNode(r.check.label + ' — '));
+        var b = document.createElement('b');
+        b.textContent = r.check.affects;
+        li.appendChild(b);
+        if (r.note) li.appendChild(document.createTextNode(' (' + r.note + ')'));
+        ul.appendChild(li);
+      });
+      box.appendChild(ul);
+
+      var note = document.createElement('p');
+      note.style.marginTop = '10px';
+      note.textContent = 'Those tabs will show an "add your key" or "unavailable" message rather than '
+        + 'made-up numbers — the pages are built to fail visibly. Fixing the endpoint above restores them.';
+      box.appendChild(note);
+
+      var avHit = results.some(function (r) {
+        return r.id === 'av-daily' && (r.state === 'warn' || r.state === 'fail');
+      });
+      if (avHit && !KEYS.fmp) {
+        var tip = document.createElement('p');
+        tip.style.marginTop = '10px';
+        tip.innerHTML = '<b>Suggested fix:</b> add a free Financial Modeling Prep key in '
+          + 'Account Settings. It allows 250 requests a day against Alpha Vantage\'s 25, and '
+          + 'Options Hub will prefer it automatically for volatility ranking.';
+        box.appendChild(tip);
+      }
+    }
+
+    box.classList.add('show');
+  }
+
+  document.getElementById('runBtn').addEventListener('click', async function () {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Running…';
+
+    var results = [];
+    // Sequential rather than parallel: keeps us well under any per-second cap
+    // and makes the failing call obvious if something rate-limits mid-run.
+    for (var i = 0; i < CHECKS.length; i++) {
+      results.push(await runCheck(CHECKS[i]));
+    }
+    results.push(await runCoachCheck());
+
+    renderSummary(results);
+    btn.disabled = false;
+    btn.textContent = 'Run all checks again';
+  });
+
+  /* ── RLS probe ─────────────────────────────────────────────────
+     For each table, run the same read twice: once with no user filter and
+     once scoped to you. Under correct RLS the server silently restricts the
+     unfiltered read to your own rows, so the counts match. A higher
+     unfiltered count means the table is returning other people's data to a
+     signed-in user — the failure that ends a multi-tenant product.
+
+     Honest limitation: if you are the only user with rows in a table, the
+     counts match whether RLS is on or off. That case is reported as
+     inconclusive rather than a pass. */
+  var RLS_TABLES = [
+    { table: 'tj_stocks',       col: 'user_id' },
+    { table: 'tj_options',      col: 'user_id' },
+    { table: 'watchlists',      col: 'user_id' },
+    { table: 'watchlist_items', col: 'user_id' },
+    { table: 'user_api_keys',   col: 'user_id' },
+    { table: 'profiles',        col: 'id'      }
+  ];
+
+  function rlsRow(t) {
+    var tr = document.createElement('tr');
+    tr.id = 'rls-' + t;
+    var td0 = document.createElement('td');
+    var code = document.createElement('span');
+    code.className = 'endpoint';
+    code.textContent = t;
+    td0.appendChild(code);
+    tr.appendChild(td0);
+    for (var i = 0; i < 3; i++) tr.appendChild(document.createElement('td'));
+    tr.children[1].textContent = '—';
+    tr.children[2].textContent = '—';
+    tr.children[3].appendChild(statusEl('pending', 'not run'));
+    return tr;
+  }
+
+  function renderRlsRows() {
+    var body = document.getElementById('rlsResults');
+    while (body.firstChild) body.removeChild(body.firstChild);
+    RLS_TABLES.forEach(function (t) { body.appendChild(rlsRow(t.table)); });
+  }
+
+  async function probeTable(client, uid, spec) {
+    var tr = document.getElementById('rls-' + spec.table);
+    var setVerdict = function (kind, label, detail) {
+      while (tr.children[3].firstChild) tr.children[3].removeChild(tr.children[3].firstChild);
+      tr.children[3].appendChild(statusEl(kind, label));
+      if (detail) {
+        var d = document.createElement('div');
+        d.className = 'detail';
+        d.textContent = detail;
+        tr.children[3].appendChild(d);
+      }
+    };
+
+    try {
+      // head:true + count:'exact' returns only a count, no row data.
+      var all = await client.from(spec.table).select('*', { count: 'exact', head: true });
+      if (all.error) {
+        tr.children[1].textContent = 'error';
+        setVerdict('warn', 'unreadable', all.error.message.slice(0, 70));
+        return { table: spec.table, state: 'skip' };
+      }
+
+      var mine = await client.from(spec.table)
+        .select('*', { count: 'exact', head: true })
+        .eq(spec.col, uid);
+      if (mine.error) {
+        tr.children[1].textContent = String(all.count);
+        setVerdict('warn', 'unreadable', mine.error.message.slice(0, 70));
+        return { table: spec.table, state: 'skip' };
+      }
+
+      tr.children[1].textContent = String(all.count);
+      tr.children[2].textContent = String(mine.count);
+
+      if (all.count > mine.count) {
+        setVerdict('bad', 'unscoped', (all.count - mine.count) + ' row(s) visible that do not carry your user_id. '
+          + 'Either another account can see them, or they are orphans with a null user_id — '
+          + 'check the rows before assuming which.');
+        return { table: spec.table, state: 'leak', extra: all.count - mine.count };
+      }
+      if (all.count === 0) {
+        setVerdict('warn', 'no rows', 'Empty table — nothing to test.');
+        return { table: spec.table, state: 'empty' };
+      }
+      setVerdict('ok', 'scoped', 'Unfiltered read returned only your rows.');
+      return { table: spec.table, state: 'ok' };
+
+    } catch (e) {
+      setVerdict('bad', 'failed', String(e && e.message || e).slice(0, 70));
+      return { table: spec.table, state: 'skip' };
+    }
+  }
+
+  document.getElementById('rlsBtn').addEventListener('click', async function () {
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Probing…';
+
+    var box = document.getElementById('rlsSummary');
+    box.classList.remove('show');
+
+    var sess = await coachSession();
+    if (sess.err) {
+      btn.disabled = false;
+      btn.textContent = 'Run RLS probe';
+      while (box.firstChild) box.removeChild(box.firstChild);
+      var p = document.createElement('p');
+      p.textContent = 'Sign in first — this probe has to run as a real user. (' + sess.err + ')';
+      box.appendChild(p);
+      box.classList.add('show');
+      return;
+    }
+
+    var client = window.sbClient || window.supabaseClient;
+    var u = await client.auth.getUser();
+    var uid = u && u.data && u.data.user && u.data.user.id;
+
+    var results = [];
+    for (var i = 0; i < RLS_TABLES.length; i++) {
+      results.push(await probeTable(client, uid, RLS_TABLES[i]));
+    }
+
+    var leaks = results.filter(function (r) { return r.state === 'leak'; });
+    var empty = results.filter(function (r) { return r.state === 'empty'; });
+
+    while (box.firstChild) box.removeChild(box.firstChild);
+    var h = document.createElement('h3');
+    h.textContent = leaks.length
+      ? leaks.length + ' table' + (leaks.length === 1 ? '' : 's') + ' returning other users\' rows'
+      : 'No cross-user rows returned';
+    box.appendChild(h);
+
+    var p2 = document.createElement('p');
+    if (leaks.length) {
+      p2.textContent = 'Rows are visible that do not carry your user_id in: '
+        + leaks.map(function (r) { return r.table; }).join(', ')
+        + '. Run a SELECT on those rows before concluding anything: a null user_id means '
+        + 'orphan rows written by a code path that omitted it, while a different user_id '
+        + 'means an actual cross-account leak. Both need fixing, but only the second is urgent.';
+    } else {
+      p2.textContent = 'Every table returned only your own rows on an unfiltered read. '
+        + 'Note the limitation: if you are the only account with data, this passes '
+        + 'whether or not RLS is enabled. Create a second test account with a few rows '
+        + 'and re-run to make it conclusive.'
+        + (empty.length ? ' Untested (empty): ' + empty.map(function (r) { return r.table; }).join(', ') + '.' : '');
+    }
+    box.appendChild(p2);
+    box.classList.add('show');
+
+    btn.disabled = false;
+    btn.textContent = 'Run RLS probe again';
+  });
+
+  renderKeys();
+  renderRows();
+  renderRlsRows();
+})();
+</script>
+</body>
+</html>

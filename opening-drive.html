@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>🏁 Opening Drive Scanner</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
+  <style>
+  /*
+   * ===== Unified Application Stylesheet =====
+   * Consolidated styles for base shell, components, and responsive layout.
+   */
+
+  /* 1. Design Tokens */
+  :root{
+    /* Primary Colors & Layout */
+    --brand:#1a3c5e;
+    --ink:#222;
+    --text:#111827; /* Main text color */
+    --muted:#667085; /* Secondary text color */
+    --bg:#f9fafb; /* App background (slightly lighter grey, from block 2) */
+    --panel:#ffffff; /* Panel/Card background */
+    --border:#e5e7eb; /* Border color */
+
+    /* Status & Utility */
+    --ok:#138a36; /* Success/Green */
+    --bad:#b00020; /* Error/Red (General) */
+    --red:#dc2626; /* Specific red for status notes */
+
+    /* Effects & Dimensions */
+    --shadow:0 4px 12px rgba(0,0,0,.08); /* Card shadow (from block 2) */
+    --ring:rgba(26,60,94,0.22); /* Focus ring color */
+    --page-width: min(1200px, 92vw);
+    --radius-lg:1.25rem; /* Large radius for cards (20px) */
+    --radius-sm:.625rem; /* Small radius for inputs/elements (10px) */
+  }
+
+  /* 2. Base & Typography */
+  *{box-sizing:border-box}
+  html,body{
+    margin:0; padding:0;
+    /* Using a robust font stack starting with Inter */
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Noto Sans", "Apple Color Emoji","Segoe UI Emoji";
+    background:var(--bg);
+    color:var(--text);
+    min-height:100vh; /* Enables sticky footer */
+    display:flex;
+    flex-direction:column;
+  }
+  a{color:var(--brand); text-decoration:none}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{
+    outline:none; box-shadow:0 0 0 4px var(--ring) /* Added focus ring for accessibility */
+  }
+  .container{width:100%; max-width:var(--page-width); margin:0 auto; padding:0 16px}
+  main h1{margin:8px 0; font-size:clamp(22px,4.2vw,32px)}
+  .muted{color:var(--muted)}
+  .hint{font-size:.85rem;color:var(--muted);margin-top:4px}
+
+  /* 3. Header & Navigation */
+  .header{
+    width:100%; max-width:none; background:var(--brand); color:#fff;
+    padding:20px 0; margin-top:0; position:relative; display:block;
+    margin-bottom: 20px;
+  }
+  .header-top{display:flex; align-items:center; justify-content:space-between; gap:12px}
+  .logo{
+    display:flex; align-items:center; gap:10px; font-weight:800;
+    font-size:clamp(18px, 4vw, 20px); white-space: nowrap;
+  }
+  .logo-img{width:50px;height:50px;border-radius:6px}
+  .brand-link{color:#fff; text-decoration:none}
+  .nav{display:flex; gap:12px; align-items:center}
+  .nav a{color:#eaf1f9; padding:8px 10px; border-radius:10px}
+  .nav a[aria-current="page"]{background:rgba(255,255,255,.22); color:#fff}
+  .nav a:active{background:rgba(255,255,255,.15)}
+  .hamburger{display:none; font-size:24px; cursor:pointer; color:#eaf1f9; padding:8px; border-radius:10px}
+
+  /* 4. Mobile Menu (Fixed Bottom Bar - preferred pattern) */
+  /* Header must be position:relative (yours already is) */
+  .header{ position:relative; }
+
+  /* Mobile menu: sits under the header */
+  .mobile-menu{
+    display:none;
+    position:absolute;      /* anchor to header */
+    left:0; right:0; top:100%;
+    background:#0f2a44;
+    padding:12px 16px 16px;
+    z-index:60;
+    border-top:1px solid rgba(255,255,255,.08);
+    border-bottom-left-radius:14px;
+    border-bottom-right-radius:14px;
+    box-shadow:0 12px 24px rgba(0,0,0,.18);
+  }
+  .mobile-menu a{display:flex;align-items:center;gap:10px;color:#eaf1f9;padding:12px 8px;border-radius:12px}
+  .mobile-menu .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:8px}
+  .mobile-menu .grid a{background:rgba(255,255,255,.06);justify-content:center}
+
+  /* 5. Footer */
+  footer{margin-top:auto; background:var(--brand); color:#d7dae0; padding:28px 0}
+  footer .cols{display:grid; grid-template-columns:repeat(4,1fr); gap:16px}
+  footer h4{margin:0 0 6px}
+  footer a{color:#b6c3d6}
+  .foot-bottom{margin-top:14px; font-size:12px; text-align:center; color:#9aa6b6}
+
+  /* 6. Components (Cards, Forms, Buttons, Layout) */
+  .card{
+    background:var(--panel);
+    border-radius:var(--radius-lg); /* Using token for large radius */
+    padding:18px; /* Standardized larger padding */
+    box-shadow:var(--shadow); /* Using token for shadow */
+    margin:12px 0;
+    border:1px solid var(--border); /* Added consistent border */
+  }
+  .card h2{margin:0 0 10px; font-size:1.2rem; color:var(--brand)}
+  .status-note{background:var(--bg);padding:14px;border-radius:var(--radius-sm);margin:16px 0;border:1px solid var(--border);color:var(--red);display:none}
+
+  .form-grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(200px,1fr))}
+  .row{display:grid;gap:12px}
+  .row.four{grid-template-columns:repeat(4,minmax(0,1fr)); margin-bottom:10px;}
+  .row.two{grid-template-columns:1fr 1fr}
+  .row.single{grid-template-columns:1fr}
+
+  /* Form Elements */
+  label{display:block;font-size:.9rem;margin-bottom:4px;color:#1b3350}
+  input,select{width:100%;padding:10px;border-radius:10px;border:1px solid #d0d7e2;font-size:.95rem;min-height:42px}
+  input[type="checkbox"]{width:auto;min-height:auto}
+  .check-wrap{display:flex;align-items:center;gap:8px}
+
+  /* Buttons */
+  .btn{
+    display:inline-flex;align-items:center;justify-content:center;
+    gap:.5rem;border:none;
+    border-radius:9999px;
+    padding:.55rem 1rem;
+    font-weight:600;cursor:pointer
+  }
+  .btn.primary{background:var(--brand);color:#fff}
+  .btn.gray{background:#eef2f7;color:#18334f;border:1px solid #d8dee8}
+  .btn.ghost{background:#fff;border:1px solid #dfe5ef;color:#1f2937}
+  .btn.link{background:transparent;color:var(--brand);text-decoration:underline}
+  .btn + .btn{margin-left:6px}
+
+  /* 7. Tables */
+  .table-wrap{overflow:auto;border:1px solid var(--border);border-radius:12px}
+  table{width:100%;border-collapse:separate;border-spacing:0;font-size:.95rem;min-width:860px}
+  th,td{padding:.6rem .7rem;text-align:left;border-bottom:1px solid #eef1f5}
+  th{position:sticky;top:0;background:#f6f8fb;color:#1a3550;font-weight:700;z-index:1}
+  td.num,th.num{text-align:right}
+  tr:hover td{background:#fbfdff}
+
+  /* 8. Category Grid */
+  .grid-cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .cat{
+    background:var(--panel);
+    border-radius:12px;
+    box-shadow:0 1px 6px rgba(0,0,0,.05);
+    padding:14px;
+    border:1px solid #eef2f6
+  }
+  .cat h3{margin:.25rem 0 .5rem;color:var(--brand)}
+
+  /* 9. Responsive Overrides */
+  @media (max-width:980px){
+    .row.four{grid-template-columns:1fr 1fr}
+  }
+
+  @media (max-width: 640px){
+   .row.four{grid-template-columns:1fr}
+    footer .cols{grid-template-columns:1fr}
+  }
+
+    /* Mobile: hide by default, show when toggled */
+    @media (max-width:640px){
+      .hamburger{display:block}
+      .nav{display:none}
+      .mobile-menu{display:none}
+      .mobile-menu[aria-hidden="false"]{display:grid}
+    }
+
+  /* put this anywhere in your <style> block */
+  .no-scroll { overflow: hidden; }
+</style>
+
+  <style>
+    .header-bar{
+      width:100%;
+      background:#1a3c5e;
+      color:#fff;
+      position:relative;
+    }
+    .ap-header{
+      position:sticky;
+      top:0;
+      z-index:40;
+      color:#fff;
+      box-shadow:0 2px 12px rgba(0,0,0,.08);
+    }
+    .ap-nav{
+      max-width:1200px;
+      margin:0 auto;
+      padding:12px 16px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:16px;
+    }
+    .ap-left{
+      display:flex;
+      align-items:center;
+      gap:18px;
+      min-width:0;
+    }
+    .ap-brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      color:#fff;
+      text-decoration:none;
+      white-space:nowrap;
+    }
+    .ap-logo{
+      width:50px;
+      height:50px;
+      border-radius:7px;
+      object-fit:contain;
+      background:rgba(255,255,255,.2);
+    }
+    .ap-title{
+      font-weight:800;
+      font-size:1.35rem;
+      letter-spacing:.2px;
+    }
+    .ap-nav-main{
+      display:flex;
+      align-items:center;
+      gap:10px;
+    }
+    .ap-tab{
+      position:relative;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      color:#fff;
+      text-decoration:none;
+      padding:7px 10px;
+      border-radius:7px;
+      background:transparent;
+      transition:background .2s ease,opacity .2s ease;
+      opacity:.95;
+    }
+    .ap-tab::before{
+      content:attr(data-icon);
+      font-size:1rem;
+      line-height:1;
+    }
+    .ap-tab:hover{
+      background:rgba(255,255,255,.08);
+      opacity:1;
+    }
+    .ap-tab.is-active{
+      background:rgba(255,255,255,.18);
+    }
+    .ap-right{
+      display:flex;
+      align-items:center;
+      gap:18px;
+    }
+    .ap-nav-top{
+      display:flex;
+      justify-content:flex-end;
+      gap:10px;
+    }
+    .ap-nav-top a.ap-toplink{
+      text-decoration:none;
+      color:#e8f2fb;
+      background:rgba(255,255,255,.08);
+      padding:8px 14px;
+      border-radius:7px;
+      font-size:.95rem;
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+      transition:background .2s ease,opacity .2s ease;
+      opacity:.95;
+    }
+    .ap-nav-top a.ap-toplink:hover{
+      background:rgba(255,255,255,.16);
+      opacity:1;
+    }
+    .ap-emoji{
+      background:transparent;
+      width:auto;
+      height:auto;
+      border-radius:0;
+      padding:0;
+    }
+
+    /* Real-time ticker bar */
+    .ticker-container{
+      background:#f0f2f6;
+      overflow:hidden;
+      white-space:nowrap;
+      padding:8px 0;
+      border-top:1px solid #dde2ea;
+      border-bottom:1px solid #dde2ea;
+    }
+    .ticker{
+      display:inline-block;
+      animation:ticker 22s linear infinite;
+    }
+    .ticker span{
+      margin-right:30px;
+      font-size:14px;
+      color:#334155;
+    }
+    .ticker .up::after{
+      content:"↑";
+      color:#16a34a;
+      margin-left:6px;
+    }
+    .ticker .down::after{
+      content:"↓";
+      color:#dc2626;
+      margin-left:6px;
+    }
+    @keyframes ticker{
+      0%{transform:translateX(100%)}
+      100%{transform:translateX(-100%)}
+    }
+    @media (prefers-reduced-motion:reduce){
+      .ticker{animation:none}
+    }
+
+    @media (max-width:640px){
+      .ap-nav{
+        flex-direction:column;
+        align-items:flex-start;
+      }
+      .ap-nav-main{
+        flex-wrap:wrap;
+      }
+    }
+  </style>
+
+</head>
+<body>
+<header class="header-bar ap-header">
+  <div class="ap-nav">
+    <div class="ap-left">
+      <a class="ap-brand" href="index.html" aria-label="Arowana Profits Home">
+        <img src="images/arowanalogo.png" alt="Arowana Profits" class="ap-logo">
+        <span class="ap-title">Arowana Profits</span>
+      </a>
+
+      <nav class="ap-nav-main" id="navMain" aria-label="Primary">
+        <a href="short-term-dashboard.html" class="ap-tab" data-icon="⚡">Short-Term</a>
+        <a href="long-term-dashboard.html" class="ap-tab" data-icon="📈">Long-Term</a>
+      </nav>
+    </div>
+
+    <div class="ap-right">
+      <nav class="ap-nav-top" id="navTop" aria-label="Account actions">
+        <!-- JS fills this -->
+      </nav>
+    </div>
+  </div>
+</header>
+
+<section class="ticker-container">
+  <div class="ticker" id="tickerStrip"></div>
+</section>
+
+  <main class="container" style="padding:16px 0 24px">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+      <div>
+        <h1 style="margin:0">🏁 Opening Drive Scanner</h1>
+        <p class="muted" style="margin:.25rem 0 0">Scan for strong directional moves during the first 15–30 minutes of trading.</p>
+      </div>
+      <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+        <a class="btn ghost" href="short-term-dashboard.html">← Dashboard</a>
+        <a class="btn ghost" href="watchlist.html">📜 Watchlist</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Filters</h2>
+      <div class="row four">
+        <div><label>Drive Duration (mins)</label><input id="driveDur" type="number" value="15"></div>
+        <div><label>Rel. Volume (×)</label><input id="relVolMin" type="number" value="1.5"></div>
+        <div><label>% Move from Open</label><input id="moveMin" type="number" step="0.1" value="1.0"></div>
+        <div>
+          <label>Price Band</label>
+          <select id="priceBand"><option value="all">All</option><option value="0-5">$0–5</option><option value="5-20">$5–20</option><option value="20-100">$20–100</option><option value="100+">$100+</option></select>
+        </div>
+      </div>
+      <div class="row single">
+        <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+          <button id="scanBtn" class="btn primary"><i class="fas fa-bolt"></i> Scan</button>
+          <button id="autoBtn" class="btn gray"><i class="fas fa-sync"></i> Auto (30s)</button>
+          <button id="savePreset" class="btn ghost">💾 Save</button>
+          <button id="loadPreset" class="btn ghost">📂 Load</button>
+          <button id="exportCsv" class="btn ghost">Export CSV</button>
+          <button id="clearRows" class="btn ghost">Clear</button>
+          <span id="scanStatus" class="muted" style="align-self:center">Ready</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Results</h2>
+      <div class="table-wrap">
+        <table id="results">
+          <thead><tr><th>Symbol</th><th class="num">Open</th><th class="num">Last</th><th class="num">% Move</th><th class="num">RelVol</th><th class="num">VWAP Dist%</th><th>Notes</th><th></th></tr></thead>
+          <tbody id="tbody"><tr><td colspan="8" class="muted">No data yet</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Playbook</h2>
+      <div class="grid-cats">
+        <div class="cat"><h3>📋 Entry</h3><ul><li>Strong drive with volume confirmation</li><li>Above VWAP & previous close</li><li>Clear 1-min flag continuation</li></ul></div>
+        <div class="cat"><h3>🛡 Risk Mgmt</h3><ul><li>Risk below VWAP or base</li><li>Partial at 1R, trail remaining</li><li>Exit on reversal candle</li></ul></div>
+        <div class="cat"><h3>🔗 Tools</h3><ul><li><a href="position-size.html">📏 Position Sizer</a></li><li><a href="atr-stop.html">📐 ATR Stop</a></li><li><a href="watchlist.html">📝 Watchlist</a></li></ul></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- ===== Footer (matches rsi-screener.html) ===== -->
+  <footer>
+    <div class="container">
+      <div class="cols">
+        <div>
+          <h4>Arowana Profits</h4>
+          <p>AI-powered tools and education for traders and investors.</p>
+        </div>
+        <div>
+          <h4>Solutions</h4>
+          <ul>
+            <li><a href="short-term-dashboard.html">Trading Dashboard</a></li>
+            <li><a href="long-term-dashboard.html">Long-Term Dashboard</a></li>
+            <li><a href="learn-investing.html">Learning Center</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Company</h4>
+          <ul>
+            <li><a href="about.html">About</a></li>
+            <li><a href="contact.html">Contact</a></li>
+            <li><a href="careers.html">Careers</a></li>
+          </ul>
+        </div>
+        <div>
+          <h4>Legal</h4>
+          <p><strong>Disclaimer:</strong> We do not provide investment advice. Investing involves risk, including loss of principal.</p>
+        </div>
+      </div>
+      <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
+    </div>
+  </footer>
+
+    <script>
+    // ===== Real-time ticker using Twelve Data =====
+    const TICKER_SYMBOLS = ["AAPL","MSFT","GOOGL","AMZN","TSLA","NVDA","META"];
+    const TICKER_API_KEY = "__TWELVE_DATA_KEY_REMOVED__"; // your key
+    const TICKER_INTERVAL_MS = 60_000; // refresh every 60s
+
+    async function fetchTickerData() {
+        try {
+        const url = new URL("https://api.twelvedata.com/quote");
+        url.searchParams.set("symbol", TICKER_SYMBOLS.join(","));
+        url.searchParams.set("apikey", TICKER_API_KEY);
+
+        const res = await fetch(url.toString());
+        if (!res.ok) throw new Error("HTTP " + res.status);
+
+        const data = await res.json();
+        console.log("Ticker raw response:", data);
+
+        let quotes = [];
+
+        // Case 1: Twelve Data returns { data: [...] }
+        if (Array.isArray(data.data)) {
+            quotes = data.data;
+        }
+        // Case 2: It returns an array directly
+        else if (Array.isArray(data)) {
+            quotes = data;
+        }
+        // Case 3: It returns an object keyed by symbol
+        else if (data && typeof data === "object") {
+            quotes = TICKER_SYMBOLS.map(sym => ({
+            symbol: sym,
+            ...(data[sym] || data)
+            }));
+        }
+
+        if (!quotes.length) {
+            console.warn("No quotes parsed from API, falling back to static.");
+            quotes = TICKER_SYMBOLS.map(sym => ({ symbol: sym, price: 0, change: 0 }));
+        }
+
+        renderTicker(quotes);
+        } catch (err) {
+        console.error("Ticker error:", err);
+
+        // Fallback: show symbols with placeholder prices
+        const fallback = TICKER_SYMBOLS.map(sym => ({ symbol: sym, price: 0, change: 0 }));
+        renderTicker(fallback);
+        }
+    }
+
+    function renderTicker(quotes) {
+        const strip = document.getElementById("tickerStrip");
+        if (!strip) return;
+
+        strip.innerHTML = "";
+        quotes.forEach(q => {
+        if (!q || !q.symbol) return;
+
+        // Try different possible fields
+        const rawPrice = q.price ?? q.close ?? q.last ?? q.previous_close ?? 0;
+        const price = Number(rawPrice);
+        const change = Number(q.change ?? q.percent_change ?? 0);
+
+        const span = document.createElement("span");
+        span.textContent = `${q.symbol} $${isFinite(price) ? price.toFixed(2) : "—"}`;
+
+        if (change > 0) span.classList.add("up");
+        else if (change < 0) span.classList.add("down");
+
+        strip.appendChild(span);
+        });
+    }
+
+    function initTicker() {
+        fetchTickerData();
+        setInterval(fetchTickerData, TICKER_INTERVAL_MS);
+    }
+
+    // Run immediately if DOM is ready, otherwise wait
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initTicker);
+    } else {
+        initTicker();
+    }
+    </script>
+
+    <script type="module">
+      import { supabase } from "./js/supabase-init.js";
+
+      const navTop = document.getElementById("navTop");
+      const mobileGrid = document.querySelector("#mobileMenu .grid"); // optional
+
+      const nextParam = encodeURIComponent(location.pathname + location.search);
+
+      const mk = (href, text, emoji) => {
+        const a = document.createElement("a");
+        a.href = href;
+        a.className = "ap-toplink";
+        a.innerHTML = `<span class="ap-emoji">${emoji}</span><span>${text}</span>`;
+        return a;
+      };
+
+      async function renderAuthLinks(){
+        if (!navTop) return;
+        navTop.innerHTML = "";
+
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (user) {
+          const label = user.email?.split("@")[0] || "Account";
+          const account = mk("account.html", label, "🪪");
+          const signOut = mk("#", "Sign out", "🚪");
+          signOut.addEventListener("click", async (e) => {
+            e.preventDefault();
+            try { await supabase.auth.signOut(); } finally { location.reload(); }
+          });
+          navTop.append(account, signOut);
+        } else {
+          const signIn = mk(`login.html?next=${nextParam}`, "Sign in", "🔑");
+          const signUp = mk(`signup.html?next=${nextParam}`, "Sign up", "🆕");
+          navTop.append(signIn, signUp);
+        }
+
+        if (mobileGrid) {
+          mobileGrid.querySelectorAll(".ap-toplink").forEach(n => n.remove());
+          navTop.querySelectorAll(".ap-toplink").forEach(el => {
+            const clone = el.cloneNode(true);
+            if (clone.textContent.includes("Sign out")) {
+              clone.addEventListener("click", async (e) => {
+                e.preventDefault();
+                try { await supabase.auth.signOut(); } finally { location.reload(); }
+              });
+            }
+            mobileGrid.appendChild(clone);
+          });
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        renderAuthLinks();
+        const yearEl = document.getElementById("year");
+        if (yearEl) yearEl.textContent = new Date().getFullYear();
+      });
+    </script>
+
+<script>
+(function(){
+  const $=sel=>document.querySelector(sel);
+  const tbody=$("#tbody"),status=$("#scanStatus");let autoTimer=null;const STORAGE="od_preset_v1";
+  function row(r){return `<tr><td><b>${r.symbol}</b></td><td class="num">$${r.open.toFixed(2)}</td><td class="num">$${r.last.toFixed(2)}</td><td class="num" style="color:${r.move>=0?'#138a36':'#b00020'}">${r.move.toFixed(2)}%</td><td class="num">${r.relVol.toFixed(2)}×</td><td class="num">${r.vwapDist.toFixed(2)}%</td><td>${r.note}</td><td><a href="watchlist.html" class="btn link" data-add="${r.symbol}">+Watch</a></td></tr>`;}
+  function mockData(){return[{symbol:"NVDA",open:122.4,last:125.9,move:2.85,relVol:2.1,vwapDist:0.9,note:"Strong opening surge"},{symbol:"TSLA",open:245.1,last:247.3,move:0.9,relVol:1.6,vwapDist:0.4,note:"Clean flag"},{symbol:"AAPL",open:180,last:182.1,move:1.17,relVol:1.4,vwapDist:0.5,note:"Trend up"}];}
+  function filterRows(rows){const rv=+$("#relVolMin").value||0;const move=+$("#moveMin").value||0;const band=$("#priceBand").value;let out=rows.filter(x=>x.relVol>=rv&&x.move>=move);out=out.filter(x=>{if(band==="all")return true;if(band==="0-5")return x.last<5;if(band==="5-20")return x.last>=5&&x.last<20;if(band==="20-100")return x.last>=20&&x.last<100;if(band==="100+")return x.last>=100;});return out;}
+  function render(rows){tbody.innerHTML=rows.length?rows.map(row).join(""):`<tr><td colspan="8" class="muted">No matches</td></tr>`;status.textContent=`Found ${rows.length}`;}
+  function scan(){render(filterRows(mockData()));}
+  function savePreset(){const p={relVolMin:$("#relVolMin").value,moveMin:$("#moveMin").value,priceBand:$("#priceBand").value};localStorage.setItem(STORAGE,JSON.stringify(p));status.textContent="Preset saved";}
+  function loadPreset(){try{const p=JSON.parse(localStorage.getItem(STORAGE)||"{}");if(p.relVolMin)$("#relVolMin").value=p.relVolMin;if(p.moveMin)$("#moveMin").value=p.moveMin;if(p.priceBand)$("#priceBand").value=p.priceBand;status.textContent="Preset loaded";}catch{}}
+  document.getElementById("scanBtn").addEventListener("click",scan);
+  document.getElementById("autoBtn").addEventListener("click",()=>{if(autoTimer){clearInterval(autoTimer);autoTimer=null;status.textContent="Auto off";return;}scan();status.textContent="Auto 30s…";autoTimer=setInterval(scan,30000);});
+  document.getElementById("savePreset").addEventListener("click",savePreset);
+  document.getElementById("loadPreset").addEventListener("click",loadPreset);
+  document.getElementById("clearRows").addEventListener("click",()=>{tbody.innerHTML="";status.textContent="Cleared";});
+  document.addEventListener("click",(e)=>{const a=e.target.closest("[data-add]");if(!a)return;e.preventDefault();const sym=a.dataset.add;const KEY="arowana_watchlist_v2";let list=JSON.parse(localStorage.getItem(KEY)||"[]");if(!list.some(x=>x.symbol===sym)){list.unshift({symbol:sym,note:"from Opening Drive",created:Date.now()});localStorage.setItem(KEY,JSON.stringify(list));alert(sym+" added to watchlist");}else alert(sym+" already exists");});
+  loadPreset();scan();
+})();
+</script>
+<script>
+(function () {
+  const hamburger = document.getElementById('hamburger');
+  const mobileMenu = document.getElementById('mobileMenu');
+
+  if (!hamburger || !mobileMenu) return;
+
+  function setOpen(isOpen) {
+    mobileMenu.setAttribute('aria-hidden', isOpen ? 'false' : 'true');
+    hamburger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    document.body.classList.toggle('no-scroll', isOpen);
+  }
+
+  function toggle() {
+    const isHidden = mobileMenu.getAttribute('aria-hidden') !== 'false';
+    setOpen(isHidden);
+  }
+
+  // Open/close on hamburger click
+  hamburger.addEventListener('click', toggle);
+
+  // Close when clicking outside
+  document.addEventListener('click', (e) => {
+    if (!mobileMenu.contains(e.target) && !hamburger.contains(e.target)) {
+      setOpen(false);
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') setOpen(false);
+  });
+})();
+</script>
+
+</body>
+</html>

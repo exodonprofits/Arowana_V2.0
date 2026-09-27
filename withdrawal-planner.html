@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Withdrawal Planner • Long-Term Dashboard</title>
+<style>
+  /* ===== GenieSphere Base (aligned with Dividend Tracker) ===== */
+  :root{
+    --bg:#f9fafb; --card:#ffffff; --ink:#0f172a; --muted:#6b7280; --ring:#d1d5db;
+    --brand:#0ea5e9; --brand-strong:#0284c7; --accent:#22c55e; --danger:#ef4444; --warn:#f59e0b;
+    --soft:rgba(0,0,0,.06); --radius-lg:1.25rem; --radius-sm:.625rem; --shadow:0 8px 24px rgba(0,0,0,.08); --shadow-soft:0 4px 14px rgba(0,0,0,.07); --focus:0 0 0 4px rgba(14,165,233,.25);
+    --font:'Segoe UI', system-ui, -apple-system, "Inter", Roboto, Helvetica, Arial, sans-serif;
+
+    --input-h: 44px; --input-px: .85rem; --input-py: .7rem;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--font);display:flex;flex-direction:column;min-height:100vh}
+  .wrap{width:100%;max-width:1200px;margin:0 auto;padding:1.25rem}
+
+  /* Header */
+  header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin:1rem 0 1.25rem;flex-wrap:wrap}
+  .title{display:flex;align-items:baseline;gap:.75rem;flex-wrap:wrap}
+  .title h1{margin:0;font-size:clamp(1.3rem,2.4vw,1.9rem);font-weight:800;letter-spacing:.2px}
+  .title .sub{color:var(--muted);font-size:.95rem}
+
+  /* Layout */
+  .grid{display:grid;gap:1rem;grid-template-columns:1fr}
+  .card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:1.25rem}
+  .card h2{margin:0 0 .75rem;font-size:1.05rem;letter-spacing:.2px}
+  .sep{height:1px;background:var(--ring);opacity:.5;margin:.75rem 0 1rem}
+
+  /* Form + Inputs */
+  form{display:grid;gap:1rem}
+  label{font-weight:700;font-size:.92rem;display:inline-flex;align-items:center;gap:.5rem}
+  .hint{color:var(--muted);font-size:.85rem;margin-top:.15rem}
+
+  input[type="text"], input[type="number"], input[type="url"], input[type="search"], select, textarea{
+    width:100%; background:#fff; border:1px solid var(--ring); border-radius:var(--radius-sm);
+    padding:var(--input-py) var(--input-px); height:var(--input-h); line-height:calc(var(--input-h) - 2px);
+    font-size:1rem; color:var(--ink); transition:box-shadow .15s ease,border-color .15s ease; appearance:none;
+  }
+  input::placeholder, textarea::placeholder{ color:#9ca3af; opacity:1 }
+  input:focus,select:focus,textarea:focus{ outline:none;border-color:var(--brand);box-shadow:var(--focus) }
+  input[disabled], select[disabled], textarea[disabled], input[readonly], select[readonly], textarea[readonly]{ background:#f3f4f6; color:#6b7280; cursor:not-allowed; }
+  input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button{ -webkit-appearance:none; margin:0 }
+  input[type="number"]{ -moz-appearance:textfield }
+
+  /* Restore native dropdown arrow for selects (RSI-style) */
+  select{
+    appearance:auto;
+    -webkit-appearance:auto;
+    -moz-appearance:auto;
+    background-image:none; /* rely on native chevron */
+    padding-right: var(--input-px);
+  }
+
+  /* Grids */
+  .row{display:grid;grid-template-columns:1fr;gap:.85rem}
+  @media (min-width:720px){.row.two{grid-template-columns:1fr 1fr}}
+  @media (min-width:960px){.row.three{grid-template-columns:1fr 1fr 1fr}}
+  @media (min-width:1200px){.row.four{grid-template-columns:1fr 1fr 1fr 1fr}}
+
+  /* Buttons */
+  .actions{display:flex;flex-wrap:wrap;gap:.6rem;margin-top:.25rem}
+  .btn{appearance:none;border:0;cursor:pointer;padding:.75rem 1.15rem;font-weight:700;border-radius:999px;box-shadow:var(--shadow-soft);display:inline-flex;align-items:center;gap:.5rem}
+  .btn.primary{background:var(--brand);color:#fff}.btn.primary:hover{background:var(--brand-strong)}
+  .btn.success{background:var(--accent);color:#052e16}
+  .btn.gray{background:#e5e7eb;color:#111827}.btn.gray:hover{background:#d1d5db}
+  .btn.warn{background:var(--warn);color:#111827}
+  .btn.link{background:transparent;box-shadow:none;padding:.4rem .2rem;color:var(--brand-strong);border-radius:.5rem}
+
+  /* Spinner */
+  .spinner{display:none;margin-top:.75rem;text-align:center}
+  .spinner .dot{width:36px;height:36px;border-radius:50%;border:4px solid #e5e7eb;border-top-color:var(--brand);margin:0 auto;animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* KPIs, Table */
+  .kpis{display:grid;grid-template-columns:1fr;gap:.75rem}
+  @media (min-width:720px){.kpis{grid-template-columns:repeat(4,1fr)}}
+  .kpi{background:#f8fafc;border:1px solid var(--ring);border-radius:12px;padding:12px 14px}
+  .kpi .k{font-size:.82rem;color:var(--muted)} .kpi .v{font-size:1.15rem;font-weight:800;color:#0f172a}
+
+  table{width:100%;border-collapse:separate;border-spacing:0 8px}
+  thead th{font-size:.9rem;color:#475569;text-align:left;padding:8px 10px}
+  tbody td{background:#ffffff;border:1px solid #e5e7eb;border-left:none;border-right:none;padding:10px;border-radius:8px}
+  tbody tr{box-shadow:0 1px 0 rgba(0,0,0,.03)}
+  tbody tr td:first-child{border-left:1px solid #e5e7eb;border-top-left-radius:12px;border-bottom-left-radius:12px}
+  tbody tr td:last-child{border-right:1px solid #e5e7eb;border-top-right-radius:12px;border-bottom-right-radius:12px}
+
+  .note{background:#ecfeff;border-left:4px solid var(--brand);padding:.8rem .9rem;border-radius:.5rem}
+  .error{background:#fee2e2;border-left:4px solid var(--danger);padding:.8rem .9rem;border-radius:.5rem;color:#991b1b}
+  .success{background:#ecfdf5;border-left:4px solid var(--accent);padding:.8rem .9rem;border-radius:.5rem;color:#065f46}
+  footer{margin:1.5rem 0 2.5rem;display:flex;justify-content:space-between;gap:1rem;flex-wrap:wrap;color:var(--muted);font-size:.9rem}
+  .mt-6{margin-top:.65rem}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="title" role="group" aria-label="Page Title">
+        <h1>🏖️ Withdrawal Planner</h1>
+        <span class="sub">Controls on top • Results & table below</span>
+      </div>
+      <nav><a class="btn link" href="long-term-dashboard.html">⬅️ Back</a></nav>
+    </header>
+
+    <div class="grid">
+      <!-- Controls (Top Panel) -->
+      <section class="card" aria-labelledby="controlsTitle">
+        <h2 id="controlsTitle">⚙️ Plan Settings</h2>
+        <p class="hint">Quick Mode uses deterministic returns; Deep Mode runs Monte Carlo with volatility and optional sequence stress. Educational tool only.</p>
+        <form id="form" novalidate>
+          <div class="row four">
+            <div>
+              <label for="startingBalance">💰 Starting Portfolio ($)</label>
+              <input id="startingBalance" type="number" inputmode="decimal" min="0" step="100" placeholder="500000" />
+            </div>
+            <div>
+              <label for="years">📅 Years to Plan</label>
+              <input id="years" type="number" inputmode="numeric" min="1" max="60" value="30" />
+            </div>
+            <div>
+              <label for="expReturn">📈 Expected Return %</label>
+              <input id="expReturn" type="number" inputmode="decimal" step="0.1" value="6.5" />
+              <div class="hint">Nominal, before fees/taxes</div>
+            </div>
+            <div>
+              <label for="stdev">🌡️ Volatility % (Deep)</label>
+              <input id="stdev" type="number" inputmode="decimal" step="0.1" value="12" />
+            </div>
+          </div>
+
+          <div class="row four">
+            <div>
+              <label for="inflation">📉 Inflation %</label>
+              <input id="inflation" type="number" inputmode="decimal" step="0.1" value="2.5" />
+            </div>
+            <div>
+              <label for="expenseRatio">💸 Expense Ratio %</label>
+              <input id="expenseRatio" type="number" inputmode="decimal" step="0.01" value="0.10" />
+            </div>
+            <div>
+              <label for="taxRate">🧾 Tax on Withdrawals %</label>
+              <input id="taxRate" type="number" inputmode="decimal" step="0.1" value="12" />
+            </div>
+            <div>
+              <label for="otherIncome">🪙 Other Annual Income ($)</label>
+              <input id="otherIncome" type="number" inputmode="decimal" step="100" value="24000" />
+            </div>
+          </div>
+
+          <div class="row three">
+            <div>
+              <label for="strategy">🛠️ Strategy</label>
+              <select id="strategy">
+                <option value="fixedReal">4% Rule (constant real $)</option>
+                <option value="percentOfPortfolio">Fixed % of Portfolio</option>
+                <option value="guardrails">Guardrails (simple)</option>
+                <option value="rmd">RMD-style (age-based %)</option>
+              </select>
+            </div>
+            <div>
+              <label for="strategyParam" id="strategyParamLabel">Initial Withdrawal / %</label>
+              <input id="strategyParam" type="number" inputmode="decimal" step="0.1" value="4" />
+              <div class="hint" id="strategyHelp">If 4% Rule, enter 4 for 4% of initial balance (inflation-adjusted later).</div>
+            </div>
+            <div>
+              <label for="sequenceStress">🛡️ Sequence Stress</label>
+              <select id="sequenceStress">
+                <option value="none">None</option>
+                <option value="mild">Mild (−10%, Year 1)</option>
+                <option value="severe">Severe (−30%, Year 1)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="row three">
+            <div>
+              <label for="floor">🧱 Withdrawal Floor (real $)</label>
+              <input id="floor" type="number" inputmode="decimal" step="500" value="30000" />
+            </div>
+            <div>
+              <label for="ceiling">🧤 Withdrawal Ceiling (real $)</label>
+              <input id="ceiling" type="number" inputmode="decimal" step="500" value="120000" />
+            </div>
+            <div>
+              <label for="runs">🎲 Monte Carlo Runs</label>
+              <input id="runs" type="number" inputmode="numeric" min="100" max="5000" value="1000" />
+            </div>
+          </div>
+
+          <div class="row two">
+            <div style="align-self:center;display:flex;gap:.6rem;flex-wrap:wrap">
+              <label style="display:flex;align-items:center;gap:.5rem">
+                <input type="checkbox" id="deepMode" /> 🧠 Deep Mode
+              </label>
+              <span id="status" class="hint">Ready</span>
+            </div>
+            <div class="actions" style="justify-content:flex-end">
+              <button type="button" id="loadSample" class="btn gray">🧪 Load Sample</button>
+              <button type="button" id="reset" class="btn warn">🗑️ Reset</button>
+              <button type="button" id="run" class="btn primary">▶️ Run Plan</button>
+              <button type="button" id="exportCSV" class="btn gray">⬇️ Export CSV</button>
+              <button type="button" id="saveJSON" class="btn gray">💾 Save JSON</button>
+              <input type="file" id="filePicker" accept="application/json" style="display:none" />
+              <button type="button" id="loadJSON" class="btn gray">⬆️ Load JSON</button>
+            </div>
+          </div>
+
+          <div class="spinner" id="busy"><div class="dot" aria-label="Loading"></div></div>
+        </form>
+      </section>
+
+      <!-- Results (Bottom Panel) -->
+      <section class="card" aria-labelledby="summaryTitle">
+        <h2 id="summaryTitle">📊 Plan Summary</h2>
+        <div class="kpis" id="kpis">
+          <div class="kpi"><div class="k">Success (Deep)</div><div class="v" id="succRate">—</div></div>
+          <div class="kpi"><div class="k">Final Median Balance</div><div class="v" id="finalMedian">—</div></div>
+          <div class="kpi"><div class="k">Avg Real Withdrawal</div><div class="v" id="avgWithdrawal">—</div></div>
+          <div class="kpi"><div class="k">Worst 10th %ile Balance</div><div class="v" id="p10">—</div></div>
+        </div>
+        <div class="mt-6" style="overflow:auto">
+          <table id="tbl">
+            <thead>
+              <tr>
+                <th>Year</th>
+                <th>Start Balance</th>
+                <th>Withdrawal (pre-tax)</th>
+                <th>Other Income</th>
+                <th>Taxes</th>
+                <th>End Balance</th>
+                <th>Real Spending</th>
+              </tr>
+            </thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <div>GenieSphere • Withdrawal Planner</div>
+      <div><a class="btn link" href="long-term-dashboard.html">⬅️ Back to Dashboard</a></div>
+    </footer>
+  </div>
+
+<script>
+/* ========= Helpers ========= */
+const $ = (id)=>document.getElementById(id);
+const money0 = (n)=> isFinite(n) ? "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:0}) : "—";
+const money2 = (n)=> isFinite(n) ? "$"+Number(n).toLocaleString(undefined,{maximumFractionDigits:2}) : "—";
+
+function setBusy(on){ $("busy").style.display = on ? "block" : "none"; }
+function setStatus(t){ $("status").textContent = t || ""; }
+
+function updateStrategyUI(){
+  const s = $('strategy').value;
+  const label = $('strategyParamLabel');
+  const help = $('strategyHelp');
+  if (s === 'fixedReal') { label.textContent = 'Initial Withdrawal % of Starting Balance'; help.textContent = 'First year = % × starting balance; then inflation-adjusted within floor/ceiling.'; }
+  if (s === 'percentOfPortfolio') { label.textContent = 'Fixed % of Portfolio per Year'; help.textContent = 'Withdraw this % of current balance each year.'; }
+  if (s === 'guardrails') { label.textContent = 'Starting Withdrawal %'; help.textContent = 'Start at this %, adjust ±10% when guardrails are hit.'; }
+  if (s === 'rmd') { label.textContent = 'Starting Age'; help.textContent = 'Approximate RMD glide starting near 3.5% at age 70.'; }
+}
+$('strategy').addEventListener('change', updateStrategyUI);
+
+function rmdPercent(age){ const a = Math.max(55, Math.min(100, age)); return 0.035 + (a - 70) * ((0.07 - 0.035) / 20); }
+function clampReal(x, floor, ceiling){ return Math.max(floor, Math.min(ceiling, x)); }
+
+function simulatePath(p, rnd){
+  const rows = []; let balance = p.startingBalance; let lastReal=null; let age = (p.strategy==='rmd')? Math.max(55, Number(p.strategyParam)||70): null;
+  for(let y=1;y<=p.years;y++){
+    const startBal = balance;
+    // return
+    let mean = (p.expReturn - p.expenseRatio)/100; let r;
+    if(rnd){ const sigma=(p.stdev/100); const mu=Math.log(1+mean)-(sigma*sigma/2); r = Math.exp(mu + sigma * rnd()) - 1; }
+    else { r = mean; }
+    if(y===1){ if(p.sequenceStress==='mild') r-=0.10; if(p.sequenceStress==='severe') r-=0.30; }
+
+    // withdrawal target (nominal)
+    let wd=0; const infl = Math.pow(1+p.inflation/100, y-1);
+    if(p.strategy==='fixedReal'){
+      const first = (p.strategyParam/100)*p.startingBalance; lastReal = (y===1) ? first : lastReal*(1+p.inflation/100); wd = clampReal(lastReal, p.floor, p.ceiling);
+    }else if(p.strategy==='percentOfPortfolio'){
+      const raw=(p.strategyParam/100)*startBal; wd = Math.max(p.floor*infl, Math.min(p.ceiling*infl, raw));
+    }else if(p.strategy==='guardrails'){
+      const realStart = startBal / infl; const init = p.startingBalance; let rate=(p.strategyParam/100);
+      if(realStart < 0.8*init) rate = Math.max(0, rate*0.9); if(realStart > 1.2*init) rate = rate*1.1; const raw = rate*startBal; wd = Math.max(p.floor*infl, Math.min(p.ceiling*infl, raw));
+    }else if(p.strategy==='rmd'){
+      const pct = Math.max(0.03, rmdPercent(age)); wd = Math.max(p.floor*infl, Math.min(p.ceiling*infl, pct*startBal)); age++;
+    }
+
+    const taxes = wd * (p.taxRate/100);
+    const spending = wd - taxes + (p.otherIncome||0);
+    const endBal = Math.max(0, (startBal - wd) * (1 + r));
+    balance = endBal;
+    rows.push({ year:y, start:startBal, withdrawal:wd, otherIncome:(p.otherIncome||0), taxes, end:endBal, realSpending: spending / Math.pow(1+p.inflation/100, y-1) });
+  }
+  return rows;
+}
+
+function quantile(arr,q){ if(!arr.length) return 0; const s=[...arr].sort((a,b)=>a-b); const pos=(s.length-1)*q; const base=Math.floor(pos); const rest=pos-base; return s[base+1]!==undefined? s[base]+rest*(s[base+1]-s[base]) : s[base]; }
+function median(a){ return quantile(a,0.5); }
+
+function runQuick(p){ const rows = simulatePath(p,null); const res={ rows, successRate: rows[rows.length-1].end>0?1:0, finalMedian: rows[rows.length-1].end, p10: rows[rows.length-1].end, avgWithdrawal: rows.reduce((a,r)=>a+r.withdrawal,0)/rows.length }; return res; }
+function runDeep(p){ const runs=Math.max(100, Math.min(5000, Number(p.runs)||1000)); const paths=[]; for(let i=0;i<runs;i++){ const randN=()=>{ let u=0,v=0; while(u===0)u=Math.random(); while(v===0)v=Math.random(); return Math.sqrt(-2*Math.log(u))*Math.cos(2*Math.PI*v); }; paths.push(simulatePath(p,randN)); }
+  const years=p.years; const medRows=[]; for(let y=0;y<years;y++){ const pick=k=>paths.map(p=>p[y][k]); medRows.push({ year:y+1, start:median(pick('start')), withdrawal:median(pick('withdrawal')), otherIncome:median(pick('otherIncome')), taxes:median(pick('taxes')), end:median(pick('end')), realSpending:median(pick('realSpending')) }); }
+  const finals=paths.map(p=>p[p.length-1].end); return { rows:medRows, successRate: paths.filter(p=>p[p.length-1].end>0).length/paths.length, finalMedian: median(finals), p10: quantile(finals,0.10), avgWithdrawal: medRows.reduce((a,r)=>a+r.withdrawal,0)/medRows.length };
+}
+
+function gather(){ return {
+  startingBalance:Number($('startingBalance').value||0), years:Number($('years').value||30), expReturn:Number($('expReturn').value||0), stdev:Number($('stdev').value||0),
+  inflation:Number($('inflation').value||0), expenseRatio:Number($('expenseRatio').value||0), taxRate:Number($('taxRate').value||0), otherIncome:Number($('otherIncome').value||0),
+  strategy:$('strategy').value, strategyParam:Number($('strategyParam').value||0), floor:Number($('floor').value||0), ceiling:Number($('ceiling').value||0), sequenceStress:$('sequenceStress').value, runs:Number($('runs').value||1000)
+}; }
+
+function validate(p){ const msgs=[]; if(p.startingBalance<=0) msgs.push('Starting Portfolio must be > 0'); if(p.years<1) msgs.push('Years must be ≥ 1'); if(p.strategy==='rmd' && p.strategyParam<55) msgs.push('Starting age should be ≥ 55 for RMD-style'); return msgs; }
+
+function fillTable(rows){ const tb=$('tbody'); tb.innerHTML=''; rows.forEach(r=>{ const tr=document.createElement('tr'); tr.innerHTML=`<td>${r.year}</td><td>${money0(r.start)}</td><td>${money0(r.withdrawal)}</td><td>${money0(r.otherIncome)}</td><td>${money0(r.taxes)}</td><td>${money0(r.end)}</td><td>${money0(r.realSpending)}</td>`; tb.appendChild(tr); }); }
+function updateSummary(res,deep){ $('succRate').textContent = deep ? (res.successRate*100).toFixed(0)+'%' : '—'; $('finalMedian').textContent = money0(res.finalMedian); $('avgWithdrawal').textContent = money0(res.avgWithdrawal); $('p10').textContent = deep ? money0(res.p10) : '—'; }
+
+function runPlanner(){ const p=gather(); const errs=validate(p); if(errs.length){ alert('Please fix:\n- '+errs.join('\n- ')); return; } const deep=$('deepMode').checked; const res = deep? runDeep(p) : runQuick(p); updateSummary(res,deep); fillTable(res.rows); }
+
+// CSV Export
+function toCSV(rows){ const header=['Year','Start Balance','Withdrawal (pre-tax)','Other Income','Taxes','End Balance','Real Spending']; const lines=[header.join(',')]; rows.forEach(r=> lines.push([r.year,r.start,r.withdrawal,r.otherIncome,r.taxes,r.end,r.realSpending].join(','))); return lines.join('\n'); }
+$('exportCSV').addEventListener('click', ()=>{ const tb=$('tbody'); if(!tb.children.length){ alert('Run the plan first.'); return; } const rows=[...tb.children].map(tr=>{ const t=[...tr.children].map(td=> td.textContent.replace(/[$,]/g,'')); return { year:Number(t[0]), start:Number(t[1]), withdrawal:Number(t[2]), otherIncome:Number(t[3]), taxes:Number(t[4]), end:Number(t[5]), realSpending:Number(t[6]) }; }); const blob=new Blob([toCSV(rows)],{type:'text/csv'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='withdrawal-plan.csv'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),800); });
+
+// Save/Load JSON
+$('saveJSON').addEventListener('click', ()=>{ const blob=new Blob([JSON.stringify(gather(),null,2)],{type:'application/json'}); const url=URL.createObjectURL(blob); const a=document.createElement('a'); a.href=url; a.download='withdrawal-planner-settings.json'; a.click(); setTimeout(()=>URL.revokeObjectURL(url),800); });
+$('loadJSON').addEventListener('click', ()=> $('filePicker').click());
+$('filePicker').addEventListener('change', (e)=>{ const f=e.target.files[0]; if(!f) return; const reader=new FileReader(); reader.onload=()=>{ try{ const p=JSON.parse(reader.result); ['startingBalance','years','expReturn','stdev','inflation','expenseRatio','taxRate','otherIncome','strategy','strategyParam','floor','ceiling','sequenceStress','runs'].forEach(k=>{ if(p[k]!==undefined) $(k).value=p[k]; }); updateStrategyUI(); }catch{ alert('Invalid JSON'); } }; reader.readAsText(f); });
+
+// Buttons & defaults
+$('run').addEventListener('click', runPlanner);
+$('reset').addEventListener('click', ()=>{ ['startingBalance','years','expReturn','stdev','inflation','expenseRatio','taxRate','otherIncome','strategy','strategyParam','floor','ceiling','sequenceStress','runs'].forEach(id=>{ /* restore defaults */ }); $('years').value=30; $('expReturn').value=6.5; $('stdev').value=12; $('inflation').value=2.5; $('expenseRatio').value=0.10; $('taxRate').value=12; $('sequenceStress').value='none'; $('runs').value=1000; $('strategy').value='fixedReal'; $('strategyParam').value=4; $('floor').value=30000; $('ceiling').value=120000; $('otherIncome').value=24000; updateStrategyUI(); $('succRate').textContent='—'; $('finalMedian').textContent='—'; $('avgWithdrawal').textContent='—'; $('p10').textContent='—'; $('tbody').innerHTML=''; });
+$('loadSample').addEventListener('click', ()=>{ $('startingBalance').value=900000; $('years').value=30; $('expReturn').value=6.2; $('stdev').value=13; $('inflation').value=2.5; $('expenseRatio').value=0.08; $('taxRate').value=12; $('otherIncome').value=28000; $('strategy').value='fixedReal'; $('strategyParam').value=4; $('floor').value=36000; $('ceiling').value=140000; $('sequenceStress').value='mild'; $('runs').value=1000; $('deepMode').checked=false; updateStrategyUI(); runPlanner(); });
+
+// Init
+updateStrategyUI();
+</script>
+</body>
+</html>

@@ -1,0 +1,2410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>📊</text></svg>">
+<title>Trading Journal Analysis — Arowana Profits</title>
+  <link rel="stylesheet" href="./js/theme.css">
+  <style>
+/* ==========================================================================
+   App shell layout — lifted from trading-command.html.
+   This page had no rail, no drawer and no workspace bar; it used its own
+   breadcrumb header instead. These are the rules the shared markup needs.
+   Media queries come with them, so the mobile drawer behaves the same.
+   ========================================================================== */
+
+
+/* ===============================================
+   Mobile Drawer System
+   - Trigger button (left of brand) opens .sidebar as a drawer
+   =============================================== */
+
+/* Trigger button — hidden on desktop, shown on mobile */
+.mobile-icon-btn {
+  display: none;
+  background: rgba(255,255,255,0.1);
+  border: 1px solid rgba(255,255,255,0.2);
+  color: white;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.1rem;
+  transition: background 0.2s ease;
+  flex-shrink: 0;
+}
+
+
+/* Backdrop — shown when the sidebar drawer is open */
+.mobile-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 1099;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+
+.mobile-backdrop.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+
+/* Sidebar mobile close button — hidden on desktop, shown when sidebar is in drawer mode */
+.sidebar-mobile-close {
+  display: none;
+}
+
+
+/* =============================================== */
+/* Main Layout */
+/* =============================================== */
+
+.main-container {
+  display: grid;
+  grid-template-columns: var(--sidebar-width) 1fr;
+  transition: grid-template-columns 0.15s ease;
+  flex: 1;
+  max-width: var(--content-max);
+  margin: 0 auto;
+  width: 100%;
+}
+
+
+.sidebar {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 16px 12px;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  transition: width 0.15s ease;
+}
+
+
+/* nav-rail.js injects rail-top/rail-nav/rail-bottom into this div — it has
+   to be a flex column itself (and fill the sidebar) or .rail-nav's flex:1
+   has no flex parent to grow within, and .rail-bottom never reaches the
+   actual bottom of the sidebar. */
+#railMount {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-height: 0;
+}
+
+
+.main-content {
+  padding: 24px;
+  overflow-x: hidden;
+  min-height: 100vh;
+}
+
+
+/* =============================================== */
+/* Navigation Rail (site-wide, collapsible on desktop) */
+/* =============================================== */
+
+.rail-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 4px 16px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+
+.rail-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--brand);
+  text-decoration: none;
+  font-weight: 800;
+  font-size: 1.05rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+
+.rail-brand-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+
+.rail-collapse-btn {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--text-muted);
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+
+.rail-collapse-btn:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+
+.rail-nav {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+
+.rail-group {
+  display: flex;
+  flex-direction: column;
+}
+
+
+.rail-item-row {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+
+.rail-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 0.9rem;
+  flex: 1;
+  min-width: 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+
+.rail-item:hover {
+  background: var(--hover);
+}
+
+
+.rail-item.active {
+  color: var(--brand);
+  background: rgba(11,79,138,0.08);
+}
+
+
+.rail-item-icon {
+  font-size: 1.15rem;
+  width: 22px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+
+.rail-item-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+
+.rail-group-toggle {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  width: 24px;
+  height: 24px;
+  flex-shrink: 0;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+
+.rail-group-toggle:hover {
+  background: var(--hover);
+}
+
+
+.rail-group-toggle[aria-expanded="true"] .rail-group-arrow {
+  transform: rotate(180deg);
+  display: inline-block;
+}
+
+
+.rail-submenu {
+  display: none;
+  flex-direction: column;
+  padding: 2px 0 6px 30px;
+}
+
+
+.rail-group.expanded .rail-submenu {
+  display: flex;
+}
+
+
+.rail-subitem {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 8px;
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  text-decoration: none;
+  font-size: 0.8rem;
+  transition: background 0.15s ease;
+}
+
+
+.rail-subitem:hover {
+  background: var(--hover);
+  color: var(--text);
+}
+
+
+.rail-subitem-icon {
+  font-size: 0.95rem;
+  width: 18px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+
+.rail-subitem-label {
+  font-weight: 600;
+  color: var(--text);
+}
+
+
+.rail-subitem-desc {
+  font-size: 0.72rem;
+  color: var(--text-dim);
+}
+
+
+.rail-bottom {
+  flex-shrink: 0;
+  border-top: 1px solid var(--border-light);
+  padding-top: 8px;
+  margin-top: 8px;
+}
+
+
+.rail-account {
+  position: relative;
+}
+
+
+.rail-account .user-menu {
+  top: auto;
+  right: auto;
+  bottom: calc(100% + 8px);
+  left: 0;
+  margin-top: 0;
+}
+
+  /* The grid TRACK, not just the sidebar's own width — this is what
+     actually gives main-content the extra room. Keyed off body (toggled
+     by nav-rail.js) rather than .sidebar so it can't be affected by the
+     sidebar's own position:fixed drawer styles at narrower breakpoints. */
+  body.rail-collapsed .main-container {
+    grid-template-columns: 68px 1fr;
+  }
+
+
+  .sidebar.rail-collapsed {
+    width: 68px;
+  }
+
+
+  .sidebar.rail-collapsed .rail-brand-text,
+  .sidebar.rail-collapsed .rail-item-label,
+  .sidebar.rail-collapsed .rail-group-toggle,
+  .sidebar.rail-collapsed .rail-submenu {
+    display: none;
+  }
+
+
+  .sidebar.rail-collapsed .rail-top {
+    justify-content: center;
+  }
+
+
+  .sidebar.rail-collapsed .rail-collapse-btn {
+    position: absolute;
+    left: 100%;
+    margin-left: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+
+  .sidebar.rail-collapsed .rail-top {
+    position: relative;
+  }
+
+
+  .sidebar.rail-collapsed .rail-item {
+    justify-content: center;
+  }
+
+
+  .sidebar.rail-collapsed .rail-account .user-menu {
+    left: calc(100% + 8px);
+    bottom: 0;
+  }
+
+
+/* Mobile top strip — carries just the drawer trigger, since the full nav lives in the rail */
+.mobile-topbar {
+  display: none;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: var(--brand);
+  padding: 12px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  box-shadow: 0 2px 20px rgba(0,0,0,.2);
+}
+
+
+.mobile-topbar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: white;
+  font-weight: 800;
+  font-size: 1.05rem;
+  text-decoration: none;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+
+.mobile-topbar-logo {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+
+/* =============================================== */
+/* Sidebar Components */
+/* =============================================== */
+
+.sidebar-section {
+  margin-bottom: 32px;
+}
+
+
+.sidebar-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--brand);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 16px;
+}
+
+  .main-container {
+    grid-template-columns: 280px 1fr;
+  }
+
+  
+  .sidebar {
+    --sidebar-width: 280px;
+  }
+
+  .mobile-topbar {
+    display: flex;
+  }
+
+
+  .rail-collapse-btn {
+    display: none;
+  }
+
+
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+
+  
+  /* Sidebar becomes a left-side drawer on mobile */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(320px, 85vw);
+    height: 100%;
+    max-height: 100vh;
+    z-index: 1100;
+    background: white;
+    border-right: 1px solid var(--border);
+    box-shadow: 2px 0 30px rgba(0,0,0,0.2);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(.2,.8,.2,1);
+  }
+
+  
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+
+  
+  /* Dev-mode override doesn't apply to the mobile drawer — it must start
+     from the very top of the viewport, not below the dev notice. */
+  body.dev-mode .sidebar {
+    top: 0;
+    height: 100%;
+  }
+
+  
+  .sidebar-mobile-close {
+    display: flex;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    z-index: 1;
+  }
+
+  
+  .sidebar-mobile-close:hover {
+    background: rgba(0,0,0,0.12);
+  }
+
+  
+  .main-content {
+    padding: 16px;
+  }
+
+.main-container{background:var(--bg)}
+
+.sidebar{background:linear-gradient(180deg,var(--navy-950),#071d33);border-right:1px solid #18354d;padding:14px 11px;box-shadow:8px 0 30px rgba(5,22,38,.08)}
+
+.rail-top{border-bottom-color:rgba(255,255,255,.08)}
+.rail-brand{color:#fff}
+.rail-item{color:#9db6c7}
+.rail-item:hover{color:#fff;background:rgba(255,255,255,.07)}
+.rail-item.active,.rail-item[aria-current="page"]{color:#fff;background:rgba(29,139,209,.2);box-shadow:inset 3px 0 0 var(--cyan)}
+.rail-label,.rail-group-label{color:#6f91a8}
+.rail-bottom{border-top-color:rgba(255,255,255,.08)}
+
+.main-content{padding:0 30px 44px;max-width:1480px;width:100%;margin:0 auto}
+
+.workspace-bar{min-height:82px;display:flex;align-items:center;justify-content:space-between;gap:24px;border-bottom:1px solid var(--border);margin:0 -30px 20px;padding:0 30px;background:rgba(255,255,255,.82);backdrop-filter:blur(16px);position:sticky;top:0;z-index:40}
+.session-pill{display:flex;align-items:center;gap:9px;padding:8px 11px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--text-muted);font:600 10px var(--font-mono);white-space:nowrap}
+.workspace-link{display:inline-flex;align-items:center;min-height:36px;padding:0 12px;border:1px solid var(--border);border-radius:9px;background:#fff;color:var(--text);font-size:11px;font-weight:800;text-decoration:none}
+.workspace-link:hover{border-color:#9fcddd;color:var(--brand)}
+.main-content{padding-left:22px;padding-right:22px}
+.workspace-bar,.trading-tabs.tabs-horizontal{margin-left:-22px;margin-right:-22px;padding-left:22px;padding-right:22px}
+.mobile-topbar{background:rgba(6,20,38,.97);box-shadow:none;border-bottom:1px solid rgba(255,255,255,.09)}
+.sidebar{background:linear-gradient(180deg,var(--navy-950),#071d33);border-right-color:#18354d}
+.sidebar-mobile-close{background:rgba(255,255,255,.08);color:#fff}
+.main-content{padding:0 16px 30px}
+.workspace-bar{position:relative;top:auto;min-height:auto;margin:0 -16px 14px;padding:15px 16px}
+.workspace-mark,.workspace-actions .workspace-link{display:none}
+.workspace-actions .session-pill{padding:7px 9px}
+.session-pill span:last-child{display:none}
+
+body,.main-container{background:#eef3f6}
+
+.sidebar{background:#fff!important;border-right:1px solid #d8e1e6!important;box-shadow:5px 0 22px rgba(35,57,71,.045)!important}
+
+.sidebar .rail-top{border-bottom-color:#e7edf0!important}
+.sidebar .rail-brand{color:#174e71!important}
+.sidebar .rail-brand-name{color:#174e71!important}
+.sidebar .rail-item{color:#5d707d!important;border-radius:9px!important}
+.sidebar .rail-item:hover{color:#174e71!important;background:#eef5f8!important}
+.sidebar .rail-item.active,.sidebar .rail-item[aria-current="page"]{color:#174e71!important;background:#e7f1f6!important;box-shadow:inset 3px 0 0 #2686bd!important}
+.sidebar .rail-label,.sidebar .rail-group-label,.sidebar .rail-section-title{color:#8797a1!important}
+.sidebar .rail-bottom{border-top-color:#e7edf0!important}
+.sidebar .rail-account,.sidebar .rail-account-btn{color:#435b6a!important}
+.sidebar .rail-toggle{color:#71838e!important;background:#f3f7f9!important;border-color:#dfe7eb!important}
+
+.workspace-bar{background:rgba(255,255,255,.94);border-bottom-color:#d9e2e7;box-shadow:0 5px 18px rgba(38,57,70,.035)}
+.session-pill,.workspace-link{background:#f8fafb;border-color:#d8e2e7}
+.mobile-topbar{background:#fff!important;border-bottom:1px solid #d7e0e5!important}
+.mobile-topbar-brand{color:#174e71!important}
+.sidebar-mobile-close{background:#eef4f7!important;color:#405967!important}
+.workspace-bar{background:#fff}
+
+.sidebar .rail-label,.sidebar .rail-group-label,.sidebar .rail-section-title{color:#5f7480!important}
+.session-pill{color:#526571}
+.workspace-link{color:#294757}
+
+.sidebar .rail-toggle{color:#536975!important}
+
+
+/* Shared rail: clear collapse/reopen control */
+.sidebar .rail-collapse-btn{width:36px!important;height:36px!important;min-width:36px!important;border:1px solid #b7c9d3!important;border-radius:10px!important;background:#fff!important;color:#244b60!important;box-shadow:0 3px 10px rgba(35,69,88,.10)!important;font-size:0!important;position:relative;z-index:1200!important;overflow:visible!important}
+
+.sidebar .rail-collapse-btn::before{content:'‹';font:800 22px/1 'Plus Jakarta Sans',system-ui,sans-serif;color:#244b60}
+
+.sidebar .rail-collapse-btn:hover{background:#eaf3f7!important;border-color:#7fa9bc!important;color:#0d5c8a!important}
+.sidebar{z-index:100!important;overflow:visible!important}
+.sidebar:not(.rail-collapsed) .rail-top{position:relative!important;overflow:visible!important}
+.sidebar:not(.rail-collapsed) .rail-collapse-btn{position:absolute!important;left:auto!important;right:-18px!important;top:0!important;width:14px!important;min-width:14px!important;height:28px!important;border-radius:7px!important;z-index:1200!important;background:var(--surface)!important;box-shadow:4px 3px 12px rgba(35,69,88,.14)!important}
+.sidebar:not(.rail-collapsed) .rail-collapse-btn::before{content:'‹'!important;font-size:17px!important}
+.sidebar.rail-collapsed{overflow:visible!important}
+.sidebar.rail-collapsed .rail-top{overflow:visible!important}
+.sidebar.rail-collapsed .rail-collapse-btn{left:calc(100% + 4px)!important;right:auto!important;margin-left:0!important;top:0!important;width:14px!important;min-width:14px!important;height:28px!important;border-radius:7px!important;z-index:1200!important;background:var(--surface)!important;box-shadow:4px 3px 12px rgba(35,69,88,.14)!important}
+.sidebar.rail-collapsed .rail-collapse-btn::before{content:'›'!important;font-size:17px!important}
+
+
+/* Keep each submenu caret inside its navigation button. */
+.sidebar .rail-item-row{position:relative;display:flex;align-items:center}
+
+.sidebar .rail-item-row>.rail-item{width:100%;padding-right:38px!important}
+
+.sidebar .rail-group-toggle{
+  position:absolute!important;
+  right:9px!important;
+  top:50%!important;
+  transform:translateY(-50%);
+  z-index:2;
+  width:24px!important;
+  height:24px!important;
+  margin:0!important;
+  border-radius:6px!important;
+  color:#526b7a!important;
+}
+
+.sidebar .rail-group-toggle:hover{background:rgba(23,95,143,.09)!important;color:#175f8f!important}
+
+.sidebar.rail-collapsed .rail-item-row>.rail-item{padding-right:8px!important}
+
+.sidebar .rail-item{font-size:11.5px!important}
+
+.session-pill{font-size:9.5px!important}
+
+.workspace-link{font-size:10.5px!important;min-height:32px!important}
+
+.main-content .btn,.main-content .ai-btn-primary,.main-content .ai-btn-ghost,.main-content .ls-btn-blue,.main-content .ls-btn-ghost{font-size:11px!important;min-height:32px!important;padding:6px 10px!important;line-height:1.25!important;font-weight:750!important}
+
+.main-content .btn.sm{font-size:10.5px!important;min-height:29px!important;padding:5px 9px!important}
+
+.main-content h2,.main-content h3,.positions-title,.ai-card-title,.ls-card-title{font-size:14px!important;line-height:1.3!important}
+
+.main-content h4{font-size:12.5px!important}
+
+.main-content input,.main-content select,.main-content textarea{font-size:11.5px!important;line-height:1.35!important;min-height:32px}
+
+.main-content label,.field-label,.form-label{font-size:9px!important;letter-spacing:.05em}
+/* Guided mode keeps rail sub-menus CLOSED by default, but they must still
+   open on click. The previous rule hid .rail-submenu outright with
+   !important, which beat `.rail-group.expanded .rail-submenu{display:flex}
+`
+   — nav-rail.js added the expanded class correctly and nothing happened,
+   leaving a visible, dimmed, inert arrow. Scoping it to :not(.expanded)
+   keeps the tidier default without breaking the control. */
+body.guided-mode #railMount .rail-group:not(.expanded) .rail-submenu{display:none!important}
+
+body.guided-mode #railMount .rail-group-toggle{opacity:.75}
+
+
+/* ── Content width ─────────────────────────────────────────────────────────
+   .main-content was capped at a hard-coded 1480px and centred, so on a wide
+   monitor the workspace sat in the middle with large empty gutters either
+   side — even though --content-max was already 100% and .main-container was
+   full width. Both the content column and the footer now read the same
+   variable, so the cap is a single knob:
+
+       --content-max: 100%;     full width (current)
+       --content-max: 1480px;   previous behaviour
+       --content-max: 1920px;   wide but still bounded
+
+   The workspace bar and tab strip bleed to the column edges with
+   `margin:0 -30px`, which keeps working at any width. */
+.main-content{max-width:var(--content-max);margin-left:auto;margin-right:auto}
+
+
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+
+/* ─ NAV (old) removed — page uses .ap-bar breadcrumb header ─ */
+
+/* ─ PAGE HERO ─ */
+
+.page-hero h1{margin:0 0 4px;font-size:1.7rem;font-weight:800}
+.page-hero p{margin:0;opacity:.8;font-size:.9rem}
+
+/* ─ CARDS ─ */
+.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:1rem;font-weight:700;margin:0}
+
+/* ─ BUTTONS ─ */
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.875rem;font-family:inherit;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dk)}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:#f8fafc}
+.btn-green{background:var(--green);color:#fff}.btn-green:hover{background:#15803d}
+.btn-red{background:var(--red);color:#fff}.btn-red:hover{background:#b91c1c}
+.btn-amber{background:var(--amber);color:#fff}.btn-amber:hover{background:#b45309}
+.btn-sm{padding:5px 10px;font-size:.8rem}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+
+/* ─ INPUTS ─ */
+input[type=text],input[type=number],input[type=date],select,textarea{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:var(--text);background:#fff;width:100%;transition:.15s}
+input:focus,select:focus,textarea:focus{outline:none;box-shadow:0 0 0 3px var(--ring);border-color:var(--brand)}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.hint{font-size:.75rem;color:var(--muted);margin-top:3px}
+
+/* ─ LAYOUT ─ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}
+@media(max-width:800px){.two-col{grid-template-columns:1fr}}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+@media(max-width:900px){.three-col{grid-template-columns:1fr 1fr}}
+@media(max-width:600px){.three-col{grid-template-columns:1fr}}
+
+/* ─ TRADES INPUT ─ */
+.trades-input{margin-bottom:16px}
+.trade-entry{background:#f9fafb;border:1px solid var(--border);border-radius:8px;padding:12px;margin:8px 0}
+.trade-grid{display:grid;grid-template-columns:1fr 80px 80px 80px 60px;gap:8px;align-items:center}
+.trade-remove{color:var(--red);cursor:pointer;padding:4px;border-radius:4px;transition:.15s;text-align:center}
+.trade-remove:hover{background:rgba(220,38,38,.1)}
+
+/* ─ SPINNER ─ */
+.spinner{display:none;text-align:center;padding:16px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.spin-icon{width:22px;height:22px;border:3px solid #e5e7eb;border-top-color:var(--brand);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+
+/* ─ ALERTS ─ */
+.alert{border-radius:8px;padding:12px 16px;margin-bottom:12px;font-size:.9rem}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert-warning{background:#fffbeb;border:1px solid #fed7aa;color:#92400e}
+.alert-danger{background:#fef2f2;border:1px solid #fecaca;color:#991b1b}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+
+/* ─ ANALYSIS SUMMARY ─ */
+.summary-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin:16px 0}
+.summary-metric{border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff;text-align:center}
+.metric-value{font-size:1.8rem;font-weight:800;margin:8px 0 4px;font-family:monospace}
+.metric-value.positive{color:var(--green)}
+.metric-value.negative{color:var(--red)}
+.metric-value.neutral{color:var(--amber)}
+.metric-label{font-size:.85rem;color:var(--muted);font-weight:600}
+
+/* ─ PATTERN ANALYSIS ─ */
+.pattern-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;margin:16px 0}
+.pattern-card{border:1px solid var(--border);border-radius:12px;padding:16px;background:#fff}
+.pattern-card h4{margin:0 0 12px;display:flex;align-items:center;gap:8px;color:var(--text)}
+.pattern-item{background:#f8fafc;border:1px solid #e5e7eb;border-radius:8px;padding:12px;margin:8px 0}
+.pattern-item.negative{background:#fef2f2;border-color:#fecaca}
+.pattern-item.positive{background:#f0fdf4;border-color:#bbf7d0}
+.pattern-title{font-weight:600;font-size:.9rem;color:var(--text);margin-bottom:4px}
+.pattern-desc{font-size:.85rem;color:#4b5563;line-height:1.5;margin:0}
+.pattern-impact{font-size:.75rem;color:var(--muted);margin-top:4px;font-weight:600}
+
+/* ─ IMPROVEMENT RULES ─ */
+.improvement-rules{background:linear-gradient(135deg,#f0f9ff,#e0f2fe);border:1px solid #bae6fd;border-radius:12px;padding:16px;margin:16px 0}
+.improvement-rules h4{color:#0c4a6e;margin:0 0 16px}
+.rule-item{background:#fff;border:1px solid #e0e7ff;border-radius:8px;padding:16px;margin:12px 0;position:relative}
+.rule-number{position:absolute;top:-8px;left:16px;background:#0369a1;color:#fff;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700}
+.rule-title{margin:8px 0 8px 0;color:var(--text);font-size:1rem;font-weight:700}
+.rule-desc{margin:0;font-size:.9rem;color:#4b5563;line-height:1.6}
+.rule-rationale{margin:8px 0 0;font-size:.8rem;color:var(--muted);font-style:italic}
+
+/* ─ TRADES TABLE ─ */
+.trades-table{width:100%;border-collapse:collapse;font-size:.85rem;margin:16px 0}
+.trades-table th,.trades-table td{padding:8px 12px;text-align:left;border-bottom:1px solid #f3f4f6}
+.trades-table th{background:#f9fafb;font-weight:600;color:var(--text)}
+.trades-table .win{color:var(--green);font-weight:600}
+.trades-table .loss{color:var(--red);font-weight:600}
+.trades-table .break-even{color:var(--muted);font-weight:600}
+
+/* ─ TOAST NOTIFICATIONS ─ */
+.toast-container{position:fixed;top:70px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:8px}
+.toast{background:#fff;border:1px solid var(--border);border-radius:8px;padding:12px 16px;box-shadow:0 8px 30px rgba(0,0,0,.12);display:flex;align-items:center;gap:10px;min-width:300px;animation:slideIn .3s ease}
+.toast.success{border-left:4px solid var(--green)}
+.toast.error{border-left:4px solid var(--red)}
+.toast.info{border-left:4px solid var(--blue)}
+@keyframes slideIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
+
+/* ─ FOOTER ─ */
+@media(max-width:720px){.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.f-grid{grid-template-columns:1fr}}
+
+/* ─ MOBILE RESPONSIVE ─ */
+@media(max-width:600px){
+  .container{padding:0 12px}
+  .page-hero h1{font-size:1.4rem}
+  .nav-inner{padding:0 12px}
+  .nav-brand{font-size:1rem}
+  .card{padding:16px}
+  .trade-grid{grid-template-columns:1fr;gap:8px}
+  .pattern-grid{grid-template-columns:1fr}
+  .summary-grid{grid-template-columns:1fr 1fr}
+}
+
+/* ── Lighter tool-page header (breadcrumb) — ported from intrinsic-value.html ── */
+
+
+
+
+
+.ap-crumbs{display:flex;align-items:center;gap:8px;flex:1;min-width:0;overflow:hidden}
+.ap-crumb-back{display:inline-flex;align-items:center;gap:6px;color:rgba(255,255,255,.9);text-decoration:none;font-size:.9rem;font-weight:600;padding:6px 12px;border-radius:8px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.16);white-space:nowrap;transition:background .15s ease}
+.ap-crumb-back:hover{background:rgba(255,255,255,.2)}
+.ap-crumb-sep{color:rgba(255,255,255,.5);font-size:.9rem;flex:0 0 auto}
+.ap-crumb-current{color:#fff;font-size:.9rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+
+.ap-bar-toggle:hover{background:rgba(255,255,255,.18)}
+
+.ap-bar-menu.open{opacity:1;visibility:visible;transform:translateY(0)}
+
+
+
+
+
+
+.ap-bar-menu-item:hover{background:rgba(11,79,138,.05)}
+.ap-bar-menu-item.danger{color:var(--red)}
+
+
+/* Hamburger glyph — hidden by default (desktop shows the name+chevron),
+   swapped in on mobile below. */
+
+@media(max-width:600px){
+  
+  /* Collapse "Jimmy Tran ▼" down to a bare hamburger icon, freeing enough
+     width to bring the "Arowana Profits" brand text back (see below). */
+  
+  
+  
+}
+@media(max-width:420px){
+  /* Was hiding BOTH spans inside .ap-bar-brand (logo AND text) since the
+     old selector wasn't scoped to the text span — meaning the brand link
+     showed nothing at all below 600px, not even the logo. Now only the
+     text hides, and only below 420px — the icon-only toggle above already
+     frees enough room to keep the brand text visible down to that width. */
+  
+}
+
+/* ── Site footer — ported from intrinsic-value.html ── */
+
+
+
+
+.fc-title{font-weight:700;color:rgba(255,255,255,.7);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
+.fl{display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none}
+.fl:hover{color:rgba(255,255,255,.8)}
+.foot-bot{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.73rem;color:rgba(255,255,255,.3);margin-bottom:8px}
+.fpill{background:rgba(255,255,255,.06);padding:2px 9px;border-radius:999px;font-size:.68rem;color:rgba(255,255,255,.35);margin-left:4px}
+.fdis{font-size:.7rem;color:rgba(255,255,255,.28);line-height:1.6}
+@media(max-width:700px){}
+
+
+
+/* Shell media queries — the mobile drawer, collapsed rail and stacking. */
+@media (min-width: 769px) {
+  /* The grid TRACK, not just the sidebar's own width — this is what
+     actually gives main-content the extra room. Keyed off body (toggled
+     by nav-rail.js) rather than .sidebar so it can't be affected by the
+     sidebar's own position:fixed drawer styles at narrower breakpoints. */
+  body.rail-collapsed .main-container {
+    grid-template-columns: 68px 1fr;
+  }
+
+  .sidebar.rail-collapsed {
+    width: 68px;
+  }
+
+  .sidebar.rail-collapsed .rail-brand-text,
+  .sidebar.rail-collapsed .rail-item-label,
+  .sidebar.rail-collapsed .rail-group-toggle,
+  .sidebar.rail-collapsed .rail-submenu {
+    display: none;
+  }
+
+  .sidebar.rail-collapsed .rail-top {
+    justify-content: center;
+  }
+
+  .sidebar.rail-collapsed .rail-collapse-btn {
+    position: absolute;
+    left: 100%;
+    margin-left: 4px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .sidebar.rail-collapsed .rail-top {
+    position: relative;
+  }
+
+  .sidebar.rail-collapsed .rail-item {
+    justify-content: center;
+  }
+
+  .sidebar.rail-collapsed .rail-account .user-menu {
+    left: calc(100% + 8px);
+    bottom: 0;
+  }
+}
+@media (max-width: 1024px) {
+  .main-container {
+    grid-template-columns: 280px 1fr;
+  }
+  
+  .sidebar {
+    --sidebar-width: 280px;
+  }
+  
+  .positions-summary {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .footer-content {
+    grid-template-columns: 1fr;
+    gap: 32px;
+    text-align: center;
+  }
+  
+  .footer-links-section {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+}
+@media (max-width: 768px) {
+  .mobile-topbar {
+    display: flex;
+  }
+
+  .mobile-icon-btn {
+    display: inline-flex;
+    /* Bigger touch target + larger glyph on mobile */
+    width: 44px;
+    height: 44px;
+    font-size: 1.5rem;
+  }
+
+  .rail-collapse-btn {
+    display: none;
+  }
+
+  .main-container {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Sidebar becomes a left-side drawer on mobile */
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    width: min(320px, 85vw);
+    height: 100%;
+    max-height: 100vh;
+    z-index: 1100;
+    background: white;
+    border-right: 1px solid var(--border);
+    box-shadow: 2px 0 30px rgba(0,0,0,0.2);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 20px 16px calc(20px + env(safe-area-inset-bottom, 0px));
+    transform: translateX(-100%);
+    transition: transform 0.28s cubic-bezier(.2,.8,.2,1);
+  }
+  
+  body.sidebar-open .sidebar {
+    transform: translateX(0);
+  }
+  
+  /* Dev-mode override doesn't apply to the mobile drawer — it must start
+     from the very top of the viewport, not below the dev notice. */
+  body.dev-mode .sidebar {
+    top: 0;
+    height: 100%;
+  }
+  
+  .sidebar-mobile-close {
+    display: flex;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    border-radius: 6px;
+    background: rgba(0,0,0,0.06);
+    border: none;
+    color: var(--text-primary);
+    font-size: 1rem;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+    z-index: 1;
+  }
+  
+  .sidebar-mobile-close:hover {
+    background: rgba(0,0,0,0.12);
+  }
+  
+  .positions-summary {
+    grid-template-columns: 1fr;
+  }
+  
+  .page-title {
+    font-size: 1.8rem;
+  }
+  
+  /* In the user menu on mobile: hide flat platform links, show accordion */
+  .platform-flat { display: none; }
+  .platform-accordion { display: block; }
+  
+  /* User menu takes more width on mobile and scrolls if tall */
+  .user-menu {
+    min-width: min(320px, 88vw);
+    max-height: calc(100vh - 90px);
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* ===== Mobile footer simplification ===== */
+  
+  /* Hide the entire link grid on mobile — footer is just brand + badges + disclaimer */
+  .footer-links-section {
+    display: none;
+  }
+  
+  /* Brand section is now the only thing in footer-content */
+  .footer-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+    gap: 0;
+  }
+  
+  /* Disclaimer: show "Read more" toggle, hide collapsible rest by default */
+  .disclaimer-toggle {
+    display: inline;
+  }
+  
+  .disclaimer-rest[hidden] {
+    display: none;
+  }
+  
+  /* Footer bottom: center copyright + badges when stacked */
+  .footer-bottom {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .footer-badges {
+    justify-content: center;
+  }
+  
+  /* Positions: switch from table to stacked cards on mobile */
+  .positions-table-wrap {
+    display: none;
+  }
+  
+  .positions-cards {
+    display: block;
+  }
+}
+@media (max-width: 480px) {
+  .nav-container {
+    padding: 0 16px;
+  }
+  
+  .main-content {
+    padding: 16px;
+  }
+  
+  .footer-disclaimer {
+    display: none;
+  }
+}
+@media(max-width:1024px){.main-content{padding-left:22px;padding-right:22px}.workspace-bar,.trading-tabs.tabs-horizontal{margin-left:-22px;margin-right:-22px;padding-left:22px;padding-right:22px}}
+@media(max-width:768px){.mobile-topbar{background:rgba(6,20,38,.97);box-shadow:none;border-bottom:1px solid rgba(255,255,255,.09)}.sidebar{background:linear-gradient(180deg,var(--navy-950),#071d33);border-right-color:#18354d}.sidebar-mobile-close{background:rgba(255,255,255,.08);color:#fff}.main-content{padding:0 16px 30px}.workspace-bar{position:relative;top:auto;min-height:auto;margin:0 -16px 14px;padding:15px 16px}.workspace-mark,.workspace-actions .workspace-link{display:none}.workspace-title{font-size:15px}.trading-tabs.tabs-horizontal{top:53px;margin:0 -16px 22px;padding:8px 16px}.tabs-horizontal .trading-tab{padding:8px 11px}.tab-label{flex:none}.positions-container{padding:15px}.positions-header{align-items:flex-start;gap:12px;flex-direction:column}.positions-summary{grid-template-columns:1fr 1fr;gap:9px}.summary-card{padding:13px}.page-title{font-size:27px}}
+@media(max-width:768px){.mobile-topbar{background:#fff!important;border-bottom:1px solid #d7e0e5!important}.mobile-topbar-brand{color:#174e71!important}.mobile-icon-btn{color:#174e71!important;background:#eef4f7!important;border-color:#d8e2e7!important}.sidebar-mobile-close{background:#eef4f7!important;color:#405967!important}.workspace-bar{background:#fff}}
+@media(min-width:769px){.sidebar{z-index:100!important;overflow:visible!important}.sidebar:not(.rail-collapsed) .rail-top{position:relative!important;overflow:visible!important}.sidebar:not(.rail-collapsed) .rail-collapse-btn{position:absolute!important;left:auto!important;right:-18px!important;top:0!important;width:14px!important;min-width:14px!important;height:28px!important;border-radius:7px!important;z-index:1200!important;background:var(--surface)!important;box-shadow:4px 3px 12px rgba(35,69,88,.14)!important}.sidebar:not(.rail-collapsed) .rail-collapse-btn::before{content:'‹'!important;font-size:17px!important}.sidebar.rail-collapsed{overflow:visible!important}.sidebar.rail-collapsed .rail-top{overflow:visible!important}.sidebar.rail-collapsed .rail-collapse-btn{left:calc(100% + 4px)!important;right:auto!important;margin-left:0!important;top:0!important;width:14px!important;min-width:14px!important;height:28px!important;border-radius:7px!important;z-index:1200!important;background:var(--surface)!important;box-shadow:4px 3px 12px rgba(35,69,88,.14)!important}.sidebar.rail-collapsed .rail-collapse-btn::before{content:'›'!important;font-size:17px!important}}
+</style>
+</head>
+
+<body>
+  <!-- Toast host. showToast() appends here; without it every toast call
+       threw "Cannot read properties of null (reading 'appendChild')" and
+       took down whatever function raised it. market-intelligence.html
+       carries a note about the same omission breaking 16+ call sites. -->
+  <div class="toast-container" id="toastContainer"></div>
+
+  <!-- Shared app shell — same markup as trading-command.html so the rail,
+       drawer and workspace bar behave identically. Replaces this page's own
+       breadcrumb header and account menu, which duplicated the rail. -->
+  <div class="mobile-topbar">
+    <a href="index.html" class="mobile-topbar-brand" aria-label="Arowana Profits Home">
+      <img src="images/arowanalogo.png?v=20260501" alt="" class="mobile-topbar-logo" onerror="this.style.display='none'">
+      <span>Arowana Profits</span>
+    </a>
+    <button class="mobile-icon-btn" id="sidebarTrigger" aria-label="Open menu" aria-expanded="false" aria-controls="sidebarDrawer">☰</button>
+  </div>
+  <div class="mobile-backdrop" id="mobileBackdrop" aria-hidden="true"></div>
+
+  <div class="main-container">
+    <aside class="sidebar" id="sidebarDrawer">
+      <button class="sidebar-mobile-close" id="sidebarClose" aria-label="Close menu">✕</button>
+      <div id="railMount"></div>
+    </aside>
+
+    <main class="main-content">
+      <div class="workspace-bar" aria-label="Trading Journal Analysis workspace header">
+        <div class="workspace-heading">
+          <div class="workspace-mark" aria-hidden="true">&#128269;</div>
+          <div>
+            <div class="workspace-title">Trading Journal Analysis</div>
+            <div class="workspace-kicker">Patterns &middot; Mistakes &middot; Biases &middot; Rules</div>
+          </div>
+        </div>
+        <div class="workspace-actions">
+          <div class="session-pill" title="Current Chicago time">
+            <span class="session-dot" aria-hidden="true"></span>
+            <span id="workspaceClock">Chicago &middot; --:--</span>
+          </div>
+          <a class="workspace-link" href="analysis-central.html">&larr; Analysis Central</a>
+        </div>
+      </div>
+
+
+
+
+<!-- Main Content -->
+<main style="padding:24px 0">
+  <div class="container">
+    
+    <!-- Integration Notice -->
+    <div class="alert alert-info" id="integrationNotice" style="display: none;">
+      <strong>🔗 Platform Integration Active</strong> - Automatically loading your trade data from the Trade Journal. 
+      <a href="trade-journal-pro.html" style="color: var(--blue); text-decoration: underline;">Add more trades</a> to improve analysis accuracy.
+    </div>
+    
+    <!-- Trade Input Section -->
+    <div class="card">
+      <div class="card-hd">
+        <h2 class="card-title">📝 Trade Data Input</h2>
+        <div style="display:flex;gap:8px">
+          <a href="trade-journal-pro.html" class="btn btn-ghost btn-sm">📝 Open Trade Journal</a>
+          <button id="demoBtn" class="btn btn-ghost btn-sm">🧪 Demo Mode</button>
+          <button id="loadJournalBtn" class="btn btn-ghost btn-sm">📥 Load from Journal</button>
+          <button id="resetBtn" class="btn btn-ghost btn-sm">🔄 Reset</button>
+        </div>
+      </div>
+      
+      <!-- Add Trade Form -->
+      <div class="two-col" style="margin-bottom:16px">
+        <div>
+          <label>Add Trade Data</label>
+          <div style="display:grid;grid-template-columns:1fr 80px 80px 80px 60px;gap:8px;align-items:end">
+            <input type="text" id="tradeSymbol" placeholder="Symbol" style="text-transform:uppercase">
+            <input type="number" id="entryPrice" placeholder="Entry" step="0.01">
+            <input type="number" id="exitPrice" placeholder="Exit" step="0.01">
+            <input type="date" id="tradeDate">
+            <button id="addTradeBtn" class="btn btn-primary btn-sm">Add</button>
+          </div>
+          <div class="hint">Enter your recent trades for analysis (up to 50 trades)</div>
+        </div>
+        
+        <div>
+          <label>Current Trade Count: <span id="tradeCount">0</span></label>
+          <div style="font-size:.9rem;color:var(--muted);margin-top:8px">
+            Win Rate: <span id="quickWinRate">—</span><br>
+            Avg Return: <span id="quickAvgReturn">—</span><br>
+            Total P&L: <span id="quickTotalPL">—</span>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Trades List -->
+      <div id="tradesList">
+        <div style="font-weight:600;color:var(--muted);font-size:.85rem;margin-bottom:8px;display:grid;grid-template-columns:1fr 80px 80px 80px 60px;gap:8px">
+          <span>Symbol</span>
+          <span>Entry</span>
+          <span>Exit</span>
+          <span>Date</span>
+          <span></span>
+        </div>
+        <div id="tradesEmpty" style="padding:20px;text-align:center;color:var(--muted);font-size:.9rem;border:1px dashed #d1d5db;border-radius:8px">
+          No trades added yet. Add trades manually or load from your trading journal.
+        </div>
+      </div>
+      
+      <div style="margin-top:16px">
+        <button id="analyzeBtn" class="btn btn-primary">
+          <span id="analyzeText">🔍 Analyze Trading Patterns</span>
+          <div id="analyzeSpinner" class="spinner" style="display:none">
+            <div class="spin-icon"></div>
+          </div>
+        </button>
+      </div>
+      
+      <!-- Demo Mode Notice -->
+      <div id="demoNotice" class="alert alert-warning" style="display:none">
+        🧪 <strong>Demo Mode Active:</strong> Analysis uses sample trading data for demonstration purposes.
+      </div>
+    </div>
+
+    <!-- Results Section -->
+    <div id="resultsSection" style="display:none">
+      
+      <!-- Performance Summary -->
+      <div class="card">
+        <div class="card-hd">
+          <h2 class="card-title">📊 Trading Performance Summary</h2>
+          <div style="font-size:.8rem;color:var(--muted)" id="analysisPeriod">
+            Analysis Period: <span id="periodRange"></span>
+          </div>
+        </div>
+        
+        <div class="summary-grid">
+          
+          <div class="summary-metric">
+            <div class="metric-label">Win Rate</div>
+            <div class="metric-value" id="winRate">—</div>
+          </div>
+          
+          <div class="summary-metric">
+            <div class="metric-label">Avg Win</div>
+            <div class="metric-value positive" id="avgWin">—</div>
+          </div>
+          
+          <div class="summary-metric">
+            <div class="metric-label">Avg Loss</div>
+            <div class="metric-value negative" id="avgLoss">—</div>
+          </div>
+          
+          <div class="summary-metric">
+            <div class="metric-label">Risk:Reward</div>
+            <div class="metric-value" id="riskReward">—</div>
+          </div>
+          
+          <div class="summary-metric">
+            <div class="metric-label">Total Trades</div>
+            <div class="metric-value neutral" id="totalTrades">—</div>
+          </div>
+          
+          <div class="summary-metric">
+            <div class="metric-label">Net P&L</div>
+            <div class="metric-value" id="netPL">—</div>
+          </div>
+          
+        </div>
+      </div>
+
+      <!-- Pattern Analysis -->
+      <div class="pattern-grid">
+        
+        <!-- Repeated Mistakes -->
+        <div class="pattern-card">
+          <h4>❌ Repeated Mistakes</h4>
+          <div id="mistakesList">
+            <!-- Mistakes will be populated here -->
+          </div>
+        </div>
+
+        <!-- Missed Opportunities -->
+        <div class="pattern-card">
+          <h4>💸 Missed Opportunities</h4>
+          <div id="opportunitiesList">
+            <!-- Opportunities will be populated here -->
+          </div>
+        </div>
+
+        <!-- Behavioral Biases -->
+        <div class="pattern-card">
+          <h4>🧠 Behavioral Biases</h4>
+          <div id="biasesList">
+            <!-- Biases will be populated here -->
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Recent Trades Table -->
+      <div class="card">
+        <div class="card-hd">
+          <h2 class="card-title">📋 Recent Trades Overview</h2>
+        </div>
+        
+        <div style="overflow-x:auto">
+          <table class="trades-table">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Date</th>
+                <th>Entry</th>
+                <th>Exit</th>
+                <th>Return %</th>
+                <th>P&L $</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody id="tradesTableBody">
+              <!-- Trade rows will be populated here -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Personalized Improvement Rules -->
+      <div class="improvement-rules">
+        <h4>🎯 Personalized Improvement Rules</h4>
+        <div id="improvementRules">
+          <!-- Rules will be populated here -->
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+</main>
+
+<!-- Footer -->
+    </main>
+  </div>
+
+<script src="./js/format.js"></script>
+<script src="./js/session-user.js"></script>
+<script src="./js/nav-rail.js"></script>
+<script src="./js/supabase_min.js"></script>
+<script>window.GS_CONFIG_URL="./js/config.json";</script>
+<script src="./js/app-config.js"></script>
+<script src="./js/auth-header.js"></script>
+<script src="./js/workspace-footer.js"></script>
+<script>
+
+/* ── Breadcrumb header behavior (ported from intrinsic-value.html) ── */
+(function(){
+  var KEY = 'gs_auth_user_v1';
+  var authKeys = [KEY,'gs_session','ap_session','sb-access-token'];
+  var u; try{ u = JSON.parse(localStorage.getItem(KEY)||'null'); }catch(e){ u = null; }
+  var hasSession = u || authKeys.some(function(k){
+    try{ var v=localStorage.getItem(k); return v&&v.length>10; }catch(e){ return false; }
+  });
+  var name = u && (u.name || u.full_name || (u.email ? u.email.split('@')[0] : null)) || 'Account';
+  var nameEl = document.getElementById('apBarName');
+  var emailEl = document.getElementById('apBarEmail');
+  if(hasSession){
+    if(nameEl) nameEl.textContent = name;
+    if(emailEl && u && u.email) emailEl.textContent = u.email;
+  }
+  var toggle = document.getElementById('apBarToggle');
+  var menu = document.getElementById('apBarMenu');
+  function close(){ if(menu) menu.classList.remove('open'); }
+  if(toggle && menu){
+    toggle.addEventListener('click', function(e){ e.stopPropagation(); menu.classList.toggle('open'); });
+    document.addEventListener('click', function(e){
+      if(!toggle.contains(e.target) && !menu.contains(e.target)) close();
+    });
+    document.addEventListener('keydown', function(e){ if(e.key === 'Escape') close(); });
+  }
+  var support = document.getElementById('apBarSupport');
+  if(support) support.addEventListener('click', function(){
+    close();
+    alert('Support system coming soon! Contact us at support@arowanaprofits.com');
+  });
+  var signout = document.getElementById('apBarSignout');
+  if(signout) signout.addEventListener('click', function(){
+    if(!confirm('Are you sure you want to sign out? This will clear your session data.')) return;
+    close();
+    try{
+      authKeys.forEach(function(k){ try{ localStorage.removeItem(k); }catch(e){} });
+      localStorage.removeItem('ap_user_api_keys');
+      if(window.supabaseClient && window.supabaseClient.auth){
+        window.supabaseClient.auth.signOut().catch(function(){});
+      }
+    }catch(e){}
+    var next = encodeURIComponent(window.location.pathname + window.location.search);
+    setTimeout(function(){ window.location.href = 'login.html?next=' + next; }, 300);
+  });
+})();
+
+(function(){
+'use strict';
+
+// ─ CONSTANTS ─
+const DEMO_MODE_KEY = 'journal_analysis_demo_mode';
+const TRADES_CACHE_KEY = 'journal_analysis_trades';
+
+// Arowana platform integration
+const AROWANA_AUTH_KEY = 'gs_auth_user_v1';
+const AROWANA_STOCKS_KEY = 'tj_stocks_v2';
+const AROWANA_OPTIONS_KEY = 'tj_options_v2';
+const AROWANA_API_KEYS = 'ap_user_api_keys';
+
+// ─ STATE ─
+let isDemoMode = false;
+let currentTrades = [];
+let lastAnalysis = null;
+let currentUser = null;
+let platformTrades = []; // Trades loaded from Arowana platform
+
+// ─ DOM REFERENCES ─
+const $ = id => document.getElementById(id);
+
+// ─ INITIALIZATION ─
+function init() {
+  // Set footer year
+  const fy = $('footYear');
+  if (fy) fy.textContent = new Date().getFullYear();
+  
+  // Set default date to today
+  $('tradeDate').value = new Date().toISOString().split('T')[0];
+  
+  // Initialize Arowana platform integration
+  initArowanaPlatform();
+  
+  // Load demo mode preference
+  isDemoMode = localStorage.getItem(DEMO_MODE_KEY) === 'true';
+  updateDemoMode();
+  
+  // Bind events
+  $('demoBtn').addEventListener('click', toggleDemoMode);
+  $('loadJournalBtn').addEventListener('click', loadFromArowanaTrades);
+  $('resetBtn').addEventListener('click', resetAll);
+  $('addTradeBtn').addEventListener('click', addTrade);
+  $('analyzeBtn').addEventListener('click', runAnalysis);
+  
+  // Enter key handlers
+  $('tradeSymbol').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTrade();
+  });
+  $('exitPrice').addEventListener('keydown', e => {
+    if (e.key === 'Enter') addTrade();
+  });
+  
+  // Load data based on mode
+  if (isDemoMode) {
+    loadCachedTrades();
+  } else {
+    loadFromArowanaTrades();
+  }
+  
+  // Update quick stats
+  updateQuickStats();
+  
+  // Listen for app config ready
+  document.addEventListener('ap:config:ready', () => {
+    console.log('🔗 App configuration ready for journal analysis');
+  });
+}
+
+// ─ AROWANA PLATFORM INTEGRATION ─
+function initArowanaPlatform() {
+  try {
+    // Load current user
+    const authData = localStorage.getItem(AROWANA_AUTH_KEY);
+    if (authData) {
+      currentUser = JSON.parse(authData);
+      console.log('✅ User authenticated:', currentUser.email);
+      updateUserInterface();
+    } else {
+      console.log('⚠️ No user authentication found');
+      showGuestMode();
+    }
+  } catch (error) {
+    console.error('Authentication error:', error);
+    showGuestMode();
+  }
+}
+
+function updateUserInterface() {
+  // Update UI based on user authentication
+  if (currentUser) {
+    // Show user-specific options
+    const loadBtn = $('loadJournalBtn');
+    if (loadBtn) {
+      loadBtn.style.display = 'inline-flex';
+      loadBtn.innerHTML = '📥 Load from Trade Journal';
+    }
+    
+    // Show integration notice
+    const notice = $('integrationNotice');
+    if (notice) {
+      notice.style.display = 'block';
+    }
+    
+    // Update title if needed
+    const userName = currentUser.name || getNameFromEmail(currentUser.email) || 'User';
+    document.title = `📊 Journal Analysis — ${userName} — Arowana Profits`;
+  }
+}
+
+function showGuestMode() {
+  // Hide platform-specific features for non-authenticated users
+  const loadJournalBtn = $('loadJournalBtn');
+  if (loadJournalBtn) {
+    loadJournalBtn.innerHTML = '🧪 Demo Trades';
+  }
+}
+
+function getNameFromEmail(email) {
+  if (!email) return null;
+  const username = email.split('@')[0];
+  if (username.toLowerCase().includes('jtran')) {
+    return 'Jimmy T';
+  }
+  return username.charAt(0).toUpperCase() + username.slice(1);
+}
+
+function loadFromArowanaTrades() {
+  if (!currentUser) {
+    // If no user logged in, load demo data
+    loadFromJournal();
+    return;
+  }
+  
+  try {
+    // Load stocks from trade journal
+    const stockTrades = JSON.parse(localStorage.getItem(AROWANA_STOCKS_KEY) || '[]');
+    const optionTrades = JSON.parse(localStorage.getItem(AROWANA_OPTIONS_KEY) || '[]');
+    
+    platformTrades = [];
+    
+    // Convert stock trades to analysis format
+    stockTrades.forEach(trade => {
+      if (trade.exit_date && trade.exit_price) {
+        const entry = parseFloat(trade.entry_price) || 0;
+        const exit = parseFloat(trade.exit_price) || 0;
+        const quantity = parseInt(trade.quantity) || 0;
+        
+        if (entry > 0 && exit > 0 && quantity > 0) {
+          const pnl = (exit - entry) * quantity;
+          const pnlPercent = ((exit - entry) / entry) * 100;
+          
+          platformTrades.push({
+            id: `stock_${trade.id || Date.now()}_${Math.random()}`,
+            symbol: trade.ticker.toUpperCase(),
+            entry: entry,
+            exit: exit,
+            quantity: quantity,
+            date: trade.exit_date || trade.entry_date,
+            side: trade.side || 'long',
+            strategy: trade.strategy || 'Unknown',
+            pnl: pnl,
+            pnlPercent: pnlPercent,
+            result: pnl > 0 ? 'Win' : pnl < 0 ? 'Loss' : 'Break-even',
+            type: 'stock',
+            source: 'arowana'
+          });
+        }
+      }
+    });
+    
+    // Convert option trades to analysis format
+    optionTrades.forEach(trade => {
+      if (trade.exit_date && trade.exit_price) {
+        const entry = parseFloat(trade.entry_price) || 0;
+        const exit = parseFloat(trade.exit_price) || 0;
+        const contracts = parseInt(trade.contracts) || 0;
+        
+        if (entry > 0 && exit > 0 && contracts > 0) {
+          const pnl = (exit - entry) * contracts * 100; // Options are per 100 shares
+          const pnlPercent = ((exit - entry) / entry) * 100;
+          
+          platformTrades.push({
+            id: `option_${trade.id || Date.now()}_${Math.random()}`,
+            symbol: `${trade.ticker}${trade.exp_date}${trade.strike}${trade.opt_type}`.toUpperCase(),
+            entry: entry,
+            exit: exit,
+            quantity: contracts,
+            date: trade.exit_date || trade.entry_date,
+            side: trade.side || 'long',
+            strategy: trade.strategy || 'Options',
+            pnl: pnl,
+            pnlPercent: pnlPercent,
+            result: pnl > 0 ? 'Win' : pnl < 0 ? 'Loss' : 'Break-even',
+            type: 'option',
+            strike: trade.strike,
+            expDate: trade.exp_date,
+            optType: trade.opt_type,
+            source: 'arowana'
+          });
+        }
+      }
+    });
+    
+    // Sort by date (most recent first)
+    platformTrades.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // Merge with current trades or replace based on mode
+    if (!isDemoMode) {
+      currentTrades = [...platformTrades];
+      updateTradesDisplay();
+      updateQuickStats();
+      
+      if (platformTrades.length > 0) {
+        showToast(`📊 Loaded ${platformTrades.length} trades from your journal`, 'success');
+        console.log('✅ Loaded platform trades:', platformTrades.length);
+      } else {
+        showToast('📝 No completed trades found in your journal', 'info');
+      }
+    }
+    
+  } catch (error) {
+    console.error('Error loading Arowana trades:', error);
+    showToast('⚠️ Error loading trades from journal', 'warning');
+    // Fallback to demo data
+    loadFromJournal();
+  }
+  
+  // Listen for app config ready
+  document.addEventListener('ap:config:ready', () => {
+    // Webhook configuration available
+  });
+}
+
+// ─ DEMO MODE ─
+function toggleDemoMode() {
+  isDemoMode = !isDemoMode;
+  localStorage.setItem(DEMO_MODE_KEY, isDemoMode.toString());
+  updateDemoMode();
+  showToast(isDemoMode ? '🧪 Demo mode enabled' : '🌐 Live mode enabled', 'info');
+}
+
+function updateDemoMode() {
+  const btn = $('demoBtn');
+  const notice = $('demoNotice');
+  
+  if (isDemoMode) {
+    btn.textContent = '🌐 Live Mode';
+    btn.className = 'btn btn-amber btn-sm';
+    notice.style.display = 'block';
+  } else {
+    btn.textContent = '🧪 Demo Mode';
+    btn.className = 'btn btn-ghost btn-sm';
+    notice.style.display = 'none';
+  }
+}
+
+// ─ TRADE MANAGEMENT ─
+function addTrade() {
+  const symbol = $('tradeSymbol').value.trim().toUpperCase();
+  const entry = parseFloat($('entryPrice').value);
+  const exit = parseFloat($('exitPrice').value);
+  const date = $('tradeDate').value;
+  
+  if (!symbol || !entry || !exit || !date) {
+    showToast('Please fill in all trade fields', 'error');
+    return;
+  }
+  
+  if (entry <= 0 || exit <= 0) {
+    showToast('Entry and exit prices must be positive', 'error');
+    return;
+  }
+  
+  if (currentTrades.length >= 50) {
+    showToast('Maximum 50 trades for analysis. Remove old trades to add new ones.', 'error');
+    return;
+  }
+  
+  const returnPct = ((exit - entry) / entry) * 100;
+  const pnl = exit - entry; // Simplified P&L calculation
+  
+  const trade = {
+    id: Date.now() + Math.random(),
+    symbol,
+    entry,
+    exit,
+    date,
+    returnPct,
+    pnl,
+    result: returnPct > 0.1 ? 'Win' : returnPct < -0.1 ? 'Loss' : 'Break-even'
+  };
+  
+  currentTrades.unshift(trade); // Add to beginning of array
+  
+  // Clear inputs
+  $('tradeSymbol').value = '';
+  $('entryPrice').value = '';
+  $('exitPrice').value = '';
+  
+  updateTradesDisplay();
+  updateQuickStats();
+  cacheTrades();
+  showToast(`Added ${symbol} trade`, 'success');
+}
+
+function removeTrade(tradeId) {
+  currentTrades = currentTrades.filter(t => t.id !== tradeId);
+  updateTradesDisplay();
+  updateQuickStats();
+  cacheTrades();
+  showToast('Trade removed', 'info');
+}
+
+function updateTradesDisplay() {
+  const container = $('tradesList');
+  const emptyDiv = $('tradesEmpty');
+  
+  if (currentTrades.length === 0) {
+    emptyDiv.style.display = 'block';
+    // Hide other trade elements if any exist
+    const existingTrades = container.querySelectorAll('.trade-entry');
+    existingTrades.forEach(el => el.remove());
+    return;
+  }
+  
+  emptyDiv.style.display = 'none';
+  
+  // Remove existing trade entries
+  const existingTrades = container.querySelectorAll('.trade-entry');
+  existingTrades.forEach(el => el.remove());
+  
+  // Show recent trades (limit to 10 for display)
+  const recentTrades = currentTrades.slice(0, 10);
+  
+  recentTrades.forEach(trade => {
+    const tradeEl = document.createElement('div');
+    tradeEl.className = 'trade-entry';
+    
+    const resultClass = trade.result === 'Win' ? 'win' : trade.result === 'Loss' ? 'loss' : 'break-even';
+    
+    tradeEl.innerHTML = `
+      <div class="trade-grid">
+        <div style="font-weight:600">${trade.symbol}</div>
+        <div>$${trade.entry.toFixed(2)}</div>
+        <div>$${trade.exit.toFixed(2)}</div>
+        <div style="font-size:.8rem">${trade.date}</div>
+        <div class="trade-remove" onclick="removeTrade(${trade.id})">✕</div>
+      </div>
+    `;
+    
+    container.appendChild(tradeEl);
+  });
+}
+
+function updateQuickStats() {
+  const count = currentTrades.length;
+  $('tradeCount').textContent = count;
+  
+  if (count === 0) {
+    $('quickWinRate').textContent = '—';
+    $('quickAvgReturn').textContent = '—';
+    $('quickTotalPL').textContent = '—';
+    return;
+  }
+  
+  const wins = currentTrades.filter(t => t.result === 'Win').length;
+  const winRate = (wins / count * 100).toFixed(1);
+  
+  const totalReturn = currentTrades.reduce((sum, t) => sum + t.returnPct, 0);
+  const avgReturn = (totalReturn / count).toFixed(2);
+  
+  const totalPL = currentTrades.reduce((sum, t) => sum + t.pnl, 0);
+  
+  $('quickWinRate').textContent = `${winRate}%`;
+  $('quickAvgReturn').textContent = `${avgReturn}%`;
+  $('quickTotalPL').textContent = `$${totalPL.toFixed(2)}`;
+}
+
+// ─ LOAD FROM JOURNAL ─
+function loadFromJournal() {
+  // This would integrate with the existing trade journal
+  showToast('Journal integration would load your recent trades automatically', 'info');
+  
+  // For demo purposes, let's add some sample data
+  if (isDemoMode) {
+    loadDemoTrades();
+  }
+}
+
+function loadDemoTrades() {
+  const demoTrades = generateDemoTrades();
+  currentTrades = demoTrades;
+  updateTradesDisplay();
+  updateQuickStats();
+  cacheTrades();
+  showToast(`Loaded ${demoTrades.length} demo trades`, 'success');
+}
+
+// ─ MAIN ANALYSIS FUNCTION ─
+async function runAnalysis() {
+  if (currentTrades.length < 5) {
+    showToast('Please add at least 5 trades for meaningful analysis', 'error');
+    return;
+  }
+  
+  setBusyState(true);
+  
+  try {
+    let analysisData;
+    
+    if (isDemoMode) {
+      // Demo mode - simulated analysis
+      await new Promise(resolve => setTimeout(resolve, 2500)); // Simulate API delay
+      analysisData = generateDemoAnalysis(currentTrades);
+    } else {
+      // Live mode - would call actual API
+      analysisData = await callJournalAnalysisAPI(currentTrades);
+    }
+    
+    lastAnalysis = analysisData;
+    displayResults(analysisData);
+    showToast(`✅ Analysis complete for ${currentTrades.length} trades`, 'success');
+    
+  } catch (error) {
+    console.error('Analysis error:', error);
+    showToast(`❌ Analysis failed: ${error.message}`, 'error');
+  } finally {
+    setBusyState(false);
+  }
+}
+
+// ─ DEMO DATA GENERATORS ─
+function generateDemoTrades() {
+  const symbols = ['AAPL', 'TSLA', 'NVDA', 'MSFT', 'GOOGL', 'AMZN', 'META', 'SPY', 'QQQ'];
+  const trades = [];
+  
+  const today = new Date();
+  
+  for (let i = 0; i < 20; i++) {
+    const symbol = symbols[Math.floor(Math.random() * symbols.length)];
+    const entry = 50 + Math.random() * 200;
+    
+    // Generate realistic win/loss pattern (55% win rate)
+    const isWin = Math.random() < 0.55;
+    const returnPct = isWin ? 
+      (1 + Math.random() * 8) : // 1-9% wins
+      -(1 + Math.random() * 6); // -1 to -7% losses
+    
+    const exit = entry * (1 + returnPct / 100);
+    const pnl = exit - entry;
+    
+    // Generate date within last 30 days
+    const daysAgo = Math.floor(Math.random() * 30);
+    const tradeDate = new Date(today);
+    tradeDate.setDate(today.getDate() - daysAgo);
+    
+    trades.push({
+      id: Date.now() + i + Math.random(),
+      symbol,
+      entry,
+      exit,
+      date: tradeDate.toISOString().split('T')[0],
+      returnPct,
+      pnl,
+      result: returnPct > 0.1 ? 'Win' : returnPct < -0.1 ? 'Loss' : 'Break-even'
+    });
+  }
+  
+  // Sort by date (newest first)
+  trades.sort((a, b) => new Date(b.date) - new Date(a.date));
+  
+  return trades;
+}
+
+function generateDemoAnalysis(trades) {
+  // Calculate basic metrics
+  const totalTrades = trades.length;
+  const wins = trades.filter(t => t.result === 'Win');
+  const losses = trades.filter(t => t.result === 'Loss');
+  
+  const winRate = (wins.length / totalTrades * 100);
+  const avgWin = wins.length > 0 ? wins.reduce((sum, t) => sum + t.returnPct, 0) / wins.length : 0;
+  const avgLoss = losses.length > 0 ? losses.reduce((sum, t) => sum + t.returnPct, 0) / losses.length : 0;
+  const riskReward = avgLoss !== 0 ? Math.abs(avgWin / avgLoss) : 0;
+  const netPL = trades.reduce((sum, t) => sum + t.pnl, 0);
+  
+  // Generate period range
+  const dates = trades.map(t => new Date(t.date)).sort((a, b) => a - b);
+  const startDate = dates[0].toLocaleDateString();
+  const endDate = dates[dates.length - 1].toLocaleDateString();
+  
+  // Identify patterns
+  const mistakes = identifyMistakes(trades, { winRate, avgLoss, riskReward });
+  const opportunities = identifyOpportunities(trades, { winRate, avgWin, avgLoss });
+  const biases = identifyBiases(trades, { winRate, avgWin, avgLoss, totalTrades });
+  
+  // Generate improvement rules
+  const rules = generateImprovementRules(mistakes, opportunities, biases, { winRate, riskReward });
+  
+  return {
+    metrics: {
+      winRate: winRate.toFixed(1),
+      avgWin: avgWin.toFixed(2),
+      avgLoss: avgLoss.toFixed(2),
+      riskReward: riskReward.toFixed(2),
+      totalTrades,
+      netPL: netPL.toFixed(2),
+      periodRange: `${startDate} - ${endDate}`
+    },
+    patterns: {
+      mistakes,
+      opportunities,
+      biases
+    },
+    rules,
+    trades: trades.slice(0, 20), // Recent trades for display
+    isDemo: true
+  };
+}
+
+function identifyMistakes(trades, metrics) {
+  const mistakes = [];
+  
+  // Poor risk-reward ratio
+  if (metrics.riskReward < 1.5) {
+    mistakes.push({
+      title: 'Poor Risk-Reward Management',
+      description: `Average risk-reward ratio of ${metrics.riskReward.toFixed(2)}:1 is below optimal 2:1 threshold. Losses are too large relative to wins.`,
+      impact: 'High Impact',
+      frequency: Math.floor(trades.length * 0.6)
+    });
+  }
+  
+  // Cutting winners short
+  const quickWins = trades.filter(t => t.result === 'Win' && t.returnPct < 2).length;
+  if (quickWins > trades.length * 0.4) {
+    mistakes.push({
+      title: 'Cutting Winners Too Early',
+      description: `${quickWins} trades closed with small gains (<2%). Fear of giving back profits may be limiting upside potential.`,
+      impact: 'Medium Impact',
+      frequency: quickWins
+    });
+  }
+  
+  // Revenge trading pattern
+  const consecutiveLosses = findConsecutiveLosses(trades);
+  if (consecutiveLosses.maxStreak >= 3) {
+    mistakes.push({
+      title: 'Potential Revenge Trading',
+      description: `Maximum losing streak of ${consecutiveLosses.maxStreak} trades suggests emotional trading after losses. Position sizing may increase after losses.`,
+      impact: 'High Impact',
+      frequency: consecutiveLosses.streaks
+    });
+  }
+  
+  return mistakes;
+}
+
+function identifyOpportunities(trades, metrics) {
+  const opportunities = [];
+  
+  // Position sizing optimization
+  if (metrics.winRate > 55) {
+    opportunities.push({
+      title: 'Increase Position Size on High-Conviction Setups',
+      description: `Strong ${metrics.winRate.toFixed(1)}% win rate suggests good setup identification. Consider larger positions on best setups.`,
+      impact: 'Medium Impact',
+      potential: '15-25% return improvement'
+    });
+  }
+  
+  // Swing trading vs day trading
+  const holdTimes = calculateHoldTimes(trades);
+  if (holdTimes.avgDays < 1 && metrics.avgWin < 3) {
+    opportunities.push({
+      title: 'Consider Longer Hold Periods',
+      description: 'Short average hold times with small wins. Swing trading (2-5 day holds) might capture larger moves.',
+      impact: 'Medium Impact',
+      potential: '30-50% larger average wins'
+    });
+  }
+  
+  // Sector/stock concentration
+  const symbolFreq = analyzeSymbolFrequency(trades);
+  if (symbolFreq.concentration > 30) {
+    opportunities.push({
+      title: 'Diversify Trading Universe',
+      description: `${symbolFreq.topSymbol} represents ${symbolFreq.concentration.toFixed(1)}% of trades. Diversifying could improve consistency.`,
+      impact: 'Low Impact',
+      potential: 'Reduced volatility'
+    });
+  }
+  
+  return opportunities;
+}
+
+function identifyBiases(trades, metrics) {
+  const biases = [];
+  
+  // Confirmation bias
+  if (metrics.avgLoss < -4 && metrics.winRate < 50) {
+    biases.push({
+      title: 'Confirmation Bias',
+      description: 'Large losses with low win rate suggests holding losing positions too long, hoping they will recover.',
+      severity: 'High',
+      examples: 'Refusing to cut losses, adding to losing positions'
+    });
+  }
+  
+  // Overconfidence bias
+  if (metrics.winRate > 65 && metrics.riskReward < 1.2) {
+    biases.push({
+      title: 'Overconfidence Bias',
+      description: 'High win rate but poor risk management suggests overconfidence leading to oversized positions.',
+      severity: 'Medium',
+      examples: 'Taking larger risks after winning streaks'
+    });
+  }
+  
+  // Recency bias
+  const recentTrades = trades.slice(0, 5);
+  const recentWinRate = recentTrades.filter(t => t.result === 'Win').length / recentTrades.length;
+  if (Math.abs(recentWinRate - metrics.winRate / 100) > 0.3) {
+    biases.push({
+      title: 'Recency Bias',
+      description: 'Recent performance differs significantly from overall average. May be overweighting recent results in decision making.',
+      severity: 'Medium',
+      examples: 'Changing strategy based on last few trades'
+    });
+  }
+  
+  // Anchoring bias
+  const priceRanges = analyzePriceRanges(trades);
+  if (priceRanges.concentration > 70) {
+    biases.push({
+      title: 'Anchoring Bias',
+      description: `${priceRanges.concentration.toFixed(1)}% of trades in similar price ranges. May be anchoring to familiar price levels.`,
+      severity: 'Low',
+      examples: 'Only trading stocks in $50-150 range'
+    });
+  }
+  
+  return biases;
+}
+
+function generateImprovementRules(mistakes, opportunities, biases, metrics) {
+  const rules = [];
+  
+  // Rule 1 - Based on most critical issue
+  if (metrics.riskReward < 1.5) {
+    rules.push({
+      title: 'Implement 2:1 Risk-Reward Minimum',
+      description: 'Before entering any trade, ensure potential profit is at least twice your stop-loss amount. If a setup doesn\'t offer 2:1 R:R, skip it.',
+      rationale: `Current ${metrics.riskReward.toFixed(2)}:1 ratio is destroying profitability despite ${metrics.winRate}% win rate. This rule alone could make you profitable.`
+    });
+  } else if (metrics.winRate < 45) {
+    rules.push({
+      title: 'Reduce Trade Frequency by 50%',
+      description: 'Only take your highest-conviction setups. Wait for perfect confluence of signals before entering positions.',
+      rationale: `${metrics.winRate}% win rate suggests too many low-probability trades. Quality over quantity will improve consistency.`
+    });
+  } else {
+    rules.push({
+      title: 'Use Trailing Stops on All Winning Trades',
+      description: 'When a trade moves 1R in your favor, move stop to breakeven. At 2R profit, trail stop at 1R profit. Let winners run.',
+      rationale: 'Strong win rate indicates good entry timing. Trailing stops will capture larger moves while protecting gains.'
+    });
+  }
+  
+  // Rule 2 - Based on behavioral pattern
+  if (biases.some(b => b.title === 'Confirmation Bias')) {
+    rules.push({
+      title: 'Hard Stop-Loss Rule: Never Risk More Than 2%',
+      description: 'Set stop-loss before entering every trade and honor it without exception. Risk exactly 1-2% of account per trade, never more.',
+      rationale: 'Large losses are account killers. This rule prevents catastrophic drawdowns and forces disciplined position sizing.'
+    });
+  } else if (mistakes.some(m => m.title.includes('Winners Too Early'))) {
+    rules.push({
+      title: 'Partial Profit Taking Strategy',
+      description: 'Take 1/3 profits at 1.5R, 1/3 at 3R, let final 1/3 run with trailing stop. Never close entire position before 1.5R.',
+      rationale: 'You\'re good at picking direction but cutting winners short. This locks in profits while capturing big moves.'
+    });
+  } else {
+    rules.push({
+      title: 'Weekly Trading Review and Limit',
+      description: 'Limit yourself to maximum 5 trades per week. Review each trade\'s setup quality before the next session.',
+      rationale: 'Forces you to be selective and prevents emotional overtrading after wins or losses.'
+    });
+  }
+  
+  // Rule 3 - Based on opportunity identified
+  if (opportunities.some(o => o.title.includes('Position Size'))) {
+    rules.push({
+      title: 'Scale Position Size with Conviction Level',
+      description: 'Rate setups 1-10 for conviction. Risk 0.5% on scores 6-7, 1% on scores 8-9, 1.5% on perfect 10s. Skip anything below 6.',
+      rationale: `${metrics.winRate}% win rate shows good setup recognition. Sizing up on best setups while maintaining risk management will boost returns.`
+    });
+  } else if (opportunities.some(o => o.title.includes('Hold Periods'))) {
+    rules.push({
+      title: 'Minimum 2-Day Hold Rule for Swing Trades',
+      description: 'On swing setups, commit to holding minimum 2 trading days unless stop is hit. Exit day trades by close.',
+      rationale: 'Short hold times with small gains suggest you\'re not capturing full moves. This rule ensures you give trends time to develop.'
+    });
+  } else {
+    rules.push({
+      title: 'End-of-Day Trading Journal Requirement',
+      description: 'Write 2-3 sentences after each trade: what you saw, why you entered/exited, and what you learned. Review weekly for patterns.',
+      rationale: 'Consistent self-reflection prevents repeat mistakes and accelerates learning from both wins and losses.'
+    });
+  }
+  
+  return rules;
+}
+
+// ─ ANALYSIS HELPER FUNCTIONS ─
+function findConsecutiveLosses(trades) {
+  let maxStreak = 0;
+  let currentStreak = 0;
+  let streakCount = 0;
+  
+  trades.forEach(trade => {
+    if (trade.result === 'Loss') {
+      currentStreak++;
+    } else {
+      if (currentStreak >= 3) streakCount++;
+      maxStreak = Math.max(maxStreak, currentStreak);
+      currentStreak = 0;
+    }
+  });
+  
+  return { maxStreak, streaks: streakCount };
+}
+
+function calculateHoldTimes(trades) {
+  // For demo purposes, assuming day trades
+  const avgDays = Math.random() * 2; // 0-2 days average
+  return { avgDays };
+}
+
+function analyzeSymbolFrequency(trades) {
+  const symbolCounts = {};
+  trades.forEach(trade => {
+    symbolCounts[trade.symbol] = (symbolCounts[trade.symbol] || 0) + 1;
+  });
+  
+  const topEntry = Object.entries(symbolCounts).sort((a, b) => b[1] - a[1])[0];
+  const topSymbol = topEntry[0];
+  const concentration = (topEntry[1] / trades.length) * 100;
+  
+  return { topSymbol, concentration };
+}
+
+function analyzePriceRanges(trades) {
+  const priceRanges = {
+    low: 0,   // <$50
+    mid: 0,   // $50-150
+    high: 0   // >$150
+  };
+  
+  trades.forEach(trade => {
+    if (trade.entry < 50) priceRanges.low++;
+    else if (trade.entry <= 150) priceRanges.mid++;
+    else priceRanges.high++;
+  });
+  
+  const maxRange = Math.max(priceRanges.low, priceRanges.mid, priceRanges.high);
+  const concentration = (maxRange / trades.length) * 100;
+  
+  return { concentration };
+}
+
+// ─ LIVE API CALL (PLACEHOLDER) ─
+async function callJournalAnalysisAPI(trades) {
+  // This would integrate with your analysis service
+  throw new Error('Live journal analysis API not configured. Enable demo mode to test.');
+  
+  /* Example implementation:
+  const webhookUrl = getWebhookUrl();
+  const response = await fetch(webhookUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      action: 'analyze_journal',
+      trades: trades.map(t => ({
+        symbol: t.symbol,
+        entry: t.entry,
+        exit: t.exit,
+        date: t.date,
+        return: t.returnPct
+      })),
+      analysis_type: ['patterns', 'biases', 'opportunities', 'rules']
+    })
+  });
+  
+  if (!response.ok) {
+    throw new Error(`API error: ${response.status}`);
+  }
+  
+  return await response.json();
+  */
+}
+
+// ─ DISPLAY RESULTS ─
+function displayResults(data) {
+  $('resultsSection').style.display = 'block';
+  
+  // Update period range
+  $('periodRange').textContent = data.metrics.periodRange;
+  
+  // Update performance metrics
+  updatePerformanceMetrics(data.metrics);
+  
+  // Update pattern analysis
+  updatePatternAnalysis(data.patterns);
+  
+  // Update trades table
+  updateTradesTable(data.trades);
+  
+  // Update improvement rules
+  updateImprovementRules(data.rules);
+  
+  // Scroll to results on mobile
+  if (window.innerWidth < 800) {
+    $('resultsSection').scrollIntoView({ behavior: 'smooth' });
+  }
+}
+
+// ─ UPDATE FUNCTIONS ─
+function updatePerformanceMetrics(metrics) {
+  $('winRate').textContent = `${metrics.winRate}%`;
+  $('winRate').className = `metric-value ${parseFloat(metrics.winRate) > 60 ? 'positive' : parseFloat(metrics.winRate) < 45 ? 'negative' : 'neutral'}`;
+  
+  $('avgWin').textContent = `+${metrics.avgWin}%`;
+  
+  $('avgLoss').textContent = `${metrics.avgLoss}%`;
+  
+  $('riskReward').textContent = `${metrics.riskReward}:1`;
+  $('riskReward').className = `metric-value ${parseFloat(metrics.riskReward) > 1.5 ? 'positive' : parseFloat(metrics.riskReward) < 1.0 ? 'negative' : 'neutral'}`;
+  
+  $('totalTrades').textContent = metrics.totalTrades;
+  
+  $('netPL').textContent = `$${metrics.netPL}`;
+  $('netPL').className = `metric-value ${parseFloat(metrics.netPL) > 0 ? 'positive' : 'negative'}`;
+}
+
+function updatePatternAnalysis(patterns) {
+  // Mistakes
+  const mistakesContainer = $('mistakesList');
+  if (patterns.mistakes.length === 0) {
+    mistakesContainer.innerHTML = '<div style="color:var(--green);font-size:.9rem;text-align:center;padding:20px">✅ No significant repeated mistakes identified</div>';
+  } else {
+    mistakesContainer.innerHTML = '';
+    patterns.mistakes.forEach(mistake => {
+      const item = document.createElement('div');
+      item.className = 'pattern-item negative';
+      item.innerHTML = `
+        <div class="pattern-title">${mistake.title}</div>
+        <p class="pattern-desc">${mistake.description}</p>
+        <div class="pattern-impact">${mistake.impact} • ${mistake.frequency} occurrences</div>
+      `;
+      mistakesContainer.appendChild(item);
+    });
+  }
+  
+  // Opportunities
+  const opportunitiesContainer = $('opportunitiesList');
+  if (patterns.opportunities.length === 0) {
+    opportunitiesContainer.innerHTML = '<div style="color:var(--muted);font-size:.9rem;text-align:center;padding:20px">No major opportunities identified</div>';
+  } else {
+    opportunitiesContainer.innerHTML = '';
+    patterns.opportunities.forEach(opportunity => {
+      const item = document.createElement('div');
+      item.className = 'pattern-item positive';
+      item.innerHTML = `
+        <div class="pattern-title">${opportunity.title}</div>
+        <p class="pattern-desc">${opportunity.description}</p>
+        <div class="pattern-impact">${opportunity.impact} • ${opportunity.potential}</div>
+      `;
+      opportunitiesContainer.appendChild(item);
+    });
+  }
+  
+  // Biases
+  const biasesContainer = $('biasesList');
+  if (patterns.biases.length === 0) {
+    biasesContainer.innerHTML = '<div style="color:var(--green);font-size:.9rem;text-align:center;padding:20px">✅ No significant behavioral biases detected</div>';
+  } else {
+    biasesContainer.innerHTML = '';
+    patterns.biases.forEach(bias => {
+      const item = document.createElement('div');
+      item.className = 'pattern-item';
+      item.innerHTML = `
+        <div class="pattern-title">${bias.title}</div>
+        <p class="pattern-desc">${bias.description}</p>
+        <div class="pattern-impact">${bias.severity} Severity • ${bias.examples}</div>
+      `;
+      biasesContainer.appendChild(item);
+    });
+  }
+}
+
+function updateTradesTable(trades) {
+  const tbody = $('tradesTableBody');
+  tbody.innerHTML = '';
+  
+  trades.forEach(trade => {
+    const row = document.createElement('tr');
+    const returnPct = trade.returnPct;
+    
+    let resultClass = 'break-even';
+    if (returnPct > 0.1) resultClass = 'win';
+    else if (returnPct < -0.1) resultClass = 'loss';
+    
+    row.innerHTML = `
+      <td style="font-weight:600">${trade.symbol}</td>
+      <td>${trade.date}</td>
+      <td>$${trade.entry.toFixed(2)}</td>
+      <td>$${trade.exit.toFixed(2)}</td>
+      <td class="${resultClass}">${returnPct > 0 ? '+' : ''}${returnPct.toFixed(2)}%</td>
+      <td class="${resultClass}">$${trade.pnl.toFixed(2)}</td>
+      <td class="${resultClass}">${trade.result}</td>
+    `;
+    
+    tbody.appendChild(row);
+  });
+}
+
+function updateImprovementRules(rules) {
+  const container = $('improvementRules');
+  container.innerHTML = '';
+  
+  rules.forEach((rule, index) => {
+    const item = document.createElement('div');
+    item.className = 'rule-item';
+    item.innerHTML = `
+      <div class="rule-number">${index + 1}</div>
+      <h5 class="rule-title">${rule.title}</h5>
+      <p class="rule-desc">${rule.description}</p>
+      <p class="rule-rationale">${rule.rationale}</p>
+    `;
+    container.appendChild(item);
+  });
+}
+
+// ─ UTILITY FUNCTIONS ─
+function setBusyState(busy) {
+  const btn = $('analyzeBtn');
+  const text = $('analyzeText');
+  const spinner = $('analyzeSpinner');
+  const inputs = ['tradeSymbol', 'entryPrice', 'exitPrice', 'tradeDate', 'addTradeBtn'];
+  
+  if (busy) {
+    btn.disabled = true;
+    text.style.display = 'none';
+    spinner.style.display = 'block';
+    inputs.forEach(id => $(id).disabled = true);
+  } else {
+    btn.disabled = false;
+    text.style.display = 'block';
+    spinner.style.display = 'none';
+    inputs.forEach(id => $(id).disabled = false);
+  }
+}
+
+function resetAll() {
+  currentTrades = [];
+  updateTradesDisplay();
+  updateQuickStats();
+  $('tradeSymbol').value = '';
+  $('entryPrice').value = '';
+  $('exitPrice').value = '';
+  $('tradeDate').value = new Date().toISOString().split('T')[0];
+  $('resultsSection').style.display = 'none';
+  localStorage.removeItem(TRADES_CACHE_KEY);
+  lastAnalysis = null;
+  showToast('🔄 Analysis reset', 'info');
+}
+
+function cacheTrades() {
+  localStorage.setItem(TRADES_CACHE_KEY, JSON.stringify(currentTrades));
+}
+
+function loadCachedTrades() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(TRADES_CACHE_KEY) || '[]');
+    if (Array.isArray(cached) && cached.length > 0) {
+      currentTrades = cached;
+      updateTradesDisplay();
+      updateQuickStats();
+    }
+  } catch (e) {
+    // Ignore cache errors
+  }
+}
+
+function showToast(message, type = 'info') {
+  const container = $('toastContainer');
+  const toast = document.createElement('div');
+  toast.className = `toast ${type}`;
+  
+  const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : type === 'info' ? 'ℹ️' : '⚠️';
+  
+  toast.innerHTML = `
+    <span>${icon}</span>
+    <span>${message}</span>
+  `;
+  
+  container.appendChild(toast);
+  
+  // Auto remove after 4 seconds
+  setTimeout(() => {
+    toast.remove();
+  }, 4000);
+}
+
+// Make removeTrade globally available
+window.removeTrade = removeTrade;
+
+// Initialize when page loads
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', init);
+} else {
+  init();
+}
+
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Earnings Watcher</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f9fafb;
+      padding: 2rem;
+    }
+    .container {
+      max-width: 800px;
+      margin: auto;
+      background: white;
+      padding: 2rem;
+      border-radius: 1rem;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #1a3c5e;
+      margin-bottom: 1.5rem;
+    }
+    label, input {
+      display: block;
+      width: 100%;
+      margin-top: 1rem;
+    }
+    input {
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+    }
+    .controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+    .controls input {
+      flex: 2;
+    }
+    .controls button {
+      flex: 0 0 48px;
+      height: 42px;
+      font-size: 1.2rem;
+      background-color: #1a3c5e;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    .controls button:hover {
+      background-color: #16324a;
+    }
+    .portfolio-list, .watch-list {
+      margin-top: 2rem;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 0.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #e5e7eb;
+      padding-bottom: 0.5rem;
+    }
+    .result {
+      margin-top: 2rem;
+      background-color: #f0f4f9;
+      padding:0;
+      border-left: 0px solid #1a3c5e;
+    }
+    .back-link {
+      text-align: center;
+      margin-top: 2rem;
+    }
+    .back-link a {
+      color: #1a3c5e;
+      font-weight: bold;
+      text-decoration: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>📅 Earnings Watcher</h1>
+
+    <div class="portfolio-list">
+  <h3>🎯 Your Portfolio</h3>
+  <div class="controls">
+    <input type="text" id="portfolioInput" placeholder="e.g. NVDA" />
+    <button onclick="addPortfolio()">➕</button>
+    <button onclick="removePortfolio()">➖</button>
+  </div>
+  <ul id="portfolioList">
+    <li>AAPL</li>
+    <li>TSLA</li>
+    <li>AMZN</li>
+  </ul>
+    </div>
+
+    <label for="symbolInput">Stock Ticker</label>
+    <div class="controls">
+      <input type="text" id="symbolInput" placeholder="e.g. AAPL" />
+      <button onclick="addSymbol()">➕</button>
+      <button onclick="removeSymbol()">➖</button>
+    </div>
+
+    <div class="watch-list">
+      <h3>👁️ Your Watch List</h3>
+      <ul id="watchList"></ul>
+    </div>
+
+    <button onclick="fetchEarningsForAll()" style="width: 100%; height: 42px; font-size: 1.2rem; background-color: #1a3c5e; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 1.5rem;">🔍 Check All Earnings</button>
+
+    <div class="result" id="result">
+  <table style="width:100%; border-collapse: collapse;">
+    <thead>
+      <tr style="background-color: #1a3c5e; color: white;">
+        <th style="padding: 10px; text-align: left;">Ticker</th>
+        <th style="padding: 10px; text-align: left;">Source</th>
+        <th style="padding: 10px; text-align: left;">Earnings Date</th>
+      </tr>
+    </thead>
+    <tbody id="resultTable"></tbody>
+  </table>
+</div>
+
+  </div>
+
+  <div class="back-link">
+    <a href="short-term-dashboard.html">🔙 Go Back</a>
+  </div>
+  
+  <script>
+  let watchList = [];
+  let portfolioList = ['AAPL', 'TSLA', 'AMZN'];
+
+  function renderList() {
+    const watchUl = document.getElementById('watchList');
+    const portfolioUl = document.getElementById('portfolioList');
+    watchUl.innerHTML = '';
+    portfolioUl.innerHTML = '';
+
+    watchList.forEach(sym => {
+      const li = document.createElement('li');
+      li.textContent = sym;
+      watchUl.appendChild(li);
+    });
+
+    portfolioList.forEach(sym => {
+      const li = document.createElement('li');
+      li.textContent = sym;
+      portfolioUl.appendChild(li);
+    });
+  }
+
+  function addSymbol() {
+    const symbol = document.getElementById('symbolInput').value.trim().toUpperCase();
+    if (symbol && !watchList.includes(symbol)) {
+      watchList.push(symbol);
+      renderList();
+      document.getElementById('symbolInput').value = '';
+    }
+  }
+
+  function removeSymbol() {
+    const symbol = document.getElementById('symbolInput').value.trim().toUpperCase();
+    watchList = watchList.filter(s => s !== symbol);
+    renderList();
+    document.getElementById('symbolInput').value = '';
+  }
+
+  function addPortfolio() {
+    const symbol = document.getElementById('portfolioInput').value.trim().toUpperCase();
+    if (symbol && !portfolioList.includes(symbol)) {
+      portfolioList.push(symbol);
+      renderList();
+      document.getElementById('portfolioInput').value = '';
+    }
+  }
+
+  function removePortfolio() {
+    const symbol = document.getElementById('portfolioInput').value.trim().toUpperCase();
+    portfolioList = portfolioList.filter(s => s !== symbol);
+    renderList();
+    document.getElementById('portfolioInput').value = '';
+  }
+
+  async function fetchEarningsForAll() {
+    const resultEl = document.getElementById('result');
+    resultEl.innerHTML = 'Fetching earnings dates...';
+
+    const combinedList = [...new Set([...portfolioList, ...watchList])];
+    const output = await Promise.all(combinedList.map(async (ticker) => {
+      let source = portfolioList.includes(ticker) ? 'Portfolio' : 'Watch List';
+      try {
+        const response = await fetch(`https://query1.finance.yahoo.com/v7/finance/calendar?symbol=${ticker}`);
+        const data = await response.json();
+        const date = data?.calendarEvents?.earnings?.earningsDate?.[0]?.raw;
+        if (date) {
+          return `${ticker} (${source}) → ${new Date(date * 1000).toLocaleDateString()}`;
+        } else {
+          return `${ticker} (${source}) → No date found`;
+        }
+      } catch (err) {
+        console.error(err);
+        return `${ticker} (${source}) → Error retrieving data`;
+      }
+    }));
+
+    const table = document.getElementById('resultTable');
+    table.innerHTML = '';
+    output.forEach(row => {
+      const [full, sourceInfo] = row.split(' → ');
+      const match = full.match(/^(.*) \((.*)\)$/);
+      if (match) {
+        const [_, ticker, source] = match;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td style='padding: 8px;'>${ticker}</td><td style='padding: 8px;'>${source}</td><td style='padding: 8px;'>${sourceInfo}</td>`;
+        table.appendChild(tr);
+      }
+    });
+  }
+
+  // Initial render
+  window.onload = renderList;
+</script>
+</body>
+</html>
+

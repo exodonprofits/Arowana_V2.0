@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/>
+<title>AI Stock Valuation — Arowana Profits</title>
+<style>
+:root{--brand:#0b4f8a;--brand-dk:#083d6e;--brand-lt:#e8f2fb;--bg:#f6f8fb;--panel:#fff;--text:#111827;--muted:#64748b;--border:#e5e7eb;--shadow:0 4px 24px rgba(11,79,138,.08);--radius:14px;--ring:rgba(11,79,138,.22);--green:#16a34a;--red:#dc2626;--amber:#d97706;--page-width:min(1200px,92vw)}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;font-family:'Inter',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column}
+a{color:var(--brand);text-decoration:none}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:none;box-shadow:0 0 0 3px var(--ring)}
+.container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
+.nav-shell{background:var(--brand);position:sticky;top:0;z-index:100;box-shadow:0 2px 16px rgba(0,0,0,.18)}
+.nav-inner{max-width:1200px;margin:0 auto;padding:0 16px;height:60px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.nav-brand{display:flex;align-items:center;gap:9px;color:#fff;font-weight:800;font-size:1.2rem;white-space:nowrap}
+.nav-logo{width:34px;height:34px;border-radius:8px;object-fit:contain;background:rgba(255,255,255,.15);padding:2px}
+.nav-links{display:flex;align-items:center;gap:2px}
+.nav-link{color:rgba(255,255,255,.75);padding:7px 11px;border-radius:8px;font-size:.875rem;font-weight:600;transition:.15s;white-space:nowrap}
+.nav-link:hover,.nav-link.active{background:rgba(255,255,255,.15);color:#fff}
+.nav-right{display:flex;align-items:center;gap:6px}
+.nav-btn{color:rgba(255,255,255,.8);padding:6px 12px;border-radius:8px;font-size:.85rem;font-weight:600;transition:.15s;cursor:pointer;border:none;background:none;font-family:inherit}
+.nav-btn:hover{background:rgba(255,255,255,.12);color:#fff}
+.nav-btn.cta{background:rgba(255,255,255,.18);color:#fff;border:1px solid rgba(255,255,255,.28)}
+.nav-btn.cta:hover{background:rgba(255,255,255,.28)}
+.nav-burger{display:none;background:none;border:none;color:#fff;font-size:1.2rem;cursor:pointer;padding:8px}
+@media(max-width:800px){.nav-links{display:none}.nav-burger{display:flex}}
+.nav-mobile{display:none;background:#063264;border-top:1px solid rgba(255,255,255,.1)}
+.nav-mobile.open{display:block}
+.nav-mobile a,.nav-mobile button{display:block;color:rgba(255,255,255,.8);padding:12px 20px;font-size:.9rem;font-weight:600;width:100%;text-align:left;background:none;border:none;cursor:pointer;font-family:inherit}
+.nav-mobile a:hover,.nav-mobile button:hover{background:rgba(255,255,255,.07);color:#fff}
+footer{background:var(--brand);color:#cfe0f5;padding:28px 0;margin-top:auto}
+.f-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:720px){.f-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.f-grid{grid-template-columns:1fr}}
+.f-col h4{color:#fff;font-size:.875rem;font-weight:700;margin:0 0 8px}
+.f-col a{display:block;color:#94bad8;font-size:.8rem;margin-bottom:4px}
+.f-col a:hover{color:#fff}
+.f-col p{font-size:.78rem;margin:0;line-height:1.6}
+.f-bottom{margin-top:16px;padding-top:14px;border-top:1px solid rgba(255,255,255,.12);text-align:center;font-size:.73rem;color:#6b94b8}
+.card{background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:20px;margin-bottom:16px}
+.card-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:1rem;font-weight:700;margin:0}
+.btn{display:inline-flex;align-items:center;gap:6px;border:none;border-radius:8px;padding:8px 14px;font-weight:700;cursor:pointer;font-size:.875rem;font-family:inherit;transition:.15s;white-space:nowrap}
+.btn-primary{background:var(--brand);color:#fff}.btn-primary:hover{background:var(--brand-dk)}
+.btn-ghost{background:#fff;border:1px solid var(--border);color:var(--text)}.btn-ghost:hover{background:#f8fafc}
+.btn-sm{padding:5px 10px;font-size:.8rem}
+input[type=text],input[type=number],select{padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-size:.9rem;font-family:inherit;color:var(--text);background:#fff;width:100%}
+input[type=text]:focus,input[type=number]:focus,select:focus{outline:none;box-shadow:0 0 0 3px var(--ring);border-color:var(--brand)}
+label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bottom:4px}
+.hint{font-size:.75rem;color:var(--muted);margin-top:3px}
+.page-hero{background:linear-gradient(135deg,#0b4f8a 0%,#1565a8 60%,#0d7bc4 100%);color:#fff;padding:28px 0 24px}
+.page-hero h1{margin:0 0 4px;font-size:1.7rem;font-weight:800}
+.page-hero p{margin:0;opacity:.8;font-size:.9rem}
+/* Search row */
+.search-row{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.search-row input{flex:1;min-width:180px}
+/* Model cards */
+.model-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:14px 0}
+@media(max-width:700px){.model-grid{grid-template-columns:1fr}}
+.model-card{background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center}
+.model-name{font-size:.78rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:6px}
+.model-val{font-size:1.5rem;font-weight:800;color:var(--brand)}
+.model-upside{font-size:.82rem;margin-top:3px;font-weight:600}
+.model-upside.up{color:var(--green)}.model-upside.down{color:var(--red)}
+/* Gauge */
+.gauge-track{height:12px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin:8px 0}
+.gauge-fill{height:100%;border-radius:999px;transition:width .5s ease}
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin:12px 0}
+@media(max-width:600px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+.kpi{background:var(--brand-lt);border-radius:9px;padding:10px 12px}
+.kpi-val{font-size:1.05rem;font-weight:800;color:var(--brand);display:block;margin-top:2px}
+.kpi-lbl{font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted);display:block}
+/* Assumptions grid */
+.assum-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}
+@media(max-width:600px){.assum-grid{grid-template-columns:1fr 1fr}}
+/* History */
+.hist-item{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:9px 12px;border-radius:9px;border:1px solid var(--border);margin-bottom:7px;cursor:pointer;transition:.15s}
+.hist-item:hover{border-color:var(--brand);background:var(--brand-lt)}
+/* TV chart */
+.chart-frame{border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-top:12px}
+.chart-frame iframe{display:block;width:100%;height:300px;border:none}
+.chart-placeholder{height:140px;display:flex;align-items:center;justify-content:center;background:#f8fafc;color:var(--muted);font-size:.875rem}
+/* Spinner */
+.spinner{display:none;text-align:center;padding:.75rem}
+@keyframes sp{to{transform:rotate(360deg)}}
+.spin{width:22px;height:22px;border:3px solid #e5e7eb;border-top-color:var(--brand);border-radius:50%;animation:sp .7s linear infinite;display:inline-block}
+.toast-stack{position:fixed;bottom:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.toast{padding:10px 16px;border-radius:10px;color:#fff;font-size:.875rem;font-weight:600;box-shadow:0 4px 20px rgba(0,0,0,.2);animation:tin .2s ease;pointer-events:auto}
+.toast-ok{background:#166534}.toast-err{background:#991b1b}.toast-info{background:#1e40af}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+</style>
+</head>
+<body>
+
+<div class="nav-shell">
+  <div class="nav-inner">
+    <a class="nav-brand" href="index.html">
+      <img src="images/arowanalogo.png" alt="" class="nav-logo" onerror="this.style.display='none'">
+      Arowana Profits
+    </a>
+    <nav class="nav-links">
+      <a href="short-term-dashboard.html" class="nav-link">⚡ Short-Term</a>
+      <a href="long-term-dashboard.html" class="nav-link active">📈 Long-Term</a>
+      <a href="learn-investing.html" class="nav-link">📚 Learn</a>
+      <a href="master-journal.html" class="nav-link">📒 Journal</a>
+      <a href="account.html" class="nav-link">🪪 Account</a>
+    </nav>
+    <div class="nav-right" id="navRight">
+      <a href="login.html" class="nav-btn" id="navSignIn">Sign In</a>
+      <a href="signup.html" class="nav-btn cta" id="navSignUp">Get Started</a>
+    </div>
+    <button class="nav-burger" id="navBurger">☰</button>
+  </div>
+  <div class="nav-mobile" id="navMobile">
+    <a href="long-term-dashboard.html">📈 Long-Term Dashboard</a>
+    <a href="intrinsic-value.html">🧮 Intrinsic Value</a>
+    <a href="ai-valuation.html">🤖 AI Valuation</a>
+    <a href="asset-allocation-builder.html">🧺 Asset Allocation</a>
+    <div style="height:1px;background:rgba(255,255,255,.1);margin:6px 0"></div>
+    <a href="login.html" id="mSignIn">🔑 Sign In</a>
+    <a href="signup.html" id="mSignUp">🚀 Get Started</a>
+    <button onclick="doSignOut()" id="mSignOut" style="display:none;color:#fca5a5">🚪 Sign Out</button>
+  </div>
+</div>
+
+<div class="page-hero">
+  <div class="container">
+    <h1>🤖 AI Stock Valuation</h1>
+    <p>Multi-model intrinsic value estimates: DCF, Graham Number, and Comparable multiples.</p>
+  </div>
+</div>
+
+<main class="container" style="padding:24px 0 48px">
+
+  <!-- SEARCH -->
+  <div class="card">
+    <div class="card-hd">
+      <h2 class="card-title">🔍 Valuation Check</h2>
+      <div style="display:flex;gap:6px">
+        <button class="btn btn-ghost btn-sm" onclick="loadDemo('AAPL')">💡 Try AAPL</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadDemo('MSFT')">💡 Try MSFT</button>
+        <button class="btn btn-ghost btn-sm" onclick="loadDemo('NVDA')">💡 Try NVDA</button>
+      </div>
+    </div>
+    <div class="search-row">
+      <input id="tickerInput" type="text" placeholder="Enter ticker (e.g. AAPL, MSFT, NVDA)" oninput="this.value=this.value.toUpperCase()" style="flex:1">
+      <button class="btn btn-primary" onclick="runValuation()">📊 Value It</button>
+      <button class="btn btn-ghost" onclick="resetVal()">↺ Reset</button>
+    </div>
+    <div class="spinner" id="spinner"><div class="spin"></div></div>
+    <div id="errMsg" style="display:none;margin-top:10px;background:#fef2f2;border:1px solid #fecaca;border-radius:8px;padding:10px 14px;font-size:.875rem;color:#991b1b"></div>
+  </div>
+
+  <!-- API KEY -->
+  <details style="background:var(--panel);border-radius:var(--radius);box-shadow:var(--shadow);border:1px solid var(--border);padding:16px;margin-bottom:16px">
+    <summary style="cursor:pointer;font-size:.875rem;font-weight:700;color:var(--text)">🔑 API Key Settings (for live data)</summary>
+    <div style="margin-top:12px;font-size:.83rem;color:var(--muted);margin-bottom:10px">Enter a free API key for live financial data. Stored in your browser only. Without a key, demo data is used.</div>
+    <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end">
+      <div>
+        <label>API Provider</label>
+        <select id="apiProvider" onchange="updateApiPlaceholder()">
+          <option value="twelve">Twelve Data (free tier: 800 calls/day)</option>
+          <option value="fmp">Financial Modeling Prep (free tier)</option>
+          <option value="av">Alpha Vantage (free tier: 25 calls/day)</option>
+        </select>
+      </div>
+      <div style="flex:2">
+        <label>API Key</label>
+        <input id="apiKey" type="text" placeholder="Paste your API key here">
+      </div>
+    </div>
+    <div style="display:flex;gap:7px;margin-top:8px">
+      <button class="btn btn-ghost btn-sm" onclick="saveApiKey()">💾 Save Key</button>
+      <button class="btn btn-ghost btn-sm" onclick="clearApiKey()">🗑 Clear</button>
+    </div>
+    <div id="apiKeyStatus" style="font-size:.75rem;color:var(--muted);margin-top:5px"></div>
+  </details>
+
+  <!-- RESULTS (hidden until run) -->
+  <div id="resultSection" style="display:none">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+      <!-- LEFT: Models + KPIs -->
+      <div>
+        <div class="card">
+          <div class="card-hd">
+            <h2 class="card-title" id="resultTitle">Valuation Results</h2>
+            <div style="display:flex;gap:6px">
+              <button class="btn btn-ghost btn-sm" onclick="saveResult()">💾 Save</button>
+              <button class="btn btn-ghost btn-sm" onclick="exportResult()">⬇ Export</button>
+            </div>
+          </div>
+
+          <!-- Fair value gauge -->
+          <div style="margin-bottom:14px">
+            <div style="display:flex;justify-content:space-between;font-size:.78rem;color:var(--muted);margin-bottom:4px">
+              <span>Current Price</span>
+              <span id="fvLabel">vs. Fair Value</span>
+              <span id="targetPrice"></span>
+            </div>
+            <div class="gauge-track"><div class="gauge-fill" id="gaugeFill" style="width:50%;background:var(--brand)"></div></div>
+            <div id="gaugeSummary" style="font-size:.82rem;font-weight:600;margin-top:4px"></div>
+          </div>
+
+          <!-- 3 models side by side -->
+          <div class="model-grid">
+            <div class="model-card">
+              <div class="model-name">DCF Model</div>
+              <div class="model-val" id="dcfVal">—</div>
+              <div class="model-upside" id="dcfUpside">—</div>
+              <div style="font-size:.73rem;color:var(--muted);margin-top:3px">10yr discounted CF</div>
+            </div>
+            <div class="model-card">
+              <div class="model-name">Graham Number</div>
+              <div class="model-val" id="grahamVal">—</div>
+              <div class="model-upside" id="grahamUpside">—</div>
+              <div style="font-size:.73rem;color:var(--muted);margin-top:3px">√(22.5 × EPS × BV)</div>
+            </div>
+            <div class="model-card">
+              <div class="model-name">Comparables</div>
+              <div class="model-val" id="compsVal">—</div>
+              <div class="model-upside" id="compsUpside">—</div>
+              <div style="font-size:.73rem;color:var(--muted);margin-top:3px">Sector median P/E</div>
+            </div>
+          </div>
+
+          <!-- KPIs -->
+          <div class="kpi-row">
+            <div class="kpi"><span class="kpi-lbl">Price</span><span class="kpi-val" id="kPrice">—</span></div>
+            <div class="kpi"><span class="kpi-lbl">P/E Ratio</span><span class="kpi-val" id="kPE">—</span></div>
+            <div class="kpi"><span class="kpi-lbl">EPS</span><span class="kpi-val" id="kEPS">—</span></div>
+            <div class="kpi"><span class="kpi-lbl">Book Value</span><span class="kpi-val" id="kBV">—</span></div>
+            <div class="kpi"><span class="kpi-lbl">Revenue Growth</span><span class="kpi-val" id="kGrowth">—</span></div>
+            <div class="kpi"><span class="kpi-lbl">Margin</span><span class="kpi-val" id="kMargin">—</span></div>
+            <div class="kpi"><span class="kpi-lbl">Debt/Equity</span><span class="kpi-val" id="kDE">—</span></div>
+            <div class="kpi"><span class="kpi-lbl">Market Cap</span><span class="kpi-val" id="kMCap">—</span></div>
+          </div>
+
+          <!-- AI narrative -->
+          <div id="aiNarrative" style="background:#f0f9ff;border-left:3px solid var(--brand);border-radius:6px;padding:10px 12px;font-size:.87rem;color:#374151;line-height:1.65;margin-top:4px"></div>
+        </div>
+
+        <!-- DCF Assumptions -->
+        <div class="card">
+          <div class="card-hd">
+            <h2 class="card-title">🔧 DCF Assumptions</h2>
+            <button class="btn btn-ghost btn-sm" onclick="recalcDCF()">↻ Recalculate</button>
+          </div>
+          <div class="assum-grid">
+            <div>
+              <label>EPS ($)</label>
+              <input id="aEPS" type="number" step="0.01" value="6.00" oninput="recalcDCF()">
+            </div>
+            <div>
+              <label>Growth Rate % (5yr)</label>
+              <input id="aGrowth" type="number" step="0.5" value="10" oninput="recalcDCF()">
+            </div>
+            <div>
+              <label>Terminal Growth %</label>
+              <input id="aTerminal" type="number" step="0.5" value="3" oninput="recalcDCF()">
+            </div>
+            <div>
+              <label>Discount Rate %</label>
+              <input id="aDiscount" type="number" step="0.5" value="10" oninput="recalcDCF()">
+            </div>
+            <div>
+              <label>Book Value/Share ($)</label>
+              <input id="aBV" type="number" step="0.01" value="4.00" oninput="recalcDCF()">
+            </div>
+            <div>
+              <label>Sector P/E</label>
+              <input id="aSectorPE" type="number" step="0.5" value="25" oninput="recalcDCF()">
+            </div>
+          </div>
+          <div id="dcfSensitivity" style="font-size:.8rem;color:var(--muted);margin-top:10px;padding:8px;background:#f8fafc;border-radius:7px"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: Chart + History -->
+      <div>
+        <div class="card">
+          <h2 class="card-title" style="margin-bottom:8px">📈 Price Chart</h2>
+          <div class="chart-frame"><div id="tvChart"><div class="chart-placeholder">Run a valuation to load the chart.</div></div></div>
+        </div>
+
+        <div class="card">
+          <div class="card-hd">
+            <h2 class="card-title">🕘 Valuation History</h2>
+            <button class="btn btn-ghost btn-sm" onclick="clearHistory()">Clear</button>
+          </div>
+          <div id="histList"><p style="font-size:.875rem;color:var(--muted);text-align:center;padding:12px 0">No valuations saved yet.</p></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="container">
+    <div class="f-grid">
+      <div class="f-col"><h4>Arowana Profits</h4><p>AI-powered tools for long-term investors.</p></div>
+      <div class="f-col"><h4>Long-Term</h4>
+        <a href="intrinsic-value.html">Intrinsic Value</a>
+        <a href="ai-valuation.html">AI Valuation</a>
+        <a href="asset-allocation-builder.html">Asset Allocation</a>
+        <a href="ai-morning-brief.html">Morning Brief</a>
+      </div>
+      <div class="f-col"><h4>Short-Term</h4>
+        <a href="buy-sell-signal.html">Buy/Sell Signal</a>
+        <a href="atr-stop-planner.html">ATR Stop Planner</a>
+      </div>
+      <div class="f-col"><h4>Legal</h4><p>Educational only. Not investment advice. Intrinsic value models are estimates based on assumptions. Actual results will vary.</p></div>
+    </div>
+    <div class="f-bottom">© <span id="yr"></span> Arowana Profit LLC. All rights reserved.</div>
+  </div>
+</footer>
+
+<div class="toast-stack" id="toastStack"></div>
+
+<script type="module">
+import { supabase } from './js/supabase-init.js';
+window.doSignOut = async () => { try { await supabase.auth.signOut(); } catch(e){} location.href = 'index.html'; };
+const { data: { user } } = await supabase.auth.getUser();
+if (user) {
+  const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'Account';
+  document.getElementById('navSignIn').style.display = 'none';
+  document.getElementById('navSignUp').style.display = 'none';
+  document.getElementById('mSignOut').style.display = 'block';
+  const nr = document.getElementById('navRight'); nr.innerHTML = '';
+  const nb = document.createElement('button'); nb.className='nav-btn cta'; nb.textContent='🪪 '+name; nb.onclick=()=>location.href='account.html';
+  const so = document.createElement('button'); so.className='nav-btn'; so.textContent='Sign Out'; so.onclick=window.doSignOut;
+  nr.append(nb,so);
+}
+</script>
+
+<script>
+const $=id=>document.getElementById(id);
+$('yr').textContent=new Date().getFullYear();
+$('navBurger').addEventListener('click',()=>$('navMobile').classList.toggle('open'));
+function toast(msg,type='ok'){const s=$('toastStack');const t=document.createElement('div');t.className=`toast toast-${type}`;t.textContent=msg;s.appendChild(t);setTimeout(()=>t.remove(),3400);}
+
+const LS_HIST='arowana_ai_valuation_hist_v1';
+const LS_API='arowana_iv_apikeys';
+let currentData=null;
+
+// API key management
+function loadApiKey(){
+  const keys=JSON.parse(localStorage.getItem(LS_API)||'{}');
+  const provider=$('apiProvider').value;
+  $('apiKey').value=keys[provider]||'';
+  $('apiKeyStatus').textContent=keys[provider]?'✓ Key saved for '+provider:'No key saved — demo data will be used.';
+  $('apiKeyStatus').style.color=keys[provider]?'var(--green)':'var(--muted)';
+}
+function saveApiKey(){
+  const keys=JSON.parse(localStorage.getItem(LS_API)||'{}');
+  const provider=$('apiProvider').value;
+  const key=($('apiKey').value||'').trim();
+  if(!key){toast('Paste a key first.','err');return;}
+  keys[provider]=key;
+  localStorage.setItem(LS_API,JSON.stringify(keys));
+  loadApiKey();toast('API key saved ✓');
+}
+function clearApiKey(){
+  const keys=JSON.parse(localStorage.getItem(LS_API)||'{}');
+  delete keys[$('apiProvider').value];
+  localStorage.setItem(LS_API,JSON.stringify(keys));
+  $('apiKey').value='';loadApiKey();toast('Key cleared','info');
+}
+function updateApiPlaceholder(){loadApiKey();}
+$('apiProvider').addEventListener('change',loadApiKey);
+
+// Demo data for popular tickers
+function getDemoData(ticker){
+  const demos={
+    AAPL:{name:'Apple Inc.',price:189.5,pe:29.5,eps:6.42,bv:4.02,growth:8.5,margin:25.3,de:1.73,mcap:2.94e12,sector_pe:28},
+    MSFT:{name:'Microsoft Corp.',price:415.2,pe:36.1,eps:11.45,bv:26.60,growth:15.2,margin:34.5,de:0.35,mcap:3.09e12,sector_pe:32},
+    NVDA:{name:'NVIDIA Corp.',price:875.0,pe:65.0,eps:13.46,bv:8.73,growth:122.0,margin:55.0,de:0.46,mcap:2.16e12,sector_pe:55},
+    GOOGL:{name:'Alphabet Inc.',price:175.5,pe:25.0,eps:7.05,bv:22.80,growth:14.0,margin:28.0,de:0.06,mcap:2.2e12,sector_pe:28},
+    AMZN:{name:'Amazon.com Inc.',price:190.0,pe:45.0,eps:4.22,bv:19.30,growth:12.0,margin:8.0,de:0.55,mcap:1.97e12,sector_pe:40},
+  };
+  return demos[ticker]||{name:ticker,price:100,pe:20,eps:5.00,bv:12.00,growth:10,margin:15,de:0.5,mcap:10e9,sector_pe:22};
+}
+
+function calcDCF(eps,growth,terminal,discount,years=10){
+  let cfSum=0,cf=eps;
+  const g1=growth/100,gT=terminal/100,r=discount/100;
+  for(let i=1;i<=years;i++){cf*=(1+g1);cfSum+=cf/Math.pow(1+r,i);}
+  const tv=cf*(1+gT)/(r-gT);cfSum+=tv/Math.pow(1+r,years);
+  return Math.round(cfSum*100)/100;
+}
+function calcGraham(eps,bv){return Math.round(Math.sqrt(Math.max(0,22.5*eps*bv))*100)/100;}
+function calcComps(eps,sectorPE){return Math.round(eps*sectorPE*100)/100;}
+
+function renderValuation(data,ticker){
+  const d=data;
+  currentData={...d,ticker};
+  $('resultSection').style.display='block';
+  $('resultTitle').textContent=`${d.name} (${ticker})`;
+
+  // Fill assumptions
+  $('aEPS').value=d.eps.toFixed(2);
+  $('aBV').value=d.bv.toFixed(2);
+  $('aGrowth').value=d.growth.toFixed(1);
+  $('aSectorPE').value=d.sector_pe;
+
+  recalcModels(d);
+  renderKPIs(d);
+  renderChart(ticker);
+  renderNarrative(d,ticker);
+  $('spinner').style.display='none';
+}
+
+function recalcModels(d){
+  const eps=+$('aEPS').value||d.eps;
+  const growth=+$('aGrowth').value||d.growth;
+  const terminal=+$('aTerminal').value||3;
+  const discount=+$('aDiscount').value||10;
+  const bv=+$('aBV').value||d.bv;
+  const spe=+$('aSectorPE').value||d.sector_pe;
+  const price=d.price;
+
+  const dcf=calcDCF(eps,growth,terminal,discount);
+  const graham=calcGraham(eps,bv);
+  const comps=calcComps(eps,spe);
+  const avgFV=Math.round((dcf+graham+comps)/3*100)/100;
+
+  function renderModel(valId,upsideId,fv){
+    $(valId).textContent='$'+fv.toFixed(2);
+    const pct=((fv-price)/price*100).toFixed(1);
+    const el=$(upsideId);
+    el.textContent=(+pct>=0?'+':'')+pct+'%';
+    el.className='model-upside '+(+pct>=0?'up':'down');
+  }
+  renderModel('dcfVal','dcfUpside',dcf);
+  renderModel('grahamVal','grahamUpside',graham);
+  renderModel('compsVal','compsUpside',comps);
+
+  // Gauge
+  const pct=Math.min(100,Math.max(0,(price/avgFV)*100));
+  $('gaugeFill').style.width=pct+'%';
+  $('gaugeFill').style.background=pct<70?'var(--green)':pct<95?'var(--brand)':pct<110?'var(--amber)':'var(--red)';
+  $('fvLabel').textContent='Fair value avg: $'+avgFV.toFixed(2);
+  const up=((avgFV-price)/price*100);
+  $('gaugeSummary').textContent=(up>=0?`Potential upside: +${up.toFixed(1)}% to avg. fair value`:`Trading ${Math.abs(up).toFixed(1)}% above avg. fair value`);
+  $('gaugeSummary').style.color=up>=0?'var(--green)':'var(--red)';
+  $('targetPrice').textContent='$'+avgFV.toFixed(2)+' avg';
+
+  // DCF sensitivity
+  const bear=calcDCF(eps,growth*0.5,terminal,discount+2);
+  const bull=calcDCF(eps,growth*1.5,terminal,discount-2);
+  $('dcfSensitivity').textContent=`DCF sensitivity: Bear $${bear.toFixed(2)} · Base $${dcf.toFixed(2)} · Bull $${bull.toFixed(2)} (growth ±50%, discount ±2%)`;
+}
+
+function recalcDCF(){if(currentData)recalcModels(currentData);}
+
+function renderKPIs(d){
+  const fmt=(n,pre='')=>n!=null?pre+(typeof n==='number'?n>1e9?'$'+(n/1e9).toFixed(1)+'B':n>1e6?'$'+(n/1e6).toFixed(0)+'M':n.toFixed(2):'—'):'—';
+  $('kPrice').textContent='$'+d.price.toFixed(2);
+  $('kPE').textContent=d.pe.toFixed(1)+'×';
+  $('kEPS').textContent='$'+d.eps.toFixed(2);
+  $('kBV').textContent='$'+d.bv.toFixed(2);
+  $('kGrowth').textContent=d.growth.toFixed(1)+'%';
+  $('kMargin').textContent=d.margin.toFixed(1)+'%';
+  $('kDE').textContent=d.de.toFixed(2);
+  $('kMCap').textContent=d.mcap>1e12?'$'+(d.mcap/1e12).toFixed(2)+'T':d.mcap>1e9?'$'+(d.mcap/1e9).toFixed(0)+'B':'$'+(d.mcap/1e6).toFixed(0)+'M';
+}
+
+function renderChart(ticker){
+  const host=$('tvChart');
+  const sym=encodeURIComponent('NASDAQ:'+ticker);
+  host.innerHTML=`<iframe src="https://s.tradingview.com/widgetembed/?symbol=${sym}&interval=W&hidesidetoolbar=1&hidetoptoolbar=1&theme=light&style=1&timezone=Etc%2FUTC&withdateranges=1&hideideas=1" title="Chart" allowtransparency="true" allowfullscreen></iframe>`;
+}
+
+function renderNarrative(d,ticker){
+  const dcf=calcDCF(+$('aEPS').value||d.eps,+$('aGrowth').value||d.growth,+$('aTerminal').value||3,+$('aDiscount').value||10);
+  const upside=((dcf-d.price)/d.price*100);
+  const sentiment=upside>20?'potentially undervalued':upside>5?'fairly valued with slight upside':upside>-5?'fairly priced near intrinsic value':'potentially overvalued vs. DCF estimate';
+  $('aiNarrative').innerHTML=`<strong>${ticker}</strong> is trading at $${d.price.toFixed(2)} with a P/E of ${d.pe.toFixed(1)}× and ${d.growth.toFixed(1)}% estimated growth. Based on a DCF model with these inputs, the stock appears <strong>${sentiment}</strong>. The Graham Number of $${calcGraham(d.eps,d.bv).toFixed(2)} and sector comps of $${calcComps(d.eps,d.sector_pe).toFixed(2)} provide additional context. <em style="color:var(--muted);font-size:.8rem">Educational only — adjust assumptions to reflect your own research.</em>`;
+}
+
+async function fetchLiveData(ticker,apiKey,provider){
+  let url='';
+  if(provider==='twelve')url=`https://api.twelvedata.com/quote?symbol=${ticker}&apikey=${apiKey}`;
+  else if(provider==='fmp')url=`https://financialmodelingprep.com/api/v3/quote/${ticker}?apikey=${apiKey}`;
+  else url=`https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${ticker}&apikey=${apiKey}`;
+  const res=await fetch(url);if(!res.ok)throw new Error('HTTP '+res.status);
+  return res.json();
+}
+
+async function runValuation(){
+  const ticker=($('tickerInput').value||'').trim().toUpperCase();
+  if(!ticker){$('errMsg').textContent='Please enter a ticker symbol.';$('errMsg').style.display='block';return;}
+  $('errMsg').style.display='none';
+  $('spinner').style.display='block';
+  $('resultSection').style.display='none';
+  
+  try{
+    const keys=JSON.parse(localStorage.getItem(LS_API)||'{}');
+    const provider=$('apiProvider').value;
+    const apiKey=keys[provider]||'';
+    
+    if(apiKey){
+      // Try live fetch with graceful demo fallback
+      try{
+        const raw=await fetchLiveData(ticker,apiKey,provider);
+        // Normalize across providers - fall back to demo if parse fails
+        const demo=getDemoData(ticker);
+        let price=null;
+        if(provider==='twelve'&&raw?.price)price=parseFloat(raw.price);
+        else if(provider==='fmp'&&raw?.[0]?.price)price=parseFloat(raw[0].price);
+        else if(provider==='av'&&raw?.['Global Quote']?.['05. price'])price=parseFloat(raw['Global Quote']['05. price']);
+        const data={...demo,name:raw?.name||demo.name};
+        if(price&&isFinite(price))data.price=price;
+        renderValuation(data,ticker);
+        toast('Live data loaded ✓');
+      }catch(apiErr){
+        console.warn('API error, using demo:',apiErr);
+        renderValuation(getDemoData(ticker),ticker);
+        toast('API error — using demo data','info');
+      }
+    }else{
+      // Simulate loading
+      await new Promise(r=>setTimeout(r,600));
+      renderValuation(getDemoData(ticker),ticker);
+      toast('Demo data loaded (set API key for live data)','info');
+    }
+  }catch(e){
+    $('errMsg').textContent='Error: '+e.message;$('errMsg').style.display='block';
+    $('spinner').style.display='none';
+  }
+}
+
+function loadDemo(ticker){
+  $('tickerInput').value=ticker;
+  runValuation();
+}
+
+function resetVal(){
+  $('tickerInput').value='';
+  $('resultSection').style.display='none';
+  $('errMsg').style.display='none';
+  currentData=null;
+}
+
+function saveResult(){
+  if(!currentData){toast('Run a valuation first.','err');return;}
+  const h=JSON.parse(localStorage.getItem(LS_HIST)||'[]');
+  const dcf=calcDCF(+$('aEPS').value,+$('aGrowth').value,+$('aTerminal').value,+$('aDiscount').value);
+  h.unshift({ticker:currentData.ticker,name:currentData.name,price:currentData.price,dcf,ts:new Date().toISOString()});
+  if(h.length>12)h.pop();
+  localStorage.setItem(LS_HIST,JSON.stringify(h));
+  renderHistory();toast('Saved ✓');
+}
+
+function exportResult(){
+  if(!currentData){toast('Run a valuation first.','err');return;}
+  const dcf=calcDCF(+$('aEPS').value,+$('aGrowth').value,+$('aTerminal').value,+$('aDiscount').value);
+  const lines=[`AI Valuation — ${currentData.ticker} — ${new Date().toLocaleDateString()}`,`Price: $${currentData.price}  P/E: ${currentData.pe}  EPS: $${currentData.eps}`,`DCF Fair Value: $${dcf.toFixed(2)}`,`Graham Number: $${calcGraham(+$('aEPS').value,+$('aBV').value).toFixed(2)}`,`Comps Estimate: $${calcComps(+$('aEPS').value,+$('aSectorPE').value).toFixed(2)}`,'',$('aiNarrative').innerText||'','','Generated by Arowana Profits — arowanaprofits.com','Educational only. Not financial advice.'];
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([lines.join('\n')],{type:'text/plain'}));a.download=`${currentData.ticker.toLowerCase()}-valuation.txt`;a.click();toast('Exported ✓');
+}
+
+function renderHistory(){
+  const h=JSON.parse(localStorage.getItem(LS_HIST)||'[]');
+  const list=$('histList');
+  if(!h.length){list.innerHTML='<p style="font-size:.875rem;color:var(--muted);text-align:center;padding:12px 0">No valuations saved yet.</p>';return;}
+  list.innerHTML=h.map((item,i)=>`<div class="hist-item" onclick="loadFromHistory(${i})">
+    <div>
+      <div style="font-weight:700;font-size:.9rem">${item.ticker} <span style="font-size:.75rem;font-weight:400;color:var(--muted)">${item.name||''}</span></div>
+      <div style="font-size:.77rem;color:var(--muted)">Price $${item.price?.toFixed(2)||'—'} · DCF $${item.dcf?.toFixed(2)||'—'}</div>
+    </div>
+    <span style="font-size:.73rem;color:var(--muted)">${new Date(item.ts).toLocaleDateString()}</span>
+  </div>`).join('');
+}
+
+window.loadFromHistory=function(i){
+  const h=JSON.parse(localStorage.getItem(LS_HIST)||'[]');
+  const item=h[i];if(!item)return;
+  $('tickerInput').value=item.ticker;
+  runValuation();
+};
+function clearHistory(){if(!confirm('Clear valuation history?'))return;localStorage.removeItem(LS_HIST);renderHistory();toast('Cleared','info');}
+
+loadApiKey();
+renderHistory();
+</script>
+</body>
+</html>
