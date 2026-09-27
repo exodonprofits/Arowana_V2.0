@@ -1,0 +1,385 @@
+/* ==========================================================================
+   Arowana Profits — shared design tokens
+   ==========================================================================
+   ONE :root for the whole platform. Link this before any page stylesheet:
+
+       <link rel="stylesheet" href="./js/theme.css">
+
+   Why this file exists
+   --------------------
+   Every workspace page carried its own :root — two to four of them per
+   page — each generation of theming layered on top of the last instead of
+   replacing it. Trading Command alone redefined 58 tokens with a different
+   value than it had already declared. The first definition on six of seven
+   pages set --brand to #0b4f8a and was then overwritten; that value has
+   been dead code for a long time.
+
+   The pages had also drifted apart from each other, and in the one place
+   it matters most on a trading platform:
+
+       --bull   #087a59  on analysis-central, market-intelligence, trading-command
+                #11a779  on options-hub, portfolio-command
+       --bear   #b4233b  on analysis-central, market-intelligence, trading-command
+                #dc4c64  on options-hub, portfolio-command
+
+   Green meant one thing on Options Hub and another on Analysis Central.
+   A trader comparing two screens was reading two palettes.
+
+   How the values below were chosen
+   --------------------------------
+   Majority of the EFFECTIVE value on each page (the last :root wins in
+   CSS, so that is what was actually rendering). Where a token was
+   contested, the majority is used and the alternative is noted inline.
+
+   Two pages — arowana-trader and portfolio-advisor — began as dark themes
+   and were converted to light by layering a light :root over the dark one.
+   Their dark values are deliberately NOT carried across; the dark rules
+   still sitting in those files are inert and should eventually be removed.
+   ========================================================================== */
+
+:root {
+  /* ---- Brand -------------------------------------------------------- */
+  /* #175f8f on 5 of 7 pages. arowana-trader and portfolio-advisor use
+     #176d9f — close enough to look like a rendering difference rather than
+     a decision, which is exactly why it should be one value. */
+  --brand:            #175f8f;
+  --brand-light:      #2686bd;
+  --brand-dark:       #104b73;
+
+  /* ---- Canvas ------------------------------------------------------- */
+  --bg:               #eef3f6;
+  --surface:          #ffffff;
+  --card:             #ffffff;
+  --card-hover:       #f1f5f9;
+  --hover:            #edf4f7;
+
+  /* ---- Text --------------------------------------------------------- */
+  --text:             #172733;
+  --text-muted:       #526571;
+  --text-dim:         #657782;
+
+  /* ---- Lines and depth ---------------------------------------------- */
+  --border:           #d7e0e5;
+  --border-light:     #e8eef1;
+  --border-hi:        #b9cad4;
+  --shadow:           0 10px 28px rgba(30, 57, 73, .08);
+  --ring:             rgba(23, 95, 143, .22);
+
+  /* ---- Radius ------------------------------------------------------- */
+  /* 14px on 5 of 6 pages; portfolio-advisor used 13px. Trading Command
+     declared --radius twice, 12px and then 14px, so its corners depended
+     on which rule a component happened to sit after. */
+  --radius-sm:        9px;
+  --radius:           14px;
+  --radius-lg:        16px;
+
+  /* ---- Direction: the colours that carry meaning --------------------- */
+  /* These are the ones worth being strict about. A green that differs by
+     page is not a style inconsistency, it is a data-legibility problem. */
+  --bull:             #087a59;
+  --bull-light:       #d1fae5;
+  --bear:             #b4233b;
+  --bear-light:       #fee2e2;
+
+  /* ---- Status ------------------------------------------------------- */
+  /* Deliberately NOT aliased to --bull/--bear. They were identical on
+     several pages, which meant "this succeeded" and "this position is up"
+     shared a colour and could never be told apart or restyled separately. */
+  --success:          #0f7a4f;
+  --success-light:    #e7f8f2;
+  --danger:           #b4233b;
+  --danger-light:     #fee2e2;
+  --warning:          #b45309;
+  --warning-light:    #fef3c7;
+  --info:             #175f8f;
+  --info-light:       #dbeafe;
+
+  /* ---- Type --------------------------------------------------------- */
+  --font:             'Plus Jakarta Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono:             'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* A real scale. The pages between them used 52 distinct font sizes,
+     including 9.5px, 10.5px, 0.78rem and 0.82rem — one-off adjustments
+     rather than steps. rem throughout, so browser font-size settings are
+     respected; the px sizes scattered through the pages ignore them. */
+  --fs-xs:            0.72rem;
+  --fs-sm:            0.8rem;
+  --fs-base:          0.88rem;
+  --fs-md:            0.95rem;
+  --fs-lg:            1.1rem;
+  --fs-xl:            1.35rem;
+  --fs-2xl:           1.7rem;
+
+  /* ---- Layout ------------------------------------------------------- */
+  /* options-hub declared --sidebar-width three times: 300px, 280px, 260px. */
+  --sidebar-width:    286px;
+  --sidebar-collapsed: 68px;
+  --content-max:      1480px;
+}
+
+/* --------------------------------------------------------------------------
+   Aliases, kept so existing pages keep rendering while they migrate.
+   --------------------------------------------------------------------------
+   Each of these was a second (or third) name for a value already above.
+   They point at the canonical token rather than repeating its literal, so
+   a future change to --bull moves everything that means "up" with it.
+
+   These are a migration aid, not part of the system. New CSS should use
+   the tokens above; when a page stops referencing an alias, delete it.
+   -------------------------------------------------------------------------- */
+:root {
+  --panel:            var(--surface);      /* was a third name for #ffffff */
+  --text-primary:     var(--text);
+  --text-secondary:   var(--text-muted);
+  --ink:              var(--text);
+  --muted:            var(--text-dim);
+  --dim:              var(--text-dim);
+
+  --profitable:       var(--bull);         /* was #16a34a on 2 pages, #087a59 on 1 */
+  --losing:           var(--bear);         /* was #ef4444 on 2 pages, #b4233b on 1 */
+  --green:            var(--bull);
+  --red:              var(--bear);
+  --blue:             var(--brand);
+  --cyan:             #56a9c8;
+
+  --card-hi:          var(--card-hover);
+  --tc-border:        var(--border);
+  --tc-bg:            var(--bg);
+
+  /* Tokens the pages reference that the earlier survey missed. Values are
+     the platform majority; --font-sans/--font-mono/--focus/--border-strong
+     were already unanimous across five pages. */
+  --font-sans:        var(--font);
+  --font-mono:        var(--mono);
+  --sans:             var(--font);
+  --neutral:          #64748b;
+  --amber:            #9b5d00;
+  --gold:             #a9761a;
+  --gold-pale:        rgba(169, 118, 26, .10);
+  --focus:            rgba(38, 134, 189, .24);
+  --shadow-lg:        0 18px 42px rgba(30, 57, 73, .12);
+  --border-strong:    #c4d0d7;
+  --success-dark:     #066347;
+  --bullish:          var(--bull);
+  --bearish:          var(--bear);
+  --green-pale:       rgba(8, 122, 89, .10);
+  --red-pale:         rgba(180, 35, 59, .09);
+  --r:                var(--radius);
+}
+
+
+/* ==========================================================================
+   Tab bars — optional folder-tab join
+   ==========================================================================
+   OPT-IN. Add `tabs-joined` to a tab bar's class list to weld the active tab
+   to the panel beneath it:
+
+       <div class="journal-tabs tabs-horizontal tabs-joined" role="tablist">
+
+   It is opt-in because it only works when the tab bar sits directly above a
+   bordered surface. Checking every page showed that is not the common case:
+
+       trade-journal-pro     panel starts with .card            -> joins
+       analysis-central      panel starts with a container      -> joins
+       trading-command       panel starts with .page-header     -> DOES NOT
+       market-intelligence   panel starts with .page-header     -> DOES NOT
+       portfolio-command     panel starts with .page-header     -> DOES NOT
+
+   On those three the first thing inside the panel is an H1 and a subtitle on
+   the page background, so the active tab would weld itself to empty space
+   above a heading — worse than the divider it replaces.
+
+   There is a semantic difference behind that, and it is worth respecting
+   rather than styling over. On trade-journal-pro the tabs switch tables
+   within one section, so the join is honest. On trading-command each tab is
+   a whole workspace with its own title and description; those really are
+   separate sections and a divider says so correctly.
+   ========================================================================== */
+
+.tabs-joined {
+  margin-bottom: 0 !important;
+  padding-bottom: 0 !important;
+  border-bottom: 0 !important;
+  /* a blurred translucent strip draws its own edge — the divider returns as
+     a colour boundary */
+  background: transparent !important;
+  backdrop-filter: none !important;
+}
+
+.tabs-joined .tab-btn[aria-selected="true"],
+.tabs-joined .tab-btn.active,
+.tabs-joined .trading-tab[aria-selected="true"],
+.tabs-joined .trading-tab.active,
+.tabs-joined .portfolio-tab[aria-selected="true"],
+.tabs-joined .portfolio-tab.active,
+.tabs-joined .options-tab[aria-selected="true"],
+.tabs-joined .options-tab.active,
+.tabs-joined .analysis-tab[aria-selected="true"],
+.tabs-joined .analysis-tab.active,
+.tabs-joined .mode-tab[aria-selected="true"],
+.tabs-joined .mode-tab.active {
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-color: transparent !important;
+  margin-bottom: -1px !important;          /* overlap the panel's top border */
+  box-shadow: none !important;             /* a shadow here draws the join */
+  position: relative;
+  z-index: 2;
+}
+
+/* Selection markers pinned to the tab's bottom edge now fall inside the
+   panel, so they would cut across the join. Move them to the top. */
+.tabs-joined .tab-btn[aria-selected="true"]:after,
+.tabs-joined .tab-btn.active:after,
+.tabs-joined .trading-tab[aria-selected="true"]:after,
+.tabs-joined .trading-tab.active:after,
+.tabs-joined .portfolio-tab[aria-selected="true"]:after,
+.tabs-joined .portfolio-tab.active:after,
+.tabs-joined .options-tab[aria-selected="true"]:after,
+.tabs-joined .options-tab.active:after,
+.tabs-joined .analysis-tab[aria-selected="true"]:after,
+.tabs-joined .analysis-tab.active:after {
+  top: -1px;
+  bottom: auto !important;
+  left: -1px;
+  right: -1px;
+  height: 3px;
+  border-radius: 3px 3px 0 0;
+}
+
+
+
+/* NOTE on the doubled class below (.tabs-joined.tabs-joined):
+   theme.css is linked BEFORE each page's own <style>, so a page rule like
+     .journal-tabs .tab-btn { border-radius:9px !important }
+   ties on specificity (0,2,0) and wins on source order. Doubling the class
+   lifts these to (0,3,0) so the shared pattern beats per-page overrides
+   without needing edits in every page. */
+/* ==========================================================================
+   Folder-tab depth — inactive tabs read as sheets behind the active one
+   ==========================================================================
+   Only inside .tabs-joined, so nothing changes on pages that did not opt in.
+
+   The cue that makes a tab strip read as a stack of folders is not the shape
+   of the active tab — it is that the inactive ones sit visibly BEHIND it.
+   Skeuomorphic versions do this with gloss, bevels and a saturated rail,
+   which on a financial tool reads as unmaintained 2000s software. The same
+   depth can be had from three flat signals:
+
+     • inactive tabs get a faint fill and a real border, so they read as
+       cards rather than plain text
+     • they sit 2px lower and are slightly desaturated — behind, not beside
+     • the active tab keeps its full-white surface and dissolves into the
+       panel below
+
+   No gradients, no bevels, no drop shadows at the join.
+   ========================================================================== */
+
+.tabs-joined.tabs-joined .tab-btn,
+.tabs-joined.tabs-joined .trading-tab,
+.tabs-joined.tabs-joined .portfolio-tab,
+.tabs-joined.tabs-joined .options-tab,
+.tabs-joined.tabs-joined .analysis-tab,
+.tabs-joined.tabs-joined .mode-tab {
+  background: var(--card-hover, #f1f5f9) !important;
+  /* Longhands, not the `border` and `border-radius` shorthands: the pages
+     mix !important on individual sides, and a shorthand resets every side
+     including ones a page deliberately set. */
+  border-top-width: 1px !important;
+  border-right-width: 1px !important;
+  border-left-width: 1px !important;
+  border-bottom-width: 1px !important;
+  border-style: solid !important;
+  border-top-color: var(--border, #d7e0e5) !important;
+  border-right-color: var(--border, #d7e0e5) !important;
+  border-left-color: var(--border, #d7e0e5) !important;
+  border-bottom-color: transparent !important;
+  border-top-left-radius: var(--radius-sm, 9px) !important;
+  border-top-right-radius: var(--radius-sm, 9px) !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  /* Sitting lower is what puts them behind. The active tab overrides this
+     back to -1px, so it rises above the row and meets the panel. */
+  margin-bottom: 2px !important;
+  color: var(--text-muted, #526571) !important;
+  transition: background .15s ease, margin-bottom .15s ease, color .15s ease;
+}
+
+/* Hover lifts a tab partway — a hint that it will come forward if clicked. */
+.tabs-joined.tabs-joined .tab-btn:hover:not([aria-selected="true"]):not(.active),
+.tabs-joined.tabs-joined .trading-tab:hover:not([aria-selected="true"]):not(.active),
+.tabs-joined.tabs-joined .portfolio-tab:hover:not([aria-selected="true"]):not(.active),
+.tabs-joined.tabs-joined .options-tab:hover:not([aria-selected="true"]):not(.active),
+.tabs-joined.tabs-joined .analysis-tab:hover:not([aria-selected="true"]):not(.active),
+.tabs-joined.tabs-joined .mode-tab:hover:not([aria-selected="true"]):not(.active) {
+  background: #fff !important;
+  margin-bottom: 1px !important;
+  color: var(--text, #172733) !important;
+}
+
+/* The front sheet: full white, flush with the panel, nothing behind it. */
+.tabs-joined.tabs-joined .tab-btn[aria-selected="true"],
+.tabs-joined.tabs-joined .tab-btn.active,
+.tabs-joined.tabs-joined .trading-tab[aria-selected="true"],
+.tabs-joined.tabs-joined .trading-tab.active,
+.tabs-joined.tabs-joined .portfolio-tab[aria-selected="true"],
+.tabs-joined.tabs-joined .portfolio-tab.active,
+.tabs-joined.tabs-joined .options-tab[aria-selected="true"],
+.tabs-joined.tabs-joined .options-tab.active,
+.tabs-joined.tabs-joined .analysis-tab[aria-selected="true"],
+.tabs-joined.tabs-joined .analysis-tab.active,
+.tabs-joined.tabs-joined .mode-tab[aria-selected="true"],
+.tabs-joined.tabs-joined .mode-tab.active {
+  background: var(--card, #fff) !important;
+  border-color: var(--border, #d7e0e5) !important;
+  color: var(--text, #172733) !important;
+  /* Re-stated here because the inactive base rule above sets these too and
+     would otherwise win on source order. The active tab rises 3px above the
+     row and its bottom edge overlaps the panel's border. */
+  margin-bottom: -1px !important;
+  border-bottom-left-radius: 0 !important;
+  border-bottom-right-radius: 0 !important;
+  border-bottom-color: transparent !important;
+  box-shadow: none !important;
+  position: relative;
+  z-index: 2;
+}
+
+
+/* ==========================================================================
+   Mobile drawer stacking — the backdrop must sit BELOW the drawer
+   ==========================================================================
+   Symptom: tap the hamburger, the nav slides in but every item is greyed
+   out, nothing is clickable, and any tap just closes it again.
+
+   Cause: `.sidebar` is declared with a z-index several times per page and
+   the later ones win. On all seven pages checked the effective value ended
+   up far below the backdrop:
+
+       .mobile-backdrop            z-index: 1099
+       .sidebar (first, correct)   z-index: 1100
+       .sidebar (later overrides)  z-index: 120, then 100 !important …
+
+   So the dimming layer rendered ON TOP of the drawer. That is the grey, and
+   it is why taps did nothing except close — every one landed on the
+   backdrop, whose handler is closeAll().
+
+   Fixed here rather than in each page because all seven share it. Scoped to
+   body.sidebar-open so the desktop rail keeps whatever stacking its own
+   rules give it — several pages lower .sidebar deliberately so the collapse
+   button and account menu can overflow correctly.
+   ========================================================================== */
+
+body.sidebar-open .sidebar,
+body.drawer-open .sidebar,
+body.sidebar-open #sidebarDrawer,
+body.drawer-open #sidebarDrawer {
+  z-index: 1200 !important;
+}
+
+body.sidebar-open .mobile-backdrop,
+body.drawer-open .mobile-backdrop,
+body.sidebar-open #mobileBackdrop,
+body.drawer-open #mobileBackdrop {
+  z-index: 1150 !important;   /* above the page, below the drawer */
+}

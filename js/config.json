@@ -1,0 +1,16 @@
+{
+  "version": "1.2",
+  "supabase": {
+    "url": "https://pbojacnagutipfhcxltj.supabase.co",
+    "anonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBib2phY25hZ3V0aXBmaGN4bHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDkwODAsImV4cCI6MjA2MzU4NTA4MH0.ZLCcAzTYljoZycpBGwMtthP5VyAJ4schuIvt4HibGc0"
+  },
+  "webhooks": {
+    "morning_brief": "https://exodonprofits.app.n8n.cloud/webhook/arowana-morning-scan",
+    "moat_inference": "https://exodonprofits.app.n8n.cloud/webhook/moat-inference"
+  },
+  "app": {
+    "name": "Arowana Profits",
+    "platform": "GenieSphere",
+    "defaultRedirect": "/dashboard/short-term-dashboard.html"
+  }
+}

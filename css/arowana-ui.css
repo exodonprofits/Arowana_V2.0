@@ -1,0 +1,42 @@
+/* =========================
+   Arowana Icon System
+   ========================= */
+
+/* Emoji as a subtle “icon”, not decoration */
+.ap-emoji{
+  font-size: 15px;
+  line-height: 1;
+  opacity: .92;
+  transform: translateY(-0.5px);
+  display: inline-flex;
+}
+
+/* Slightly bigger emoji for cards/sections */
+.ap-emoji--lg{
+  font-size: 18px;
+  opacity: .95;
+  transform: translateY(-0.5px);
+}
+
+/* Consistent icon + text alignment */
+.ap-ix{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Trust-strip icon: use line icons, keep serious */
+.ap-trust-icon{
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  opacity: .85;
+}
+
+/* Hard rule: no emoji inside trust/legal zones */
+[data-emoji-zone="forbid"] .ap-emoji,
+[data-emoji-zone="forbid"] .ap-emoji--lg{
+  display: none !important; /* prevents accidental emoji icons */
+}

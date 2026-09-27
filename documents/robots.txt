@@ -1,0 +1,28 @@
+# Arowana Profits — arowanaprofits.com
+# Public pages are open to crawlers; the signed-in desk is not. Pages behind
+# login return nothing useful to a crawler and shouldn't appear in results.
+
+User-agent: *
+Allow: /
+
+# Signed-in workspace
+Disallow: /trading-command.html
+Disallow: /portfolio-command.html
+Disallow: /options-hub.html
+Disallow: /analysis-central.html
+Disallow: /trade-journal-pro.html
+Disallow: /watchlist.html
+Disallow: /credit-spread-planner.html
+Disallow: /arowana-trader.html
+
+# Account and billing
+Disallow: /account.html
+Disallow: /checkout.html
+Disallow: /billing.html
+Disallow: /login.html
+Disallow: /signup.html
+
+# Config and scripts
+Disallow: /js/
+
+Sitemap: https://arowanaprofits.com/sitemap.xml
