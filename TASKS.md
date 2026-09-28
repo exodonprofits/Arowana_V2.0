@@ -1,10 +1,23 @@
 # Arowana 2.0 Task Board
 
-## READY
+## COMPLETED — AWAITING REVIEW
 
 ### ATD-001 — Full repository feature audit
-**Owner:** Unassigned  
+**Owner:** Codex
+
+**Status:** Audit completed 2026-09-27; awaiting owner review of recommendations.
+
+**Branch:** `codex/ATD-001-full-repository-audit`
+
 **Goal:** Classify existing pages/modules as KEEP / MODIFY / MERGE / PORT / ARCHIVE / DELETE / SECURITY FIX; identify dependency clusters and canonical versions.
+
+**Result:** [Repository audit](docs/ATD-001_REPOSITORY_AUDIT.md) inventories all 249 baseline files, including 211 individual HTML/JS/CSS/configuration rows, canonical recommendations, integrations, implied data models and migration priorities. No application functionality or production configuration changed; no legacy files deleted.
+
+**Verification:** Existing secret check passed its limited patterns; a remaining credential-like Twelve Data literal was separately identified without reproducing its value. All 32 standalone JS files passed syntax checks; 477 inline blocks produced four existing syntax failures. Static HTML paths identified 80 missing targets across 230 occurrences. Full evidence and limitations are in the audit.
+
+**Next:** Review ATD-001, then assign ATD-002 if approved. No follow-on task started.
+
+## READY
 
 ### ATD-002 — Secret and client-key migration inventory
 **Owner:** Unassigned  

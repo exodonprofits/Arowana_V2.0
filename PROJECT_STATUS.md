@@ -27,8 +27,17 @@
 - Market-data providers are fragmented across legacy tools
 - User provider keys have historically been stored in browser/localStorage/Supabase user tables
 - Some non-core/unrelated pages may need archiving
-- `market-intelligence.html` is currently a thin/placeholder implementation relative to the 2.0 vision
+- `market-intelligence.html` is currently a retired redirect, not an implementation of the planned Market Engine
+
+## ATD-001 audit result — awaiting review
+
+- Completed static repository audit on 2026-09-27 on `codex/ATD-001-full-repository-audit`; see [full report](docs/ATD-001_REPOSITORY_AUDIT.md).
+- Inventoried all 249 baseline files, with individual classifications for 174 HTML files, 32 JavaScript files, four CSS files and one JSON configuration file.
+- Recommended canonical core pages and consolidation targets; identified unrelated Salon/GenieSphere pages, competing journal/watchlist models, missing backend definitions and provider fragmentation.
+- Preparation notes above describe historical cleanup, not a guarantee: audit found a remaining credential-like Twelve Data literal in `js/option-roll-analyzer.js:9`. Value omitted; validity and rotation were not tested. Browser provider-key workflows remain a migration blocker.
+- Existing secret scan passed its limited patterns. Static checks found four existing inline JavaScript syntax failures and 80 missing HTML targets across 230 occurrences; all 32 standalone JS files parsed successfully. See report for scope and limitations.
+- Only audit/status/task documentation changed. No application, production configuration, database, credential or legacy-file changes; no follow-on task started.
 
 ## Next gate
 
-Complete the Phase 0 classification and dependency audit before building new trading features.
+Review ATD-001 canonical-page, scope and data-retention recommendations. Recommended next assignment is ATD-002; schema/RLS evidence, provider contracts and canonical navigation remain separate Phase 0 tasks before new trading features.
