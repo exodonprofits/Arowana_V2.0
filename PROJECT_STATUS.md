@@ -77,4 +77,10 @@ Architecture 2.1 was prepared as a documentation-only ATD-004 follow-up on `code
 
 ## Owner review gate
 
+### ATD-006A — final proposal review binding
+
+Owner reports Architecture 2.1 was reviewed and ATD-006 merged through PR #5. ATD-006A adds a narrow section 7 clarification on `codex/ATD-006A-bind-final-proposal-review`: reviews and deterministic results must be valid for the same final immutable proposal version and required snapshot set. Material changes invalidate affected reviews and require recalculation, refreshed specialist assessments and final-proposal adversarial review. Non-material presentation edits preserve the original bindings without unnecessary analysis. This clarification is completed and awaiting owner review; earlier review-status statements describe the ATD-006 baseline and do not approve this new change or the ATD-004 contract.
+
+Documentation-link, whitespace, limited-pattern secret and changed-file scope checks passed. Only architecture/task/status documentation changed; ATD-004 and the addendum remain unchanged. No application, schema or production changes. ATD-003 and ATD-101 remain unstarted; stop for owner review.
+
 Review consolidated Architecture 2.1 and the proposed ATD-004 contract; neither is owner-approved. Provider/feed rights, freshness, canonical private data, deployment, retention and AI implementation decisions remain open. ATD-002/005 security findings still require separately assigned remediation. ATD-003 remains READY but blocked pending owner approval of Architecture 2.1. ATD-101 remains PLANNED, gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Stop here for owner review.

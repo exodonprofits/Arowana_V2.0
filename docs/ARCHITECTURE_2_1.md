@@ -195,6 +195,18 @@ Initial checks apply to the candidate and known deterministic inputs. If AI or a
 
 Recheck applicable quality, freshness, authorization/entitlements, engine inputs, risk and strategy eligibility before review-ready delivery. An expired quote, revoked entitlement or changed account state requires new validation and, where needed, a new snapshot/record. Historical records preserve their original outcome and generation time but do not confer perpetual readiness or access. AI narrative cannot convert unavailable to available, partial to complete, delayed to realtime, unauthorized to authorized or failed risk to passed risk.
 
+#### Final proposal and review binding (ATD-006A)
+
+Every proposed trade/execution plan has a proposal version or equivalent immutable proposal identity. Each specialist assessment and Devil's Advocate review must reference the exact proposal version evaluated, the relevant immutable input snapshot IDs within its required input snapshot set, and applicable engine/policy versions. Required deterministic results must likewise be attributable to that proposal and input set. Roles may use different relevant subsets of the same identified input set; evidence from incompatible proposal versions or input sets cannot be combined to establish readiness.
+
+A material change by the Chief Trading Agent or a user creates a new proposal version and makes affected reviews invalid/stale for that version. Material changes include, where applicable: strategy; instrument; stock versus options expression; option contract, strike or expiration; entry/trigger changes that materially alter the thesis; position size or risk; exit/invalidation; account; and any other change that materially alters risk or strategy evaluation. Historical assessments retain their original bindings and must not be silently relabeled as reviews of the new proposal.
+
+After a material change, rerun deterministic calculations and risk, refresh affected specialist assessments, and have Devil's Advocate review the resulting final proposal. Any retained unaffected assessment requires an explicit applicability validation for the final proposal version and required input set, preserving its original assessment reference and recording that validation. Changes to relevant snapshots or applicable engine/policy versions also require revalidation and refresh of affected evidence; unchanged proposal text alone does not make old evidence valid.
+
+**READY FOR HUMAN REVIEW requires all required deterministic results, specialist assessments and adversarial review to be valid for the SAME final proposal version and required immutable input snapshot set.** The Decision Gate verifies these bindings as well as the existing eligibility/risk gates. A mismatch, stale required review or missing validation prevents readiness. The Trade Decision Record references that final proposal version and its resulting validated assessments and deterministic results.
+
+Non-material presentation/narrative edits, such as formatting or wording that changes no thesis, assumption, trigger, risk, strategy or input evidence, do not require unnecessary re-analysis. They must preserve the underlying immutable proposal identity and evidence bindings; this exception cannot be used to hide a material plan change. These are conceptual invariants, not a physical schema or implementation.
+
 | Decision-support state | Meaning |
 |---|---|
 | BLOCKED | A mandatory prerequisite fails or cannot be established, including a hard deterministic risk rejection; include reason and gate evidence |
@@ -211,8 +223,8 @@ The core derived artifact is an auditable Trade Decision Record, not a BUY/SELL 
 
 | Evidence group | Retained information |
 |---|---|
-| Candidate and context | Instrument identity, strategy, authorized account/portfolio context and proposed structure |
-| Assessments | Market, technical, fundamental, portfolio-fit and strategy-fit assessments with evidence references |
+| Candidate and context | Final immutable proposal version/identity, instrument identity, strategy, authorized account/portfolio context and proposed structure |
+| Assessments | Market, technical, fundamental, portfolio-fit and strategy-fit assessments and adversarial review, with final-proposal validity, relevant immutable snapshot IDs, applicable engine/policy versions and any retained-assessment applicability validations |
 | Gate outcomes | Data-quality, freshness, entitlement, input eligibility, deterministic risk and strategy states; reasons, limitations and checks not performed |
 | Interpretation and challenge | Specialist interpretations, material Devil's Advocate concerns, disagreement, Chief assessment and response to objections |
 | Plan | Trigger, invalidation, deterministic approved risk/sizing context if available, and decision-support status; blocked records cannot imply approved sizing |

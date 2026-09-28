@@ -88,6 +88,20 @@
 
 **Next:** Stop for owner review of Architecture 2.1 and its open decisions. No automatic follow-on assignment.
 
+### ATD-006A — Bind Reviews to Final Proposal Version
+
+**Owner:** Codex
+
+**Status:** Completed — awaiting owner review of this clarification. Owner reports ATD-006 was reviewed and merged through PR #5.
+
+**Branch:** `codex/ATD-006A-bind-final-proposal-review`
+
+**Result:** Clarified section 7 of [Architecture 2.1](docs/ARCHITECTURE_2_1.md): immutable proposal identity, assessment/snapshot/version bindings, invalidation after material changes, required recalculation and refreshed reviews, final-record bindings and the non-material presentation exception. No physical schema or implementation.
+
+**Verification:** Documentation links, whitespace, existing limited-pattern secret scan and exact documentation-only scope checks. ATD-004 and the source addendum unchanged; no application or production changes. ATD-003 and ATD-101 not started.
+
+**Next:** Owner review; do not merge automatically or begin follow-on tasks.
+
 ## READY
 
 ### ATD-003 — Canonical navigation map
