@@ -66,4 +66,6 @@
 
 ## Next gate
 
+Architecture 2.1 was prepared as a documentation-only ATD-004 follow-up on `codex/ATD-004-architecture-2-1`; see [proposal](docs/ARCHITECTURE_2_1.md). It defines component boundaries, logical data ownership, request/job flow, engine responsibilities, rollout gates and owner decisions from the existing inventory/contract. The source baseline matches GitHub main at `bff6c52`. Contract approval, security remediation and provider rights remain open; no application or production changes were made.
+
 Review the proposed ATD-004 contract and provider/feed rights, freshness, data ownership and retention decisions. ATD-002/005 security findings still require separately assigned remediation. Recommended next existing Phase 0 task: ATD-003 (canonical navigation map). Do not begin ATD-101 until contract approval, licensed access and a secure DEV baseline are established.

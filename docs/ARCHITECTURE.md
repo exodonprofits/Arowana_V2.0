@@ -1,5 +1,7 @@
 # Arowana Trading Desk 2.0 Architecture
 
+Proposed expansion: [Architecture 2.1](ARCHITECTURE_2_1.md), prepared as an ATD-004 follow-up from the data source inventory and proposed contract. It remains subject to owner review; this baseline and the ATD-004 contract are not implicitly approved or replaced.
+
 ## Product boundary
 
 Arowana is a private-beta trading research and decision-support system. TradingView remains the deep visual charting tool; the broker remains the execution/custody system. Arowana becomes the first-stop command center.

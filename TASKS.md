@@ -60,6 +60,20 @@
 
 **Next:** Review provider/feed rights, freshness budgets, canonical data ownership and deployment/retention decisions. Recommended next existing Phase 0 task ATD-003. ATD-101 remains gated on contract approval and security remediation; no follow-on started.
 
+### ATD-004 follow-up — Architecture 2.1 proposal
+
+**Owner:** Codex
+
+**Status:** User-requested documentation follow-up prepared 2026-09-28; awaiting owner review.
+
+**Branch:** `codex/ATD-004-architecture-2-1`
+
+**Result:** [Architecture 2.1](docs/ARCHITECTURE_2_1.md) translates the ATD-004 inventory and proposed contract into component boundaries, logical ownership, engine/AI responsibilities, secure migration stages and explicit owner decisions. Original inventory/contract preserved; no implementation or production changes.
+
+**Verification:** Documentation links, repository secret scan and Git whitespace/scope checks; no runtime or provider tests apply to this documentation-only follow-up.
+
+**Next:** Owner review of Architecture 2.1 and ATD-004 decisions. ATD-101 remains gated; ATD-003 remains unassigned.
+
 ## READY
 
 ### ATD-003 — Canonical navigation map
