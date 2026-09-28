@@ -38,6 +38,15 @@
 - Existing secret scan passed its limited patterns. Static checks found four existing inline JavaScript syntax failures and 80 missing HTML targets across 230 occurrences; all 32 standalone JS files parsed successfully. See report for scope and limitations.
 - Only audit/status/task documentation changed. No application, production configuration, database, credential or legacy-file changes; no follow-on task started.
 
+## ATD-002 inventory result — awaiting review
+
+- Completed on 2026-09-28 on `codex/ATD-002-secret-client-key-inventory`, based on merged ATD-001 (`47fe1ca`); see [inventory](docs/ATD-002_SECRET_CLIENT_KEY_INVENTORY.md).
+- Documented all 206 first-party HTML/JS/JSON files, credential/storage flows, provider migration requirements and backend unknowns.
+- The remaining Twelve Data candidate also exists in reachable local history. Browser key hydration, alternate key stores, quarantine retention, configurable credential-bearing webhooks and Salon settings secret storage require scoped remediation.
+- Nine source JWT literals decode to public anon role; no service-role literal was found by the additional scan. Public client configuration is distinct from private provider secrets; actual RLS remains unverified.
+- Existing secret check passed its limited patterns. Additional scans covered 250 baseline files, 16 DOCX XML/relationship members and 250 unique blobs across four reachable commits. No credentials used or live services tested.
+- Only inventory/task/status documentation changed. No remediation, production configuration change, rotation or follow-on task started.
+
 ## Next gate
 
-Review ATD-001 canonical-page, scope and data-retention recommendations. Recommended next assignment is ATD-002; schema/RLS evidence, provider contracts and canonical navigation remain separate Phase 0 tasks before new trading features.
+Review ATD-002 and decide credential containment, platform versus per-user provider keys, approved webhook origins, legacy/Salon deployment scope and retention. Recommended next assignment: ATD-005 to establish schema/RLS evidence; ATD-004 provider contracts also precede migration implementation. ATD-001 canonical-page and retention recommendations remain available for review.
