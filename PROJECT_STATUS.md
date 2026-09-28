@@ -47,6 +47,23 @@
 - Existing secret check passed its limited patterns. Additional scans covered 250 baseline files, 16 DOCX XML/relationship members and 250 unique blobs across four reachable commits. No credentials used or live services tested.
 - Only inventory/task/status documentation changed. No remediation, production configuration change, rotation or follow-on task started.
 
+## ATD-005 schema/RLS audit result — awaiting review
+
+- Completed 2026-09-28 on `codex/ATD-005-supabase-schema-rls-audit`; see [audit](docs/ATD-005_SUPABASE_SCHEMA_RLS_AUDIT.md). ATD-002 documentation was preserved at entry and subsequently committed in the branch base (`784d6d7`); see audit for the detected checkout transition.
+- Read-only inspection of the repository-matched Supabase project found 411 base tables with RLS enabled and 59 views across public/arowana/salon; detailed evidence covers 51 scoped relations, 131 policies and 132 constraints.
+- Confirmed watchlist ownership policies combine as alternatives, and account/entity ownership lacks a relational invariant. Identified browser-accessible secret models, schema/API mismatches and shared-project advisor findings.
+- Verified existing profile field protection, restricted usage-writing RPCs, admin-gated usage summary and user-token validation in three sampled deployed Edge Functions. RLS flags or gateway JWT settings alone are not security verdicts.
+- Deployment listing contains 122 migrations and 35 Edge Functions; their implementations/migrations are absent from this checkout. Earlier repository-only unknowns are resolved only where the new audit records live evidence.
+- No application records or stored credentials read, no runtime impersonation or write tests, and no production changes. Repository secret check and documentation diff checks passed. Audit only; no remediation or follow-on work started.
+
+## ATD-004 data source inventory and contract — awaiting review
+
+- Completed documentation on 2026-09-28 on `codex/ATD-004-data-source-inventory-contract`; see [inventory](docs/ATD-004_DATA_SOURCE_INVENTORY.md) and [proposed contract v0.1](docs/ATD-004_DATA_HUB_CONTRACT.md).
+- Covered 206 first-party source files and mapped Finnhub/Twelve Data/FMP/Alpha Vantage/Supabase/n8n paths plus AI, broker, manual/import and chart boundaries. Target providers remain proposed capabilities, not validated subscriptions or implemented adapters.
+- Contract defines logical datasets, source/feed/time provenance, point-in-time revisions, freshness, private ownership, server entitlements, API/error/pagination rules, caching/fallback, ingestion and future acceptance tests.
+- Confirmed source-level gaps include discarded quote timestamps, fragmented caches, rate-limit assumptions, fallback history differences and demo/live valuation mixing.
+- Prior audit reports preserved. Secret check, source coverage, synthetic documentation example, reference/redaction and diff checks passed. No application code, production configuration or service changes; no live provider/database/broker requests. No follow-on work started.
+
 ## Next gate
 
-Review ATD-002 and decide credential containment, platform versus per-user provider keys, approved webhook origins, legacy/Salon deployment scope and retention. Recommended next assignment: ATD-005 to establish schema/RLS evidence; ATD-004 provider contracts also precede migration implementation. ATD-001 canonical-page and retention recommendations remain available for review.
+Review the proposed ATD-004 contract and provider/feed rights, freshness, data ownership and retention decisions. ATD-002/005 security findings still require separately assigned remediation. Recommended next existing Phase 0 task: ATD-003 (canonical navigation map). Do not begin ATD-101 until contract approval, licensed access and a secure DEV baseline are established.
