@@ -74,16 +74,31 @@
 
 **Next:** Owner review of Architecture 2.1 and ATD-004 decisions. ATD-101 remains gated; ATD-003 remains unassigned.
 
+### ATD-006 — Architecture 2.1 consolidation
+
+**Owner:** Codex
+
+**Status:** Completed — awaiting owner review. Neither Architecture 2.1 nor the ATD-004 contract is owner-approved.
+
+**Branch:** `codex/ATD-006-architecture-2-1-consolidation`
+
+**Result:** Reconciled the ATD-004-driven Architecture 2.1 engineering/data design with the AI Trading Floor addendum in [the consolidated proposal](docs/ARCHITECTURE_2_1.md). Integrated shared logical specialist roles, adversarial review, Chief synthesis, initial/final deterministic gates, hard risk veto and Trade Decision Records. The addendum remains unchanged historical/source evidence; baseline architecture and ATD-004 child contract remain unchanged.
+
+**Verification:** Existing limited-pattern secret scan, Git whitespace/three-file scope checks, relative links, preserved-source comparison and requirement review. No application or production changes, credential-store access, or runtime tests. ATD-003 and ATD-101 not started.
+
+**Next:** Stop for owner review of Architecture 2.1 and its open decisions. No automatic follow-on assignment.
+
 ## READY
 
 ### ATD-003 — Canonical navigation map
 **Owner:** Unassigned  
 **Depends on:** ATD-001  
+**Status:** READY — blocked pending owner approval of Architecture 2.1; not started.
 **Goal:** Define Arowana 2.0 primary navigation without breaking legacy links.
 
 ## PLANNED AFTER PHASE 0
 
-- ATD-101 Market Data Hub
+- ATD-101 Market Data Hub — PLANNED; gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Not started.
 - ATD-102 Market Regime Engine
 - ATD-103 Technical + POC Engine
 - ATD-104 EPS Revision / Fundamental Engine

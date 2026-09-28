@@ -68,4 +68,13 @@
 
 Architecture 2.1 was prepared as a documentation-only ATD-004 follow-up on `codex/ATD-004-architecture-2-1`; see [proposal](docs/ARCHITECTURE_2_1.md). It defines component boundaries, logical data ownership, request/job flow, engine responsibilities, rollout gates and owner decisions from the existing inventory/contract. The source baseline matches GitHub main at `bff6c52`. Contract approval, security remediation and provider rights remain open; no application or production changes were made.
 
-Review the proposed ATD-004 contract and provider/feed rights, freshness, data ownership and retention decisions. ATD-002/005 security findings still require separately assigned remediation. Recommended next existing Phase 0 task: ATD-003 (canonical navigation map). Do not begin ATD-101 until contract approval, licensed access and a secure DEV baseline are established.
+## ATD-006 architecture consolidation — completed, awaiting owner review
+
+- Reconciled the engineering/data/security foundation with the AI Trading Floor addendum in [Architecture 2.1](docs/ARCHITECTURE_2_1.md) on `codex/ATD-006-architecture-2-1-consolidation`, based on local commit `5620217`.
+- Integrated shared specialist responsibilities, Devil's Advocate, Chief orchestration, non-bypassable deterministic risk, Decision Gate and auditable Trade Decision Records. Resolved gate ordering with initial checks and a final deterministic recheck; rejected arbitrary agent voting.
+- Preserved the Data Hub/API child contract and ATD-002/005 security dependencies. Baseline architecture, addendum and audit/contract sources remain unchanged. Only the consolidated architecture and task/status documentation changed; no production changes or credential-store access.
+- Verification: existing limited-pattern secret scan, Git diff/changed-file checks, relative documentation links and source-preservation checks. No runtime implementation or provider tests; ATD-003 and ATD-101 were not started.
+
+## Owner review gate
+
+Review consolidated Architecture 2.1 and the proposed ATD-004 contract; neither is owner-approved. Provider/feed rights, freshness, canonical private data, deployment, retention and AI implementation decisions remain open. ATD-002/005 security findings still require separately assigned remediation. ATD-003 remains READY but blocked pending owner approval of Architecture 2.1. ATD-101 remains PLANNED, gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Stop here for owner review.

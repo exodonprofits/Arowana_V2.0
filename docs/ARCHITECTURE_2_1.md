@@ -1,8 +1,8 @@
 # Arowana Architecture 2.1
 
-Status: **proposed for owner review; documentation only**. Prepared 2026-09-28 as the user-requested ATD-004 follow-up on `codex/ATD-004-architecture-2-1`.
+Status: **consolidated proposal awaiting owner review; not owner-approved; documentation only**. Reconciled 2026-09-28 under ATD-006 on `codex/ATD-006-architecture-2-1-consolidation`, from local baseline `5620217768a667333b56971640881d36814520c3`.
 
-Source baseline: GitHub `exodonprofits/Arowana_V2.0` main commit [`bff6c5257d62f21a8dadd6d70f28fc8176010f92`](https://github.com/exodonprofits/Arowana_V2.0/tree/bff6c5257d62f21a8dadd6d70f28fc8176010f92), verified against the live remote. Primary sources: [ATD-004 inventory](ATD-004_DATA_SOURCE_INVENTORY.md) and [Data Hub contract v0.1](ATD-004_DATA_HUB_CONTRACT.md). Security dependencies: [ATD-002](ATD-002_SECRET_CLIENT_KEY_INVENTORY.md) and [ATD-005](ATD-005_SUPABASE_SCHEMA_RLS_AUDIT.md).
+Engineering foundation: the ATD-004 Architecture 2.1 draft, originally based on GitHub commit `bff6c5257d62f21a8dadd6d70f28fc8176010f92`, plus the [AI Trading Floor addendum](ARCHITECTURE_2_1_AI_TRADING_FLOOR_ADDENDUM.md), retained unchanged as historical/source design evidence. Primary data sources: [ATD-004 inventory](ATD-004_DATA_SOURCE_INVENTORY.md) and [Data Hub contract v0.1](ATD-004_DATA_HUB_CONTRACT.md). Migration evidence: [ATD-001](ATD-001_REPOSITORY_AUDIT.md). Security dependencies: [ATD-002](ATD-002_SECRET_CLIENT_KEY_INVENTORY.md) and [ATD-005](ATD-005_SUPABASE_SCHEMA_RLS_AUDIT.md).
 
 This proposal expands the [existing architecture](ARCHITECTURE.md). It does not approve the ATD-004 contract, establish provider rights, remediate security findings, or authorize deployment. ATD-004 remains the detailed dataset/API specification; any future disagreement must be resolved in both documents before implementation. Architecture version 2.1 does not change the proposed API `/api/data/v1` or envelope schema version `1.0.0`.
 
@@ -11,6 +11,10 @@ This proposal expands the [existing architecture](ARCHITECTURE.md). It does not 
 Arowana is a private-beta research and decision-support platform for the owner and approved users. Trading Command is the command center; Swing, Wheel, Growth/AI, Options and Long-Term are strategy desks sharing the same data and risk services. Wheel is one desk, not the platform identity. TradingView remains the deep charting surface, and the broker remains the execution and custody system.
 
 The central rule is: **data supplies observations; deterministic engines calculate facts; AI explains those facts; risk rules constrain strategy plans; the user decides what to do.** An execution plan is a document, never an order. No broker order endpoint, trading permission or autonomous execution is included.
+
+**Shared-Brain Principle:** Swing, Wheel, Options, Growth/AI and Long-Term consume the same Data Hub, Market Engine, Technical/POC Engine, Fundamental Engine, Portfolio Engine, Risk Engine and Strategy services. Desks own strategy-specific workflows and views, not separate factual pipelines or independent AI traders.
+
+**No AI agent, including the Chief Trading Agent, may override a hard deterministic Risk Engine rejection.** AI interprets risk; the Risk Engine owns hard constraints. Human review does not change a failed system gate into a passed gate. The human retains the final decision whether to trade outside Arowana's read-only broker boundary.
 
 ## 2. Current state versus target
 
@@ -26,6 +30,8 @@ The central rule is: **data supplies observations; deterministic engines calcula
 
 These are target responsibilities, not claims that the services already exist. The inventory's sampled code and ATD-005's dated metadata are evidence of current gaps; this follow-up did not inspect live application data or re-audit deployed services.
 
+The normalized Data Hub, shared deterministic engines, AI Trading Floor, Devil's Advocate, Chief Trading Agent, Decision Gate and Trade Decision Record below are target components. Existing browser workflows, fragmented caches, overlapping journals/portfolio sources and partial backend definitions do not establish their implementation.
+
 ## 3. Target system flow
 
 ```mermaid
@@ -33,22 +39,27 @@ flowchart TD
     P[Approved providers] --> A[Server adapters and validation]
     B[Broker: read-only] --> A
     J[Scheduler / optional n8n] --> A
-    A --> N[Normalized versioned observations]
+    A --> N[Data Hub: normalized versioned observations]
     U[Authenticated user] --> G[API: identity, ownership, entitlements, quotas]
     G --> S[Authorized immutable input snapshots]
     N --> S
     M[Manual inputs / imports] --> R[Private records and reconciliation]
     R --> S
-    S --> E[Deterministic market, technical, fundamental and portfolio engines]
-    E --> AI[AI analysts / Chief Trading Agent]
-    E --> K[Deterministic risk and strategy gates]
-    AI --> K
-    K --> V[Trading Command / Morning Brief / strategy desks]
-    V --> D[User-reviewed execution plan]
-    D --> T[Optional TradingView research / manual broker action]
+    S --> E[Deterministic engines: market, technical, fundamental, portfolio, risk and strategy]
+    E --> Q[Initial quality, freshness, entitlement, risk and eligibility gates]
+    Q --> AI[AI Trading Floor: specialist interpretation]
+    AI --> DA[Devil's Advocate: adversarial review]
+    DA --> C[Chief Trading Agent: synthesis]
+    C --> K[Decision / Risk Gate: final deterministic recheck]
+    K --> D[Trade Decision Record]
+    D --> V[Trading Command / Morning Brief / strategy desks]
+    V --> H[Human trader: review and execution decision]
+    H --> T[Optional TradingView research / manual broker action]
 ```
 
 The diagram describes logical boundaries, not a requirement to deploy a separate microservice for every box. Start with shared server modules and a small set of explicit endpoints. Supabase remains the target authentication, database and backend platform; exact worker placement and deployment topology require the decisions in section 10.
+
+The Chief orchestrates the workflow before its final synthesis step; the diagram shows evidence flow rather than a rigid call stack. Failed prerequisites can produce a non-actionable record without invoking AI. The initial gates prevent ineligible candidates entering actionable analysis; final checks prevent synthesis, a changed plan or elapsed time from bypassing those gates (section 7).
 
 ## 4. Component responsibilities
 
@@ -60,12 +71,17 @@ The diagram describes logical boundaries, not a requirement to deploy a separate
 | Observation and snapshot store | Versioned facts, provenance, quality and immutable input manifests | Refresh creates new evidence; it does not rewrite old input sets |
 | Private record services | Accounts, journal events, annotations, watchlists, imports and reconciliation | Market read routes cannot write broker/provider-trusted facts |
 | Deterministic engines | Versioned formulas, parameter hashes, input references and eligibility | Missing inputs produce unavailable results, never invented defaults |
-| AI analysts | Explanation, comparison, questions and claim-to-fact references | No authority over prices, indicators, Greeks, positions or risk totals |
-| Chief Trading Agent | Synthesis and routing of supported analysis to relevant desks | Cannot override deterministic eligibility, risk limits or entitlements |
-| Risk and strategy services | Exposure, sizing constraints, strategy eligibility and plan validation | Revalidate relevant facts and constraints before marking a plan actionable |
+| AI Trading Floor | Specialist interpretation, challenge and claim-to-fact references | No authority over prices, indicators, Greeks, positions or risk totals |
+| Devil's Advocate | Attempts to invalidate the thesis and exposes underweighted evidence | Adversarial review, not another vote; material objections remain visible |
+| Chief Trading Agent | Orchestration, agreement/disagreement synthesis and record assembly | Cannot override deterministic eligibility, risk limits or entitlements |
+| Risk Engine | Authoritative exposure, sizing calculations and hard risk constraints | Its hard rejection is non-bypassable by any AI role |
+| Strategy services / Decision Gate | Deterministic strategy eligibility and validation of the final plan | Recheck facts, permissions and risk before assigning a review-ready state |
+| Strategy desks | Strategy-specific workflows/views over shared services and records | No independent factual pipeline |
+| Trading Command | Trader-facing prioritization and decision workflow | Presents limitations and material objections alongside opportunities |
+| Human trader | Final execution decision | Arowana creates decision support; it does not submit orders |
 | UI compatibility layer | Shared API client, legacy view mapping and visible data status | Preserve stable links; do not expose raw provider response shapes |
 
-ATD-003 owns the canonical navigation map. This proposal establishes shared service boundaries without choosing or renaming legacy routes.
+ATD-003 owns the canonical navigation map and remains READY but blocked pending owner approval of Architecture 2.1. Internal agents should generally not become separate top-level pages. Their intelligence normally surfaces through Trading Command, Morning Brief, What Changed, Analysis, Swing, Wheel, Options, Growth/AI, Portfolio/Risk and Journal/Review. These are workflow examples, not a final menu or route design; no legacy route is chosen or renamed here.
 
 ## 5. Data foundation
 
@@ -92,6 +108,7 @@ These roles come from ATD-004; subscriptions and current capabilities have not b
 | Positions and cash | One reconciled authoritative snapshot per account | Broker, manual and imported origins explicit; no mirror double counting |
 | Watchlists and annotations | User-authored preferences, separate from market facts | Owner-scoped CRUD and same-owner list/item invariant |
 | Engine results and AI narratives | Input snapshot IDs and formula/model/prompt versions | Derived private context inherits input restrictions |
+| Trade Decision Records | Identified candidate, assessments, gate outcomes and immutable evidence references | Derived private artifact; inherits account ownership, entitlement and retention restrictions |
 | Jobs and raw payload references | Job scope, adapter version, deduplication key and result | Internal access; license/privacy-bounded retention |
 
 Physical schemas, table names and migrations remain a separately scoped implementation decision. Similar legacy table names are not sufficient evidence to select a canonical model.
@@ -129,10 +146,87 @@ Display stale or partial information only with its status and as-of time. Suppre
 | Fundamental / EPS Revision (ATD-104) | Fiscal facts and comparable estimate snapshots to metrics/revisions | No historical revision result without comparable historical inputs |
 | Portfolio & Risk (ATD-105) | Reconciled positions/cash and eligible prices to exposure and limits | Include shorts/options correctly; missing accounts block complete-risk claims |
 | Strategy services | Engine facts, user rules and risk results to candidate plans | Wheel/options use eligible contracts and declared IV/Greek methods |
-| AI / Chief Trading Agent | Authorized snapshots and engine results to supported narrative | Preserve fact citations; unsupported numbers cannot enter authoritative fields |
-| Trading Command / Morning Brief (ATD-106/107) | Shared snapshots and evaluated results to priorities and changes | Show source, time, delay, incomplete coverage and blocked actions |
+| AI Trading Floor / Chief Trading Agent | Authorized snapshots and engine results to specialist analysis, challenge and synthesis | Preserve fact citations; unsupported numbers cannot enter authoritative fields |
+| Trading Command / Morning Brief (ATD-106/107) | Shared snapshots, evaluated results and Trade Decision Records to priorities and changes | Show source, time, delay, incomplete coverage, objections and blocked actions |
 
 Strategy formulas and AI prompts need later versioned contracts. AI may suggest a scenario with clearly labeled assumptions, but deterministic services calculate and validate its numbers. "What Changed" compares identified snapshots and revisions; a regenerated narrative alone is not a new market event. The Wheel port (ATD-108) requires a separate source review and parity checks against these same contracts.
+
+### Specialized AI responsibilities
+
+The AI Trading Floor is downstream of immutable snapshots and deterministic engine outputs. Each role consumes authorized evidence and retains fact/result references rather than acquiring an independent data feed.
+
+| Logical role | Responsibility | Authority limit |
+|---|---|---|
+| Market Agent | Explain regime, breadth, sector leadership and macro/event context, including conflicts | Market Engine owns measured regime/breadth values |
+| Technical Agent | Interpret trend, momentum, volume, support/resistance, available 5-day/20-day swing POC, triggers, invalidation and timeframe conflicts | Technical/POC Engine owns calculations; screenshots cannot substitute for authoritative indicators or unavailable POC |
+| Fundamental Agent | Explain business quality, growth, margins, cash flow, valuation, estimates, EPS revisions and filing/earnings risks | No plausible substitutes for missing financial facts or historical snapshots |
+| Portfolio Agent | Explain reconciled exposure, concentration, sector/correlation overlap, strategy exposure and account fit | Portfolio Engine owns positions and measures; incomplete retrieval is not zero exposure |
+| Strategy Agent | Compare approved Swing, Wheel, long stock, defined-risk options, Growth/AI accumulation, Long-Term, wait or no-trade structures | Deterministic Strategy services validate eligibility and calculations |
+| Risk Analyst | Explain sizing, buying power, concentration, assignment/exercise exposure, events and liquidity | Risk Engine owns hard constraints; analysis cannot relax them |
+
+These are logical responsibilities, not six separate services or paid model calls. A structured invocation may cover multiple roles when traceability is preserved. Routine watchlist refreshes may remain deterministic; AI may run after material changes. Model choice, budgets, latency targets and invocation policy require later implementation decisions. Combined calls do not make their outputs independent corroborating evidence.
+
+### Devil's Advocate and evidence discipline
+
+Devil's Advocate is a first-class adversarial role whose purpose is to invalidate a proposed trade or identify material evidence the primary analysis underweighted. It is **not another vote**. Challenges may address market regime, technical structure, entry quality, reward/risk, upcoming events, fundamentals, EPS revisions, portfolio concentration, liquidity, options structure, strategy fit, conflicting timeframes or stale/incomplete evidence.
+
+Retain material objections, supporting evidence references, unresolved disagreement and the Chief's response in the Trade Decision Record. A response may explain a concern but cannot silently delete it or turn a failed deterministic gate into a pass. Adversarial review is required before a candidate reaches READY FOR HUMAN REVIEW; blocked candidates and routine monitoring may skip it with the reason recorded. Missing required review prevents readiness.
+
+Agent count alone never authorizes a trade. The pattern "7 of 8 agents bullish; 87.5% consensus; BUY" is explicitly rejected, as are arbitrary thresholds such as 76.8%. Hard risk, entitlement, quality and eligibility failures cannot be averaged away. Any future confidence/evidence score requires a separately assigned task, a documented definition and validation methodology; no such score is introduced here.
+
+### Chief Trading Agent orchestration
+
+The Chief gathers approved immutable snapshot references and deterministic results, requests relevant specialist analysis, identifies agreement/disagreement, invokes adversarial review and evaluates strategy context. It checks the returned quality and eligibility results, respects deterministic risk and assembles the Trade Decision Record for validation. The server-side Decision Gate, not the model's assertion, determines whether the proposed record may be marked ready for human review.
+
+The Chief cannot invent prices, Greeks or financial facts; fetch arbitrary unapproved providers; bypass freshness, entitlements or deterministic eligibility; override hard risk; or place broker orders. Suggested changes to entry, size, account, instrument or strategy are new proposals requiring applicable deterministic recalculation and gating. The Chief's orchestration authority is not permission to modify risk policy.
+
+### Decision Gate and non-bypassable risk
+
+The conceptual sequence is:
+
+```text
+DATA QUALITY -> FRESHNESS / ENTITLEMENT -> ENGINE INPUT ELIGIBILITY
+    -> DETERMINISTIC RISK -> STRATEGY ELIGIBILITY
+    -> SPECIALIST AI ANALYSIS -> DEVIL'S ADVOCATE -> CHIEF TRADING AGENT
+    -> FINAL DECISION / RISK RECHECK -> TRADE DECISION RECORD -> HUMAN REVIEW
+```
+
+Initial checks apply to the candidate and known deterministic inputs. If AI or a user proposes a different structure, the final gate evaluates that exact structure against approved policy and eligible inputs. A hard risk rejection yields BLOCKED regardless of supportive analysis. New evidence or a revised proposal may be evaluated afresh, retaining the earlier rejection; neither is an override of that rejection.
+
+Recheck applicable quality, freshness, authorization/entitlements, engine inputs, risk and strategy eligibility before review-ready delivery. An expired quote, revoked entitlement or changed account state requires new validation and, where needed, a new snapshot/record. Historical records preserve their original outcome and generation time but do not confer perpetual readiness or access. AI narrative cannot convert unavailable to available, partial to complete, delayed to realtime, unauthorized to authorized or failed risk to passed risk.
+
+| Decision-support state | Meaning |
+|---|---|
+| BLOCKED | A mandatory prerequisite fails or cannot be established, including a hard deterministic risk rejection; include reason and gate evidence |
+| REJECT | The thesis or structure is not supported after review; cannot mask a mandatory gate failure |
+| WAIT | A defined confirmation, entry or event condition is pending; not an actionable approval |
+| WATCH | Monitor the candidate and identified triggers; not an actionable approval |
+| READY FOR HUMAN REVIEW | Required evidence, reviews and final deterministic gates pass for the specified plan; the human still decides |
+
+These are proposed decision-support semantics, not order types or a physical/API enum migration. BLOCKED takes precedence over favorable AI conclusions. A record may document a blocked outcome without running specialists or adversarial review; skipped analysis is explicit. No decision-support state submits a broker order.
+
+### Trade Decision Record
+
+The core derived artifact is an auditable Trade Decision Record, not a BUY/SELL label or agent consensus percentage. Conceptually it retains:
+
+| Evidence group | Retained information |
+|---|---|
+| Candidate and context | Instrument identity, strategy, authorized account/portfolio context and proposed structure |
+| Assessments | Market, technical, fundamental, portfolio-fit and strategy-fit assessments with evidence references |
+| Gate outcomes | Data-quality, freshness, entitlement, input eligibility, deterministic risk and strategy states; reasons, limitations and checks not performed |
+| Interpretation and challenge | Specialist interpretations, material Devil's Advocate concerns, disagreement, Chief assessment and response to objections |
+| Plan | Trigger, invalidation, deterministic approved risk/sizing context if available, and decision-support status; blocked records cannot imply approved sizing |
+| Audit references | Input snapshot IDs, engine/formula and policy versions, AI/model/prompt references where used, and generation timestamp |
+
+Distinguish measured facts, deterministic calculations, AI interpretation and user assumptions explicitly. Unknown or skipped assessments remain unknown/skipped, not fabricated positive ratings. Numeric trigger, invalidation and sizing values retain their source or assumption status and required deterministic validation.
+
+The record references immutable inputs and inherits their private ownership, licensing and retention boundaries. Re-evaluation creates a linked new version rather than rewriting prior evidence. Human accept/reject/modify/wait feedback is distinguishable from the original system result; a modification needs reevaluation before a new review-ready result. Physical tables, persistence schema, endpoints and detailed field contracts belong to later implementation tasks, not ATD-006.
+
+### Trader-facing use and human execution
+
+Trading Command prioritizes decisions using these records. Morning Brief summarizes what matters before the session; What Changed compares identified snapshots and material record changes; strategy desks apply their specific workflows to shared evidence. Journal/Review may relate later user decisions to the original record without rewriting its evidence.
+
+Arowana supplies research, analysis, risk evaluation and execution plans. The human user decides whether to trade, optionally reviews TradingView and executes manually with the broker. Schwab remains read-only under Architecture 2.1; no autonomous execution, order endpoint or order-write scope is introduced.
 
 ## 8. Security and deployment boundaries
 
@@ -148,7 +242,7 @@ Monitor request/job IDs, latency, quota use, ingestion lag, stale rate, missing 
 
 | Stage | Scope | Required evidence before moving on |
 |---|---|---|
-| Review | Approve contract and resolve section 10 decisions; complete navigation planning in ATD-003 | Recorded decisions and separately assigned security remediation |
+| Review | Owner review of consolidated Architecture 2.1, Data Hub contract and section 10 decisions | Architecture approval before assigning ATD-003; separately assigned security remediation; ATD-101 gates remain in force |
 | Secure DEV baseline | Version backend definitions; remediate relevant secret/ownership paths in DEV | Reproducible setup; positive and negative two-user authorization tests |
 | ATD-101 first slice | One approved equity quote/bar adapter, normalization and one consumer compatibility layer | Mapping/schema fixtures; entitlement, freshness, quota and fallback checks |
 | Data expansion | Reconciled private snapshots, fundamentals/estimates, macro and filings in reviewed slices | Import idempotency, revision/vintage checks and reconciliation evidence |
@@ -156,6 +250,8 @@ Monitor request/job IDs, latency, quota use, ingestion lag, stale rate, missing 
 | Wheel and retirement | Inspect/port ATD-108 modules; retire superseded legacy paths incrementally | Consumer parity, preserved user records and tested secure rollback |
 
 Synthetic coverage must include sessions/DST/holidays, splits/dividends, missing versus zero, provider 200-error payloads, compact history, duplicate ingestion, partial pagination, revoked entitlements, account switching and changed fiscal/vintage records. Tests must exercise actual future adapters and authorization boundaries, not just document examples.
+
+AI/decision acceptance must additionally show that supportive specialists and Chief synthesis cannot override a risk rejection; mandatory failures take precedence over all other statuses; material objections survive record assembly; skipped required review prevents readiness; and AI claims retain fact references. Test combined-role calls, stale or revoked inputs during synthesis, revised plans requiring recalculation, unavailable AI, record versioning and inherited private access. Unsupported or missing required analysis must leave the candidate non-ready. These are future implementation tests, not tests executed by this documentation task.
 
 Migrate one consumer at a time behind a stable contract and preserve legacy links. Rollback selects a previously validated server implementation or disables the new slice; it must never restore browser credentials or an insecure provider path. No broad HTML rewrite is part of this architecture assignment.
 
@@ -173,9 +269,24 @@ The recommendations below are proposals, not accepted product decisions.
 | Environment boundary | Isolated DEV; explicit Arowana service ownership | Shared versus separate project and production deployment topology |
 | Workflow ownership | Registry-controlled jobs; optional n8n | Approved operators, destinations and server credentials boundary |
 | History and retention | Preserve only licensed, necessary versions | Point-in-time scope, raw/normalized retention, deletion and recovery periods |
+| AI Trading Floor and decision policy | Logical roles sharing approved evidence, adversarial review before readiness, deterministic hard veto | Owner approval of this consolidation; later role/prompt contracts, model/privacy choices, invocation budgets and record lifecycle |
 
-Until these applicable gates are resolved, ATD-101 remains planned. Preparing Architecture 2.1 does not imply approval of the contract or completion of security remediation.
+ATD-003 remains READY but blocked pending owner approval of Architecture 2.1; it has not started. ATD-101 remains PLANNED and gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Preparing this consolidation does not approve either document or complete remediation.
 
 ## 11. Document validation and limits
 
-This follow-up checks documentation links, whitespace, the repository's existing secret scanner, and the changed-file scope. It adds no executable implementation, so it makes no claim about runtime authorization, provider entitlement, calculation accuracy, UI behavior or deployment readiness. ATD-004 inventory and contract remain unchanged as the reviewed source baseline.
+ATD-006 checks documentation links, whitespace, the repository's existing limited-pattern secret scanner, changed-file scope and preservation of source documents. It adds no executable implementation, so it makes no claim about runtime authorization, provider entitlement, calculation accuracy, UI behavior or deployment readiness. ATD-004 inventory/contract, the AI Trading Floor addendum, the baseline architecture and prior audit reports remain unchanged. No credentials were retrieved from credential stores, used or modified; the repository scanner checks source text without reporting secret values. Neither ATD-003 nor ATD-101 was started.
+
+### Reconciliation decisions
+
+There is no fundamental authority conflict between the engineering foundation and the addendum. The following ambiguities are resolved in this proposal:
+
+| Source ambiguity | Consolidated interpretation |
+|---|---|
+| The addendum places risk before Chief synthesis in some sequences and after it in the overview | Initial deterministic eligibility/risk checks plus a final check on the synthesized plan; neither is owned by AI |
+| The Chief produces the record, while the final gate follows the Chief | Chief assembles interpretation; the deterministic gate validates status before the record is presented |
+| The addendum permits selective adversarial invocation while also making it a decision stage | Monitoring/blocked candidates may skip with an explicit reason; readiness requires adversarial review and retained material objections |
+| Hard risk is described as a rejection, while both BLOCKED and REJECT appear as states | Hard deterministic rejection maps to BLOCKED; REJECT describes an unsupported thesis, never a relabeling that hides failed gates |
+| Specialist roles might imply separate services or votes | Roles may share structured invocations; counts and percentages confer no authority |
+
+The addendum remains historical design evidence rather than a second competing implementation contract. This consolidated proposal is ready for owner review, not promotion over `ARCHITECTURE.md` or approval of the ATD-004 child contract.
