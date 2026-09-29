@@ -170,7 +170,7 @@ These are logical responsibilities, not six separate services or paid model call
 
 Devil's Advocate is a first-class adversarial role whose purpose is to invalidate a proposed trade or identify material evidence the primary analysis underweighted. It is **not another vote**. Challenges may address market regime, technical structure, entry quality, reward/risk, upcoming events, fundamentals, EPS revisions, portfolio concentration, liquidity, options structure, strategy fit, conflicting timeframes or stale/incomplete evidence.
 
-Retain material objections, supporting evidence references, unresolved disagreement and the Chief's response in the Trade Decision Record. A response may explain a concern but cannot silently delete it or turn a failed deterministic gate into a pass. Adversarial review is required before a candidate reaches READY FOR HUMAN REVIEW; blocked candidates and routine monitoring may skip it with the reason recorded. Missing required review prevents readiness.
+Retain material objections, supporting evidence references, unresolved disagreement and the Chief's response in the Trade Decision Record. A response may explain a concern but cannot silently delete it or turn a failed deterministic gate into a pass. Adversarial review is required before a candidate reaches READY FOR HUMAN REVIEW; blocked candidates and routine monitoring may skip it with the reason recorded. Missing required review prevents readiness. The Devil's Advocate must evaluate the proposal version intended to proceed to human review; an adversarial review of a materially different earlier proposal version does not satisfy this requirement (see [Final proposal and review binding](#final-proposal-and-review-binding-atd-006a)).
 
 Agent count alone never authorizes a trade. The pattern "7 of 8 agents bullish; 87.5% consensus; BUY" is explicitly rejected, as are arbitrary thresholds such as 76.8%. Hard risk, entitlement, quality and eligibility failures cannot be averaged away. Any future confidence/evidence score requires a separately assigned task, a documented definition and validation methodology; no such score is introduced here.
 
@@ -179,6 +179,8 @@ Agent count alone never authorizes a trade. The pattern "7 of 8 agents bullish; 
 The Chief gathers approved immutable snapshot references and deterministic results, requests relevant specialist analysis, identifies agreement/disagreement, invokes adversarial review and evaluates strategy context. It checks the returned quality and eligibility results, respects deterministic risk and assembles the Trade Decision Record for validation. The server-side Decision Gate, not the model's assertion, determines whether the proposed record may be marked ready for human review.
 
 The Chief cannot invent prices, Greeks or financial facts; fetch arbitrary unapproved providers; bypass freshness, entitlements or deterministic eligibility; override hard risk; or place broker orders. Suggested changes to entry, size, account, instrument or strategy are new proposals requiring applicable deterministic recalculation and gating. The Chief's orchestration authority is not permission to modify risk policy.
+
+The Chief may synthesize evidence, identify disagreement, suggest a modified proposal and request another analysis cycle. If the Chief materially modifies a proposal, it cannot carry forward affected specialist assessments or adversarial review from the earlier version, and it cannot self-certify the changed proposal as READY FOR HUMAN REVIEW; readiness follows the [final proposal binding](#final-proposal-and-review-binding-atd-006a) rules and the server-side Decision Gate.
 
 ### Decision Gate and non-bypassable risk
 
@@ -197,11 +199,44 @@ Recheck applicable quality, freshness, authorization/entitlements, engine inputs
 
 #### Final proposal and review binding (ATD-006A)
 
-Every proposed trade/execution plan has a proposal version or equivalent immutable proposal identity. Each specialist assessment and Devil's Advocate review must reference the exact proposal version evaluated, the relevant immutable input snapshot IDs within its required input snapshot set, and applicable engine/policy versions. Required deterministic results must likewise be attributable to that proposal and input set. Roles may use different relevant subsets of the same identified input set; evidence from incompatible proposal versions or input sets cannot be combined to establish readiness.
+Every proposed trade/execution plan has a proposal version or equivalent immutable proposal identity. Conceptually, a proposal version represents the exact plan being evaluated, defined where applicable by instrument, strategy, account, direction, stock or options expression, option contract identity (including strike, expiration and deliverable), entry/trigger, position size/risk, invalidation/stop, exit structure and other strategy-defining parameters. Each specialist assessment and Devil's Advocate review must reference the exact proposal version evaluated, the relevant immutable input snapshot IDs within its required input snapshot set, applicable engine/policy versions, analysis/model/prompt versions where AI is used, and its assessment time. Required deterministic results must likewise be attributable to that proposal and input set. Roles may use different relevant subsets of the same identified input set; evidence from incompatible proposal versions or input sets cannot be combined to establish readiness.
 
-A material change by the Chief Trading Agent or a user creates a new proposal version and makes affected reviews invalid/stale for that version. Material changes include, where applicable: strategy; instrument; stock versus options expression; option contract, strike or expiration; entry/trigger changes that materially alter the thesis; position size or risk; exit/invalidation; account; and any other change that materially alters risk or strategy evaluation. Historical assessments retain their original bindings and must not be silently relabeled as reviews of the new proposal.
+A material change by the Chief Trading Agent or a user creates a new proposal version and makes affected reviews invalid/stale for that version. Material changes include, where applicable: strategy; instrument; account; long/short direction; stock versus options expression; option contract, strike or expiration; entry/trigger changes that materially alter the thesis; position size or risk; exit/invalidation; and any other change that materially alters strategy, risk, portfolio fit or the evidence required to evaluate the trade. Historical assessments retain their original bindings and must not be silently relabeled as reviews of the new proposal.
+
+Materiality is determined from the parameters actually changed under versioned policy, not from the proposing agent's own characterization of its change. Numeric thresholds for material entry/size changes, and the mapping from changed parameters to affected specialist roles, require later versioned policy (section 10); until defined, any change to a strategy-defining parameter is treated as material and every assessment depending on a changed parameter is treated as affected. Devil's Advocate review is always affected by a material change.
 
 After a material change, rerun deterministic calculations and risk, refresh affected specialist assessments, and have Devil's Advocate review the resulting final proposal. Any retained unaffected assessment requires an explicit applicability validation for the final proposal version and required input set, preserving its original assessment reference and recording that validation. Changes to relevant snapshots or applicable engine/policy versions also require revalidation and refresh of affected evidence; unchanged proposal text alone does not make old evidence valid.
+
+The revision sequence after a material change is:
+
+1. Create or identify the new proposal version, linked to its predecessor.
+2. Re-run affected deterministic calculations.
+3. Re-run deterministic risk validation.
+4. Mark affected specialist assessments stale/invalid for the new version.
+5. Refresh the affected specialist assessments.
+6. Run Devil's Advocate against the resulting proposal version.
+7. Perform the final deterministic eligibility/risk recheck.
+8. Produce or update the Trade Decision Record using only valid results associated with the final proposal version and required snapshot set.
+9. Only then may the proposal become READY FOR HUMAN REVIEW.
+
+A hard risk rejection or other mandatory failure at any step yields BLOCKED. The treatment of earlier reviews is deliberately asymmetric: a material objection raised against an earlier version that still applies is carried forward and addressed in the final record, whereas a supportive assessment of an earlier version cannot stand in for review of the final version.
+
+```text
+Proposal v1: NVDA long stock swing
+  Technical, Portfolio and Devil's Advocate review v1.
+Chief changes the plan to Proposal v2: NVDA bull call spread.
+  Risk Engine recalculates v2 and passes.
+
+INVALID: reuse the v1 reviews and mark v2 READY FOR HUMAN REVIEW.
+
+VALID:   the strategy/options change creates v2; the analyses affected by
+         the new structure are re-run for v2; Devil's Advocate evaluates v2;
+         final risk/eligibility is revalidated for v2; the Decision Record
+         references v2 (linking v1 and any still-applicable v1 objections).
+         Only then may v2 become READY FOR HUMAN REVIEW.
+```
+
+A changed proposal and changed evidence are distinct triggers. When the proposal changes materially, a new version is created even if the snapshots are unchanged. When market, fundamental, macro or portfolio evidence changes but the proposal parameters do not, the proposal version stays the same; assessments bound to superseded evidence become stale where the existing freshness, snapshot and eligibility rules (section 6, this Decision Gate and ATD-004) make a relied-upon input ineligible, or deterministic comparison of identified snapshots/revisions shows a change to eligibility or an assumption the assessment relied on. This introduces no second freshness system or new budgets. Evidence updates that affect neither eligibility nor relied-upon assumptions do not by themselves require re-analysis, although the final deterministic recheck still applies.
 
 **READY FOR HUMAN REVIEW requires all required deterministic results, specialist assessments and adversarial review to be valid for the SAME final proposal version and required immutable input snapshot set.** The Decision Gate verifies these bindings as well as the existing eligibility/risk gates. A mismatch, stale required review or missing validation prevents readiness. The Trade Decision Record references that final proposal version and its resulting validated assessments and deterministic results.
 
@@ -213,7 +248,7 @@ Non-material presentation/narrative edits, such as formatting or wording that ch
 | REJECT | The thesis or structure is not supported after review; cannot mask a mandatory gate failure |
 | WAIT | A defined confirmation, entry or event condition is pending; not an actionable approval |
 | WATCH | Monitor the candidate and identified triggers; not an actionable approval |
-| READY FOR HUMAN REVIEW | Required evidence, reviews and final deterministic gates pass for the specified plan; the human still decides |
+| READY FOR HUMAN REVIEW | Required evidence, reviews and final deterministic gates pass for the specified final proposal version, with every required assessment bound to that version and its required snapshot set; the human still decides |
 
 These are proposed decision-support semantics, not order types or a physical/API enum migration. BLOCKED takes precedence over favorable AI conclusions. A record may document a blocked outcome without running specialists or adversarial review; skipped analysis is explicit. No decision-support state submits a broker order.
 
@@ -226,13 +261,13 @@ The core derived artifact is an auditable Trade Decision Record, not a BUY/SELL 
 | Candidate and context | Final immutable proposal version/identity, instrument identity, strategy, authorized account/portfolio context and proposed structure |
 | Assessments | Market, technical, fundamental, portfolio-fit and strategy-fit assessments and adversarial review, with final-proposal validity, relevant immutable snapshot IDs, applicable engine/policy versions and any retained-assessment applicability validations |
 | Gate outcomes | Data-quality, freshness, entitlement, input eligibility, deterministic risk and strategy states; reasons, limitations and checks not performed |
-| Interpretation and challenge | Specialist interpretations, material Devil's Advocate concerns, disagreement, Chief assessment and response to objections |
+| Interpretation and challenge | Specialist interpretations, material Devil's Advocate concerns (including still-applicable objections raised against earlier proposal versions), disagreement, Chief assessment and response to objections |
 | Plan | Trigger, invalidation, deterministic approved risk/sizing context if available, and decision-support status; blocked records cannot imply approved sizing |
-| Audit references | Input snapshot IDs, engine/formula and policy versions, AI/model/prompt references where used, and generation timestamp |
+| Audit references | Proposal version and links to earlier versions, input snapshot IDs, engine/formula and policy versions, AI/model/prompt references where used, assessment times and generation timestamp |
 
 Distinguish measured facts, deterministic calculations, AI interpretation and user assumptions explicitly. Unknown or skipped assessments remain unknown/skipped, not fabricated positive ratings. Numeric trigger, invalidation and sizing values retain their source or assumption status and required deterministic validation.
 
-The record references immutable inputs and inherits their private ownership, licensing and retention boundaries. Re-evaluation creates a linked new version rather than rewriting prior evidence. Human accept/reject/modify/wait feedback is distinguishable from the original system result; a modification needs reevaluation before a new review-ready result. Physical tables, persistence schema, endpoints and detailed field contracts belong to later implementation tasks, not ATD-006.
+The record references immutable inputs and inherits their private ownership, licensing and retention boundaries. Re-evaluation creates a linked new version rather than rewriting prior evidence. Human accept/reject/modify/wait feedback is distinguishable from the original system result; a modification needs reevaluation before a new review-ready result. Proposal revision does not hide material objections: those still applicable remain visible with the Chief's response. Physical tables, persistence schema, endpoints and detailed field contracts belong to later implementation tasks, not ATD-006.
 
 ### Trader-facing use and human execution
 
@@ -263,7 +298,7 @@ Monitor request/job IDs, latency, quota use, ingestion lag, stale rate, missing 
 
 Synthetic coverage must include sessions/DST/holidays, splits/dividends, missing versus zero, provider 200-error payloads, compact history, duplicate ingestion, partial pagination, revoked entitlements, account switching and changed fiscal/vintage records. Tests must exercise actual future adapters and authorization boundaries, not just document examples.
 
-AI/decision acceptance must additionally show that supportive specialists and Chief synthesis cannot override a risk rejection; mandatory failures take precedence over all other statuses; material objections survive record assembly; skipped required review prevents readiness; and AI claims retain fact references. Test combined-role calls, stale or revoked inputs during synthesis, revised plans requiring recalculation, unavailable AI, record versioning and inherited private access. Unsupported or missing required analysis must leave the candidate non-ready. These are future implementation tests, not tests executed by this documentation task.
+AI/decision acceptance must additionally show that supportive specialists and Chief synthesis cannot override a risk rejection; mandatory failures take precedence over all other statuses; material objections survive record assembly; skipped required review prevents readiness; and AI claims retain fact references. Test combined-role calls, stale or revoked inputs during synthesis, revised plans requiring recalculation, unavailable AI, record versioning and inherited private access. Proposal-binding tests must show that assessments or adversarial review of an earlier materially different version leave the revised proposal non-ready; that superseded evidence stales the assessments bound to it; that non-material wording edits do not trigger re-analysis; and that the final record references only results valid for the final proposal version. Unsupported or missing required analysis must leave the candidate non-ready. These are future implementation tests, not tests executed by this documentation task.
 
 Migrate one consumer at a time behind a stable contract and preserve legacy links. Rollback selects a previously validated server implementation or disables the new slice; it must never restore browser credentials or an insecure provider path. No broad HTML rewrite is part of this architecture assignment.
 
@@ -281,7 +316,7 @@ The recommendations below are proposals, not accepted product decisions.
 | Environment boundary | Isolated DEV; explicit Arowana service ownership | Shared versus separate project and production deployment topology |
 | Workflow ownership | Registry-controlled jobs; optional n8n | Approved operators, destinations and server credentials boundary |
 | History and retention | Preserve only licensed, necessary versions | Point-in-time scope, raw/normalized retention, deletion and recovery periods |
-| AI Trading Floor and decision policy | Logical roles sharing approved evidence, adversarial review before readiness, deterministic hard veto | Owner approval of this consolidation; later role/prompt contracts, model/privacy choices, invocation budgets and record lifecycle |
+| AI Trading Floor and decision policy | Logical roles sharing approved evidence, adversarial review before readiness, deterministic hard veto | Owner approval of this consolidation; later role/prompt contracts, model/privacy choices, invocation budgets, record lifecycle, material-change thresholds and changed-parameter-to-affected-role policy |
 
 ATD-003 remains READY but blocked pending owner approval of Architecture 2.1; it has not started. ATD-101 remains PLANNED and gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Preparing this consolidation does not approve either document or complete remediation.
 
@@ -300,5 +335,6 @@ There is no fundamental authority conflict between the engineering foundation an
 | The addendum permits selective adversarial invocation while also making it a decision stage | Monitoring/blocked candidates may skip with an explicit reason; readiness requires adversarial review and retained material objections |
 | Hard risk is described as a rejection, while both BLOCKED and REJECT appear as states | Hard deterministic rejection maps to BLOCKED; REJECT describes an unsupported thesis, never a relabeling that hides failed gates |
 | Specialist roles might imply separate services or votes | Roles may share structured invocations; counts and percentages confer no authority |
+| A changed proposal required deterministic recalculation, but earlier reviews were not explicitly invalidated (ATD-006A) | A material change creates a new proposal version; affected specialist assessments and Devil's Advocate review must be refreshed for the final version before readiness |
 
 The addendum remains historical design evidence rather than a second competing implementation contract. This consolidated proposal is ready for owner review, not promotion over `ARCHITECTURE.md` or approval of the ATD-004 child contract.
