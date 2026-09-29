@@ -120,6 +120,20 @@
 
 ## PLANNED AFTER PHASE 0
 
+### ATD-007 — Security remediation and DEV baseline
+
+**Owner:** Codex
+
+**Status:** In progress — first repository containment/scanner slice implemented; isolated DEV target selection pending.
+
+**Branch:** `codex/ATD-007-security-dev-baseline`
+
+**Scope/result:** [Work record](docs/ATD-007_SECURITY_DEV_BASELINE.md). Removed the remaining key-like literal/direct quote call in the option-roll helper, added contextual secret detection and seven synthetic regression tests to CI. Credential revocation/history containment, client-key workflow migration and ATD-005 ownership remediation remain open. No production changes.
+
+**Next:** Select isolated DEV, establish versioned backend baseline and validate remaining fixes with synthetic two-user tests. ATD-101 remains gated.
+
+### Later implementation tasks
+
 - ATD-101 Market Data Hub — PLANNED; gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Not started.
 - ATD-102 Market Regime Engine
 - ATD-103 Technical + POC Engine

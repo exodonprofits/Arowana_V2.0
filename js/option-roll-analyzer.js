@@ -5,33 +5,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const tickerInput = document.getElementById("ticker");
   const currentPriceInput = document.getElementById("currentPrice");
 
-  // Replace with your own Twelve Data API key
-  const API_KEY = "a9dec530e25f43ef828d2c3e1bfe6d37";
-
-  // Auto-fetch stock price on ticker input blur
-  tickerInput.addEventListener("blur", async () => {
-    const symbol = tickerInput.value.trim().toUpperCase();
-    if (!symbol) return;
-
-    currentPriceInput.placeholder = "⏳ Fetching price...";
-
-    try {
-      const response = await fetch(`https://api.twelvedata.com/price?symbol=${symbol}&apikey=${API_KEY}`);
-      const data = await response.json();
-
-      if (data.price) {
-        currentPriceInput.value = parseFloat(data.price).toFixed(2);
-        currentPriceInput.placeholder = "";
-      } else {
-        currentPriceInput.value = "";
-        currentPriceInput.placeholder = "⚠️ Price not found";
-        console.warn("Price fetch error:", data.message || data);
-      }
-    } catch (err) {
-      console.error("Error fetching stock price:", err);
-      currentPriceInput.placeholder = "⚠️ Fetch error";
-    }
-  });
+  // Automated quotes are disabled until a server-owned adapter is available.
+  // Never provision a provider key in this browser helper.
+  currentPriceInput.placeholder = "Enter a manual price (not a live quote)";
 
   analyzeBtn.addEventListener("click", async () => {
     const data = {
