@@ -83,4 +83,10 @@ Owner reports Architecture 2.1 was reviewed and ATD-006 merged through PR #5. AT
 
 Documentation-link, whitespace, limited-pattern secret and changed-file scope checks passed. Only architecture/task/status documentation changed; ATD-004 and the addendum remain unchanged. No application, schema or production changes. ATD-003 and ATD-101 remain unstarted; stop for owner review.
 
-Review consolidated Architecture 2.1 and the proposed ATD-004 contract; neither is owner-approved. Provider/feed rights, freshness, canonical private data, deployment, retention and AI implementation decisions remain open. ATD-002/005 security findings still require separately assigned remediation. ATD-003 remains READY but blocked pending owner approval of Architecture 2.1. ATD-101 remains PLANNED, gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Stop here for owner review.
+On 2026-09-29 the owner approved Architecture 2.1 including ATD-006A and authorized ATD-003. This supersedes earlier review-status statements above. ATD-004 approval, provider/feed rights, freshness, private data ownership, deployment, retention and security remediation remain separately gated. ATD-101 is not started.
+
+## ATD-003 navigation map — completed, awaiting owner review
+
+Prepared [the canonical navigation map](docs/ATD-003_CANONICAL_NAVIGATION_MAP.md) on `codex/ATD-003-canonical-navigation-map`: six primary destinations, shared strategy desks, legacy-route dispositions, deep-link preservation, mobile/accessibility requirements and rollout acceptance. Internal AI roles remain within trader workflows. No runtime navigation or redirects changed.
+
+Verification: documentation links and named existing-file references, whitespace, limited-pattern secret scan and documentation-only scope. No browser/UI or production tests; these remain implementation gates. Next: owner review of the map, then separately assigned implementation.

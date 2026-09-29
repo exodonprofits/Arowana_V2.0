@@ -78,7 +78,7 @@
 
 **Owner:** Codex
 
-**Status:** Completed — awaiting owner review. Neither Architecture 2.1 nor the ATD-004 contract is owner-approved.
+**Status:** Completed — Architecture 2.1 including ATD-006A owner-approved 2026-09-29. ATD-004 approval remains separate.
 
 **Branch:** `codex/ATD-006-architecture-2-1-consolidation`
 
@@ -92,7 +92,7 @@
 
 **Owner:** Codex; Claude Code follow-up commit on the same branch
 
-**Status:** Completed — awaiting owner review of this clarification. Owner reports ATD-006 was reviewed and merged through PR #5.
+**Status:** Completed — owner-approved 2026-09-29 with Architecture 2.1. ATD-006A merged through PR #7.
 
 **Branch:** `codex/ATD-006A-bind-final-proposal-review`
 
@@ -102,13 +102,21 @@
 
 **Next:** Owner review; do not merge automatically or begin follow-on tasks.
 
-## READY
+## COMPLETED — NAVIGATION MAP AWAITING REVIEW
 
 ### ATD-003 — Canonical navigation map
-**Owner:** Unassigned  
+**Owner:** Codex
 **Depends on:** ATD-001  
-**Status:** READY — blocked pending owner approval of Architecture 2.1; not started.
+**Status:** Map completed 2026-09-29; awaiting owner review. Architecture prerequisite approved; no navigation implementation performed.
 **Goal:** Define Arowana 2.0 primary navigation without breaking legacy links.
+
+**Branch:** `codex/ATD-003-canonical-navigation-map`
+
+**Result:** [Canonical navigation map](docs/ATD-003_CANONICAL_NAVIGATION_MAP.md): hierarchy, desk mapping, legacy compatibility, mobile/accessibility rules and rollout acceptance. No application or production changes.
+
+**Verification:** Documentation links, existing route references, whitespace, limited-pattern secret scan and documentation-only scope. No browser/UI runtime tests.
+
+**Next:** Owner review of map; separate implementation assignment. ATD-101 remains gated and unstarted.
 
 ## PLANNED AFTER PHASE 0
 
