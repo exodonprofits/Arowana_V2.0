@@ -1,6 +1,6 @@
 # Arowana Architecture 2.1
 
-Status: **consolidated proposal awaiting owner review; not owner-approved; documentation only**. Reconciled 2026-09-28 under ATD-006 on `codex/ATD-006-architecture-2-1-consolidation`, from local baseline `5620217768a667333b56971640881d36814520c3`.
+Status: **architecture direction including ATD-006A owner-approved 2026-09-29; documentation only**. Reconciled 2026-09-28 under ATD-006 on `codex/ATD-006-architecture-2-1-consolidation`, from local baseline `5620217768a667333b56971640881d36814520c3`.
 
 Engineering foundation: the ATD-004 Architecture 2.1 draft, originally based on GitHub commit `bff6c5257d62f21a8dadd6d70f28fc8176010f92`, plus the [AI Trading Floor addendum](ARCHITECTURE_2_1_AI_TRADING_FLOOR_ADDENDUM.md), retained unchanged as historical/source design evidence. Primary data sources: [ATD-004 inventory](ATD-004_DATA_SOURCE_INVENTORY.md) and [Data Hub contract v0.1](ATD-004_DATA_HUB_CONTRACT.md). Migration evidence: [ATD-001](ATD-001_REPOSITORY_AUDIT.md). Security dependencies: [ATD-002](ATD-002_SECRET_CLIENT_KEY_INVENTORY.md) and [ATD-005](ATD-005_SUPABASE_SCHEMA_RLS_AUDIT.md).
 
@@ -81,7 +81,7 @@ The Chief orchestrates the workflow before its final synthesis step; the diagram
 | Human trader | Final execution decision | Arowana creates decision support; it does not submit orders |
 | UI compatibility layer | Shared API client, legacy view mapping and visible data status | Preserve stable links; do not expose raw provider response shapes |
 
-ATD-003 owns the canonical navigation map and remains READY but blocked pending owner approval of Architecture 2.1. Internal agents should generally not become separate top-level pages. Their intelligence normally surfaces through Trading Command, Morning Brief, What Changed, Analysis, Swing, Wheel, Options, Growth/AI, Portfolio/Risk and Journal/Review. These are workflow examples, not a final menu or route design; no legacy route is chosen or renamed here.
+ATD-003 owns the canonical navigation map and was authorized by the owner on 2026-09-29. Internal agents should generally not become separate top-level pages. Their intelligence normally surfaces through Trading Command, Morning Brief, What Changed, Analysis, Swing, Wheel, Options, Growth/AI, Portfolio/Risk and Journal/Review. These are workflow examples, not a final menu or route design; no legacy route is chosen or renamed here.
 
 ## 5. Data foundation
 
@@ -318,7 +318,7 @@ The recommendations below are proposals, not accepted product decisions.
 | History and retention | Preserve only licensed, necessary versions | Point-in-time scope, raw/normalized retention, deletion and recovery periods |
 | AI Trading Floor and decision policy | Logical roles sharing approved evidence, adversarial review before readiness, deterministic hard veto | Owner approval of this consolidation; later role/prompt contracts, model/privacy choices, invocation budgets, record lifecycle, material-change thresholds and changed-parameter-to-affected-role policy |
 
-ATD-003 remains READY but blocked pending owner approval of Architecture 2.1; it has not started. ATD-101 remains PLANNED and gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Preparing this consolidation does not approve either document or complete remediation.
+Architecture 2.1 including ATD-006A was owner-approved on 2026-09-29, authorizing ATD-003 navigation planning. ATD-101 remains PLANNED and gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Architecture approval does not approve the ATD-004 child contract or complete remediation.
 
 ## 11. Document validation and limits
 
@@ -337,4 +337,4 @@ There is no fundamental authority conflict between the engineering foundation an
 | Specialist roles might imply separate services or votes | Roles may share structured invocations; counts and percentages confer no authority |
 | A changed proposal required deterministic recalculation, but earlier reviews were not explicitly invalidated (ATD-006A) | A material change creates a new proposal version; affected specialist assessments and Devil's Advocate review must be refreshed for the final version before readiness |
 
-The addendum remains historical design evidence rather than a second competing implementation contract. This consolidated proposal is ready for owner review, not promotion over `ARCHITECTURE.md` or approval of the ATD-004 child contract.
+The addendum remains historical design evidence rather than a second competing implementation contract. Owner approval on 2026-09-29 authorizes navigation planning; it does not promote this document over `ARCHITECTURE.md` or approve the ATD-004 child contract.
