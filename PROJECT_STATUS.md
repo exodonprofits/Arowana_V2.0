@@ -1,5 +1,9 @@
 # Project Status
 
+## Current update — 2026-09-29
+
+The owner confirmed review work is complete after ATD-003 merged through PR #8; earlier awaiting-review labels below are historical. Authorized ATD-007 security remediation and DEV baseline. The first local slice removes the remaining option-roll helper key literal/direct quote request and strengthens the secret scan with seven synthetic tests in CI. See [ATD-007](docs/ATD-007_SECURITY_DEV_BASELINE.md). Task remains in progress: DEV target selection, key revocation/deployed-history containment, browser credential workflows and ownership fixes are unresolved. No secure DEV baseline or production remediation is claimed; ATD-101 remains gated.
+
 ## Current phase
 
 **Phase 0 — Baseline audit and repository stabilization**
