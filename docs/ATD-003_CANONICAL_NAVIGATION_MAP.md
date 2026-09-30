@@ -1,6 +1,6 @@
 # ATD-003 — Canonical navigation map
 
-Status: **map completed; proposed navigation awaiting owner review**. Date: 2026-09-29. Branch: `codex/ATD-003-canonical-navigation-map`. Baseline: `c1542bf`.
+Status: **map completed; labels and grouping owner-approved 2026-09-29**. Date: 2026-09-29. Branch: `codex/ATD-003-canonical-navigation-map`. Baseline: `c1542bf`.
 
 The owner approved Architecture 2.1 including ATD-006A and authorized ATD-003 on 2026-09-29. This task defines the navigation contract; it changes no HTML, JavaScript, CSS, redirects, account data or production configuration. Architecture approval does not approve the ATD-004 child contract or unblock ATD-101's remaining gates.
 
@@ -8,20 +8,20 @@ Sources: [Architecture 2.1](ARCHITECTURE_2_1.md), [ATD-001 canonical-source reco
 
 ## 1. Navigation decisions
 
-Use six primary destinations in this order. Strategy desks share the approved Data Hub, engines, risk policies and proposal-bound decision records. No internal Market Agent, Technical Agent, Devil's Advocate or Chief Trading Agent top-level page is introduced.
+Use six primary destinations in this order. Strategy desks share the Data Hub, engines, risk policies and proposal-bound decision records defined by the architecture; approval of the Data Hub child contract remains separate. No internal Market Agent, Technical Agent, Devil's Advocate or Chief Trading Agent top-level page is introduced.
 
 | Primary destination | User purpose | Child workflows | Existing entry/source and target availability |
 |---|---|---|---|
 | Trading Command | Decide what needs attention now | Overview, Morning Brief, What Changed, decision queue | `trading-command.html`; `ai-morning-brief.html` is a brief migration source. What Changed and the proposal-bound decision queue are target capabilities, not verified current screens. |
-| Analysis | Research an instrument or discover a setup | Instrument Research, Technical/POC, Fundamentals & Valuation, Scanners, Backtesting | `analysis-central.html`; `technical-analysis.html`, `intrinsic-value.html`, `scanner.html`, `strategy-backtesting.html`. Existing capabilities need data/security/parity validation. |
-| Strategy Desks | Evaluate an opportunity within a strategy | Swing, Wheel, Options, Growth/AI, Long-Term | A logical group, not a new invented route. See desk mapping below; no separate data pipeline per desk. |
+| Research | Research an instrument or discover a setup | Instrument Research, Technical/POC, Fundamentals & Valuation, Scanners, Backtesting | `analysis-central.html`; `technical-analysis.html`, `intrinsic-value.html`, `scanner.html`, `strategy-backtesting.html`. Existing capabilities need data/security/parity validation. |
+| Strategy Desks | Evaluate an opportunity within a strategy | Swing, Wheel, Options, Growth, Long-Term | A logical group, not a new invented route. See desk mapping below; no separate data pipeline per desk. |
 | Portfolio & Risk | Understand holdings, exposure and permitted risk | Portfolio Overview, Accounts & Cash, Risk Rules, Position Sizing, Performance | `portfolio-command.html`; `my-rules.html`, `position-sizer.html`, existing performance deep link. Account/cash workflows remain behind verified ownership. |
 | Watchlists | Maintain and evaluate tracked opportunities | Shared list workflow with strategy/horizon filters | `watchlist.html`; consolidate competing lists only after lossless migration. |
-| Journal & Review | Record activity and review decisions/results | Trade Journal, decision history, performance review links, data quality | `trade-journal-pro.html`; decision history is a target capability. Link to Portfolio performance instead of duplicating calculations. |
+| Journal & Review | Record activity and review decisions/results | Trade Journal, decision history, performance review links, data quality | `trade-journal-pro.html`; decision history is a target capability. Own trade expectancy, execution quality and discipline; link to Portfolio account returns and share calculations. |
 
-Account, connection status, help and sign-out belong in a utility menu. Use `account.html`, `broker-connections.html`, `support.html` as existing sources; do not route Arowana settings to the unrelated `settings.html`. Broker status remains read-only. Admin tools remain restricted utilities, not trader navigation. `tools.html` is a secondary curated directory reachable from Analysis, not a seventh primary destination. Marketing, pricing, legal and authentication routes remain outside the signed-in primary navigation.
+Account, connection status, help and sign-out belong in a utility menu. Use `account.html`, `broker-connections.html`, `support.html` as existing sources; do not route Arowana settings to the unrelated `settings.html`. Broker status remains read-only. Admin tools remain restricted utilities, not trader navigation. `tools.html` is a secondary curated directory reachable from Research, not a seventh primary destination. Marketing, pricing, legal and authentication routes remain outside the signed-in primary navigation.
 
-The six entries are a proposed information hierarchy, not six new HTML files. Do not display a clickable destination until a working, authorized route or clearly labeled existing workflow is available. Planned capabilities can be shown as non-interactive “Planned” information; they must not appear live because an old file shares their name.
+The six entries are an owner-approved information hierarchy, not six new HTML files. Do not display a clickable destination until a working, authorized route or clearly labeled existing workflow is available. Planned capabilities can be shown as non-interactive “Planned” information; they must not appear live because an old file shares their name.
 
 ### Strategy desk mapping
 
@@ -30,8 +30,17 @@ The six entries are a proposed information hierarchy, not six new HTML files. Do
 | Swing | `swing-trader.html`, `short-term-dashboard.html`, shared scanner workflows | Swing workflow within Strategy Desks. Preserve unique saved state and scanner parameters before consolidation. |
 | Wheel | `wheel-strategy.html`, `wheel-calculator.html`, `arowana-trader.html`, Options Hub calls/puts/roll workflows | Wheel remains one strategy desk. Coach output is contextual; it does not rename the whole platform or become the Chief's independent factual authority. |
 | Options | `options-hub.html` | Options workflow with existing calls, puts, roll, watchlist, analyzer and strategies tabs. Shared widgets may be linked from Wheel; their data/results are not duplicated. |
-| Growth/AI | Research/valuation and watchlist source capabilities; no dedicated verified desk route identified | Planned desk. Do not invent a working growth URL or reuse unrelated AI-chat pages as its implementation. |
+| Growth | Research/valuation and watchlist source capabilities; no dedicated verified desk route identified | Planned desk. Do not invent a working growth URL or reuse unrelated AI-chat pages as its implementation. |
 | Long-Term | `long-term-dashboard.html`, `long-term-portfolio.html`, `long-term-watchlist.html`, valuation sources | Long-Term workflow backed by shared portfolio/watchlist records. Preserve horizon preferences; do not create a second holdings authority. |
+
+### Approved grouping boundaries
+
+The owner approved these display labels and boundaries on 2026-09-29. Research replaces the proposed Analysis navigation label while retaining `analysis-central.html` as its existing source. Growth is the display label for the architecture's Growth/AI logical desk; AI is a sector/theme filter, not a separate desk identity. No route, service or architectural responsibility is renamed by this documentation change.
+
+- Options owns shared option-chain, pricing and analysis tools. Wheel owns the cash-secured put → assignment → covered call workflow. Cross-link shared tools without duplicating records or calculations.
+- Portfolio & Risk owns account returns, allocation and exposure. Journal & Review owns trade expectancy, execution quality and discipline. Both use shared calculations and cross-link relevant results.
+- Provide one contextual coaching entry from Trading Command and relevant desks. Internal AI roles do not become primary destinations.
+- Place tools within the workflows they support. Keep a searchable secondary directory for discovery, reachable from Research.
 
 ## 2. Current navigation evidence
 
@@ -51,10 +60,10 @@ These are proposed future dispositions. **Every existing file and URL remains un
 | `trading-command.html` | Trading Command | KEEP primary source URL. |
 | `tradingcommand.html`, `daytrade.html`, `short-term-dashboard.html` | Trading Command / Swing as appropriate | MERGE only after feature/state inventory; no blanket dashboard redirect. |
 | `ai-morning-brief.html`, `daily-summary.html`, `daily-bias.html` | Trading Command → Morning Brief / market context | Preserve distinct data and parameters; workflow payloads are not proven equivalent. |
-| `market-intelligence.html` | Trading Command → market context | KEEP current redirect; new Market Engine output appears through Command/Analysis after implementation. |
-| `analysis-central.html`, `technical-analysis.html`, `intrinsic-value.html`, `scanner.html` | Corresponding Analysis child | KEEP existing URLs as migration anchors. |
-| `stock-analyzer.html`, `stock-checker.html`, valuation variants | Analysis → research/valuation | MERGE after feature and assumption parity; do not route fabricated/demo output into live research. |
-| Individual scanner pages and momentum variants | Analysis → Scanners; contextual links from desks | Preserve named scan, filters and export workflows before registry mapping. Unknown scans show unavailable, not unrelated results. |
+| `market-intelligence.html` | Trading Command → market context | KEEP current redirect; new Market Engine output appears through Command/Research after implementation. |
+| `analysis-central.html`, `technical-analysis.html`, `intrinsic-value.html`, `scanner.html` | Corresponding Research child | KEEP existing URLs as migration anchors. |
+| `stock-analyzer.html`, `stock-checker.html`, valuation variants | Research → research/valuation | MERGE after feature and assumption parity; do not route fabricated/demo output into live research. |
+| Individual scanner pages and momentum variants | Research → Scanners; contextual links from desks | Preserve named scan, filters and export workflows before registry mapping. Unknown scans show unavailable, not unrelated results. |
 | `options-hub.html` and its tab links | Strategy Desks → Options | KEEP tabs and semantics; alias labels may differ by entry workflow, data must not. |
 | `options-recommender.html` | Options analyzer tab | KEEP existing compatibility page; future redirect must explicitly preserve supported instrument/context queries and hash. |
 | `options-strategies.html` | Options strategies tab | Same preservation rule; current script only retains hash. |
@@ -65,7 +74,7 @@ These are proposed future dispositions. **Every existing file and URL remains un
 | `watchlist.html`, `short-term-watchlist.html`, `long-term-watchlist.html`, `my-watchlist.html`, `iv-watchlist-module.html` | Watchlists | Preserve list identity, notes, preferences and ownership; no silent overwrite or duplicate holdings. |
 | `trade-journal-pro.html`, `trade-journal.html`, `master-journal.html`, `trading-journal-analysis.html` | Journal & Review | Preserve/import records across distinct models before any route retirement. |
 | `my-rules.html`, `my-rules-short.html`, `my-rules-long.html`, `position-sizer.html`, `position-sizer_fresh.html` | Portfolio & Risk | Preserve strategy/horizon policy scope; no navigation action changes risk approval. |
-| `tools.html` and specialist calculators | Analysis → tool directory or contextual action | Keep direct URLs; curate directory against existing working destinations before promotion. |
+| `tools.html` and specialist calculators | Research → tool directory or contextual action | Keep direct URLs; curate directory against existing working destinations before promotion. |
 | `dashboard.html`, `settings.html`, `overview.html` and Salon navigation | Outside Arowana primary navigation | Preserve files; separate-product ownership/deployment decision required before archival. |
 | Marketing, legal, login/signup/recovery, broker callback and admin URLs | Public/utility/operational boundaries | Preserve contracts; never redirect auth/OAuth callbacks as ordinary content pages. |
 
@@ -87,7 +96,7 @@ A later implementation should have one versioned navigation registry consumed by
 
 Desktop uses the ordered six-section rail with expandable children and a separate utility menu. Only one destination is active; contextual cross-links do not create duplicate primary sections. Labels are consistent across page title, rail and breadcrumb.
 
-Mobile uses four direct entries—Command, Analysis, Desks, Portfolio—and a fifth **More** control containing Watchlists, Journal & Review and utilities. More opens a menu, not a fabricated route. All six destinations remain reachable; no array truncation may silently remove one. On a Watchlists/Journal route, More can indicate the active group while the page heading identifies the exact destination.
+Mobile uses four direct entries—Command, Watchlists, Portfolio, Journal—and a fifth **More** control containing Research, Strategy Desks and utilities. Command, Portfolio and Journal are compact labels for Trading Command, Portfolio & Risk and Journal & Review respectively. More opens a menu, not a fabricated route. All six destinations remain reachable; no array truncation may silently remove one. On a Research/Strategy Desks route, More indicates the active group while the page heading identifies the exact destination.
 
 Future implementation must support keyboard focus, visible focus indicators, semantic links/buttons, current-page indication, Escape-to-close and focus return for the mobile drawer, readable labels in collapsed mode, and no horizontal overflow at narrow widths. Disabled/planned destinations must explain their state rather than relying solely on color.
 
@@ -99,7 +108,7 @@ Market-data entitlement does not determine whether a user may view their own jou
 
 ## 7. Incremental rollout and acceptance
 
-1. Owner reviews this map and labels, grouping and mobile priority. Architecture approval already permits this planning task; it does not approve this proposed map automatically.
+1. Completed: the owner approved the six primary labels, grouping boundaries and mobile priorities on 2026-09-29. Implementation requires a separate assignment; this approval does not start it.
 2. Assign a separate navigation implementation task. Inventory all rail consumers and exact deep-link handling, establish DEV and capture representative desktop/mobile baseline workflows.
 3. Implement the shared registry and one consumer behind a controlled rollout; preserve all other pages. Compare behavior before extending the registry to remaining shells.
 4. Migrate route families only after functional/data parity and relevant security gates pass. Keep a compatibility ledger of source, target, parameter translation and verification evidence.
@@ -109,6 +118,6 @@ Future acceptance cases include all six primary entries; every desk including pl
 
 ## 8. Verification and scope
 
-ATD-003 verifies the documentation's local links and named existing-file references, whitespace, existing limited-pattern secret scan, and documentation-only diff. Static source inspection supports the current-navigation findings; no browser UI, deployed routes, auth, provider or database behavior was tested. Desktop/mobile requirements above are acceptance criteria for future implementation, not completed UI tests. No runtime file changed, so no existing link was changed by this task.
+ATD-003 verifies the documentation's local links and named existing-file references, whitespace, repository secret check, and documentation-only diff. Static source inspection supports the current-navigation findings; no browser UI, deployed routes, auth, provider or database behavior was tested. Desktop/mobile requirements above are acceptance criteria for future implementation, not completed UI tests. No runtime file changed, so no existing link was changed by this task.
 
-Open map decisions: owner acceptance of the six primary labels, grouping Strategy Desks without a new landing route, mobile shortcut priorities, and ordering of later route-family migrations. Provider licensing, Data Hub contract approval, canonical private records, security remediation and secure DEV remain independently gated; ATD-101 is not started.
+Labels, grouping Strategy Desks without a new landing route, and mobile shortcut priorities are owner-approved. The ordering of later route-family migrations remains open for the separately assigned implementation task. Provider licensing, Data Hub contract approval, canonical private records, security remediation and secure DEV remain independently gated; ATD-101 is not started.

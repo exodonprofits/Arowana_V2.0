@@ -102,21 +102,23 @@
 
 **Next:** Owner review; do not merge automatically or begin follow-on tasks.
 
-## COMPLETED — NAVIGATION MAP AWAITING REVIEW
+## COMPLETED — NAVIGATION MAP APPROVED
 
 ### ATD-003 — Canonical navigation map
 **Owner:** Codex
 **Depends on:** ATD-001  
-**Status:** Map completed 2026-09-29; awaiting owner review. Architecture prerequisite approved; no navigation implementation performed.
+**Status:** Map completed and labels/grouping owner-approved 2026-09-29. Architecture prerequisite approved; no navigation implementation performed.
 **Goal:** Define Arowana 2.0 primary navigation without breaking legacy links.
 
 **Branch:** `codex/ATD-003-canonical-navigation-map`
 
 **Result:** [Canonical navigation map](docs/ATD-003_CANONICAL_NAVIGATION_MAP.md): hierarchy, desk mapping, legacy compatibility, mobile/accessibility rules and rollout acceptance. No application or production changes.
 
-**Verification:** Documentation links, existing route references, whitespace, limited-pattern secret scan and documentation-only scope. No browser/UI runtime tests.
+**Verification:** Documentation links, existing route references, whitespace, repository secret check and documentation-only scope. No browser/UI runtime tests.
 
-**Next:** Owner review of map; separate implementation assignment. ATD-101 remains gated and unstarted.
+**Approved refinements:** Research label; Growth desk with AI as a theme filter; distinct Options/Wheel and Portfolio/Journal responsibilities; contextual coaching/tools; mobile Command, Watchlists, Portfolio, Journal, More.
+
+**Next:** Separate implementation assignment subject to relevant security/DEV gates. ATD-101 remains gated and unstarted.
 
 ## PLANNED AFTER PHASE 0
 
