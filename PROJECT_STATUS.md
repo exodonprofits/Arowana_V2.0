@@ -89,8 +89,8 @@ Documentation-link, whitespace, limited-pattern secret and changed-file scope ch
 
 On 2026-09-29 the owner approved Architecture 2.1 including ATD-006A and authorized ATD-003. This supersedes earlier review-status statements above. ATD-004 approval, provider/feed rights, freshness, private data ownership, deployment, retention and security remediation remain separately gated. ATD-101 is not started.
 
-## ATD-003 navigation map — completed, awaiting owner review
+## ATD-003 navigation map — completed, owner-approved
 
 Prepared [the canonical navigation map](docs/ATD-003_CANONICAL_NAVIGATION_MAP.md) on `codex/ATD-003-canonical-navigation-map`: six primary destinations, shared strategy desks, legacy-route dispositions, deep-link preservation, mobile/accessibility requirements and rollout acceptance. Internal AI roles remain within trader workflows. No runtime navigation or redirects changed.
 
-Verification: documentation links and named existing-file references, whitespace, limited-pattern secret scan and documentation-only scope. No browser/UI or production tests; these remain implementation gates. Next: owner review of the map, then separately assigned implementation.
+Verification: documentation links and named existing-file references, whitespace, repository secret check and documentation-only scope. No browser/UI or production tests; these remain implementation gates. The owner approved the labels and grouping on 2026-09-29: Research; Growth with AI as a theme filter; distinct Options/Wheel and Portfolio/Journal responsibilities; contextual coaching and tools; mobile Command, Watchlists, Portfolio, Journal, More. Next: separately assigned navigation implementation subject to relevant security/DEV gates; no follow-on started by this documentation update.
