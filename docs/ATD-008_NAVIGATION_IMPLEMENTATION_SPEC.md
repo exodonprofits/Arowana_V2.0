@@ -1,6 +1,6 @@
 # ATD-008 — Frontend navigation implementation specification
 
-Status: **specification for owner review; documentation only; no implementation started**. Date: 2026-10-02. Branch: `claude/ATD-008-navigation-implementation-spec`. Baseline: `origin/main` at `ca625bb`.
+Status: **specification owner-approved 2026-10-02, including the recommendations for decisions D1–D13 (section 12); documentation only; no implementation started**. Date: 2026-10-02. Branch: `claude/ATD-008-navigation-implementation-spec`. Baseline: `origin/main` at `ca625bb`.
 
 Inputs: [ATD-003 canonical navigation map](ATD-003_CANONICAL_NAVIGATION_MAP.md) (owner-approved labels and grouping), [Architecture 2.1](ARCHITECTURE_2_1.md), [ATD-001 audit](ATD-001_REPOSITORY_AUDIT.md), [ATD-007 work record](ATD-007_SECURITY_DEV_BASELINE.md) and static inspection of the frontend source listed in section 2.
 
@@ -148,7 +148,7 @@ Status meanings: **available** = existing working entry point to keep; **legacy*
 | ↳ Morning Brief | `ai-morning-brief.html` | legacy | ATD-003 migration source |
 | ↳ What Changed | — | planned | ATD-107 |
 | ↳ Decision queue | — | planned | ATD-106 and proposal-bound records (Architecture 2.1 §7) |
-| ↳ Coaching (contextual) | `trading-command.html?tab=coach` | available | Accepted by page (7314); one coaching entry, not a primary item |
+| ↳ Coach (contextual) | `trading-command.html?tab=coach` | available | Accepted by page (7314); the one coaching entry, not a primary item (D2) |
 | **Research** | `analysis-central.html` | available | Approved Research label, existing source |
 | ↳ Instrument Research | `analysis-central.html` | available | |
 | ↳ Technical Analysis | `technical-analysis.html` | available | Current rail |
@@ -158,7 +158,7 @@ Status meanings: **available** = existing working entry point to keep; **legacy*
 | ↳ Tool Directory (secondary) | `tools.html` | available | Approved secondary directory reachable from Research |
 | **Strategy Desks** (group, no route) | — | — | Approved logical group |
 | ↳ Swing | `swing-trader.html` | legacy | ATD-003 source; N5 top-bar page, not yet on the rail shell |
-| ↳ Wheel | `options-hub.html?tab=puts` (children: `?tab=puts`, `?tab=calls`, `?tab=roll`) | available | Wheel owns the CSP → assignment → covered-call workflow; those tabs exist today. Landing choice is open (D1) |
+| ↳ Wheel | `options-hub.html?tab=puts` (children: `?tab=puts`, `?tab=calls`, `?tab=roll`) | available | Wheel owns the CSP → assignment → covered-call workflow; those tabs exist today. Landing approved (D1); `wheel-strategy.html` is a Legacy child until its parity review |
 | ↳ Options | `options-hub.html?tab=analyzer` (children: `?tab=analyzer`, `?tab=strategies`, `?tab=watchlist`, `?tab=quality`; `credit-spread-planner.html`) | available | Options owns shared chain/pricing/analysis tools |
 | ↳ Growth | — | planned | No verified Growth route; AI appears as a filter inside Growth when built. Do not reuse `ai-*` pages |
 | ↳ Long-Term | `long-term-dashboard.html` | legacy | ATD-003 source; N4 template page |
@@ -189,7 +189,7 @@ Every one of the 29 current links has an explicit target. "Removed from primary"
 | `trading-command.html` + `switchTab('positions')` | Trading Command | Trading Command ↳ Positions (`?tab=positions`) |
 | `scanner.html` | Trading Command | Research ↳ Scanners (desks may cross-link) |
 | `trade-journal-pro.html?from=trading-command` | Trading Command | Journal & Review (primary link has no `from`; `from` only on contextual links) |
-| `arowana-trader.html?from=trading-command` ("Wheel Coach") | Trading Command | Contextual coaching from Command and Wheel. Final coaching surface is open (D2) |
+| `arowana-trader.html?from=trading-command` ("Wheel Coach") | Trading Command | Reachable from the Wheel desk until merged. The single contextual coaching entry is "Coach" → `trading-command.html?tab=coach` (D2) |
 | `portfolio-command.html` (×2) | Portfolio Command | Portfolio & Risk / Overview |
 | `portfolio-advisor.html` | Portfolio Command | Portfolio & Risk ↳ Portfolio Advisor |
 | `watchlist.html` | Portfolio Command | Watchlists (primary) |
@@ -211,7 +211,7 @@ Every one of the 29 current links has an explicit target. "Removed from primary"
 | `position-sizer.html` | Tools | Portfolio & Risk ↳ Position Sizing |
 | `expectancy-matrix.html` | Tools | Journal & Review (contextual tool) |
 | `tax-loss-harvester.html` | Tools | Portfolio & Risk (contextual tool) |
-| `index.html` (brand link) | Rail header | Unchanged brand link. Whether a signed-in brand click goes to Trading Command instead is open (D6) |
+| `index.html` (brand link) | Rail header | Signed-in users go to `trading-command.html`; signed-out users keep `index.html` (D6) |
 | Utility links `account.html`, `billing.html`, `pricing.html` | Account menu | Utility menu |
 
 ### 4.3 Aliases, query parameters and fragments
@@ -225,7 +225,7 @@ Rules:
 
 | Path / parameter | Treatment |
 |---|---|
-| `tradingcommand.html` | **Not** an alias of Trading Command (ATD-003: merge only after inventory). Gets no active item; or, if D5 is approved, an explicit legacy alias that highlights the group without claiming equivalence |
+| `tradingcommand.html` | **Not** an alias of Trading Command (ATD-003: merge only after inventory). Gets no active item until the ATD-003 merge inventory (D5) |
 | `options-hub.html` with no `?tab=` | Active desk is Options. The page may restore a remembered Wheel tab from `oh_active_tab_v1` without changing the URL, so the URL alone cannot identify the visible tab. The renderer exposes an optional `ArowanaNav.setActive(id)` hook the page can call from its `switchTab`; until the page calls it, the URL decides |
 | `options-hub.html?tab=calls|puts|roll` | Wheel desk and the matching child |
 | `options-hub.html?tab=analyzer|strategies|watchlist|quality` | Options desk and the matching child |
@@ -252,9 +252,9 @@ Rules:
 **Back/Forward**
 
 - Navigation items are plain `<a href>` links causing full page loads; the browser owns history. The nav never calls `pushState`/`replaceState`.
-- Opening or closing the desktop group toggles, the mobile drawer or the More sheet adds no history entry. Back while the drawer is open leaves the page, as today. (Making Back close the drawer means hijacking history and is not recommended; listed as D7.)
+- Opening or closing the desktop group toggles, the mobile drawer or the More sheet adds no history entry. Back while the drawer is open leaves the page, as today. Back does not close the drawer (D7); doing so would require adding history entries.
 - On `pageshow` with `persisted === true`, close any open drawer/sheet so a restored page is never stuck in an open state.
-- Tab-level history behavior stays page-owned and differs today: `arowana-trader.html` pushes history per tab (Back steps through tabs); `trade-journal-pro.html` replaces (Back leaves the page); `trading-command.html`, `options-hub.html`, `portfolio-command.html` don't touch the URL (Back leaves the page; refresh restores from localStorage). ATD-008 documents but does not unify this; unification would be a separate decision (D8).
+- Tab-level history behavior stays page-owned and differs today: `arowana-trader.html` pushes history per tab (Back steps through tabs); `trade-journal-pro.html` replaces (Back leaves the page); `trading-command.html`, `options-hub.html`, `portfolio-command.html` don't touch the URL (Back leaves the page; refresh restores from localStorage). ATD-008 documents but does not unify this; unification is a separate task (D8).
 
 **Refresh**: active state comes from the URL plus the optional page hook. Desktop collapse state persists through `ap_rail_collapsed_v1`. Group expansion is per-page-load (as today); persisting it is optional and not required.
 
@@ -273,7 +273,7 @@ Rules:
 - More is a `<button>` (not a link, no route) that opens a sheet containing Research with its children, Strategy Desks with each desk, then utilities.
 - When the current page is in Research or Strategy Desks, More shows the active marker and the sheet opens with that section expanded. The page heading names the exact destination.
 - The bar is built from registry `mobile` slots, never by slicing the destination list, so no destination can disappear silently. Missing a required slot is a render-time error logged to the console and caught by tests.
-- The hamburger drawer becomes redundant once More exists. During migration a page keeps its current drawer until it adopts the new shell; afterwards `#sidebarTrigger` is removed from that page (D9 confirms this).
+- The hamburger drawer becomes redundant once More exists. During migration a page keeps its current drawer until it adopts the new shell; afterwards `#sidebarTrigger` is removed from that page (D9).
 
 ### 6.3 Keyboard and focus requirements
 
@@ -331,7 +331,7 @@ Color is never the only indicator for any state.
 - It is a directory, not a trading workflow: no positions, journal data or broker state, so a regression costs least.
 - The other 34 rail consumers (the remaining 26 N1 pages and the 8 N2 pages) are untouched, which keeps rollback to a one-line revert.
 
-Mixed navigation (new on one page, old elsewhere) is expected during slice 1. If the owner does not want users to see that, slice 1 ships behind an opt-in: the new scripts load only when `localStorage.ap_nav_v2 === '1'`, otherwise `tools.html` keeps loading `js/nav-rail.js` (D10).
+Slice 1 ships behind an opt-in (D10): on `tools.html` the new scripts load only when `localStorage.ap_nav_v2 === '1'`; otherwise the page keeps loading `js/nav-rail.js`, so ordinary users see no mixed navigation. From wave 2 the new navigation is on by default for migrated pages.
 
 **Not in slice 1:** `js/nav-rail.js`, any N2 inline page, `js/auth-guard.js`, route redirects, any page outside `tools.html` (except P1).
 
@@ -373,7 +373,7 @@ Run in a non-production environment only (section 11). None of these were execut
 1. Every registry route path exists as a file; every `planned` entry has no route.
 2. Six primary destinations render in approved order with approved labels; all five desks render under Strategy Desks; Growth renders as Planned.
 3. Each of the 29 current rail links is reachable through the new nav or `tools.html` per §4.2.
-4. `tradingcommand.html` does not mark Trading Command active (unless D5 approves an explicit alias).
+4. `tradingcommand.html` does not mark Trading Command active (D5).
 5. `options-hub.html?tab=puts` marks Wheel ↳ Cash-Secured Puts; `?tab=analyzer` marks Options ↳ Strategy Recommender; plain `options-hub.html` marks Options, then follows `setActive` once the page restores a remembered tab.
 6. `portfolio-command.html?tab=performance` opens Performance (after P1) and marks Portfolio & Risk ↳ Performance.
 7. `trade-journal-pro.html?from=trading-command` still returns to Trading Command; an unknown `from` value falls back to the default target.
@@ -420,15 +420,15 @@ ATD-008 does not touch ATD-007 scope. These items block specific waves or tests:
 
 Test tooling: the repository has no package manager and must not gain one. Browser tests should run from tooling outside the repository (for example a separately installed Playwright against `python -m http.server`), with external network blocked unless a DEV backend is available. Choosing that tooling is D11.
 
-## 12. Unresolved product decisions
+## 12. Product decisions (approved 2026-10-02)
 
-These are **not** approved and need the owner before or during implementation. Recommendations are proposals only.
+The owner approved the recommendation for every decision below on 2026-10-02. The "Approved resolution" column is now binding for implementation; reopening one needs a new owner decision.
 
-| ID | Decision | Recommendation |
+| ID | Decision | Approved resolution |
 |---|---|---|
 | D1 | Wheel desk landing: `options-hub.html?tab=puts`, `wheel-strategy.html` or `arowana-trader.html` | `options-hub.html?tab=puts` now (working workflow), with `wheel-strategy.html` as a Legacy child until its parity review |
 | D2 | Coaching surface: `trading-command.html?tab=coach` vs `arowana-trader.html`, and its label ("Wheel Coach" vs "Coach") | One entry labeled "Coach" pointing to `trading-command.html?tab=coach` from Command; `arowana-trader.html` reachable from Wheel until merged |
-| D3 | Should Legacy pages (Swing, Long-Term, Morning Brief, Risk Rules) appear in the primary nav before they adopt the new shell? | Yes, with the Legacy marker, so desks are not empty; owner may prefer Planned instead |
+| D3 | Should Legacy pages (Swing, Long-Term, Morning Brief, Risk Rules) appear in the primary nav before they adopt the new shell? | Yes, with the Legacy marker, so desks are not empty |
 | D4 | Accounts & Cash placement before ownership remediation | Planned until ATD-007/005 ownership fixes land |
 | D5 | Treat `tradingcommand.html` as a legacy alias of Trading Command for highlighting | No; leave unhighlighted until ATD-003 merge inventory |
 | D6 | Brand link for signed-in users: `index.html` (marketing) or `trading-command.html` | `trading-command.html` for signed-in users |
@@ -451,7 +451,7 @@ Not applied: the assignment forbids editing `PROJECT_STATUS.md` and `TASKS.md` d
 
 **Owner:** Claude Code
 
-**Status:** Specification completed 2026-10-02; awaiting owner review. No navigation implemented.
+**Status:** Specification completed and owner-approved 2026-10-02, including decisions D1–D13. No navigation implemented.
 
 **Branch:** `claude/ATD-008-navigation-implementation-spec`
 
@@ -459,13 +459,13 @@ Not applied: the assignment forbids editing `PROJECT_STATUS.md` and `TASKS.md` d
 
 **Verification:** Static source inspection only; documentation links and referenced source paths checked; repository secret scan and whitespace checks. No browser, auth or production tests.
 
-**Next:** Owner decisions D1–D13, then a separately assigned implementation task for P1 and slice 1. Browser testing with auth waits for ATD-007's DEV frontend configuration.
+**Next:** Separately assigned implementation task for P1 and slice 1. Browser testing with auth waits for ATD-007's DEV frontend configuration.
 ```
 
 **Proposed `PROJECT_STATUS.md` entry**
 
 ```markdown
-## ATD-008 navigation implementation spec — awaiting owner review
+## ATD-008 navigation implementation spec — owner-approved
 
 Prepared [the implementation specification](docs/ATD-008_NAVIGATION_IMPLEMENTATION_SPEC.md) on `claude/ATD-008-navigation-implementation-spec` from `ca625bb`, in parallel with Codex's ATD-007. Static inspection found the shared rail in `js/nav-rail.js` (27 pages), byte-identical inline copies plus DOM correction patches on 8 core pages, an older rail inside `js/auth-guard.js` on `trade-journal-pro.html`, and a mobile bar that does not match the approved shortcuts. `portfolio-command.html` ignores `?tab=`, so the current Performance link cannot open Performance. Documentation only; no application, URL, Supabase or production changes. ATD-101 remains gated.
 ```
