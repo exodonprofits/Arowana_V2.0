@@ -1,12 +1,19 @@
 # Project Status
 
-## Current update — 2026-09-29
+
+## Local DEV update - 2026-09-30
+
+Owner selected local Supabase for ATD-007. The local stack is running on `codex/ATD-007-security-dev-baseline`; published ports are loopback-only and Auth/Studio HTTP checks passed. Official CLI 2.118.0 was checksum-verified; no package manager was introduced. No hosted project was linked, no production data imported and no application configuration changed. Local SQL confirmed zero public application tables and zero Auth users.
+
+This supersedes earlier DEV-target-selection uncertainty. ATD-007 remains in progress: the CLI-selected PostgreSQL 17.6 image needs security-version review/upgrade against the current 17.11 advisory, reviewed backend definitions are missing, and ownership/client-key remediation remains open. See [work record](docs/ATD-007_SECURITY_DEV_BASELINE.md) and [local setup](supabase/README.md). Seven scanner tests, repository secret scan, TOML/isolation assertions and whitespace checks passed. No secure baseline or two-user RLS validation is claimed; ATD-101 remains gated.
+
+## Current update â€” 2026-09-29
 
 The owner confirmed review work is complete after ATD-003 merged through PR #8; earlier awaiting-review labels below are historical. Authorized ATD-007 security remediation and DEV baseline. The first local slice removes the remaining option-roll helper key literal/direct quote request and strengthens the secret scan with seven synthetic tests in CI. See [ATD-007](docs/ATD-007_SECURITY_DEV_BASELINE.md). Task remains in progress: DEV target selection, key revocation/deployed-history containment, browser credential workflows and ownership fixes are unresolved. No secure DEV baseline or production remediation is claimed; ATD-101 remains gated.
 
 ## Current phase
 
-**Phase 0 — Baseline audit and repository stabilization**
+**Phase 0 â€” Baseline audit and repository stabilization**
 
 ## Baseline
 
@@ -33,7 +40,7 @@ The owner confirmed review work is complete after ATD-003 merged through PR #8; 
 - Some non-core/unrelated pages may need archiving
 - `market-intelligence.html` is currently a retired redirect, not an implementation of the planned Market Engine
 
-## ATD-001 audit result — awaiting review
+## ATD-001 audit result â€” awaiting review
 
 - Completed static repository audit on 2026-09-27 on `codex/ATD-001-full-repository-audit`; see [full report](docs/ATD-001_REPOSITORY_AUDIT.md).
 - Inventoried all 249 baseline files, with individual classifications for 174 HTML files, 32 JavaScript files, four CSS files and one JSON configuration file.
@@ -42,7 +49,7 @@ The owner confirmed review work is complete after ATD-003 merged through PR #8; 
 - Existing secret scan passed its limited patterns. Static checks found four existing inline JavaScript syntax failures and 80 missing HTML targets across 230 occurrences; all 32 standalone JS files parsed successfully. See report for scope and limitations.
 - Only audit/status/task documentation changed. No application, production configuration, database, credential or legacy-file changes; no follow-on task started.
 
-## ATD-002 inventory result — awaiting review
+## ATD-002 inventory result â€” awaiting review
 
 - Completed on 2026-09-28 on `codex/ATD-002-secret-client-key-inventory`, based on merged ATD-001 (`47fe1ca`); see [inventory](docs/ATD-002_SECRET_CLIENT_KEY_INVENTORY.md).
 - Documented all 206 first-party HTML/JS/JSON files, credential/storage flows, provider migration requirements and backend unknowns.
@@ -51,7 +58,7 @@ The owner confirmed review work is complete after ATD-003 merged through PR #8; 
 - Existing secret check passed its limited patterns. Additional scans covered 250 baseline files, 16 DOCX XML/relationship members and 250 unique blobs across four reachable commits. No credentials used or live services tested.
 - Only inventory/task/status documentation changed. No remediation, production configuration change, rotation or follow-on task started.
 
-## ATD-005 schema/RLS audit result — awaiting review
+## ATD-005 schema/RLS audit result â€” awaiting review
 
 - Completed 2026-09-28 on `codex/ATD-005-supabase-schema-rls-audit`; see [audit](docs/ATD-005_SUPABASE_SCHEMA_RLS_AUDIT.md). ATD-002 documentation was preserved at entry and subsequently committed in the branch base (`784d6d7`); see audit for the detected checkout transition.
 - Read-only inspection of the repository-matched Supabase project found 411 base tables with RLS enabled and 59 views across public/arowana/salon; detailed evidence covers 51 scoped relations, 131 policies and 132 constraints.
@@ -60,7 +67,7 @@ The owner confirmed review work is complete after ATD-003 merged through PR #8; 
 - Deployment listing contains 122 migrations and 35 Edge Functions; their implementations/migrations are absent from this checkout. Earlier repository-only unknowns are resolved only where the new audit records live evidence.
 - No application records or stored credentials read, no runtime impersonation or write tests, and no production changes. Repository secret check and documentation diff checks passed. Audit only; no remediation or follow-on work started.
 
-## ATD-004 data source inventory and contract — awaiting review
+## ATD-004 data source inventory and contract â€” awaiting review
 
 - Completed documentation on 2026-09-28 on `codex/ATD-004-data-source-inventory-contract`; see [inventory](docs/ATD-004_DATA_SOURCE_INVENTORY.md) and [proposed contract v0.1](docs/ATD-004_DATA_HUB_CONTRACT.md).
 - Covered 206 first-party source files and mapped Finnhub/Twelve Data/FMP/Alpha Vantage/Supabase/n8n paths plus AI, broker, manual/import and chart boundaries. Target providers remain proposed capabilities, not validated subscriptions or implemented adapters.
@@ -72,7 +79,7 @@ The owner confirmed review work is complete after ATD-003 merged through PR #8; 
 
 Architecture 2.1 was prepared as a documentation-only ATD-004 follow-up on `codex/ATD-004-architecture-2-1`; see [proposal](docs/ARCHITECTURE_2_1.md). It defines component boundaries, logical data ownership, request/job flow, engine responsibilities, rollout gates and owner decisions from the existing inventory/contract. The source baseline matches GitHub main at `bff6c52`. Contract approval, security remediation and provider rights remain open; no application or production changes were made.
 
-## ATD-006 architecture consolidation — completed, awaiting owner review
+## ATD-006 architecture consolidation â€” completed, awaiting owner review
 
 - Reconciled the engineering/data/security foundation with the AI Trading Floor addendum in [Architecture 2.1](docs/ARCHITECTURE_2_1.md) on `codex/ATD-006-architecture-2-1-consolidation`, based on local commit `5620217`.
 - Integrated shared specialist responsibilities, Devil's Advocate, Chief orchestration, non-bypassable deterministic risk, Decision Gate and auditable Trade Decision Records. Resolved gate ordering with initial checks and a final deterministic recheck; rejected arbitrary agent voting.
@@ -81,7 +88,7 @@ Architecture 2.1 was prepared as a documentation-only ATD-004 follow-up on `code
 
 ## Owner review gate
 
-### ATD-006A — final proposal review binding
+### ATD-006A â€” final proposal review binding
 
 Owner reports Architecture 2.1 was reviewed and ATD-006 merged through PR #5. ATD-006A adds a narrow section 7 clarification on `codex/ATD-006A-bind-final-proposal-review`: reviews and deterministic results must be valid for the same final immutable proposal version and required snapshot set. Material changes invalidate affected reviews and require recalculation, refreshed specialist assessments and final-proposal adversarial review. Non-material presentation edits preserve the original bindings without unnecessary analysis. A Claude Code follow-up on the same branch adds the explicit revision sequence and NVDA example, long/short direction as a material change, the Chief self-certification limit, carry-forward of still-applicable objections, the proposal-change versus evidence-change distinction, and matching section 9 tests and section 10 open decisions. This clarification is completed and awaiting owner review; earlier review-status statements describe the ATD-006 baseline and do not approve this new change or the ATD-004 contract.
 
@@ -89,8 +96,10 @@ Documentation-link, whitespace, limited-pattern secret and changed-file scope ch
 
 On 2026-09-29 the owner approved Architecture 2.1 including ATD-006A and authorized ATD-003. This supersedes earlier review-status statements above. ATD-004 approval, provider/feed rights, freshness, private data ownership, deployment, retention and security remediation remain separately gated. ATD-101 is not started.
 
-## ATD-003 navigation map — completed, owner-approved
+## ATD-003 navigation map â€” completed, owner-approved
 
 Prepared [the canonical navigation map](docs/ATD-003_CANONICAL_NAVIGATION_MAP.md) on `codex/ATD-003-canonical-navigation-map`: six primary destinations, shared strategy desks, legacy-route dispositions, deep-link preservation, mobile/accessibility requirements and rollout acceptance. Internal AI roles remain within trader workflows. No runtime navigation or redirects changed.
 
 Verification: documentation links and named existing-file references, whitespace, repository secret check and documentation-only scope. No browser/UI or production tests; these remain implementation gates. The owner approved the labels and grouping on 2026-09-29: Research; Growth with AI as a theme filter; distinct Options/Wheel and Portfolio/Journal responsibilities; contextual coaching and tools; mobile Command, Watchlists, Portfolio, Journal, More. Next: separately assigned navigation implementation subject to relevant security/DEV gates; no follow-on started by this documentation update.
+
+Final scan clarification: after startup, the full working-directory scanner reports two credential patterns in the CLI-generated, Git-ignored `supabase/.temp/start-secrets/` runtime environment file. Values were not printed. The separate scan of all Git-tracked and non-ignored candidate source files passed. Scanner behavior was not weakened or changed. Earlier scan passes occurred before runtime credential generation.
