@@ -1,5 +1,7 @@
 # ATD-007 local development
 
+**2026-10-01 containment hold:** this local stack is stopped because generated credentials were committed in merged history. Do not run the startup instructions below until credential rotation/regeneration and the database security-version baseline are verified. See the ATD-007 work record.
+
 Owner selected local Supabase on 2026-09-30. This is an empty development substrate, not a recovered production backend or completed security remediation.
 
 ## Tooling

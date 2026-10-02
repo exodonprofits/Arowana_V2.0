@@ -144,3 +144,7 @@
 - ATD-106 Trading Command 2.0 MVP
 - ATD-107 Morning Brief / What Changed
 - ATD-108 Wheel module port from current Wheel-focused repo
+
+### ATD-007 continuation - 2026-10-01
+
+Runtime credential containment took priority after generated secrets were found tracked in merged main. Three runtime paths removed from index; CI tracking guard added; affected local stack stopped with volumes preserved. Nine tests, guard, secret scan and whitespace checks passed. Credential rotation/history containment and PostgreSQL/schema work remain open. No production changes or ATD-101 work. Details: [ATD-007 work record](docs/ATD-007_SECURITY_DEV_BASELINE.md).

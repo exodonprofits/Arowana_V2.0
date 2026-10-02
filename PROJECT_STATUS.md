@@ -1,5 +1,10 @@
 # Project Status
 
+## Current update - 2026-10-01
+
+ATD-007 continuation found generated local runtime credentials tracked in merged baseline `dcf83ea`. Untracked the generated files and added a CI tracking guard. Stopped the affected local Supabase project with data volumes preserved; Studio is intentionally offline. Nine tests, tracking guard, full secret scan and whitespace checks passed. Prior runtime-ready statements are historical. Credential rotation/history containment, PostgreSQL security-version review and schema/RLS remediation remain open. See [work record](docs/ATD-007_SECURITY_DEV_BASELINE.md). No production changes; ATD-007 remains in progress.
+
+
 
 ## Local DEV update - 2026-09-30
 
