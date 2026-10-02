@@ -35,3 +35,15 @@ Seven offline Python regression tests pass; expanded repository scan passes; the
 The runtime remains running for local development. No application schema, migration, two-user RLS tests or browser credential remediation was completed in this setup slice. Next: resolve the database image security baseline, recover reviewed schema definitions without production records/secrets, then implement and test scoped ownership fixes. ATD-007 remains in progress; ATD-101 remains gated.
 
 Final scan clarification: after startup, the full working-directory scanner reports two credential patterns in the CLI-generated, Git-ignored `supabase/.temp/start-secrets/` runtime environment file. Values were not printed. The separate scan of all Git-tracked and non-ignored candidate source files passed. Scanner behavior was not weakened or changed. Earlier scan passes occurred before runtime credential generation.
+
+## Runtime credential containment - 2026-10-01
+
+Continuation found generated local Supabase runtime files tracked in merged baseline `dcf83ea`, including `.temp/start-secrets/.../docker.env`. This supersedes the earlier statement that runtime credentials were only ignored local files. No values were reproduced in this report.
+
+Removed three generated paths from the Git index and added `scripts/check_runtime_tracking.py` to CI. The guard rejects any indexed file under `supabase/.temp/` or `supabase/.branches/`, even if force-added or its content does not match a secret pattern. Two synthetic tests cover rejection and allowed source paths.
+
+Stopped only `arowana-atd007-local` using the CLI's project-specific stop with backups enabled. Data volumes were preserved; production was not contacted or changed. Local Studio is intentionally unavailable until containment is resolved. No history rewrite or credential rotation was performed. Previously committed values remain in reachable history and must not be considered confidential or reused.
+
+Verification: nine offline tests passed; runtime tracking guard and full working-directory secret scan passed after shutdown; Git whitespace checks passed. The runtime removals are staged, while code/documentation updates remain uncommitted. No schema/RLS runtime tests were run. PostgreSQL upgrade and schema recovery were deferred to address this newly discovered prerequisite.
+
+Remaining work: verify safe local credential regeneration/rotation before restart, decide repository-history containment with the owner, resolve the PostgreSQL security-version baseline, and recover reviewed schema definitions for synthetic ownership tests. ATD-007 remains in progress; ATD-101 remains gated.
