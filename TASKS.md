@@ -1,8 +1,8 @@
 # Arowana 2.0 Task Board
 
-## COMPLETED — AWAITING REVIEW
+## COMPLETED â€” AWAITING REVIEW
 
-### ATD-001 — Full repository feature audit
+### ATD-001 â€” Full repository feature audit
 **Owner:** Codex
 
 **Status:** Audit completed 2026-09-27; awaiting owner review of recommendations.
@@ -17,7 +17,7 @@
 
 **Next:** Review ATD-001 recommendations alongside the separately assigned ATD-002 result below.
 
-### ATD-002 — Secret and client-key migration inventory
+### ATD-002 â€” Secret and client-key migration inventory
 **Owner:** Codex
 
 **Status:** Inventory completed 2026-09-28; awaiting owner review. No remediation or follow-on task started.
@@ -32,7 +32,7 @@
 
 **Next:** Owner review and credential-containment decision; recommended next assignment ATD-005 (schema/RLS audit), with ATD-004 contracts before provider migration. ATD-005 and ATD-004 were subsequently assigned separately.
 
-### ATD-005 — Supabase schema/RLS audit
+### ATD-005 â€” Supabase schema/RLS audit
 **Owner:** Codex
 
 **Status:** Audit completed 2026-09-28; awaiting review. No remediation or follow-on task started.
@@ -47,7 +47,7 @@
 
 **Next:** Review findings and containment decisions. Recommended next existing task ATD-004; remediation needs a separate scoped assignment. No follow-on started.
 
-### ATD-004 — Data source inventory and contract
+### ATD-004 â€” Data source inventory and contract
 **Owner:** Codex
 
 **Status:** Documentation completed 2026-09-28; proposed v0.1 contract awaiting review. No implementation or follow-on started.
@@ -60,7 +60,7 @@
 
 **Next:** Review provider/feed rights, freshness budgets, canonical data ownership and deployment/retention decisions. Recommended next existing Phase 0 task ATD-003. ATD-101 remains gated on contract approval and security remediation; no follow-on started.
 
-### ATD-004 follow-up — Architecture 2.1 proposal
+### ATD-004 follow-up â€” Architecture 2.1 proposal
 
 **Owner:** Codex
 
@@ -74,11 +74,11 @@
 
 **Next:** Owner review of Architecture 2.1 and ATD-004 decisions. ATD-101 remains gated; ATD-003 remains unassigned.
 
-### ATD-006 — Architecture 2.1 consolidation
+### ATD-006 â€” Architecture 2.1 consolidation
 
 **Owner:** Codex
 
-**Status:** Completed — Architecture 2.1 including ATD-006A owner-approved 2026-09-29. ATD-004 approval remains separate.
+**Status:** Completed â€” Architecture 2.1 including ATD-006A owner-approved 2026-09-29. ATD-004 approval remains separate.
 
 **Branch:** `codex/ATD-006-architecture-2-1-consolidation`
 
@@ -88,11 +88,11 @@
 
 **Next:** Stop for owner review of Architecture 2.1 and its open decisions. No automatic follow-on assignment.
 
-### ATD-006A — Bind Reviews to Final Proposal Version
+### ATD-006A â€” Bind Reviews to Final Proposal Version
 
 **Owner:** Codex; Claude Code follow-up commit on the same branch
 
-**Status:** Completed — owner-approved 2026-09-29 with Architecture 2.1. ATD-006A merged through PR #7.
+**Status:** Completed â€” owner-approved 2026-09-29 with Architecture 2.1. ATD-006A merged through PR #7.
 
 **Branch:** `codex/ATD-006A-bind-final-proposal-review`
 
@@ -102,9 +102,9 @@
 
 **Next:** Owner review; do not merge automatically or begin follow-on tasks.
 
-## COMPLETED — NAVIGATION MAP APPROVED
+## COMPLETED â€” NAVIGATION MAP APPROVED
 
-### ATD-003 — Canonical navigation map
+### ATD-003 â€” Canonical navigation map
 **Owner:** Codex
 **Depends on:** ATD-001  
 **Status:** Map completed and labels/grouping owner-approved 2026-09-29. Architecture prerequisite approved; no navigation implementation performed.
@@ -122,21 +122,21 @@
 
 ## PLANNED AFTER PHASE 0
 
-### ATD-007 — Security remediation and DEV baseline
+### ATD-007 â€” Security remediation and DEV baseline
 
 **Owner:** Codex
 
-**Status:** In progress — first repository containment/scanner slice implemented; isolated DEV target selection pending.
+**Status:** In progress â€” first repository containment/scanner slice implemented; local Supabase running 2026-09-30 with loopback bindings; database security-version review and ownership remediation remain open.
 
 **Branch:** `codex/ATD-007-security-dev-baseline`
 
 **Scope/result:** [Work record](docs/ATD-007_SECURITY_DEV_BASELINE.md). Removed the remaining key-like literal/direct quote call in the option-roll helper, added contextual secret detection and seven synthetic regression tests to CI. Credential revocation/history containment, client-key workflow migration and ATD-005 ownership remediation remain open. No production changes.
 
-**Next:** Select isolated DEV, establish versioned backend baseline and validate remaining fixes with synthetic two-user tests. ATD-101 remains gated.
+**Next:** Resolve local PostgreSQL security-version baseline, establish reviewed versioned backend definitions and validate remaining fixes with synthetic two-user tests. ATD-101 remains gated.
 
 ### Later implementation tasks
 
-- ATD-101 Market Data Hub — PLANNED; gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Not started.
+- ATD-101 Market Data Hub â€” PLANNED; gated on Architecture/Data Hub contract approval, provider/feed decisions, security remediation, entitlement/licensing decisions and a secure DEV baseline. Not started.
 - ATD-102 Market Regime Engine
 - ATD-103 Technical + POC Engine
 - ATD-104 EPS Revision / Fundamental Engine
