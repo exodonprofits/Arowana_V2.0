@@ -3,252 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Short-Term Trade Scanner</title>
+  <title>Redirecting to Scanners — Arowana Profits</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=scanner.html?scan=swing_multi">
+  <!-- ATD-009 phase 2: retired standalone scanner. Keeps the old URL working;
+       any query string and hash are carried over to scanner.html?scan=swing_multi. -->
+  <script>
+    var extra = window.location.search ? '&' + window.location.search.slice(1) : '';
+    window.location.replace('scanner.html?scan=swing_multi' + extra + window.location.hash);
+  </script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 40px;
-      background-color: #f7f9fb;
-      color: #333;
-    }
-    .container {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #1a3c5e;
-    }
-    label {
-      font-weight: bold;
-      display: inline-block;
-      margin-top: 15px;
-    }
-    .info-icon {
-      cursor: pointer;
-      margin-left: 8px;
-      color: #1a3c5e;
-      font-weight: normal;
-    }
-    .info-popup {
-      display: none;
-      position: fixed;
-      top: 20%;
-      left: 50%;
-      transform: translate(-50%, -20%);
-      max-width: 400px;
-      background: #fff;
-      border: 2px solid #1a3c5e;
-      padding: 20px;
-      z-index: 1000;
-      border-radius: 8px;
-      box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-    }
-    .info-popup h3 {
-      margin-top: 0;
-      color: #1a3c5e;
-    }
-    .info-popup button {
-      margin-top: 20px;
-      background: #1a3c5e;
-      color: white;
-      border: none;
-      padding: 10px 16px;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    select {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-      margin-top: 5px;
-    }
-    button {
-      background-color: #1a3c5e;
-      color: white;
-      border: none;
-      padding: 14px 24px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      width: 100%;
-      margin-top: 20px;
-    }
-    button:hover {
-      background-color: #16324a;
-    }
-    .result {
-      margin-top: 30px;
-      padding: 15px;
-      background: #f0f4f9;
-      border-left: 4px solid #1a3c5e;
-    }
-    #spinner {
-      text-align: center;
-      display: none;
-      margin-top: 20px;
-    }
-    #spinner div {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #1a3c5e;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    .stock-box {
-      padding: 10px 0;
-      border-bottom: 1px solid #ddd;
-    }
-    .stock-box:last-child {
-      border-bottom: none;
-    }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; color: #1e293b; padding: 60px 20px; text-align: center; margin: 0; }
+    .redirect-card { max-width: 480px; margin: 0 auto; background: white; padding: 32px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    h1 { color: #0b4f8a; margin-bottom: 12px; font-size: 1.4rem; }
+    p { color: #64748b; line-height: 1.6; margin-bottom: 16px; }
+    a { color: #0b4f8a; font-weight: 700; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📊 Short-Term Trade Scanner</h1>
-
-    <label>📉 RSI Threshold <span class="info-icon" onclick="showInfo('rsi')">ℹ️</span></label>
-    <select id="rsi_threshold">
-      <option value="30">RSI < 30 (Oversold)</option>
-      <option value="70">RSI > 70 (Overbought)</option>
-      <option value="50">RSI Around 50 (Neutral)</option>
-    </select>
-
-    <label>📊 Volume Spike Multiplier <span class="info-icon" onclick="showInfo('volume')">ℹ️</span></label>
-    <select id="volume_multiplier">
-      <option value="2">2x Average Volume</option>
-      <option value="3">3x Average Volume</option>
-      <option value="5">5x Average Volume</option>
-    </select>
-
-    <label>📈 Fast SMA Period <span class="info-icon" onclick="showInfo('sma_fast')">ℹ️</span></label>
-    <select id="sma_fast">
-      <option value="10">10-Day</option>
-      <option value="20" selected>20-Day</option>
-      <option value="30">30-Day</option>
-    </select>
-
-    <label>📉 Slow SMA Period <span class="info-icon" onclick="showInfo('sma_slow')">ℹ️</span></label>
-    <select id="sma_slow">
-      <option value="50" selected>50-Day</option>
-      <option value="100">100-Day</option>
-      <option value="200">200-Day</option>
-    </select>
-
-    <label>📈 Min % Daily Change <span class="info-icon" onclick="showInfo('pct_change')">ℹ️</span></label>
-    <select id="percent_change_min">
-      <option value="1">1%+</option>
-      <option value="2" selected>2%+</option>
-      <option value="3">3%+</option>
-      <option value="5">5%+</option>
-    </select>
-
-    <button onclick="runScan()">🔍 Scan Now</button>
-    <div id="spinner"><div></div></div>
-    <div class="result" id="result"></div>
+  <div class="redirect-card">
+    <h1>This Scanner Has Moved</h1>
+    <p>Every scan now lives on the <strong>Scanners</strong> page.</p>
+    <p>Redirecting you now…</p>
+    <p><a href="scanner.html?scan=swing_multi">Click here if you're not redirected automatically</a></p>
   </div>
-
-  <div class="info-popup" id="popup">
-    <h3 id="popup-title">Info</h3>
-    <p id="popup-body"></p>
-    <button onclick="document.getElementById('popup').style.display='none'">Got it</button>
-  </div>
-  <div style="text-align: center; margin-top: 30px;">
-    <a href="index.html" style="color: #1a3c5e; text-decoration: none; font-weight: bold;">
-      🔙 Go Back
-    </a>
-  </div>
-  <script>
-    function showInfo(topic) {
-      const popup = document.getElementById('popup');
-      const title = document.getElementById('popup-title');
-      const body = document.getElementById('popup-body');
-
-      const content = {
-        rsi: {
-          title: "What is RSI?",
-          text: "RSI (Relative Strength Index) measures momentum and identifies overbought (>70) or oversold (<30) conditions."
-        },
-        volume: {
-          title: "What is a Volume Spike?",
-          text: "Volume spikes indicate unusual activity, often seen before breakouts or sharp moves."
-        },
-        sma_fast: {
-          title: "What is Fast SMA?",
-          text: "Fast SMA tracks recent price trends (e.g., 10 or 20 days) and reacts quickly to changes."
-        },
-        sma_slow: {
-          title: "What is Slow SMA?",
-          text: "Slow SMA smooths long-term trends (e.g., 50, 100, 200 days) and confirms direction."
-        },
-        pct_change: {
-          title: "What is % Daily Change?",
-          text: "This filters stocks based on how much their price moved in the last trading day — a sign of momentum."
-        }
-      };
-
-      title.textContent = content[topic].title;
-      body.textContent = content[topic].text;
-      popup.style.display = 'block';
-    }
-
-    async function runScan() {
-      const resultEl = document.getElementById('result');
-      const spinnerEl = document.getElementById('spinner');
-
-      const payload = {
-        rsi_threshold: document.getElementById('rsi_threshold').value,
-        volume_multiplier: document.getElementById('volume_multiplier').value,
-        sma_fast: document.getElementById('sma_fast').value,
-        sma_slow: document.getElementById('sma_slow').value,
-        percent_change_min: document.getElementById('percent_change_min').value
-      };
-
-      resultEl.innerHTML = "";
-      spinnerEl.style.display = 'block';
-
-      try {
-        const response = await fetch('https://your-n8n-domain/webhook/trade-scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload)
-        });
-        const data = await response.json();
-        spinnerEl.style.display = 'none';
-
-        if (!Array.isArray(data) || data.length === 0) {
-          resultEl.innerHTML = "No high-probability trade setups found today.";
-          return;
-        }
-
-        resultEl.innerHTML = data.map(stock => `
-          <div class="stock-box">
-            <strong>${stock.ticker}</strong> — ${stock.signal}<br>
-            Entry: $${stock.entry_price}, Exit: $${stock.exit_price}<br>
-            <em>${stock.notes}</em>
-          </div>
-        `).join('');
-
-      } catch (err) {
-        spinnerEl.style.display = 'none';
-        resultEl.innerHTML = "Something went wrong. Please try again later.";
-        console.error(err);
-      }
-    }
-  </script>
 </body>
 </html>

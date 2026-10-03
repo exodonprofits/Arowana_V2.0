@@ -421,6 +421,34 @@ for (const [from, to] of [['advanced-trading-tools', 'tools'], ['feature_body', 
   await p.context().close();
 }
 
+// P2. ATD-009 phase 2: retired scanner pages open their scan in scanner.html.
+for (const [from, id, label] of [['bb-snapback', 'bb_snapback', 'Bollinger Band Snapback'], ['gap-and-go', 'gap_scan', null],
+  ['momentum-hunter-complete', 'my_movers', 'My Movers'], ['volume-spike', 'rvol_surge', 'Relative Volume Surge'], ['trade-scanner', 'swing_multi', 'Swing Multi-Signal']]) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?tickers=AAPL#x'); await p.waitForTimeout(1200);
+  const u = new URL(p.url());
+  const r = await p.evaluate(() => ({ title: document.getElementById('runTitle').textContent,
+    active: (document.querySelector('.scan-item.active') || {}).dataset?.id || null,
+    filters: document.querySelectorAll('#filterGrid .filter-field').length }));
+  ok(`P2 ${from} -> scanner ?scan=${id}`, u.pathname === '/scanner.html' && u.searchParams.get('scan') === id && u.searchParams.get('tickers') === 'AAPL' && u.hash === '#x', p.url());
+  ok(`P2 ${from} opens ${id}`, (!label || r.title === label) && (id === 'rvol_surge' || r.filters > 0) && (r.active === id || r.active === null), JSON.stringify(r));
+  ok(`P2 ${from} no page errors`, p._errors.length === 0, p._errors.join('; '));
+  await p.context().close();
+}
+for (const [from, path, scan] of [['my-rules-short', '/my-rules.html', null], ['risk-calculator', '/position-sizer.html', null],
+  ['position-sizer_fresh', '/position-sizer.html', null], ['dividend-screener', '/scanner.html', 'dividend_safety']]) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?a=1#h'); await p.waitForTimeout(1000);
+  const u = new URL(p.url());
+  ok(`P2 ${from} -> ${path}${scan ? '?scan=' + scan : ''} keeps query + hash`, u.pathname === path && u.searchParams.get('a') === '1' && u.hash === '#h' && (!scan || u.searchParams.get('scan') === scan), p.url());
+  await p.context().close();
+}
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/scanner.html?scan=nope'); await p.waitForTimeout(1000);
+  const anyActive = await p.evaluate(() => !!document.querySelector('.scan-item.active'));
+  ok('P2 unknown ?scan= ignored', p._errors.length === 0 && !anyActive);
+  await p.context().close(); }
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {

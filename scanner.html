@@ -1749,6 +1749,13 @@ html,body{font-size:13px!important;line-height:1.45!important}
   function boot() {
     renderSources();
     renderList();
+
+    /* ?scan=<id> opens one scan directly. The retired standalone scanner pages
+       redirect here with it (ATD-009); an unknown id is ignored. */
+    var wanted = null;
+    try { wanted = new URLSearchParams(location.search).get('scan'); } catch (_) {}
+    if (wanted && window.AP_SCANNERS &&
+        Object.prototype.hasOwnProperty.call(AP_SCANNERS.registry, wanted)) select(wanted);
     $('runBtn').addEventListener('click', runActive);
 
     /* Re-render on filter change. renderList() re-reads the combo, so this is
