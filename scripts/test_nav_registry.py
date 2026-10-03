@@ -202,6 +202,37 @@ class NavRegistryTests(unittest.TestCase):
             for name in targets:
                 self.assertNotIn('href="%s' % name, html, "%s links to retired %s" % (page.name, name))
 
+    def test_retired_scanners_redirect_to_registered_scans(self):
+        # ATD-009 phase 2, group F: each standalone scanner page redirects to
+        # scanner.html?scan=<id>, and <id> must be a registered scan.
+        defs = (ROOT / "js" / "scanner-defs.js").read_text(encoding="utf-8")
+        registered = set(re.findall(r"id: '([a-z_]+)',\s*label:", defs))
+        registered |= set(re.findall(r"pending\('([a-z_]+)'", defs))
+        stub = re.compile(r"window\.location\.replace\('scanner\.html\?scan=([a-z_]+)' \+ extra \+ window\.location\.hash\)")
+        pages = [p for p in ROOT.glob("*.html") if "ATD-009 phase 2: retired standalone scanner" in
+                 p.read_text(encoding="utf-8", errors="replace")]
+        self.assertEqual(len(pages), 26, sorted(p.name for p in pages))
+        for page in pages:
+            html = page.read_text(encoding="utf-8")
+            m = stub.search(html)
+            self.assertIsNotNone(m, page.name)
+            self.assertIn(m.group(1), registered, page.name)
+            self.assertIn('content="0; url=scanner.html?scan=%s"' % m.group(1), html, page.name)
+            self.assertLess(len(html), 4000, page.name)
+        scanner = (ROOT / "scanner.html").read_text(encoding="utf-8")
+        self.assertIn("new URLSearchParams(location.search).get('scan')", scanner)
+
+    def test_merged_pages_redirect(self):
+        # ATD-009 phase 2: pages whose function the target already covers.
+        targets = {"risk-calculator.html": "position-sizer.html", "position-sizer_fresh.html": "position-sizer.html",
+                   "my-rules-short.html": "my-rules.html", "dividend-screener.html": "scanner.html?scan=dividend_safety"}
+        for name, target in targets.items():
+            html = (ROOT / name).read_text(encoding="utf-8")
+            self.assertIn("var target = '%s';" % target, html, name)
+            self.assertIn('content="0; url=%s"' % target, html, name)
+            self.assertLess(len(html), 4000, name)
+        self.assertIn("pending('dividend_safety'", (ROOT / "js" / "scanner-defs.js").read_text(encoding="utf-8"))
+
     def test_no_page_loads_auth_guard_rail(self):
         # js/auth-guard.js holds only an outdated rail copy (no auth logic);
         # loaded deferred it re-rendered the rail after the page's own.
