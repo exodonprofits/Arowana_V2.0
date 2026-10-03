@@ -6275,8 +6275,14 @@ html,body{font-size:13px!important;line-height:1.45!important}
         /* Holdings is the working surface, so a fresh visit lands there. This
            used to depend on experience mode; with one experience, everyone
            gets the working view. */
-        const target = (remembered && validTabs.includes(remembered))
-          ? remembered : 'holdings';
+        /* ?tab= wins over the remembered tab, so a link to a specific tab
+           (the nav's Performance entry, a bookmark, a shared link) opens
+           there. Unknown values are ignored. Same rule as options-hub.html. */
+        let requested = null;
+        try { requested = new URLSearchParams(location.search).get('tab'); } catch (_) {}
+        const target = (requested && validTabs.includes(requested))
+          ? requested
+          : ((remembered && validTabs.includes(remembered)) ? remembered : 'holdings');
 
         if (target !== 'overview' && typeof switchTab === 'function') {
           setTimeout(() => switchTab(target), 0);
