@@ -1,5 +1,6 @@
-// ATD-008 slice 1 browser checks for the opt-in navigation on tools.html
-// and the portfolio-command.html ?tab= fix.
+// ATD-008 browser checks: registry-driven navigation (slice 1 + wave 2,
+// default-on with ap_nav_v2 = "0" opt-out) and the portfolio-command.html
+// ?tab= fix.
 //
 // Not run in CI. Needs a separately installed Playwright (decision D11: no
 // package manager in this repository) and a static server on the repo root:
@@ -21,7 +22,9 @@ const browser = await chromium.launch();
 async function newPage(opts, flag) {
   const ctx = await browser.newContext(opts);
   await ctx.route('**/*', r => new URL(r.request().url()).hostname === '127.0.0.1' ? r.continue() : r.abort());
-  await ctx.addInitScript(f => { try { if (f) localStorage.setItem('ap_nav_v2','1'); } catch(e){} }, flag);
+  // flag: '1' / '0' sets ap_nav_v2; true means '1', false/null leaves it unset.
+  const pref = flag === true ? '1' : (flag === false ? null : flag);
+  await ctx.addInitScript(f => { try { if (f !== null) localStorage.setItem('ap_nav_v2', f); localStorage.setItem('gs_auth_user_v1', JSON.stringify({ id: 'synthetic-test', email: 'synthetic@example.invalid' })); } catch(e){} }, pref);
   const page = await ctx.newPage();
   page._errors = [];
   page.on('pageerror', e => page._errors.push('pageerror: ' + e.message));
@@ -31,12 +34,12 @@ async function newPage(opts, flag) {
 const desktop = { viewport: { width: 1280, height: 900 } };
 const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch: true };
 
-// A. Default (no opt-in): old rail unchanged
-{ const p = await newPage(desktop, false);
+// A. Opt-out (ap_nav_v2 = "0"): old rail unchanged
+{ const p = await newPage(desktop, '0');
   await p.goto(BASE + '/tools.html'); await p.waitForTimeout(600);
-  ok('A default loads nav-rail.js', await p.evaluate(() => !!document.querySelector('script[src="./js/nav-rail.js"]')));
-  ok('A default renders old rail groups', (await p.locator('#railMount .rail-group').count()) === 5);
-  ok('A default has no v2 markup', (await p.locator('.anv-mobile-bar, #anvMoreSheet').count()) === 0);
+  ok('A opt-out loads nav-rail.js', await p.evaluate(() => !!document.querySelector('script[src="./js/nav-rail.js"]')));
+  ok('A opt-out renders old rail groups', (await p.locator('#railMount .rail-group').count()) === 5);
+  ok('A opt-out has no v2 markup', (await p.locator('.anv-mobile-bar, #anvMoreSheet').count()) === 0);
   await p.context().close(); }
 
 // B. Desktop v2
@@ -138,6 +141,43 @@ for (const width of [320, 375, 768]) {
     ok('C/E no nav errors', p._errors.length === 0, p._errors.join('; '));
   }
   await p.context().close();
+}
+
+// W. Wave 2: every migrated page, default (no preference) vs opt-out.
+const MIGRATED = ['tools','ai-moat-finder','atr-stop-planner','credit-spread-planner','dcf-analyzer','discipline-scorecard',
+  'dividend-tracker','expectancy-matrix','kelly-calculator','money-flow-alert','options-analyzer','r-multiple','risk-comfort',
+  'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis'];
+const EXPECT_CURRENT = { 'tools': 'research-tools', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
+  'strategy-backtesting': 'research-backtesting', 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': 'research-technical' };
+async function survey(name, opts, flag) {
+  const p = await newPage(opts, flag);
+  await p.goto(BASE + '/' + name + '.html'); await p.waitForTimeout(900);
+  const r = await p.evaluate(() => ({
+    primaries: [...document.querySelectorAll('#railMount nav.rail-nav > .rail-group .rail-item-row > .rail-item .rail-item-label')].map(n => n.textContent),
+    oldGroups: document.querySelectorAll('#railMount .rail-group').length,
+    v2: !!document.querySelector('.anv-mobile-bar'), oldBar: !!document.querySelector('.mobile-bottom-nav'),
+    current: [...new Set([...document.querySelectorAll('[aria-current="page"]')].map(n => n.getAttribute('data-nav-id')))],
+    bar: [...document.querySelectorAll('.anv-mobile-bar .anv-mbn-label')].map(n => n.textContent).join(','),
+    overflow: document.documentElement.scrollWidth - window.innerWidth,
+    hamburger: (() => { const t = document.getElementById('sidebarTrigger'); return !!(t && t.offsetParent); })(),
+  }));
+  r.errors = p._errors.slice();
+  await p.context().close();
+  return r;
+}
+for (const name of MIGRATED) {
+  const d = await survey(name, desktop, null);
+  ok(`W ${name} default: six primaries`, d.primaries.join('|') === 'Trading Command|Research|Strategy Desks|Portfolio & Risk|Watchlists|Journal & Review', d.primaries.join('|'));
+  const want = EXPECT_CURRENT[name] || null;
+  ok(`W ${name} current = ${want}`, (d.current[0] || null) === want && d.current.length <= 1, JSON.stringify(d.current));
+  const m = await survey(name, mobile, null);
+  const mo = await survey(name, mobile, '0');
+  ok(`W ${name} mobile bar`, m.v2 && !m.oldBar && m.bar === 'Command,Watchlists,Portfolio,Journal,More', m.bar);
+  ok(`W ${name} hamburger hidden`, !m.hamburger);
+  ok(`W ${name} no new horizontal overflow`, m.overflow <= Math.max(1, mo.overflow), `new ${m.overflow} / old ${mo.overflow}`);
+  const newErrs = m.errors.filter(e => !mo.errors.includes(e));
+  ok(`W ${name} no new page errors`, newErrs.length === 0, newErrs.join('; '));
+  ok(`W ${name} opt-out keeps old rail`, !mo.v2 && mo.oldBar && mo.oldGroups === 5);
 }
 
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's

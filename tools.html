@@ -4956,24 +4956,6 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
 })();
 </script>
 
-<!-- ATD-008 slice 1: the new registry-driven navigation is opt-in.
-     localStorage "ap_nav_v2" = "1" loads js/arowana-nav-registry.js and
-     js/arowana-nav.js; anything else keeps the existing js/nav-rail.js.
-     Scripts are inserted with async=false so they run in order. -->
-<script>
-(function () {
-  var useV2 = false;
-  try { useV2 = window.localStorage.getItem('ap_nav_v2') === '1'; } catch (_) {}
-  var files = useV2
-    ? ['./js/arowana-nav-registry.js?v=20261003a', './js/arowana-nav.js?v=20261003a']
-    : ['./js/nav-rail.js'];
-  files.forEach(function (src) {
-    var s = document.createElement('script');
-    s.src = src;
-    s.async = false;
-    document.body.appendChild(s);
-  });
-})();
-</script>
+<script src="./js/nav-loader.js?v=20261003b"></script>
 </body>
 </html>

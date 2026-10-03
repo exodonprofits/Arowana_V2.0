@@ -128,14 +128,24 @@ class NavRegistryTests(unittest.TestCase):
                 for value in rule.get("hash", []) or []:
                     self.assertTrue(value is None or SAFE_VALUE.match(value), e["id"])
 
-    def test_tools_page_opt_in_keeps_legacy_rail_default(self):
-        html = (ROOT / "tools.html").read_text(encoding="utf-8")
-        self.assertIn("localStorage.getItem('ap_nav_v2') === '1'", html)
-        self.assertIn("./js/nav-rail.js", html)
-        registry_at = html.index("./js/arowana-nav-registry.js")
-        renderer_at = html.index("./js/arowana-nav.js")
-        self.assertLess(registry_at, renderer_at, "registry must load before the renderer")
+    def test_loader_order_and_opt_out(self):
+        js = (ROOT / "js" / "nav-loader.js").read_text(encoding="utf-8")
+        self.assertIn("./js/nav-rail.js", js, "opt-out must still reach the old rail")
+        self.assertIn("pref !== '0'", js, "ap_nav_v2 = 0 must opt out")
+        self.assertLess(js.index("./js/arowana-nav-registry.js"), js.index("./js/arowana-nav.js"),
+                        "registry must load before the renderer")
 
+    def test_migrated_pages_use_only_the_loader(self):
+        migrated = sorted(p.name for p in ROOT.glob("*.html")
+                          if 'src="./js/nav-loader.js' in p.read_text(encoding="utf-8", errors="replace"))
+        self.assertIn("tools.html", migrated)
+        self.assertEqual(len(migrated), 19, migrated)
+        direct = re.compile(r'<script[^>]+src="[^"]*(nav-rail|arowana-nav[a-z-]*)\.js')
+        for name in migrated:
+            html = (ROOT / name).read_text(encoding="utf-8", errors="replace")
+            self.assertEqual(html.count('src="./js/nav-loader.js'), 1, name)
+            self.assertIsNone(direct.search(html), "%s loads a nav script directly" % name)
+            self.assertIn('id="railMount"', html, name)
 
 if __name__ == "__main__":
     unittest.main()
