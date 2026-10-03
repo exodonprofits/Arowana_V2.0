@@ -229,7 +229,9 @@ class NavRegistryTests(unittest.TestCase):
                    "my-rules-short.html": "my-rules.html", "dividend-screener.html": "scanner.html?scan=dividend_safety",
                    "automated-trading-plan.html": "trade-plan-builder.html", "news-trading.html": "trade-plan-builder.html",
                    "stock-checker.html": "intrinsic-value.html",
-                   "my-rules-long.html": "my-rules.html?tab=longterm", "discipline-checklist.html": "my-rules.html?tab=habits"}
+                   "my-rules-long.html": "my-rules.html?tab=longterm", "discipline-checklist.html": "my-rules.html?tab=habits",
+                   "ai-valuation.html": "intrinsic-value.html", "intrinsic-value-rsi.html": "intrinsic-value.html",
+                   "long-term-intrinsic-value.html": "intrinsic-value.html"}
         for name, target in targets.items():
             html = (ROOT / name).read_text(encoding="utf-8")
             self.assertIn("var target = '%s';" % target, html, name)
@@ -240,6 +242,10 @@ class NavRegistryTests(unittest.TestCase):
         rules = (ROOT / "my-rules.html").read_text(encoding="utf-8")
         for key in ("my_rules_longterm_v1", "my_rules_longterm_check", "gs_discipline_v1", "my_rules_v2"):
             self.assertIn(key, rules)
+        # intrinsic-value.html took over the three valuation pages' models.
+        iv = (ROOT / "intrinsic-value.html").read_text(encoding="utf-8")
+        for fn in ("computeGrahamNumber", "computeResidualIncome", "computeEPV", "computePEMultiple", "computeFcfDcf"):
+            self.assertIn("function %s(" % fn, iv)
 
     def test_no_page_loads_auth_guard_rail(self):
         # js/auth-guard.js holds only an outdated rail copy (no auth logic);

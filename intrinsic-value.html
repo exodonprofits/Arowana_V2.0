@@ -5042,6 +5042,12 @@ select.input{cursor:pointer}
 .scen-foot.warn{color:#b45309}
 .scen-ref-label{font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin:.4rem 0 .45rem}
 .scen-ref-label span{font-weight:500;text-transform:none;letter-spacing:0}
+.mx-card>summary{cursor:pointer;list-style:none;display:flex;align-items:center;justify-content:space-between;gap:.5rem;font-weight:700;font-size:1rem}
+.mx-card>summary::-webkit-details-marker{display:none}
+.mx-card>summary::after{content:'\25BE';color:var(--muted);transition:transform .15s}
+.mx-card[open]>summary::after{transform:rotate(180deg)}
+.mx-sub{font-size:.72rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:#64748b;margin:.9rem 0 .4rem}
+.compare-card .mx-why{font-size:.68rem;color:var(--muted);margin-top:4px;line-height:1.35}
 .eps-chips{display:flex;flex-wrap:wrap;gap:5px;margin-top:6px}
 .eps-chips:empty{display:none}
 /* Was `font:600 .68rem/1 inherit` — `inherit` is not allowed inside the
@@ -5165,7 +5171,7 @@ select.input{cursor:pointer}
   .compare-card .method-name{grid-column:1;grid-row:1}
   .compare-card .iv-val{grid-column:2;grid-row:1;font-size:1rem;margin:0}
   .compare-card .upside-val{grid-column:3;grid-row:1;white-space:nowrap}
-  .compare-card .mos-val,.compare-card #dcfTerminalShare{grid-column:1/-1;text-align:left;margin-top:.15rem}
+  .compare-card .mos-val,.compare-card #dcfTerminalShare,.compare-card .mx-why{grid-column:1/-1;text-align:left;margin-top:.15rem}
 }
 
 /* A very narrow results card (≈235px in the 1024px layout) cannot fit name,
@@ -5478,6 +5484,81 @@ select.input{cursor:pointer}
         </div>
       </div>
 
+      <!-- CARD: More models (ATD-009). Brought over from ai-valuation,
+           intrinsic-value-rsi and long-term-intrinsic-value so those pages could
+           retire. Reference only, like Graham and DDM: none of them feeds the
+           bear/base/bull headline. EPS, discount rate and years come from the
+           DCF inputs above. -->
+      <details class="card mx-card" id="cardMore">
+        <summary><span>➕ More models <span class="hint" style="font-weight:500">Graham Number · Residual Income · EPV · P/E · FCF DCF</span></span></summary>
+        <div class="hint" style="margin:.5rem 0 0">Reference only. EPS, discount rate and projection years come from the DCF inputs above; Load fills book value, ROE and payout when the provider has them.</div>
+
+        <div class="mx-sub">Balance sheet &amp; returns</div>
+        <div class="row three keep">
+          <div>
+            <label class="field-label" for="mxBvps">Book value / share ($)</label>
+            <input id="mxBvps" class="input" type="number" step="0.01" placeholder="e.g. 22.80">
+          </div>
+          <div>
+            <label class="field-label" for="mxRoe">Return on equity (%)</label>
+            <input id="mxRoe" class="input" type="number" step="0.1" placeholder="Blank = EPS ÷ book">
+          </div>
+          <div>
+            <label class="field-label" for="mxPayout">Payout ratio (%)</label>
+            <input id="mxPayout" class="input" type="number" step="1" min="0" max="100" placeholder="e.g. 25">
+          </div>
+        </div>
+
+        <div class="mx-sub">Residual income, EPV and P/E</div>
+        <div class="row three keep">
+          <div>
+            <label class="field-label" for="mxPhi" title="How much of the final year's excess return survives after the projection">Persistence φ (0–1)</label>
+            <input id="mxPhi" class="input" type="number" step="0.05" min="0" max="1" value="0.5">
+            <div class="hint">0 = excess returns stop; 1 = they last forever</div>
+          </div>
+          <div>
+            <label class="field-label" for="mxHair">EPV earnings haircut (%)</label>
+            <input id="mxHair" class="input" type="number" step="1" min="0" max="90" value="0">
+            <div class="hint">Trim one-offs from EPS</div>
+          </div>
+          <div>
+            <label class="field-label" for="mxPe">Peer / sector P/E (×)</label>
+            <input id="mxPe" class="input" type="number" step="0.5" value="15">
+          </div>
+        </div>
+
+        <div class="mx-sub">Free-cash-flow DCF (whole company)</div>
+        <div class="row three keep">
+          <div>
+            <label class="field-label" for="mxFcf">Free cash flow ($M)</label>
+            <input id="mxFcf" class="input" type="number" step="1" placeholder="e.g. 9500">
+          </div>
+          <div>
+            <label class="field-label" for="mxShares">Shares outstanding (M)</label>
+            <input id="mxShares" class="input" type="number" step="1" placeholder="e.g. 1250">
+          </div>
+          <div>
+            <label class="field-label" for="mxNetDebt">Net debt ($M)</label>
+            <input id="mxNetDebt" class="input" type="number" step="1" value="0">
+            <div class="hint">Debt minus cash; negative for net cash</div>
+          </div>
+          <div>
+            <label class="field-label" for="mxG1">Growth, year 1 (%)</label>
+            <input id="mxG1" class="input" type="number" step="0.1" placeholder="e.g. 10">
+          </div>
+          <div>
+            <label class="field-label" for="mxG2">Growth, final year (%)</label>
+            <input id="mxG2" class="input" type="number" step="0.1" placeholder="e.g. 4">
+            <div class="hint">Fades in a straight line</div>
+          </div>
+          <div>
+            <label class="field-label" for="mxGt">Terminal growth (%)</label>
+            <input id="mxGt" class="input" type="number" step="0.1" value="2.5">
+            <div class="hint">Must be below the discount rate</div>
+          </div>
+        </div>
+      </details>
+
       <!-- CARD: Margin of Safety + Calculate -->
       <div class="card" id="cardMOS">
         <!-- "Calculate All Methods" used to live here. Results now update as
@@ -5586,6 +5667,15 @@ select.input{cursor:pointer}
             <div class="mos-val" id="ddmMOS">MOS buy: —</div>
             <div class="upside-val" id="ddmUpside">—</div>
           </div>
+        </div>
+
+        <div class="scen-ref-label" id="mxRefLabel">More reference models <span>— open “More models” to adjust</span></div>
+        <div class="compare-grid" id="compareGridMore">
+          <div class="compare-card" id="cGN"><div class="method-name">Graham Number</div><div class="iv-val" id="gnIV">—</div><div class="mos-val" id="gnMOS">MOS buy: —</div><div class="upside-val" id="gnUpside">—</div><div class="mx-why" id="gnWhy"></div></div>
+          <div class="compare-card" id="cRI"><div class="method-name">Residual Income</div><div class="iv-val" id="riIV">—</div><div class="mos-val" id="riMOS">MOS buy: —</div><div class="upside-val" id="riUpside">—</div><div class="mx-why" id="riWhy"></div></div>
+          <div class="compare-card" id="cEPV"><div class="method-name" title="Earnings Power Value">EPV</div><div class="iv-val" id="epvIV">—</div><div class="mos-val" id="epvMOS">MOS buy: —</div><div class="upside-val" id="epvUpside">—</div><div class="mx-why" id="epvWhy"></div></div>
+          <div class="compare-card" id="cPE"><div class="method-name">P/E Multiple</div><div class="iv-val" id="peIV">—</div><div class="mos-val" id="peMOS">MOS buy: —</div><div class="upside-val" id="peUpside">—</div><div class="mx-why" id="peWhy"></div></div>
+          <div class="compare-card" id="cFCF"><div class="method-name">FCF DCF</div><div class="iv-val" id="fcfIV">—</div><div class="mos-val" id="fcfMOS">MOS buy: —</div><div class="upside-val" id="fcfUpside">—</div><div class="mx-why" id="fcfWhy"></div></div>
         </div>
 
         <!-- Legacy single-price row, hidden. Kept only because export, reset
@@ -5851,6 +5941,96 @@ function computeDCF(eps,growth,years,discount,terminal){
 function computeGraham(eps,g,y){ return eps*(8.5+2*g)*(4.4/y); }
 function computeDDM(div,g,r){ const d1=div*(1+g); return d1/(r-g); }
 
+/* ── More models (ATD-009) ─────────────────────────────────────────────
+   Ported from the retired valuation pages; formulas unchanged except where
+   noted. Each returns {v} or {v:NaN, why} so a card can say what is missing
+   instead of showing a bare dash. */
+function computeGrahamNumber(eps,bvps){
+  if(!(eps>0)) return {v:NaN,why:'Needs positive EPS.'};
+  if(!(bvps>0)) return {v:NaN,why:'Needs book value per share.'};
+  return {v:Math.sqrt(22.5*eps*bvps)};
+}
+/* Multi-stage residual income (long-term-intrinsic-value): book value plus
+   the discounted excess return on equity for N years, plus a fraction φ of
+   the final year's excess return carried on as a perpetuity. */
+function computeResidualIncome(bvps,roe,r,payout,n,phi){
+  if(!(bvps>0)) return {v:NaN,why:'Needs book value per share.'};
+  if(!isFinite(roe)) return {v:NaN,why:'Needs ROE, or EPS and book value to work it out.'};
+  if(!(r>0)) return {v:NaN,why:'Needs a positive discount rate.'};
+  n=Math.max(1,Math.floor(n||10)); phi=Math.max(0,Math.min(1,isFinite(phi)?phi:0));
+  const retain=1-Math.max(0,Math.min(1,payout||0));
+  let b=bvps,pv=0,last=0;
+  for(let t=1;t<=n;t++){ last=(roe-r)*b; pv+=last/Math.pow(1+r,t); b+=roe*b*retain; }
+  return {v:bvps+pv+(last*phi/r)/Math.pow(1+r,n)};
+}
+/* Earnings power value: what today's earnings are worth with no growth at
+   all. intrinsic-value-rsi also offered EBITDA × (1 − tax) ÷ r as a fallback;
+   EBITDA is not earnings (it ignores depreciation and interest), so that
+   variant is not carried over. */
+function computeEPV(eps,haircut,r){
+  if(!(eps>0)) return {v:NaN,why:'Needs positive EPS.'};
+  if(!(r>0)) return {v:NaN,why:'Needs a positive discount rate.'};
+  return {v:eps*(1-haircut)/r};
+}
+function computePEMultiple(eps,pe){
+  if(!(eps>0)) return {v:NaN,why:'Needs positive EPS.'};
+  if(!(pe>0)) return {v:NaN,why:'Needs a peer or sector P/E.'};
+  return {v:eps*pe};
+}
+/* Two-stage free-cash-flow DCF for the whole company: growth fades in a
+   straight line from g1 to g2 over N years, then a Gordon terminal value at
+   gt; net debt comes off enterprise value before dividing by shares. */
+function computeFcfDcf(fcf,shares,netDebt,g1,g2,gt,r,n){
+  if(!(fcf>0)) return {v:NaN,why:'Needs free cash flow ($M).'};
+  if(!(shares>0)) return {v:NaN,why:'Needs shares outstanding (M).'};
+  if(!(r>gt)) return {v:NaN,why:'Terminal growth must be below the discount rate.'};
+  n=Math.max(1,Math.floor(n||10));
+  let f=fcf,pv=0;
+  for(let t=1;t<=n;t++){
+    const g=n===1?g1:g1+(g2-g1)*((t-1)/(n-1));
+    f*=1+g; pv+=f/Math.pow(1+r,t);
+  }
+  const pvTV=(f*(1+gt)/(r-gt))/Math.pow(1+r,n);
+  const ev=pv+pvTV;
+  return {v:(ev-(netDebt||0))/shares, tvShare:ev>0?pvTV/ev:NaN};
+}
+function ivMoreModels(price,mos,eps,disc,yrs){
+  const num=id=>{const e=$id(id); const v=e?parseFloat(e.value):NaN; return isFinite(v)?v:NaN;};
+  const bvps=num('mxBvps');
+  let roe=num('mxRoe'); roe=isFinite(roe)?roe/100:(eps>0&&bvps>0?eps/bvps:NaN);
+  const payout=isFinite(num('mxPayout'))?num('mxPayout')/100:0;
+  const phi=isFinite(num('mxPhi'))?num('mxPhi'):0.5;
+  const hair=isFinite(num('mxHair'))?Math.max(0,Math.min(0.9,num('mxHair')/100)):0;
+  const pct=id=>isFinite(num(id))?num(id)/100:NaN;
+  const g1=pct('mxG1'), g2=isFinite(pct('mxG2'))?pct('mxG2'):g1;
+  const fcf=computeFcfDcf(num('mxFcf'),num('mxShares'),isFinite(num('mxNetDebt'))?num('mxNetDebt'):0,
+    isFinite(g1)?g1:0,isFinite(g2)?g2:0,isFinite(pct('mxGt'))?pct('mxGt'):0.025,disc,yrs);
+  const out={
+    gn:computeGrahamNumber(eps,bvps),
+    ri:computeResidualIncome(bvps,roe,disc,payout,yrs,phi),
+    epv:computeEPV(eps,hair,disc),
+    pe:computePEMultiple(eps,num('mxPe')),
+    fcf:fcf
+  };
+  if(isFinite(fcf.v)&&isFinite(fcf.tvShare)) fcf.note=Math.round(fcf.tvShare*100)+'% of this value is the terminal value';
+  Object.keys(out).forEach(k=>{
+    const r=out[k];
+    /* fmt$ prints the absolute value, so a negative result is named here
+       rather than shown as a positive price. */
+    if(isFinite(r.v)&&r.v<=0){ r.why='Comes out at or below zero on these inputs.'; r.v=NaN; }
+    const iv=r.v;
+    const mosPrice=isFinite(iv)&&iv>0?iv*(1-mos):NaN;
+    const up=isFinite(iv)&&price>0?(iv/price-1)*100:NaN;
+    $id(k+'IV').textContent=isFinite(iv)?fmt$(iv):'—';
+    $id(k+'MOS').textContent='MOS buy: '+(isFinite(mosPrice)?fmt$(mosPrice):'\u2014');
+    const upEl=$id(k+'Upside');
+    upEl.textContent=fmtPct(up);
+    upEl.className='upside-val '+(isFinite(up)?(up>=30?'up':up<=-20?'down':'flat'):'');
+    $id(k+'Why').textContent=isFinite(iv)?(r.note||''):(r.why||'');
+  });
+  return out;
+}
+
 /* Where the DCF value actually comes from.
    ----------------------------------------------------------------------
    computeDCF adds two very different things: the discounted earnings of the
@@ -5901,7 +6081,8 @@ function impliedGrowth(target,eps,years,discount,terminal){
    results were out of date. One rule now: everything is live. */
 var IV_INPUTS=['ticker','price','ivStrike','epsType','eps','growth','years','discount','terminalMultiple',
   'epsG','growthG','yieldG','dividend','divGrowth','discDDM','marginOfSafety',
-  'scBearG','scBearM','scBearD','scBullG','scBullM','scBullD'];
+  'scBearG','scBearM','scBearD','scBullG','scBullM','scBullD',
+  'mxBvps','mxRoe','mxPayout','mxPhi','mxHair','mxPe','mxFcf','mxShares','mxNetDebt','mxG1','mxG2','mxGt'];
 
 function ivSnapshot(){
   const o={};
@@ -6245,6 +6426,7 @@ function onCalculate(){
   updateCard('cDCF','dcfIV','dcfMOS','dcfUpside',dcfIV,price,mos,'DCF');
   updateCard('cGraham','grahamIV','grahamMOS','grahamUpside',grahamIV,price,mos,'Graham');
   updateCard('cDDM','ddmIV','ddmMOS','ddmUpside',ddmIV,price,mos,'DDM');
+  ivMoreModels(price,mos,eps,disc,yrs);
 
   const tsEl=$id('dcfTerminalShare');
   if(tsEl){
@@ -6722,6 +6904,11 @@ function exportResult(){
     `DCF Intrinsic Value:    ${$id('dcfIV').textContent}`,
     `Graham Intrinsic Value: ${$id('grahamIV').textContent}`,
     `DDM Intrinsic Value:    ${$id('ddmIV').textContent}`,
+    `Graham Number:          ${$id('gnIV').textContent}`,
+    `Residual Income:        ${$id('riIV').textContent}`,
+    `Earnings Power Value:   ${$id('epvIV').textContent}`,
+    `P/E Multiple:           ${$id('peIV').textContent}`,
+    `FCF DCF:                ${$id('fcfIV').textContent}`,
     '',
     `Bear case:              ${$id('scBearVal').textContent}  (${$id('scBearUp').textContent})`,
     `Base case:              ${$id('scBaseVal').textContent}  (${$id('scBaseUp').textContent})`,
@@ -6733,6 +6920,8 @@ function exportResult(){
     `  EPS/FCF: ${$id('eps').value}  Growth: ${$id('growth').value}%  Discount: ${$id('discount').value}%  Years: ${$id('years').value}  Terminal: ${$id('terminalMultiple').value}x`,
     `  Graham EPS: ${$id('epsG').value}  Growth: ${$id('growthG').value}%  Bond yield: ${$id('yieldG').value}%`,
     `  Dividend: ${$id('dividend').value}  Div growth: ${$id('divGrowth').value}%  Required return: ${$id('discDDM').value}%`,
+    `  Book value/share: ${$id('mxBvps').value}  ROE: ${$id('mxRoe').value}%  Payout: ${$id('mxPayout').value}%  Persistence: ${$id('mxPhi').value}  EPV haircut: ${$id('mxHair').value}%  Peer P/E: ${$id('mxPe').value}x`,
+    `  FCF: $${$id('mxFcf').value}M  Shares: ${$id('mxShares').value}M  Net debt: $${$id('mxNetDebt').value}M  Growth: ${$id('mxG1').value}% to ${$id('mxG2').value}%  Terminal: ${$id('mxGt').value}%`,
     `  Margin of Safety: ${$id('marginOfSafety').value}%`,
     '',
     'Generated by Arowana Profits — arowanaprofits.com',
@@ -6761,6 +6950,7 @@ function loadDemo(){
   $id('divGrowth').value='5';
   $id('discDDM').value='8';
   $id('marginOfSafety').value='25';
+  ['mxBvps','mxRoe','mxPayout','mxFcf','mxShares','mxG1','mxG2'].forEach(id=>{const el=$id(id);if(el)el.value='';});   // demo covers the core models only
   window.__ivDataTicker='AAPL'; window.__ivFund=null;
   if(window.IV_SCEN){IV_SCEN.dirty=false;IV_SCEN.ticker='';}
   ivSetLoadLabel(); onCalculate(); ivRenderStale();
@@ -6771,6 +6961,9 @@ function onReset(){
   ['ticker','price','eps','growth','epsG','growthG','dividend','divGrowth'].forEach(id=>{const el=$id(id);if(el)el.value='';});
   $id('years').value='10';$id('discount').value='10';$id('terminalMultiple').value='15';
   $id('yieldG').value='5';$id('discDDM').value='8';$id('marginOfSafety').value='25';
+  ['mxBvps','mxRoe','mxPayout','mxFcf','mxShares','mxG1','mxG2'].forEach(id=>{const el=$id(id);if(el)el.value='';});
+  $id('mxNetDebt').value='0';$id('mxPhi').value='0.5';$id('mxHair').value='0';$id('mxPe').value='15';$id('mxGt').value='2.5';
+  ['gn','ri','epv','pe','fcf'].forEach(k=>{$id(k+'IV').textContent='—';$id(k+'MOS').textContent='MOS buy: —';$id(k+'Upside').textContent='—';$id(k+'Why').textContent='';});
   ['dcfIV','grahamIV','ddmIV','avgIV','avgMOS','avgUpside','verdict','scBearVal','scBaseVal','scBullVal','scBearUp','scBaseUp','scBullUp'].forEach(id=>{const el=$id(id);if(el)el.textContent='—';});
   ['scBearStory','scBaseStory','scBullStory','scenFoot'].forEach(id=>{const el=$id(id);if(el)el.textContent='';});
   (function(){const v=$id('scenVerdict');if(v){v.className='scen-verdict';v.textContent="Load a ticker's data to see its bear, base and bull cases.";}})();
@@ -7024,7 +7217,7 @@ async function fetchFinnhubFundamentals(sym){
      (discount rate, horizon, exit multiple, margin of safety, bond yield)
      are left alone, because they are judgements, not data. */
   window.__ivDivGrowthCapped = null;
-  ['price','eps','epsG','growth','growthG','dividend','divGrowth'].forEach(function(id){
+  ['price','eps','epsG','growth','growthG','dividend','divGrowth','mxBvps','mxRoe','mxPayout','mxFcf','mxShares','mxNetDebt'].forEach(function(id){
     var el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -7101,6 +7294,19 @@ async function fetchFinnhubFundamentals(sym){
     var dgEl = document.getElementById('divGrowth');
     if (dgEl) { dgEl.value = divGrowth; filled.push('divGrowth'); }
   }
+
+  /* ── More models: book value, ROE, payout (all per Finnhub's metric
+     names; ROE and payout come back as percentages). Only facts the provider
+     supplies are filled; cash-flow inputs stay yours to enter. */
+  (function(){
+    var put = function(id, v, dp){ var el=document.getElementById(id); if (el && isFinite(v)) { el.value = Number(v).toFixed(dp); filled.push(id); } };
+    var bv = m.bookValuePerShareQuarterly || m.bookValuePerShareAnnual;
+    if (bv > 0) put('mxBvps', bv, 2);
+    var roe = m.roeTTM || m.roeRfy;
+    if (isFinite(roe) && roe !== 0) put('mxRoe', roe, 1);
+    var po = m.payoutRatioTTM || m.payoutRatioAnnual;
+    if (isFinite(po) && po >= 0 && po <= 200) put('mxPayout', Math.min(100, po), 0);
+  })();
 
   /* ── Starting points and scale, for the scenarios ────────────────────
      Trailing EPS lags badly for a company whose earnings are moving fast:
@@ -7431,7 +7637,8 @@ if (typeof window.signOut !== 'function') {
       if (typeof onCalculate === 'function') onCalculate();
     };
     ['price','eps','growth','years','discount','terminalMultiple','epsG','growthG','yieldG',
-     'dividend','divGrowth','discDDM','marginOfSafety','ivStrike'].forEach(function (id) {
+     'dividend','divGrowth','discDDM','marginOfSafety','ivStrike',
+     'mxBvps','mxRoe','mxPayout','mxPhi','mxHair','mxPe','mxFcf','mxShares','mxNetDebt','mxG1','mxG2','mxGt'].forEach(function (id) {
       var el = document.getElementById(id);
       if (el) el.addEventListener('input', recalcSoon);
     });

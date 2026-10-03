@@ -493,6 +493,46 @@ for (const [from, path, scan] of [['my-rules-short', '/my-rules.html', null], ['
   ok('R my-rules habits tab: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1));
   await m.context().close(); }
 
+// V. ATD-009: valuation pages' models live in intrinsic-value.html's "More models".
+for (const from of ['ai-valuation', 'intrinsic-value-rsi', 'long-term-intrinsic-value']) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?t=1#h'); await p.waitForTimeout(800);
+  const u = new URL(p.url());
+  ok(`V ${from} -> intrinsic-value.html keeps query + hash`, u.pathname === '/intrinsic-value.html' && u.search === '?t=1' && u.hash === '#h', p.url());
+  await p.context().close();
+}
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/intrinsic-value.html'); await p.waitForTimeout(1500);
+  await p.fill('#price', '150'); await p.waitForTimeout(500);
+  const before = await p.evaluate(() => ['gn','ri','epv','pe','fcf'].map(k => document.getElementById(k + 'Why').textContent));
+  ok('V price only: each card says what it needs', before.every(t => t.length > 5), JSON.stringify(before));
+  await p.click('#cardMore > summary');
+  const set = async (id, v) => { await p.fill('#' + id, String(v)); };
+  await set('price', 150); await set('eps', 6); await set('growth', 8); await set('years', 10); await set('discount', 9); await set('terminalMultiple', 15);
+  await set('mxBvps', 24); await set('mxRoe', 20); await set('mxPayout', 25); await set('mxPhi', 0.5); await set('mxHair', 10); await set('mxPe', 18);
+  await set('mxFcf', 9500); await set('mxShares', 1250); await set('mxNetDebt', 3000); await set('mxG1', 10); await set('mxG2', 4); await set('mxGt', 2.5);
+  await p.waitForTimeout(600);
+  const got = await p.evaluate(() => ({ gn: gnIV.textContent, ri: riIV.textContent, epv: epvIV.textContent, pe: peIV.textContent, fcf: fcfIV.textContent,
+    fcfWhy: fcfWhy.textContent, peUp: peUpside.textContent,
+    exp: { gn: computeGrahamNumber(6, 24).v, ri: computeResidualIncome(24, 0.2, 0.09, 0.25, 10, 0.5).v, epv: 6 * 0.9 / 0.09,
+           fcf: computeFcfDcf(9500, 1250, 3000, 0.10, 0.04, 0.025, 0.09, 10).v } }));
+  const money = v => '$' + v.toFixed(2);
+  ok('V cards show the ported models', got.gn === money(got.exp.gn) && got.ri === money(got.exp.ri) && got.epv === money(got.exp.epv) &&
+     got.pe === '$108.00' && got.peUp === '-28.0%' && got.fcf === money(got.exp.fcf) && /terminal value/.test(got.fcfWhy), JSON.stringify(got));
+  await set('mxGt', 9.5); await p.waitForTimeout(500);
+  ok('V FCF DCF refuses terminal growth >= discount, with the reason', await p.evaluate(() => fcfIV.textContent === '—' && /below the discount rate/.test(fcfWhy.textContent)));
+  await set('mxNetDebt', 999999); await set('mxGt', 2.5); await p.waitForTimeout(500);
+  ok('V negative value is named, not shown as a positive price', await p.evaluate(() => fcfIV.textContent === '—' && /at or below zero/.test(fcfWhy.textContent)));
+  const snap = await p.evaluate(() => { const o = ivSnapshot(); return [o.mxBvps, o.mxFcf, o.mxPe]; });
+  ok('V saved valuations keep the new inputs', snap.join() === '24,9500,18', snap.join());
+  ok('V intrinsic-value no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const m = await newPage(mobile, null);
+  await m.goto(BASE + '/intrinsic-value.html'); await m.waitForTimeout(1200);
+  await m.click('#cardMore > summary'); await m.waitForTimeout(200);
+  ok('V More models: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1));
+  await m.context().close(); }
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {
