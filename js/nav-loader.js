@@ -13,12 +13,14 @@
  * <script src="./js/nav-rail.js"></script> tag.
  *
  * Load it as a plain script at the end of <body>, where nav-rail.js was.
+ * Pages without a sidebar mark <body data-nav-shell>; js/arowana-nav.js then
+ * builds the rail itself, and opting out loads nothing on them (ATD-009).
  */
 (function () {
   'use strict';
 
   var USE_NEW_NAV_BY_DEFAULT = true;
-  var VERSION = '20261003f';
+  var VERSION = '20261003g';
 
   var pref = null;
   try { pref = window.localStorage.getItem('ap_nav_v2'); } catch (_) { /* storage blocked */ }
@@ -29,6 +31,9 @@
     : ['./js/nav-rail.js'];
 
   function insert() {
+    // Pages that had no rail before ATD-009 (<body data-nav-shell>) keep their
+    // own top navigation when opted out, exactly as they were.
+    if (!useNew && document.body.hasAttribute('data-nav-shell')) return;
     files.forEach(function (src) {
       var s = document.createElement('script');
       s.src = src;

@@ -216,10 +216,10 @@
   // the user wondering whether the feature exists. run() bodies get written
   // when the backend scanner can supply the data.
   // ══════════════════════════════════════════════════════════════════════════
-  function pending(id, label, category, blurb, needs, minMode, plan) {
+  function pending(id, label, category, blurb, needs, minMode, plan, filters) {
     R.register({
       id: id, label: label, category: category, blurb: blurb,
-      needs: needs, minMode: minMode || 'guided', plan: plan || 'pro', filters: [],
+      needs: needs, minMode: minMode || 'guided', plan: plan || 'pro', filters: filters || [],
       async run() {
         /* Deliberately explicit. An empty table reads as "broken"; naming the
            missing piece reads as "not built yet", which is the truth and is
@@ -255,4 +255,99 @@
     'Premium worth writing against stock you own.', ['backend'], 'advanced', 'elite');
   pending('csp', 'Cash-Secured Put Candidates', 'Options',
     'Puts on names worth owning at assignment.', ['backend'], 'advanced', 'elite');
+  // ══════════════════════════════════════════════════════════════════════════
+  // FROM THE RETIRED STANDALONE SCANNER PAGES (ATD-009 phase 2)
+  // Each old page (bb-snapback.html, hod-scanner.html, …) now redirects to
+  // scanner.html?scan=<id>. Their main filters are kept here so the scan is
+  // ready to wire up when its data source goes live; the old pages showed
+  // demo or webhook rows, not market data.
+  // ══════════════════════════════════════════════════════════════════════════
+  function sel(id, label, def, opts) {
+    return { id: id, label: label, type: 'select', default: def,
+      options: opts.map(function (o) { return { value: o[0], label: o[1] }; }) };
+  }
+  function num(id, label, def) { return { id: id, label: label, type: 'number', default: def }; }
+  var PRICE_BAND = sel('priceBand', 'Price band', 'all',
+    [['all', 'All prices'], ['0-5', 'Under $5'], ['5-20', '$5–$20'], ['20-100', '$20–$100'], ['100+', 'Over $100']]);
+  var INTRADAY_TF = sel('tf', 'Timeframe', '5m',
+    [['1m', '1 minute'], ['5m', '5 minutes'], ['15m', '15 minutes'], ['1h', '1 hour']]);
+
+  pending('base_breakout', 'Base Breakout', 'Trend',
+    'Tight bases about to break their pivot.', ['candles'], 'guided', 'pro', [
+      sel('timeframe', 'Timeframe', 'daily', [['daily', 'Daily'], ['weekly', 'Weekly'], ['4h', '4 hour']]),
+      num('minDays', 'Minimum days in base', '5'), PRICE_BAND,
+      sel('sortBy', 'Sort by', 'prox', [['prox', '% to pivot'], ['rvol', 'Relative volume'], ['squeeze', 'Squeeze score'], ['days', 'Days in base']])]);
+  pending('bb_snapback', 'Bollinger Band Snapback', 'Mean Reversion',
+    'Stretched outside a Bollinger Band and turning back.', ['candles'], 'guided', 'pro', [
+      sel('touch', 'Band', 'lower', [['lower', 'Lower band'], ['upper', 'Upper band'], ['both', 'Both bands']]),
+      sel('outside', 'Close', 'no', [['no', 'Touch is enough'], ['yes', 'Must close outside']]),
+      num('sigma', 'Band width (standard deviations)', '2.0')]);
+  pending('day_trade', 'Day Trade Setups', 'Momentum',
+    'Gappers with volume, price and float limits.', ['candles', 'fundamentals'], 'guided', 'pro', [
+      num('minGap', 'Minimum gap %', '2'), num('minRvol', 'Minimum relative volume', '1.5'),
+      num('minPrice', 'Minimum price', ''), num('maxPrice', 'Maximum price', ''),
+      num('floatMax', 'Maximum float (millions)', '')]);
+  pending('ema_snapback', 'EMA Snapback', 'Mean Reversion',
+    'Price reclaiming or rejecting a fast EMA after stretching away from it.', ['candles'], 'guided', 'pro', [
+      num('fastEma', 'Fast EMA', '9'),
+      sel('tf', 'Timeframe', '15m', [['5m', '5 minutes'], ['15m', '15 minutes'], ['30m', '30 minutes'], ['1h', '1 hour'], ['d', 'Daily']]),
+      sel('side', 'Setup', 'both', [['reclaim', 'Reclaim (long)'], ['reject', 'Reject (short)'], ['both', 'Both']]),
+      num('minDist', 'Minimum distance from EMA (%)', '0.6'), PRICE_BAND]);
+  pending('gap_fade', 'Gap Fade', 'Mean Reversion',
+    'Opening gaps stretched far enough to fade.', ['candles'], 'guided', 'pro', [
+      sel('fadeType', 'Fade', 'up', [['up', 'Fade gap up (short bias)'], ['down', 'Fade gap down (long bias)']]),
+      num('gapPctMin', 'Minimum gap %', '1.5'),
+      sel('cap', 'Market cap', 'all', [['all', 'All'], ['large', 'Large ($10B+)'], ['mid', 'Mid ($2B–$10B)'], ['small', 'Small (under $2B)']])]);
+  pending('high_short_float', 'High Short Float + Outflow', 'Special Situations',
+    'Heavily shorted names that are overbought with money leaving.', ['fundamentals', 'candles'], 'advanced', 'elite', [
+      num('shortFloat', 'Minimum short float %', '15'), num('priceFloor', 'Minimum price', '2'),
+      sel('universe', 'Universe', 'SP500', [['SP500', 'S&P 500'], ['NASDAQ100', 'Nasdaq-100'], ['RUSSELL2000', 'Russell 2000']])]);
+  pending('hod', 'High of Day', 'Momentum',
+    'Breaking or rejecting the high of the day.', ['candles'], 'guided', 'pro', [
+      sel('setup', 'Setup', 'both', [['both', 'Both'], ['breakout', 'Breakout'], ['rejection', 'Rejection']]),
+      num('maxPctFromHod', 'Maximum % from high of day', '0.2'), num('minRvol', 'Minimum relative volume', '2.0')]);
+  pending('intraday_breakout', 'Intraday Breakout', 'Momentum',
+    'Range breaks in the middle of the session.', ['candles'], 'guided', 'pro', [
+      num('brkPct', 'Breakout % over high of day', '0.5'), PRICE_BAND]);
+  pending('fib_pullback', 'Fibonacci Pullback', 'Trend',
+    'Pullbacks to a Fibonacci level inside a trend.', ['candles'], 'guided', 'pro', [
+      INTRADAY_TF,
+      sel('depth', 'Pullback depth', '0.382', [['0.236', 'Shallow (23.6%)'], ['0.382', 'Moderate (38.2%)'], ['0.5', 'Mid (50%)'], ['0.618', 'Deep (61.8%)']]),
+      sel('strategy', 'Strategy', 'breakout', [['breakout', 'Trend continuation'], ['fade', 'Counter-trend fade'], ['both', 'Both']])]);
+  pending('opening_drive', 'Opening Drive', 'Momentum',
+    'Strong one-directional moves out of the open.', ['candles'], 'guided', 'pro', [
+      num('driveMinutes', 'Drive window (minutes)', '15'), PRICE_BAND]);
+  pending('chart_patterns', 'Chart Patterns', 'Trend',
+    'Flags, triangles and other continuation patterns.', ['candles'], 'guided', 'pro');
+  pending('scalp', 'Scalp Setups', 'Momentum',
+    'Fast-timeframe setups aligned with the higher timeframe.', ['candles'], 'advanced', 'pro', [
+      sel('tf', 'Timeframe', '1', [['1', '1 minute'], ['2', '2 minutes'], ['5', '5 minutes']]),
+      sel('emaAlign', 'EMA 9/20', 'ANY', [['ANY', 'Any'], ['BULL', '9 above 20'], ['BEAR', '9 below 20']]),
+      sel('htfAlign', 'Versus 200 EMA', 'ANY', [['ANY', 'Any'], ['BULL', 'Above'], ['BEAR', 'Below']]),
+      num('rsiMin', 'Minimum RSI(7)', '0')]);
+  pending('short_entry', 'Short Entry', 'Special Situations',
+    'Technically weak, liquid names for short setups.', ['candles'], 'advanced', 'pro', [
+      num('minLiquidity', 'Minimum 20-day average volume (millions)', '3'), num('rsiThresh', 'Minimum RSI', '70'),
+      num('maBreak', 'Price versus 50/200 MA (%, at most)', '-1'), num('atrStop', 'ATR stop multiple', '2')]);
+  pending('swing_multi', 'Swing Multi-Signal', 'Trend',
+    'RSI, volume, moving-average and % change conditions together.', ['candles'], 'guided', 'pro', [
+      sel('rsi', 'RSI', '30', [['30', 'Below 30 (oversold)'], ['70', 'Above 70 (overbought)'], ['50', 'Around 50']]),
+      sel('volMult', 'Volume', '2', [['2', '2× average'], ['3', '3× average'], ['5', '5× average']]),
+      sel('smaFast', 'Fast SMA', '20', [['10', '10-day'], ['20', '20-day'], ['30', '30-day']]),
+      sel('smaSlow', 'Slow SMA', '50', [['50', '50-day'], ['100', '100-day'], ['200', '200-day']]),
+      sel('minChange', 'Minimum change', '2', [['1', '1%+'], ['2', '2%+'], ['3', '3%+'], ['5', '5%+']])]);
+  pending('trendline_break', 'Trendline Break', 'Trend',
+    'Confirmed breaks of a rising or falling trendline.', ['candles'], 'guided', 'pro', [
+      sel('trendType', 'Trend', 'upward', [['upward', 'Rising (breakdowns)'], ['downward', 'Falling (breakouts)']]),
+      num('lookback', 'Lookback (days)', '50')]);
+  pending('vwap_pullback', 'VWAP Pullback', 'Mean Reversion',
+    'Pullbacks to VWAP after the trend is confirmed.', ['candles'], 'guided', 'pro', [
+      sel('side', 'Setup', 'both', [['both', 'Both'], ['long', 'Long pullback'], ['short', 'Short pop']]),
+      num('maxSigma', 'Maximum distance from VWAP (std dev)', '1.0'), num('minRvol', 'Minimum relative volume', '0')]);
+  pending('dividend_safety', 'Dividend Safety', 'Fundamentals',
+    'Well-covered dividend payers, ranked by a safety score.', ['fundamentals'], 'guided', 'pro', [
+      num('minYield', 'Minimum dividend yield %', '5'), num('maxPayout', 'Maximum payout ratio %', '90'),
+      num('maxFcfPayout', 'Maximum FCF payout %', '90'), num('maxDebtEbitda', 'Maximum debt / EBITDA', '5'),
+      num('minCoverage', 'Minimum interest coverage', '2'),
+      sel('sortBy', 'Sort by', 'score', [['score', 'Safety score'], ['yield', 'Yield'], ['payout', 'Payout ratio'], ['debt', 'Debt'], ['ticker', 'Ticker']])]);
 })(window);

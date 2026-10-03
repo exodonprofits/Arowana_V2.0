@@ -1676,7 +1676,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
 </script>
 
 </head>
-<body>
+<body data-nav-shell>
 <!-- ═══════════════════════════════════════════
      LONG-TERM ONBOARDING WIZARD (3 steps)
      ═══════════════════════════════════════════ -->
@@ -1802,7 +1802,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
     <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" style="width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px" onerror="this.style.display='none'">
     Arowana Profits
   </a>
-  <div id="v1NavLinks" style="display:flex;align-items:center;gap:3px;flex:1;justify-content:center;overflow:visible">
+  <div id="v1NavLinks" data-nav-legacy style="display:flex;align-items:center;gap:3px;flex:1;justify-content:center;overflow:visible">
 
     <!-- ⚡ Short-Term dropdown -->
     <div class="v1-drop" id="v1DropST">
@@ -1849,7 +1849,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
     <a href="pricing.html" style="color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none">💳 Plans</a>
     
   </div>
-  <button id="v1Burger" style="display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer">&#9776;</button>
+  <button id="v1Burger" data-nav-legacy style="display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer">&#9776;</button>
   <div style="display:flex;align-items:center;gap:7px;flex:0 0 auto">
     <a href="login.html" id="v1SignIn" style="padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);text-decoration:none">Sign In</a>
     <a href="signup.html" id="ltSignUp" style="padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:700;background:#fff;color:#0b4f8a;text-decoration:none">&#128640; Start Free</a>
@@ -1930,13 +1930,13 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
               <div class="dropdown-content">
                   
                   <div class="dropdown-header">Intraday Momentum & Reversal</div>
-                  <a href="orb-scanner.html">⚡ Opening Range Breakout</a>
-                  <a href="rvol-scanner.html">📈 Relative Volume Surge</a>
-                  <a href="hod-scanner.html">⏫ HOD Continuation</a>
-                  <a href="vwap-pullback.html">📉 VWAP Pullback</a>
-                  <a href="gap-fade-scanner.html">🕳️ Gap Fade</a>
-                  <a href="rsi-reversal-scanner.html">🔁 RSI Reversal</a>
-                  <a href="bb-snapback.html">🎯 BB Snapback</a>
+                  <a href="scanner.html?scan=orb">⚡ Opening Range Breakout</a>
+                  <a href="scanner.html?scan=rvol_surge">📈 Relative Volume Surge</a>
+                  <a href="scanner.html?scan=hod">⏫ HOD Continuation</a>
+                  <a href="scanner.html?scan=vwap_pullback">📉 VWAP Pullback</a>
+                  <a href="scanner.html?scan=gap_fade">🕳️ Gap Fade</a>
+                  <a href="scanner.html?scan=rsi_reversal">🔁 RSI Reversal</a>
+                  <a href="scanner.html?scan=bb_snapback">🎯 BB Snapback</a>
                   <a href="money-flow-alert.html">🔁 Money Flow Alert</a>
                   
                   <div class="dropdown-separator"></div>
@@ -1945,16 +1945,16 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
                   <a href="buy-sell-signal.html">🧭 Buy/Sell Signal</a>
                   <a href="rsi-screener.html">📉 RSI Screener</a>
                   <a href="intrinsic-value.html">🧮 Intrinsic Value Calculator</a>
-                  <a href="short-entry-screener.html">📉 Short Entry Screener</a>
-                  <a href="short-squeeze-scanner.html">🔥 Short Squeeze Scanner</a>
+                  <a href="scanner.html?scan=short_entry">📉 Short Entry Screener</a>
+                  <a href="scanner.html?scan=short_squeeze">🔥 Short Squeeze Scanner</a>
 
                   <div class="dropdown-separator"></div>
                   
                   <div class="dropdown-header">Swing / Multi-Day</div>
                   <a href="swing-breakout-pb.html">🧱 Breakout Pullback</a>
-                  <a href="sma-cross-scanner.html">📐 50/200 SMA Cross</a>
-                  <a href="pattern-scanner.html">🚩 Flag / Asc. Triangle</a>
-                  <a href="post-earnings-drift.html">📊 Post-Earnings Drift</a>
+                  <a href="scanner.html?scan=sma_cross">📐 50/200 SMA Cross</a>
+                  <a href="scanner.html?scan=chart_patterns">🚩 Flag / Asc. Triangle</a>
+                  <a href="scanner.html?scan=post_earnings">📊 Post-Earnings Drift</a>
                   
                   <div class="dropdown-separator"></div>
 
@@ -2038,18 +2038,18 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
         <div class="mobile-links">
           <a href="short-term-dashboard.html">⚡ Short-Term Dashboard</a>
           <a href="short-term-watchlist.html">👀 Watchlist</a>
-          <a href="orb-scanner.html">⚡ Opening Range Breakout</a>
-          <a href="rvol-scanner.html">📈 Relative Volume Surge</a>
-          <a href="hod-scanner.html">⏫ HOD Continuation</a>
-          <a href="vwap-pullback.html">📉 VWAP Pullback</a>
-          <a href="gap-fade-scanner.html">🕳️ Gap Fade</a>
-          <a href="rsi-reversal-scanner.html">🔁 RSI Reversal</a>
-          <a href="bb-snapback.html">🎯 BB Snapback</a>
+          <a href="scanner.html?scan=orb">⚡ Opening Range Breakout</a>
+          <a href="scanner.html?scan=rvol_surge">📈 Relative Volume Surge</a>
+          <a href="scanner.html?scan=hod">⏫ HOD Continuation</a>
+          <a href="scanner.html?scan=vwap_pullback">📉 VWAP Pullback</a>
+          <a href="scanner.html?scan=gap_fade">🕳️ Gap Fade</a>
+          <a href="scanner.html?scan=rsi_reversal">🔁 RSI Reversal</a>
+          <a href="scanner.html?scan=bb_snapback">🎯 BB Snapback</a>
           <a href="money-flow-alert.html">🔁 Money Flow Alert</a>
           <a href="buy-sell-signal.html">🧭 Buy/Sell Signal</a>
           <a href="rsi-screener.html">📉 RSI Screener</a>
-          <a href="short-entry-screener.html">📉 Short Entry Screener</a>
-          <a href="short-squeeze-scanner.html">🔥 Short Squeeze Scanner</a>
+          <a href="scanner.html?scan=short_entry">📉 Short Entry Screener</a>
+          <a href="scanner.html?scan=short_squeeze">🔥 Short Squeeze Scanner</a>
           <a href="options-analyzer.html">📊 Options Analyzer</a>
           <a href="position-sizer.html">🧮 Position Sizer</a>
           <a href="atr-stop-planner.html">📏 ATR Stop Planner</a>
@@ -5042,5 +5042,8 @@ document.addEventListener('DOMContentLoaded',patchToolsGrid);
 })();
 </script>
 </script>
+<!-- ATD-009 phase 1: registry navigation in shell mode (data-nav-shell on <body>);
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js?v=20261003g"></script>
 </body>
 </html>

@@ -362,6 +362,93 @@ for (const [name, [group, slot]] of Object.entries(HOMES)) {
   ok('CO options-analyzer: Options desk children shown', await p.evaluate(() => !document.querySelector('#railMount [data-nav-nest="desk-options"]').hidden));
   await p.context().close(); }
 
+// S. ATD-009 phase 1: pages without a sidebar get a renderer-built shell rail.
+const SHELL = { 'swing-trader': ['desk-swing', '.nav-links'], 'long-term-dashboard': ['desk-longterm', '#v1NavLinks'],
+  'my-rules': ['portfolio-rules', 'nav#nav'], 'data-hygiene-audit': ['journal-quality', null] };
+for (const [name, [want, legacy]] of Object.entries(SHELL)) {
+  const look = (p, sel) => p.evaluate(sel => {
+    const shell = document.querySelector('aside.anv-shell');
+    const leg = sel && document.querySelector(sel);
+    return { shell: !!shell, shellVisible: !!(shell && getComputedStyle(shell).display !== 'none' && shell.getBoundingClientRect().width > 0),
+      primaries: [...document.querySelectorAll('.anv-shell #railMount nav.rail-nav > .rail-group .rail-item-row > .rail-item .rail-item-label')].length,
+      current: [...new Set([...document.querySelectorAll('[aria-current="page"][data-nav-id]')].map(n => n.getAttribute('data-nav-id')))],
+      pad: parseFloat(getComputedStyle(document.body).paddingLeft), legacyShown: !!(leg && leg.offsetParent !== null),
+      bar: !!document.querySelector('.anv-mobile-bar'), oldBar: !!document.querySelector('.mobile-bottom-nav'),
+      overflow: document.documentElement.scrollWidth - window.innerWidth };
+  }, sel);
+  const d = await newPage(desktop, null);
+  await d.goto(BASE + '/' + name + '.html'); await d.waitForTimeout(1200);
+  const r = await look(d, legacy);
+  ok(`S ${name} desktop shell rail`, r.shell && r.shellVisible && r.primaries === 6 && r.pad >= 248, JSON.stringify(r));
+  ok(`S ${name} current = ${want}`, r.current.length === 1 && r.current[0] === want, JSON.stringify(r.current));
+  if (legacy) ok(`S ${name} legacy top links hidden`, !r.legacyShown);
+  ok(`S ${name} desktop no overflow`, r.overflow <= 1, String(r.overflow));
+  const dErr = d._errors.slice(); await d.context().close();
+  const m = await newPage(mobile, null);
+  await m.goto(BASE + '/' + name + '.html'); await m.waitForTimeout(1200);
+  const rm = await look(m, legacy);
+  await m.context().close();
+  const o = await newPage(mobile, '0');
+  await o.goto(BASE + '/' + name + '.html'); await o.waitForTimeout(1200);
+  const ro = await look(o, legacy); const oErr = o._errors.slice();
+  await o.context().close();
+  ok(`S ${name} mobile: bar, no shell, no overflow`, rm.bar && !rm.shellVisible && rm.pad < 248 && rm.overflow <= Math.max(1, ro.overflow), JSON.stringify(rm));
+  ok(`S ${name} opt-out (mobile): no nav added`, !ro.shell && !ro.bar && !ro.oldBar, JSON.stringify(ro));
+  const od = await newPage(desktop, '0');
+  await od.goto(BASE + '/' + name + '.html'); await od.waitForTimeout(1000);
+  const rod = await look(od, legacy); await od.context().close();
+  ok(`S ${name} opt-out (desktop): own top nav back, no rail`, !rod.shell && rod.pad < 248 && (!legacy || rod.legacyShown), JSON.stringify(rod));
+  const newErrs = dErr.filter(e => !oErr.includes(e));
+  ok(`S ${name} no new page errors`, newErrs.length === 0, newErrs.join('; '));
+}
+{ const d = await newPage(desktop, null);
+  await d.goto(BASE + '/swing-trader.html'); await d.waitForTimeout(1200);
+  await d.click('.anv-shell #railCollapseBtn'); await d.waitForTimeout(300);
+  const c = await d.evaluate(() => ({ collapsed: document.querySelector('aside.anv-shell').classList.contains('rail-collapsed'),
+    pad: parseFloat(getComputedStyle(document.body).paddingLeft), w: document.querySelector('aside.anv-shell').getBoundingClientRect().width }));
+  ok('S swing-trader collapse narrows rail and padding', c.collapsed && c.w <= 80 && c.pad <= 80, JSON.stringify(c));
+  await d.click('.anv-shell #userToggle').catch(e => d._errors.push('no account toggle: ' + e.message.split('\n')[0]));
+  await d.waitForTimeout(150);
+  ok('S swing-trader shell account menu opens', await d.evaluate(() => { const m = document.querySelector('.anv-shell .user-menu'); return !!(m && m.classList.contains('open')); }));
+  await d.context().close(); }
+
+// L. ATD-009 phase 1: retired catalogues redirect, keeping query and hash.
+for (const [from, to] of [['advanced-trading-tools', 'tools'], ['feature_body', 'features'], ['feature_new', 'features'], ['features-tools-directory', 'tools']]) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?x=1#screeners'); await p.waitForTimeout(800);
+  const u = new URL(p.url());
+  ok(`L ${from} -> ${to}.html keeps query + hash`, u.pathname === '/' + to + '.html' && u.search === '?x=1' && u.hash === '#screeners', p.url());
+  await p.context().close();
+}
+
+// P2. ATD-009 phase 2: retired scanner pages open their scan in scanner.html.
+for (const [from, id, label] of [['bb-snapback', 'bb_snapback', 'Bollinger Band Snapback'], ['gap-and-go', 'gap_scan', null],
+  ['momentum-hunter-complete', 'my_movers', 'My Movers'], ['volume-spike', 'rvol_surge', 'Relative Volume Surge'], ['trade-scanner', 'swing_multi', 'Swing Multi-Signal']]) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?tickers=AAPL#x'); await p.waitForTimeout(1200);
+  const u = new URL(p.url());
+  const r = await p.evaluate(() => ({ title: document.getElementById('runTitle').textContent,
+    active: (document.querySelector('.scan-item.active') || {}).dataset?.id || null,
+    filters: document.querySelectorAll('#filterGrid .filter-field').length }));
+  ok(`P2 ${from} -> scanner ?scan=${id}`, u.pathname === '/scanner.html' && u.searchParams.get('scan') === id && u.searchParams.get('tickers') === 'AAPL' && u.hash === '#x', p.url());
+  ok(`P2 ${from} opens ${id}`, (!label || r.title === label) && (id === 'rvol_surge' || r.filters > 0) && (r.active === id || r.active === null), JSON.stringify(r));
+  ok(`P2 ${from} no page errors`, p._errors.length === 0, p._errors.join('; '));
+  await p.context().close();
+}
+for (const [from, path, scan] of [['my-rules-short', '/my-rules.html', null], ['risk-calculator', '/position-sizer.html', null],
+  ['position-sizer_fresh', '/position-sizer.html', null], ['dividend-screener', '/scanner.html', 'dividend_safety']]) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?a=1#h'); await p.waitForTimeout(1000);
+  const u = new URL(p.url());
+  ok(`P2 ${from} -> ${path}${scan ? '?scan=' + scan : ''} keeps query + hash`, u.pathname === path && u.searchParams.get('a') === '1' && u.hash === '#h' && (!scan || u.searchParams.get('scan') === scan), p.url());
+  await p.context().close();
+}
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/scanner.html?scan=nope'); await p.waitForTimeout(1000);
+  const anyActive = await p.evaluate(() => !!document.querySelector('.scan-item.active'));
+  ok('P2 unknown ?scan= ignored', p._errors.length === 0 && !anyActive);
+  await p.context().close(); }
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {
