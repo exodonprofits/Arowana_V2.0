@@ -112,6 +112,10 @@
 
   function currentLocation() {
     var path = (window.location.pathname || '').split('/').pop().toLowerCase() || 'index.html';
+    // Hosts such as Cloudflare Pages serve trading-command.html at
+    // /trading-command. Registry paths are file names, so restore the
+    // extension rather than fail to match every page.
+    if (path.indexOf('.') === -1) path += '.html';
     var params;
     try { params = new URLSearchParams(window.location.search); } catch (_) { params = null; }
     var hash = (window.location.hash || '').replace(/^#/, '');
@@ -164,7 +168,11 @@
     return winner;
   }
 
-  var forcedId = null;   // set by a page through ArowanaNav.setActive()
+  // Set by a page through ArowanaNav.setActive(). A page whose script runs
+  // before this file has loaded (the loader inserts it asynchronously) can
+  // leave the id in window.ArowanaNavPreset instead; it is read once here.
+  var forcedId = (typeof window.ArowanaNavPreset === 'string' && byId[window.ArowanaNavPreset])
+    ? window.ArowanaNavPreset : null;
 
   function currentEntry() {
     if (forcedId && byId[forcedId]) return byId[forcedId];
@@ -351,15 +359,32 @@
       if (!open && returnFocus) toggle.focus();
     }
     // Disclosure pattern (not an ARIA menu): button + list of links/buttons.
+    // Some legacy pages (trading-command.html, portfolio-command.html …)
+    // still attach their own handler to #userToggle. Both handlers then run
+    // on one click, and two toggles would open and immediately close the
+    // menu. So this one waits a tick and only acts if nothing else changed
+    // the menu; otherwise it just mirrors the new state (same guard as
+    // js/nav-rail.js).
     toggle.addEventListener('click', function (ev) {
       ev.stopPropagation();
-      setOpen(!menu.classList.contains('open'), false);
+      var before = menu.classList.contains('open');
+      setTimeout(function () {
+        var now = menu.classList.contains('open');
+        if (now !== before) {
+          toggle.classList.toggle('open', now);
+          toggle.setAttribute('aria-expanded', now ? 'true' : 'false');
+          return;
+        }
+        setOpen(!before, false);
+      }, 0);
     });
     document.addEventListener('click', function (ev) {
       if (!toggle.contains(ev.target) && !menu.contains(ev.target)) setOpen(false, false);
     });
     document.addEventListener('keydown', function (ev) {
-      if (ev.key === 'Escape' && menu.classList.contains('open')) setOpen(false, true);
+      // aria-expanded rather than the class: a page handler may already have
+      // removed the class on this same Escape, and focus should still return.
+      if (ev.key === 'Escape' && toggle.getAttribute('aria-expanded') === 'true') setOpen(false, true);
     });
 
     return el('div', { className: 'rail-bottom' }, [el('div', { className: 'rail-account' }, [toggle, menu])]);
@@ -533,7 +558,11 @@
     // Choosing a link navigates away; close so a back-forward-cache restore
     // never shows the sheet stuck open.
     sheet.addEventListener('click', function (ev) {
-      if (ev.target.closest && ev.target.closest('a[href]')) closeSheet(false);
+      if (!(ev.target.closest && ev.target.closest('a[href]'))) return;
+      // Wait for the page's own handlers: if one handled the link in place
+      // (e.g. trading-command.html switching tabs without reloading), no
+      // navigation follows, so focus goes back to the More button.
+      setTimeout(function () { closeSheet(ev.defaultPrevented); }, 0);
     });
 
     document.body.appendChild(sheetBackdrop);

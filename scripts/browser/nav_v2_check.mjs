@@ -68,7 +68,7 @@ const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch
   ok('B collapse survives reload', await p.evaluate(() => document.querySelector('#sidebarDrawer').classList.contains('rail-collapsed')));
   await p.click('#railCollapseBtn');
   // account disclosure
-  await p.click('#userToggle');
+  await p.click('#userToggle'); await p.waitForTimeout(50);   // toggle is deferred one tick (double-handler guard)
   ok('B account menu opens', (await p.getAttribute('#userToggle','aria-expanded')) === 'true');
   await p.keyboard.press('Escape');
   ok('B Escape closes account menu, focus returns', await p.evaluate(() => document.getElementById('userToggle').getAttribute('aria-expanded') === 'false' && document.activeElement.id === 'userToggle'));
@@ -84,6 +84,8 @@ const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch
     ['/trading-command.html?tab=coach', 'command-coach'], ['/tradingcommand.html', null],
     ['/trade-journal-pro.html?from=trading-command', 'journal-trades'], ['/trade-journal-pro.html?tab=stats', 'journal-stats'],
     ['/watchlist.html', 'watchlists'], ['/settings.html', null], ['/analysis-central.html', 'research-instrument'],
+    // Extensionless URLs, as served by hosts such as Cloudflare Pages.
+    ['/options-hub?tab=puts', 'wheel-puts'], ['/trading-command', 'command-positions'], ['/tools', 'research-tools'], ['/', null],
   ];
   for (const [url, want] of cases) {
     const got = await p.evaluate(u => { history.replaceState(null, '', u); window.dispatchEvent(new PopStateEvent('popstate'));
@@ -146,8 +148,8 @@ for (const width of [320, 375, 768]) {
 // W. Wave 2: every migrated page, default (no preference) vs opt-out.
 const MIGRATED = ['tools','ai-moat-finder','atr-stop-planner','credit-spread-planner','dcf-analyzer','discipline-scorecard',
   'dividend-tracker','expectancy-matrix','kelly-calculator','money-flow-alert','options-analyzer','r-multiple','risk-comfort',
-  'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis'];
-const EXPECT_CURRENT = { 'tools': 'research-tools', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
+  'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis','trading-command'];
+const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-positions', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
   'strategy-backtesting': 'research-backtesting', 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': 'research-technical' };
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
@@ -179,6 +181,53 @@ for (const name of MIGRATED) {
   ok(`W ${name} no new page errors`, newErrs.length === 0, newErrs.join('; '));
   ok(`W ${name} opt-out keeps old rail`, !mo.v2 && mo.oldBar && mo.oldGroups === 5);
 }
+
+// T. Wave 3: trading-command.html specifics.
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => { try { localStorage.removeItem('tc_active_tab_v1'); } catch (e) {} });
+  await p.goto(BASE + '/trading-command.html'); await p.waitForTimeout(1500);
+  const cur = async () => p.evaluate(() => [...new Set([...document.querySelectorAll('[aria-current="page"]')].map(n => n.getAttribute('data-nav-id')))].join(','));
+  ok('T fresh visit: Positions current', (await cur()) === 'command-positions', await cur());
+  ok('T no retired links in rail', await p.evaluate(() => !document.querySelector('#railMount a[href*="market-intelligence"], #railMount a[href*="momentum-hunter"]')));
+  ok('T one rail only', await p.evaluate(() => document.querySelectorAll('#railMount nav').length === 1 && !document.querySelector('.mobile-bottom-nav')));
+  await p.evaluate(() => { window.__noReload = 1; });
+  await p.click('#railMount a[data-nav-id="command-coach"]'); await p.waitForTimeout(300);
+  ok('T rail Coach switches in place (no reload)', await p.evaluate(() => window.__noReload === 1 && location.search === ''));
+  ok('T Coach tab visible', await p.evaluate(() => document.getElementById('coachTab').classList.contains('active')));
+  ok('T nav follows tab', (await cur()) === 'command-coach', await cur());
+  await p.click('#railMount a[data-nav-id="command-positions"]'); await p.waitForTimeout(300);
+  ok('T back to Positions in place', await p.evaluate(() => window.__noReload === 1 && document.getElementById('positionsTab').classList.contains('active')) && (await cur()) === 'command-positions');
+  // Account menu: page handler + nav handler both attached; one click must open it.
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  ok('T account menu opens with both handlers', await p.evaluate(() => document.getElementById('userMenu').classList.contains('open') && document.getElementById('userToggle').getAttribute('aria-expanded') === 'true'));
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  ok('T second click closes it', await p.evaluate(() => !document.getElementById('userMenu').classList.contains('open') && document.getElementById('userToggle').getAttribute('aria-expanded') === 'false'));
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  await p.keyboard.press('Escape'); await p.waitForTimeout(50);
+  ok('T Escape closes and returns focus', await p.evaluate(() => !document.getElementById('userMenu').classList.contains('open') && document.activeElement.id === 'userToggle'));
+  ok('T no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => localStorage.setItem('tc_active_tab_v1', 'coach'));
+  await p.goto(BASE + '/trading-command.html'); await p.waitForTimeout(1500);
+  ok('T remembered Coach tab highlighted without URL change', await p.evaluate(() => document.getElementById('coachTab').classList.contains('active') && location.search === '' &&
+    document.querySelector('#railMount [aria-current="page"]').getAttribute('data-nav-id') === 'command-coach'));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/trading-command.html?tab=coach'); await p.waitForTimeout(1500);
+  ok('T ?tab=coach opens Coach and highlights it', await p.evaluate(() => document.getElementById('coachTab').classList.contains('active') &&
+    document.querySelector('#railMount [aria-current="page"]').getAttribute('data-nav-id') === 'command-coach'));
+  await p.context().close(); }
+{ const p = await newPage(mobile, null);
+  await p.addInitScript(() => localStorage.removeItem('tc_active_tab_v1'));
+  await p.goto(BASE + '/trading-command.html'); await p.waitForTimeout(1500);
+  ok('T mobile Command slot marked active', await p.evaluate(() => document.querySelector('.anv-mobile-bar a[data-nav-slot="command"]').classList.contains('active')));
+  await p.evaluate(() => { window.__noReload = 1; });
+  await p.click('.anv-mobile-bar button[data-nav-slot="more"]'); await p.waitForTimeout(150);
+  ok('T More sheet opens on Command page, More not active', await p.evaluate(() => !document.getElementById('anvMoreSheet').hidden && !document.querySelector('[data-nav-slot="more"]').classList.contains('active')));
+  await p.keyboard.press('Escape');
+  ok('T mobile no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
 
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
