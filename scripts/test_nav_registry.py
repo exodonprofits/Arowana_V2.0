@@ -141,9 +141,10 @@ class NavRegistryTests(unittest.TestCase):
         for required in ("tools.html", "trading-command.html", "portfolio-command.html", "options-hub.html",
                          "analysis-central.html", "intrinsic-value.html", "portfolio-advisor.html",
                          "arowana-trader.html", "watchlist.html", "scanner.html", "position-sizer.html",
-                         "trade-plan-builder.html", "wheel-strategy.html", "ai-morning-brief.html"):
+                         "trade-plan-builder.html", "wheel-strategy.html", "ai-morning-brief.html",
+                         "trade-journal-pro.html"):
             self.assertIn(required, migrated)
-        self.assertEqual(len(migrated), 32, migrated)
+        self.assertEqual(len(migrated), 33, migrated)
         # arowana-trader.html's sidebar is the coach panel: the nav renders only
         # the mobile bar and More sheet there, by design.
         no_rail_mount = {"arowana-trader.html"}
@@ -157,6 +158,14 @@ class NavRegistryTests(unittest.TestCase):
             # No inline rail copy or post-render correction patch may remain.
             self.assertNotIn("The rail is inlined rather than loaded", html, name)
             self.assertNotIn("Rail correction, inline and last", html, name)
+    def test_no_page_loads_auth_guard_rail(self):
+        # js/auth-guard.js holds only an outdated rail copy (no auth logic);
+        # loaded deferred it re-rendered the rail after the page's own.
+        loader = re.compile(r'<script[^>]+src="[^"]*auth-guard\.js')
+        for page in ROOT.glob("*.html"):
+            html = page.read_text(encoding="utf-8", errors="replace")
+            self.assertIsNone(loader.search(html), page.name)
+
 
 if __name__ == "__main__":
     unittest.main()

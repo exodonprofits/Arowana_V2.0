@@ -158,12 +158,12 @@ const MIGRATED = ['tools','ai-moat-finder','atr-stop-planner','credit-spread-pla
   'dividend-tracker','expectancy-matrix','kelly-calculator','money-flow-alert','options-analyzer','r-multiple','risk-comfort',
   'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis','trading-command',
   'portfolio-command','options-hub','analysis-central','intrinsic-value','portfolio-advisor',
-  'arowana-trader','watchlist','scanner','position-sizer','trade-plan-builder','wheel-strategy','ai-morning-brief'];
+  'arowana-trader','watchlist','scanner','position-sizer','trade-plan-builder','wheel-strategy','ai-morning-brief','trade-journal-pro'];
 const NO_RAIL_MOUNT = ['arowana-trader'];   // sidebar is the coach panel: mobile bar + More sheet only
 const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-positions', 'portfolio-command': 'portfolio-overview', 'options-hub': 'wheel-calls',
   'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor',
   'arowana-trader': 'wheel-coach', 'watchlist': 'watchlists', 'scanner': 'research-scanners', 'position-sizer': 'portfolio-sizer',
-  'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': 'command-brief', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
+  'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': 'command-brief', 'trade-journal-pro': 'journal-trades', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
   'strategy-backtesting': 'research-backtesting', 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': 'research-technical' };
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
@@ -319,6 +319,23 @@ for (const name of ['position-sizer', 'trade-plan-builder']) {
 { const p = await newPage(mobile, null);
   await p.goto(BASE + '/ai-morning-brief.html'); await p.waitForTimeout(1500);
   ok('W5 ai-morning-brief own hamburger hidden on mobile', await p.evaluate(() => { const b = document.getElementById('mobileRailButton'); return !!b && !b.offsetParent; }));
+  await p.context().close(); }
+
+// W6. Wave 6: trade-journal-pro.html.
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => { try { Object.keys(localStorage).filter(k => /^tj_.*tab/i.test(k)).forEach(k => localStorage.removeItem(k)); } catch (e) {} });
+  await p.goto(BASE + '/trade-journal-pro.html?tab=stats'); await p.waitForTimeout(1500);
+  ok('W6 journal: auth-guard.js not loaded', await p.evaluate(() => ![...document.scripts].some(s => /auth-guard/.test(s.src))));
+  ok('W6 journal ?tab=stats -> Stats & Analysis current', (await curIds(p)) === 'journal-stats', await curIds(p));
+  ok('W6 journal: only the new rail rendered', await p.evaluate(() => document.querySelectorAll('#railMount nav.rail-nav').length === 1 && !document.querySelector('#railMount a[href*="market-intelligence"]') && !document.querySelector('.mobile-bottom-nav')));
+  await p.evaluate(() => { window.__noReload = 1; });
+  await p.click('#railMount a[data-nav-id="journal-trades"]'); await p.waitForTimeout(400);
+  ok('W6 journal: Trade Journal link switches to Stock tab in place', await p.evaluate(() => window.__noReload === 1 && document.getElementById('tab-stock').style.display !== 'none' && !/tab=/.test(location.search)) && (await curIds(p)) === 'journal-trades', await curIds(p));
+  await p.click('#railMount a[data-nav-id="journal-stats"]'); await p.waitForTimeout(400);
+  ok('W6 journal: Stats link in place, URL updated by page', await p.evaluate(() => window.__noReload === 1 && /tab=stats/.test(location.search)) && (await curIds(p)) === 'journal-stats');
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  ok('W6 journal account menu opens', await p.evaluate(() => document.getElementById('userMenu').classList.contains('open')));
+  ok('W6 journal no nav errors', p._errors.length === 0, p._errors.join('; '));
   await p.context().close(); }
 
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
