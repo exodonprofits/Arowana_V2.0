@@ -169,10 +169,33 @@
       .card{box-shadow:none;border:1px solid #e5e7eb}
       .print-head{display:flex;justify-content:space-between;font-size:12px;margin-bottom:8px}
     }
+    /* ATD-009: Trading / Long-term / Habits tabs (long-term rules and the
+       discipline checklist merged in from my-rules-long and discipline-checklist) */
+    .mr-tabs{display:flex;gap:6px;flex-wrap:wrap;margin:14px 0 2px}
+    .mr-tab{border:1px solid #d8dee8;background:#fff;color:#18334f;border-radius:9999px;padding:.5rem 1rem;font-weight:600;cursor:pointer;font-size:.95rem}
+    .mr-tab[aria-selected="true"]{background:var(--brand);border-color:var(--brand);color:#fff}
+    .mr-panel[hidden]{display:none}
+    .lt-check,.hb-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+    .lt-check li{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px dashed #eef2f6}
+    .lt-check input,.hb-item input[type=checkbox]{width:18px;height:18px;min-height:0;flex:0 0 auto}
+    .hb-kpis{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:8px 0}
+    .hb-kpi{border:1px solid var(--border);border-radius:12px;padding:10px;text-align:center}
+    .hb-kpi b{display:block;font-size:1.3rem;color:var(--brand)}
+    .hb-scopes{display:flex;gap:6px;margin-bottom:8px}
+    .hb-item{display:flex;align-items:flex-start;gap:10px;padding:8px 10px;border:1px solid var(--border);border-radius:12px}
+    .hb-item.done .hb-text{text-decoration:line-through;color:var(--muted)}
+    .hb-body{flex:1 1 auto;min-width:0}
+    .hb-text{cursor:pointer;word-break:break-word}
+    .hb-note{margin-top:6px;min-height:70px}
+    .hb-add{display:flex;gap:8px;margin-top:10px}
+    .hb-add input{flex:1 1 auto}
+    .hb-actions{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}
+    .hb-progress{width:100%;height:10px}
+    .hb-item .btn.link{padding:.2rem .35rem;margin-left:0;text-decoration:none;flex:0 0 auto}
   </style>
 </head>
 <body data-nav-shell>
-<header class="header">
+<header class="header" id="hdr">
   <div class="container">
     <div class="header-top">
       <div class="logo">
@@ -214,6 +237,13 @@
       </div>
     </div>
 
+    <div class="mr-tabs no-print" role="tablist" aria-label="Rule sets">
+      <button type="button" class="mr-tab" role="tab" id="mrTabTrading" aria-controls="mrPanelTrading" data-tab="trading">Trading rules</button>
+      <button type="button" class="mr-tab" role="tab" id="mrTabLongterm" aria-controls="mrPanelLongterm" data-tab="longterm">Long-term rules</button>
+      <button type="button" class="mr-tab" role="tab" id="mrTabHabits" aria-controls="mrPanelHabits" data-tab="habits">Habits</button>
+    </div>
+
+    <div class="mr-panel" id="mrPanelTrading" role="tabpanel" aria-labelledby="mrTabTrading">
     <div class="card">
       <h2>Risk Settings</h2>
       <div class="row four">
@@ -364,6 +394,74 @@
         <div>
           <label for="avoidToday">Avoid today</label>
           <textarea id="avoidToday" placeholder="Chop days, low RVOL tickers, news-heavy names…"></textarea>
+        </div>
+      </div>
+    </div>
+    </div>
+
+    <!-- Long-term rules (was my-rules-long.html; same saved keys) -->
+    <div class="mr-panel" id="mrPanelLongterm" role="tabpanel" aria-labelledby="mrTabLongterm" hidden>
+      <div class="card">
+        <h2>Portfolio &amp; Allocation</h2>
+        <div class="row four">
+          <div><label for="ltEqPct">Target equity %</label><input id="ltEqPct" type="number" step="1" min="0" max="100" value="70"></div>
+          <div><label for="ltBondPct">Target bonds %</label><input id="ltBondPct" type="number" step="1" min="0" max="100" value="30"></div>
+          <div><label for="ltRebalanceBand">Rebalance threshold ±%</label><input id="ltRebalanceBand" type="number" step="1" min="1" max="20" value="5"></div>
+          <div><label for="ltRebalanceFreq">Rebalance frequency</label><select id="ltRebalanceFreq"><option>Quarterly</option><option selected>Annually</option><option>Only when bands breached</option></select></div>
+        </div>
+        <button type="button" id="ltSave" class="btn primary">💾 Save</button><span id="ltSaveStatus" class="muted" style="margin-left:8px">Not saved</span>
+      </div>
+      <div class="card">
+        <h2>Risk &amp; Behavior</h2>
+        <label for="ltBehavior" class="muted">One rule per line</label>
+        <textarea id="ltBehavior" rows="6">• Stay invested regardless of market noise.
+• Rebalance to maintain target allocation.
+• Keep 3–6 months of expenses in cash.
+• Increase savings rate during market downturns.
+• Avoid leverage or speculative positions.</textarea>
+      </div>
+      <div class="card">
+        <h2>Decision Triggers</h2>
+        <label for="ltTriggers" class="muted">One trigger per line</label>
+        <textarea id="ltTriggers" rows="5">• Review plan annually.
+• Rebalance if deviation &gt; band or major life event.
+• Adjust contribution rate if savings goals drift.
+• Do not change allocation based on news or fear.</textarea>
+      </div>
+      <div class="card">
+        <h2>Checklist</h2>
+        <ul id="ltChecklist" class="lt-check"></ul>
+        <div class="muted">Generated from your rules • <span id="ltSaved">not saved</span></div>
+      </div>
+    </div>
+
+    <!-- Habits (was discipline-checklist.html; same saved key) -->
+    <div class="mr-panel" id="mrPanelHabits" role="tabpanel" aria-labelledby="mrTabHabits" hidden>
+      <div class="card">
+        <h2>Discipline Checklist</h2>
+        <div class="hb-kpis">
+          <div class="hb-kpi"><b id="hbKpiDaily">0%</b>Daily</div>
+          <div class="hb-kpi"><b id="hbKpiWeekly">0%</b>Weekly</div>
+          <div class="hb-kpi"><b id="hbKpiMonthly">0%</b>Monthly</div>
+        </div>
+        <div class="hb-scopes" role="group" aria-label="Period">
+          <button type="button" class="mr-tab" data-scope="daily">Daily</button>
+          <button type="button" class="mr-tab" data-scope="weekly">Weekly</button>
+          <button type="button" class="mr-tab" data-scope="monthly">Monthly</button>
+        </div>
+        <progress id="hbProgress" class="hb-progress" value="0" max="100"></progress>
+        <div id="hbProgressText" class="muted">0% complete</div>
+        <ul id="hbList" class="hb-list" style="margin-top:10px"></ul>
+        <div class="hb-add">
+          <input id="hbNew" type="text" placeholder="Add a habit… e.g. Log every trade within 5 minutes" aria-label="New habit">
+          <button type="button" class="btn green" id="hbAdd">Add</button>
+        </div>
+        <div class="hb-actions no-print">
+          <button type="button" class="btn gray" data-preset="investing">Load trading preset</button>
+          <button type="button" class="btn gray" id="hbResetScope">Uncheck this period</button>
+          <button type="button" class="btn gray" id="hbExport">⬇️ Export</button>
+          <label class="btn gray" for="hbImport" style="margin-left:6px">⬆️ Import</label>
+          <input id="hbImport" type="file" accept="application/json" style="display:none">
         </div>
       </div>
     </div>
@@ -605,6 +703,209 @@ ${preFlightItems().map(x=>"- "+x).join("\n")}
     refreshHeader(); // ensure meter reflected now
   })();
   </script>
+<script>
+/* ATD-009: tabs plus the long-term rules and habits that used to live on
+   my-rules-long.html and discipline-checklist.html. They keep those pages'
+   localStorage keys, so anything saved there shows up here unchanged.
+   Built with createElement/textContent: rule and habit text is user input. */
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  function readJSON(key, fallback) {
+    try { var v = JSON.parse(localStorage.getItem(key) || 'null'); return v == null ? fallback : v; } catch (_) { return fallback; }
+  }
+  function writeJSON(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (_) {} }
+  function node(tag, props, kids) {
+    var n = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (k) {
+      if (k === 'text') n.textContent = props[k]; else if (k in n) n[k] = props[k]; else n.setAttribute(k, props[k]);
+    });
+    (kids || []).forEach(function (c) { if (c) n.appendChild(c); });
+    return n;
+  }
+
+  /* ── Tabs (?tab=trading|longterm|habits) ─────────────────────────────── */
+  var TABS = ['trading', 'longterm', 'habits'];
+  var PANEL = { trading: 'mrPanelTrading', longterm: 'mrPanelLongterm', habits: 'mrPanelHabits' };
+  function showTab(tab, push) {
+    if (TABS.indexOf(tab) === -1) tab = 'trading';
+    document.querySelectorAll('.mr-tabs .mr-tab').forEach(function (b) {
+      var on = b.getAttribute('data-tab') === tab;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+    });
+    TABS.forEach(function (t) { $(PANEL[t]).hidden = t !== tab; });
+    if (push) {
+      var u = new URL(location.href);
+      if (tab === 'trading') u.searchParams.delete('tab'); else u.searchParams.set('tab', tab);
+      history.replaceState(null, '', u.pathname + u.search + u.hash);
+    }
+  }
+  document.querySelectorAll('.mr-tabs .mr-tab').forEach(function (b) {
+    b.addEventListener('click', function () { showTab(b.getAttribute('data-tab'), true); });
+    b.addEventListener('keydown', function (e) {
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      var i = TABS.indexOf(b.getAttribute('data-tab')) + (e.key === 'ArrowRight' ? 1 : -1);
+      var next = TABS[(i + TABS.length) % TABS.length];
+      showTab(next, true);
+      document.querySelector('.mr-tabs [data-tab="' + next + '"]').focus();
+    });
+  });
+  var wanted = null;
+  try { wanted = new URLSearchParams(location.search).get('tab'); } catch (_) {}
+  showTab(wanted, false);
+
+  /* ── Long-term rules (keys from my-rules-long.html) ──────────────────── */
+  var LT_KEY = 'my_rules_longterm_v1', LT_CK = 'my_rules_longterm_check';
+  var LT_FIELDS = { eqPct: 'ltEqPct', bondPct: 'ltBondPct', rebalanceBand: 'ltRebalanceBand',
+    rebalanceFreq: 'ltRebalanceFreq', rulesBehavior: 'ltBehavior', rulesTriggers: 'ltTriggers' };
+  function ltItems() {
+    return [
+      'Equity ' + $('ltEqPct').value + '% / Bonds ' + $('ltBondPct').value + '%',
+      'Rebalance ' + $('ltRebalanceFreq').value + ' (±' + $('ltRebalanceBand').value + '%)',
+      'Rules set: ' + ($('ltBehavior').value.split('\n')[0] || '…'),
+      'Cash reserve 3–6mo ready',
+      'Annual review date scheduled'
+    ];
+  }
+  function ltRenderChecklist() {
+    var saved = readJSON(LT_CK, {});
+    var list = $('ltChecklist');
+    list.textContent = '';
+    ltItems().forEach(function (text, i) {
+      var id = 'ck' + i;   // same ids as the old page, so saved ticks carry over
+      var cb = node('input', { type: 'checkbox', id: 'lt_' + id, checked: !!saved[id] });
+      cb.addEventListener('change', function () {
+        var s = readJSON(LT_CK, {}); s[id] = cb.checked; writeJSON(LT_CK, s);
+      });
+      list.appendChild(node('li', {}, [cb, node('label', { htmlFor: 'lt_' + id, text: text })]));
+    });
+  }
+  function ltSave() {
+    var data = { savedAt: new Date().toISOString() };
+    Object.keys(LT_FIELDS).forEach(function (k) { data[k] = $(LT_FIELDS[k]).value; });
+    writeJSON(LT_KEY, data);
+    var when = new Date().toLocaleString();
+    $('ltSaveStatus').textContent = 'Saved ' + when;
+    $('ltSaved').textContent = 'saved ' + when;
+    ltRenderChecklist();
+  }
+  (function ltLoad() {
+    var d = readJSON(LT_KEY, {});
+    Object.keys(LT_FIELDS).forEach(function (k) { if (d[k] != null) $(LT_FIELDS[k]).value = d[k]; });
+    $('ltSaved').textContent = d.savedAt ? 'saved ' + new Date(d.savedAt).toLocaleString() : 'not saved';
+    ltRenderChecklist();
+  })();
+  $('ltSave').addEventListener('click', ltSave);
+
+  /* ── Habits (key from discipline-checklist.html) ─────────────────────── */
+  var HB_KEY = 'gs_discipline_v1';
+  var SCOPES = ['daily', 'weekly', 'monthly'];
+  var PRESET = {   // the old page's "Investing" preset
+    daily: ['📒 Log trades & notes (5m)', '🛑 Respect risk per trade (≤1%)', '🧘 No revenge trades', '📈 Follow entry/exit rules only'],
+    weekly: ['🧪 Post-mortem 3 trades', '🧰 Refresh watchlist / setups', '📚 Study one concept'],
+    monthly: ['🧭 Long-term allocation review', '💵 Auto-invest contributions', '📓 Journal performance & lessons']
+  };
+  function hbDefault() { return { prefs: {}, scope: 'daily', items: { daily: [], weekly: [], monthly: [] }, streaks: {} }; }
+  function hbClean(raw) {
+    var st = hbDefault();
+    if (!raw || typeof raw !== 'object') return st;
+    if (raw.prefs && typeof raw.prefs === 'object') st.prefs = raw.prefs;
+    if (raw.streaks && typeof raw.streaks === 'object') st.streaks = raw.streaks;
+    if (SCOPES.indexOf(raw.scope) !== -1) st.scope = raw.scope;
+    SCOPES.forEach(function (sc) {
+      var list = raw.items && Array.isArray(raw.items[sc]) ? raw.items[sc] : [];
+      st.items[sc] = list.filter(function (i) { return i && typeof i.t === 'string'; }).map(function (i) {
+        return { id: String(i.id || hbId()), t: i.t, d: !!i.d, n: typeof i.n === 'string' ? i.n : '' };
+      });
+    });
+    return st;
+  }
+  function hbId() { return Math.random().toString(36).slice(2, 9); }
+  var hb = hbClean(readJSON(HB_KEY, null));
+  function hbSave() { writeJSON(HB_KEY, hb); hbKpis(); }
+  function pct(list) { return list.length ? Math.round(list.filter(function (i) { return i.d; }).length * 100 / list.length) : 0; }
+  function hbKpis() {
+    $('hbKpiDaily').textContent = pct(hb.items.daily) + '%';
+    $('hbKpiWeekly').textContent = pct(hb.items.weekly) + '%';
+    $('hbKpiMonthly').textContent = pct(hb.items.monthly) + '%';
+    var v = pct(hb.items[hb.scope]);
+    $('hbProgress').value = v;
+    $('hbProgressText').textContent = v + '% complete';
+  }
+  function hbRender() {
+    document.querySelectorAll('.hb-scopes .mr-tab').forEach(function (b) {
+      b.setAttribute('aria-pressed', b.getAttribute('data-scope') === hb.scope ? 'true' : 'false');
+      b.setAttribute('aria-selected', b.getAttribute('data-scope') === hb.scope ? 'true' : 'false');
+    });
+    var list = $('hbList');
+    list.textContent = '';
+    var items = hb.items[hb.scope];
+    if (!items.length) list.appendChild(node('li', { className: 'muted', text: 'No habits for this period yet. Add one below or load the trading preset.' }));
+    items.forEach(function (item) {
+      var cb = node('input', { type: 'checkbox', checked: item.d, 'aria-label': 'Done: ' + item.t });
+      var text = node('div', { className: 'hb-text', text: item.t });
+      var note = node('textarea', { className: 'hb-note', placeholder: 'Notes…', value: item.n, 'aria-label': 'Notes for ' + item.t });
+      note.hidden = !item.n;
+      var row = node('li', { className: 'hb-item' + (item.d ? ' done' : '') }, [cb, node('div', { className: 'hb-body' }, [text, note]),
+        node('button', { type: 'button', className: 'btn link', text: '📝', title: 'Notes', 'aria-label': 'Notes' }),
+        node('button', { type: 'button', className: 'btn link', text: '✕', title: 'Remove', 'aria-label': 'Remove ' + item.t })]);
+      var btns = row.querySelectorAll('button');
+      cb.addEventListener('change', function () { item.d = cb.checked; row.classList.toggle('done', item.d); hbSave(); });
+      text.addEventListener('click', function () { cb.checked = !cb.checked; cb.dispatchEvent(new Event('change')); });
+      note.addEventListener('input', function () { item.n = note.value; hbSave(); });
+      btns[0].addEventListener('click', function () { note.hidden = !note.hidden; if (!note.hidden) note.focus(); });
+      btns[1].addEventListener('click', function () {
+        hb.items[hb.scope] = hb.items[hb.scope].filter(function (i) { return i !== item; });
+        hbSave(); hbRender();
+      });
+      list.appendChild(row);
+    });
+    hbKpis();
+  }
+  document.querySelectorAll('.hb-scopes .mr-tab').forEach(function (b) {
+    b.addEventListener('click', function () { hb.scope = b.getAttribute('data-scope'); hbSave(); hbRender(); });
+  });
+  function hbAdd() {
+    var t = $('hbNew').value.trim();
+    if (!t) return;
+    hb.items[hb.scope].push({ id: hbId(), t: t, d: false, n: '' });
+    $('hbNew').value = '';
+    hbSave(); hbRender();
+  }
+  $('hbAdd').addEventListener('click', hbAdd);
+  $('hbNew').addEventListener('keydown', function (e) { if (e.key === 'Enter') hbAdd(); });
+  document.querySelector('[data-preset="investing"]').addEventListener('click', function () {
+    var has = SCOPES.some(function (sc) { return hb.items[sc].length; });
+    if (has && !confirm('Replace your current habits with the trading preset?')) return;
+    SCOPES.forEach(function (sc) { hb.items[sc] = PRESET[sc].map(function (t) { return { id: hbId(), t: t, d: false, n: '' }; }); });
+    hbSave(); hbRender();
+  });
+  $('hbResetScope').addEventListener('click', function () {
+    if (!confirm('Uncheck every ' + hb.scope + ' habit?')) return;
+    hb.items[hb.scope].forEach(function (i) { i.d = false; });
+    hbSave(); hbRender();
+  });
+  $('hbExport').addEventListener('click', function () {
+    var url = URL.createObjectURL(new Blob([JSON.stringify(hb, null, 2)], { type: 'application/json' }));
+    var a = node('a', { href: url, download: 'discipline-checklist-state.json' });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 1000);
+  });
+  $('hbImport').addEventListener('change', function (e) {
+    var file = e.target.files && e.target.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function () {
+      try { hb = hbClean(JSON.parse(reader.result)); hbSave(); hbRender(); }
+      catch (_) { alert('That file is not a valid checklist export.'); }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+  hbRender();
+})();
+</script>
 <!-- ATD-009 phase 1: registry navigation in shell mode (data-nav-shell on <body>);
      elements marked data-nav-legacy are the old site links it replaces. -->
 <script src="./js/nav-loader.js?v=20261003g"></script>

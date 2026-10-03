@@ -450,6 +450,49 @@ for (const [from, path, scan] of [['my-rules-short', '/my-rules.html', null], ['
   ok('P2 unknown ?scan= ignored', p._errors.length === 0 && !anyActive);
   await p.context().close(); }
 
+// R. ATD-009: long-term rules and habits merged into my-rules.html, reading the old keys.
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => {
+    localStorage.setItem('my_rules_longterm_v1', JSON.stringify({ eqPct: '60', bondPct: '40', rebalanceBand: '7', rebalanceFreq: 'Quarterly',
+      rulesBehavior: 'Never sell in a panic\nSecond rule', rulesTriggers: 'Review in January', savedAt: '2026-01-02T03:04:05Z' }));
+    localStorage.setItem('my_rules_longterm_check', JSON.stringify({ ck1: true }));
+    localStorage.setItem('gs_discipline_v1', JSON.stringify({ prefs: { carryForward: true }, scope: 'daily', streaks: {},
+      items: { daily: [{ id: 'a1', t: '<img src=x onerror="window.__xss=1">Log trades', d: true, n: 'note <b>x</b>' }, { id: 'a2', t: 'Stop at -2R', d: false, n: '' }],
+               weekly: [{ id: 'w1', t: 'Review week', d: false, n: '' }], monthly: [] } }));
+  });
+  await p.goto(BASE + '/my-rules-long.html'); await p.waitForTimeout(1200);
+  const lt = await p.evaluate(() => ({ url: location.pathname + location.search,
+    panel: !document.getElementById('mrPanelLongterm').hidden && document.getElementById('mrPanelTrading').hidden,
+    eq: document.getElementById('ltEqPct').value, freq: document.getElementById('ltRebalanceFreq').value,
+    behavior: document.getElementById('ltBehavior').value.split('\n')[0],
+    checks: [...document.querySelectorAll('#ltChecklist input')].map(c => c.checked),
+    first: document.querySelector('#ltChecklist li:nth-child(3) label').textContent,
+    selected: document.querySelector('.mr-tabs [aria-selected="true"]').dataset.tab }));
+  ok('R my-rules-long -> my-rules?tab=longterm with saved rules', lt.url === '/my-rules.html?tab=longterm' && lt.panel && lt.eq === '60' && lt.freq === 'Quarterly' &&
+     lt.behavior === 'Never sell in a panic' && lt.checks.join() === 'false,true,false,false,false' && lt.first === 'Rules set: Never sell in a panic' && lt.selected === 'longterm', JSON.stringify(lt));
+  await p.fill('#ltEqPct', '55'); await p.click('#ltSave'); await p.click('#lt_ck0');
+  const saved = await p.evaluate(() => [JSON.parse(localStorage.getItem('my_rules_longterm_v1')).eqPct, JSON.parse(localStorage.getItem('my_rules_longterm_check')).ck0]);
+  ok('R long-term save + tick use the old keys', saved[0] === '55' && saved[1] === true, JSON.stringify(saved));
+  await p.goto(BASE + '/discipline-checklist.html'); await p.waitForTimeout(1200);
+  const hb = await p.evaluate(() => ({ url: location.pathname + location.search, panel: !document.getElementById('mrPanelHabits').hidden,
+    texts: [...document.querySelectorAll('#hbList .hb-text')].map(n => n.textContent), imgs: document.querySelectorAll('#hbList img').length,
+    xss: !!window.__xss, daily: document.getElementById('hbKpiDaily').textContent, note: document.querySelector('#hbList .hb-note').value }));
+  ok('R discipline-checklist -> my-rules?tab=habits with saved habits, text not HTML', hb.url === '/my-rules.html?tab=habits' && hb.panel &&
+     hb.texts.length === 2 && hb.texts[0].startsWith('<img') && hb.imgs === 0 && !hb.xss && hb.daily === '50%' && hb.note === 'note <b>x</b>', JSON.stringify(hb));
+  await p.fill('#hbNew', 'Journal before close'); await p.press('#hbNew', 'Enter');
+  await p.click('.hb-scopes [data-scope="weekly"]');
+  const after = await p.evaluate(() => { const st = JSON.parse(localStorage.getItem('gs_discipline_v1'));
+    return { daily: st.items.daily.length, scope: st.scope, prefs: st.prefs.carryForward, shown: document.querySelectorAll('#hbList .hb-item').length }; });
+  ok('R habits add + period switch saved to gs_discipline_v1', after.daily === 3 && after.scope === 'weekly' && after.prefs === true && after.shown === 1, JSON.stringify(after));
+  await p.click('.mr-tabs [data-tab="trading"]');
+  ok('R Trading tab restores the original page and clears ?tab', await p.evaluate(() => !document.getElementById('mrPanelTrading').hidden && location.search === '' && !!document.getElementById('riskPct').offsetParent));
+  ok('R my-rules no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const m = await newPage(mobile, null);
+  await m.goto(BASE + '/my-rules.html?tab=habits'); await m.waitForTimeout(1200);
+  ok('R my-rules habits tab: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1));
+  await m.context().close(); }
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {

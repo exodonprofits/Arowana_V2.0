@@ -228,13 +228,18 @@ class NavRegistryTests(unittest.TestCase):
         targets = {"risk-calculator.html": "position-sizer.html", "position-sizer_fresh.html": "position-sizer.html",
                    "my-rules-short.html": "my-rules.html", "dividend-screener.html": "scanner.html?scan=dividend_safety",
                    "automated-trading-plan.html": "trade-plan-builder.html", "news-trading.html": "trade-plan-builder.html",
-                   "stock-checker.html": "intrinsic-value.html"}
+                   "stock-checker.html": "intrinsic-value.html",
+                   "my-rules-long.html": "my-rules.html?tab=longterm", "discipline-checklist.html": "my-rules.html?tab=habits"}
         for name, target in targets.items():
             html = (ROOT / name).read_text(encoding="utf-8")
             self.assertIn("var target = '%s';" % target, html, name)
             self.assertIn('content="0; url=%s"' % target, html, name)
             self.assertLess(len(html), 4000, name)
         self.assertIn("pending('dividend_safety'", (ROOT / "js" / "scanner-defs.js").read_text(encoding="utf-8"))
+        # my-rules.html took over the two pages' features and must keep their keys.
+        rules = (ROOT / "my-rules.html").read_text(encoding="utf-8")
+        for key in ("my_rules_longterm_v1", "my_rules_longterm_check", "gs_discipline_v1", "my_rules_v2"):
+            self.assertIn(key, rules)
 
     def test_no_page_loads_auth_guard_rail(self):
         # js/auth-guard.js holds only an outdated rail copy (no auth logic);
