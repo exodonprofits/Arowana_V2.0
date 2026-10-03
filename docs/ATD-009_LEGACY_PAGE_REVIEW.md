@@ -87,6 +87,12 @@ The three items parked during ATD-008 stay parked here: `whale-tracker.html` (no
 
 Each phase is one or more normal PRs with the same checks used in ATD-008: link check across all pages, CI, before/after error comparison in a local browser with external network blocked, and a rollback that restores the old file.
 
+### Progress
+
+| Phase | Done | Notes |
+|---|---|---|
+| 1 | C, L | C: `<body data-nav-shell>` makes `js/arowana-nav.js` build the rail on pages without a sidebar; page top links carry `data-nav-legacy`; opt-out loads nothing on these pages. L: redirect stubs keep query and hash; live links updated. M waits on Q3 (Cloudflare build settings). |
+
 ## 6. Proposed task/status updates (for integration after review)
 
 Recorded in `TASKS.md` and `PROJECT_STATUS.md` as owner-approved; each phase is implemented in its own PR.

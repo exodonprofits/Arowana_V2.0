@@ -62,7 +62,7 @@ details summary{cursor:pointer;color:var(--brand);font-weight:600;font-size:.85r
 .export-area textarea{width:100%;min-height:200px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;border:1px solid var(--border);border-radius:7px;padding:10px;background:#fff;resize:vertical}
 </style>
 </head>
-<body>
+<body data-nav-shell>
 <div class="container">
 
 <header>
@@ -545,5 +545,8 @@ function downloadCsv(){
 renderSnapshot();
 renderIssues();
 </script>
+<!-- ATD-009 phase 1: registry navigation in shell mode (data-nav-shell on <body>);
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js?v=20261003g"></script>
 </body>
 </html>

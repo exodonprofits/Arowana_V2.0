@@ -144,16 +144,23 @@ class NavRegistryTests(unittest.TestCase):
                          "trade-plan-builder.html", "wheel-strategy.html", "ai-morning-brief.html",
                          "trade-journal-pro.html"):
             self.assertIn(required, migrated)
-        self.assertEqual(len(migrated), 33, migrated)
+        self.assertEqual(len(migrated), 37, migrated)
         # arowana-trader.html's sidebar is the coach panel: the nav renders only
         # the mobile bar and More sheet there, by design.
         no_rail_mount = {"arowana-trader.html"}
+        # ATD-009 phase 1: pages with no sidebar of their own ask the renderer
+        # to build one (<body data-nav-shell>) instead of adding a #railMount.
+        shell_pages = {"swing-trader.html", "long-term-dashboard.html", "my-rules.html",
+                       "data-hygiene-audit.html"}
         direct = re.compile(r'<script[^>]+src="[^"]*(nav-rail|arowana-nav[a-z-]*)\.js')
         for name in migrated:
             html = (ROOT / name).read_text(encoding="utf-8", errors="replace")
             self.assertEqual(html.count('src="./js/nav-loader.js'), 1, name)
             self.assertIsNone(direct.search(html), "%s loads a nav script directly" % name)
-            if name not in no_rail_mount:
+            if name in shell_pages:
+                self.assertRegex(html, r"<body[^>]*\bdata-nav-shell\b", name)
+                self.assertNotIn('id="railMount"', html, name)
+            elif name not in no_rail_mount:
                 self.assertIn('id="railMount"', html, name)
             # No inline rail copy or post-render correction patch may remain.
             self.assertNotIn("The rail is inlined rather than loaded", html, name)
@@ -177,6 +184,23 @@ class NavRegistryTests(unittest.TestCase):
             self.assertNotIn(h["path"], registered, "%s is already a menu item" % h["path"])
         # Every migrated page is either a menu item or has a home.
         self.assertEqual(sorted(migrated - registered - set(paths)), [])
+
+    def test_retired_catalogues_redirect(self):
+        # ATD-009 phase 1, group L: the old URLs stay valid as redirect stubs
+        # that carry the query string and hash over.
+        targets = {"advanced-trading-tools.html": "tools.html", "feature_body.html": "features.html",
+                   "feature_new.html": "features.html", "features-tools-directory.html": "tools.html"}
+        for name, target in targets.items():
+            html = (ROOT / name).read_text(encoding="utf-8")
+            self.assertIn('content="0; url=%s"' % target, html, name)
+            self.assertIn("window.location.replace('%s' + window.location.search + window.location.hash)" % target,
+                          html, name)
+            self.assertLess(len(html), 4000, "%s still carries the old catalogue" % name)
+        live = [p for p in ROOT.glob("*.html") if p.name not in targets]
+        for page in live:
+            html = page.read_text(encoding="utf-8", errors="replace")
+            for name in targets:
+                self.assertNotIn('href="%s' % name, html, "%s links to retired %s" % (page.name, name))
 
     def test_no_page_loads_auth_guard_rail(self):
         # js/auth-guard.js holds only an outdated rail copy (no auth logic);

@@ -447,7 +447,7 @@
     // Parity: pages whose header already owns the account menu keep it.
     if (!document.getElementById('user-menu-toggle')) mount.appendChild(accountSection());
 
-    var sidebar = mount.closest('.sidebar') || document.getElementById('sidebarDrawer');
+    var sidebar = mount.closest('.sidebar') || document.getElementById('sidebarDrawer') || mount.closest('.anv-shell');
     if (sidebar) wireCollapse(sidebar, collapseBtn);
   }
 
@@ -725,6 +725,51 @@
       '.anv-sheet .rail-subitem.anv-subitem-nested{padding-left:36px;font-size:0.92em}' +
       '.anv-nested{display:flex;flex-direction:column}' +
       '.anv-nested[hidden]{display:none}' +
+      'body.anv-v2 [data-nav-legacy]{display:none!important}' +
+      // Shell rail: only on pages that opted in with data-nav-shell.
+      '.anv-shell{display:none}' +
+      '@media (min-width:' + (MOBILE_MAX + 1) + 'px){' +
+        'body.anv-shell-on{padding-left:248px}' +
+        'body.anv-shell-on.rail-collapsed{padding-left:68px}' +
+        '.anv-shell{display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;width:248px;z-index:900;box-sizing:border-box;' +
+          'padding:14px 10px;background:var(--card,#fff);border-right:1px solid var(--border,#e2e8f0);' +
+          'color:var(--text,#0f172a);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.35;text-align:left}' +
+        '.anv-shell.rail-collapsed{width:68px}' +
+      '}' +
+      '.anv-shell *{box-sizing:border-box}' +
+      '.anv-shell #railMount{display:flex;flex-direction:column;flex:1 1 auto;min-height:0}' +
+      '.anv-shell .rail-top{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 4px 12px;margin-bottom:8px;border-bottom:1px solid var(--border,#e2e8f0)}' +
+      '.anv-shell .rail-brand{display:flex;align-items:center;gap:8px;color:var(--brand,#0b4f8a);font-weight:800;text-decoration:none;white-space:nowrap;overflow:hidden}' +
+      '.anv-shell .rail-brand-logo{width:26px;height:26px;border-radius:50%;object-fit:contain;flex:0 0 auto}' +
+      '.anv-shell .rail-collapse-btn{width:28px;height:28px;flex:0 0 auto;border:1px solid var(--border,#e2e8f0);border-radius:6px;background:none;color:var(--text-muted,#64748b);cursor:pointer}' +
+      '.anv-shell .rail-nav{flex:1 1 auto;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:2px}' +
+      '.anv-shell .rail-group{display:flex;flex-direction:column}' +
+      '.anv-shell .rail-item-row{display:flex;align-items:center;gap:2px}' +
+      '.anv-shell .rail-item{display:flex;align-items:center;gap:10px;flex:1;min-width:0;padding:9px 8px;border:0;border-radius:6px;background:none;' +
+        'color:var(--text,#0f172a);font:inherit;font-weight:600;text-decoration:none;cursor:pointer}' +
+      '.anv-shell .rail-item:hover,.anv-shell .rail-subitem:hover{background:rgba(11,79,138,.06)}' +
+      '.anv-shell .rail-item.active{color:var(--brand,#0b4f8a);background:rgba(11,79,138,.08)}' +
+      '.anv-shell .rail-item-icon{width:22px;text-align:center;flex:0 0 auto}' +
+      '.anv-shell .rail-item-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}' +
+      '.anv-shell .rail-group-toggle{width:24px;height:24px;flex:0 0 auto;border:0;border-radius:6px;background:none;color:var(--text-muted,#64748b);cursor:pointer}' +
+      '.anv-shell .rail-group-toggle[aria-expanded="true"] .rail-group-arrow{display:inline-block;transform:rotate(180deg)}' +
+      '.anv-shell .rail-submenu{display:none;flex-direction:column;padding:2px 0 6px 26px}' +
+      '.anv-shell .rail-group.expanded .rail-submenu{display:flex}' +
+      '.anv-shell .rail-subitem{display:flex;align-items:center;gap:8px;padding:6px 8px;border-radius:6px;color:var(--text-muted,#64748b);text-decoration:none;font-size:.85em}' +
+      '.anv-shell .rail-subitem-icon{width:18px;text-align:center;flex:0 0 auto}' +
+      '.anv-shell .rail-subitem-label{font-weight:600;color:var(--text,#0f172a)}' +
+      '.anv-shell .rail-subitem-desc{font-size:.85em;color:var(--text-muted,#64748b)}' +
+      '.anv-shell .rail-bottom{position:relative;margin-top:8px;padding-top:8px;border-top:1px solid var(--border,#e2e8f0)}' +
+      '.anv-shell .user-menu{display:none;position:absolute;left:0;right:0;bottom:calc(100% + 6px);z-index:1000;padding:6px;' +
+        'background:var(--card,#fff);border:1px solid var(--border,#e2e8f0);border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.12)}' +
+      '.anv-shell .user-menu.open{display:block}' +
+      '.anv-shell .menu-header{padding:6px 8px;font-size:.85em;color:var(--text-muted,#64748b)}' +
+      '.anv-shell .menu-item{display:flex;align-items:center;gap:8px;width:100%;padding:8px;border:0;border-radius:6px;background:none;' +
+        'color:var(--text,#0f172a);font:inherit;text-align:left;text-decoration:none;cursor:pointer}' +
+      '.anv-shell .menu-item:hover{background:rgba(11,79,138,.06)}' +
+      '.anv-shell .menu-item.danger{color:#b91c1c}' +
+      '.anv-shell.rail-collapsed .rail-brand-text,.anv-shell.rail-collapsed .rail-item-label,.anv-shell.rail-collapsed .rail-group-toggle,' +
+        '.anv-shell.rail-collapsed .rail-submenu,.anv-shell.rail-collapsed .anv-inline-arrow{display:none}' +
       'body.anv-sheet-open{overflow:hidden}';
     document.head.appendChild(el('style', { id: 'anv-styles', text: css }));
   }
@@ -741,6 +786,15 @@
     injectStyles();
 
     var mount = document.getElementById('railMount');
+    // Shell mode (ATD-009): pages without the rail layout opt in with
+    // <body data-nav-shell>. The nav builds its own left rail with
+    // self-contained styles; elements marked data-nav-legacy (the page's old
+    // site links) are hidden while the new navigation is showing.
+    if (!mount && document.body.hasAttribute('data-nav-shell')) {
+      mount = el('div', { id: 'railMount' });
+      document.body.insertBefore(el('aside', { className: 'anv-shell', 'aria-label': 'Site navigation' }, [mount]), document.body.firstChild);
+      document.body.classList.add('anv-shell-on');
+    }
     if (mount) renderRail(mount);
     else console.warn('[arowana-nav] #railMount not found; desktop rail skipped (mobile bar still rendered).');
 

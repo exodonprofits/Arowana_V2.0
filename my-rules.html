@@ -171,7 +171,7 @@
     }
   </style>
 </head>
-<body>
+<body data-nav-shell>
 <header class="header">
   <div class="container">
     <div class="header-top">
@@ -179,19 +179,19 @@
         <img src="images/arowanalogo.png" class="logo-img" alt="Arowana Profits"/>
         <a class="brand-link" href="index.html">Arowana Profits</a>
       </div>
-      <nav class="nav" id="nav">
+      <nav class="nav" id="nav" data-nav-legacy>
         <a href="index.html"><i class="fas fa-home"></i> Home</a>
         <a href="short-term-dashboard.html" aria-current="page"><i class="fas fa-bolt"></i> Short-Term</a>
         <a href="long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
         <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
         <a href="features.html"><i class="fas fa-cogs"></i> Features</a>
       </nav>
-      <button class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
+      <button class="hamburger" id="hamburger" data-nav-legacy aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></button>
     </div>
   </div>
 
   <!-- Mobile menu -->
-  <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+  <div class="mobile-menu" id="mobileMenu" data-nav-legacy aria-hidden="true">
     <div class="grid container">
       <a href="index.html"><i class="fas fa-home"></i> Home</a>
       <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
@@ -605,5 +605,8 @@ ${preFlightItems().map(x=>"- "+x).join("\n")}
     refreshHeader(); // ensure meter reflected now
   })();
   </script>
+<!-- ATD-009 phase 1: registry navigation in shell mode (data-nav-shell on <body>);
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js?v=20261003g"></script>
 </body>
 </html>

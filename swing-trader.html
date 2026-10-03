@@ -153,7 +153,7 @@ footer{background:var(--brand);color:#cfe0f5;padding:28px 0;margin-top:auto}
 </style>
 </head>
 
-<body>
+<body data-nav-shell>
 
 <!-- Navigation -->
 <nav class="nav-shell">
@@ -162,7 +162,7 @@ footer{background:var(--brand);color:#cfe0f5;padding:28px 0;margin-top:auto}
       <img src="https://arowanaprofits.com/images/logo-icon.png" alt="" class="nav-logo">
       Arowana Profits
     </a>
-    <div class="nav-links">
+    <div class="nav-links" data-nav-legacy>
       <a href="arowana-trader.html" class="nav-link">📊 Trader</a>
       <a href="portfolio-advisor.html" class="nav-link">💼 Portfolio</a>
       <a href="features.html" class="nav-link">🛠️ Tools</a>
@@ -980,5 +980,8 @@ if (document.readyState === 'loading') {
 <!-- App Config Integration -->
 <script src="app-config.js"></script>
 
+<!-- ATD-009 phase 1: registry navigation in shell mode (data-nav-shell on <body>);
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js?v=20261003g"></script>
 </body>
 </html>

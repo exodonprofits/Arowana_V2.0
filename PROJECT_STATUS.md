@@ -4,6 +4,8 @@
 
 Owner-approved 2026-10-03 (Q1–Q5 as recommended): [legacy page review](docs/ATD-009_LEGACY_PAGE_REVIEW.md) groups the 141 pages outside the new navigation into 14 groups with one recommended action each, building on ATD-001. Almost all live links to them come from the internal `tool-audit.html`, so most can retire without affecting the menu; journal/watchlist/portfolio duplicates wait on ATD-005/007 ownership fixes because they hold saved data. Documentation only; nothing changed.
 
+Phase 1 (groups C and L) on `claude/ATD-009-phase-1`: the four registry-linked pages without a menu now get the new navigation through a renderer-built rail (`<body data-nav-shell>`), and the four duplicate tool catalogues are redirect stubs to `tools.html` / `features.html`. Group M (archive) waits on the Cloudflare Pages build-settings check (Q3).
+
 ## ATD-008 navigation - 2026-10-03
 
 **ATD-008 complete.** Specification and slice 1 through wave 6 are merged (PRs #14–#20); the close-out adds section highlighting for the 14 tool pages. Owner-parked items keep their defaults: `whale-tracker.html` (pending the coaching merge), `arowana-trader.html`'s desktop top link bar, `tradingcommand.html` (D5). Handed to ATD-007: delete the unused `js/auth-guard.js` and the unreachable `?expired=1` banner in `login.html`. Signed-in browser testing still waits on ATD-007's DEV frontend configuration.
