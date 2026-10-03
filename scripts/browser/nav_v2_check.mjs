@@ -338,6 +338,30 @@ for (const name of ['position-sizer', 'trade-plan-builder']) {
   ok('W6 journal no nav errors', p._errors.length === 0, p._errors.join('; '));
   await p.context().close(); }
 
+// CO. Close-out: tool pages highlight their home section without aria-current.
+const HOMES = { 'kelly-calculator': ['portfolio', 'portfolio'], 'dcf-analyzer': ['research', 'more'],
+  'options-analyzer': ['desks', 'more'], 'r-multiple': ['journal', 'journal'], 'trade-plan-builder': ['command', 'command'],
+  'tool-audit': ['research', 'more'] };
+for (const [name, [group, slot]] of Object.entries(HOMES)) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + name + '.html'); await p.waitForTimeout(1200);
+  const r = await p.evaluate(g => ({
+    current: document.querySelectorAll('[aria-current="page"]').length,
+    expanded: document.querySelector('#railMount [data-nav-group="' + g + '"]').classList.contains('expanded'),
+    marked: !!document.querySelector('#railMount [data-nav-group="' + g + '"] .rail-item.anv-contains-current'),
+  }), group);
+  ok(`CO ${name}: home ${group} expanded + marked, no aria-current`, r.current === 0 && r.expanded && r.marked, JSON.stringify(r));
+  await p.context().close();
+  const m = await newPage(mobile, null);
+  await m.goto(BASE + '/' + name + '.html'); await m.waitForTimeout(1200);
+  ok(`CO ${name}: mobile ${slot} slot active`, await m.evaluate(sl => document.querySelector('.anv-mobile-bar [data-nav-slot="' + sl + '"]').classList.contains('active'), slot));
+  await m.context().close();
+}
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/options-analyzer.html'); await p.waitForTimeout(1200);
+  ok('CO options-analyzer: Options desk children shown', await p.evaluate(() => !document.querySelector('#railMount [data-nav-nest="desk-options"]').hidden));
+  await p.context().close(); }
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {

@@ -158,6 +158,26 @@ class NavRegistryTests(unittest.TestCase):
             # No inline rail copy or post-render correction patch may remain.
             self.assertNotIn("The rail is inlined rather than loaded", html, name)
             self.assertNotIn("Rail correction, inline and last", html, name)
+    def test_homes_cover_unregistered_migrated_pages(self):
+        registered = set()
+        for e in self.entries:
+            if "route" in e:
+                registered.add(e["route"]["path"])
+            for rule in e.get("activeWhen", []):
+                registered.add(rule["path"])
+        migrated = {p.name for p in ROOT.glob("*.html")
+                    if 'src="./js/nav-loader.js' in p.read_text(encoding="utf-8", errors="replace")}
+        homes = self.reg["homes"]
+        paths = [h["path"] for h in homes]
+        self.assertEqual(len(paths), len(set(paths)), "duplicate home path")
+        for h in homes:
+            self.assertIn(h["entry"], self.by_id, h["path"])
+            self.assertTrue((ROOT / h["path"]).is_file(), h["path"])
+            self.assertIn(h["path"], migrated, "%s is not on the registry navigation" % h["path"])
+            self.assertNotIn(h["path"], registered, "%s is already a menu item" % h["path"])
+        # Every migrated page is either a menu item or has a home.
+        self.assertEqual(sorted(migrated - registered - set(paths)), [])
+
     def test_no_page_loads_auth_guard_rail(self):
         # js/auth-guard.js holds only an outdated rail copy (no auth logic);
         # loaded deferred it re-rendered the rail after the page's own.

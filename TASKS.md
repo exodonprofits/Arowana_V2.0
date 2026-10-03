@@ -153,7 +153,7 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Owner:** Claude Code
 
-**Status:** Specification completed and owner-approved 2026-10-02 (PR #14), including decisions D1–D13. Slice 1 implemented 2026-10-03 on `claude/ATD-008-nav-slice-1`; awaiting review. Opt-in only; default navigation unchanged.
+**Status:** COMPLETE 2026-10-03. Spec owner-approved 2026-10-02 (PR #14, decisions D1–D13); slice 1 and waves 2–6 merged (PRs #15–#20); close-out on `claude/ATD-008-nav-closeout`. All 33 signed-in pages that carried the rail now use the registry navigation by default, with `localStorage.ap_nav_v2 = "0"` as a per-browser fallback.
 
 **Result:** [Implementation spec](docs/ATD-008_NAVIGATION_IMPLEMENTATION_SPEC.md). Slice 1 adds the data-only registry `js/arowana-nav-registry.js` and renderer `js/arowana-nav.js` (six approved destinations, five desks, Planned/Legacy states, mobile Command/Watchlists/Portfolio/Journal/More with a focus-managed More sheet). `tools.html` loads them only when `localStorage.ap_nav_v2 === "1"`, otherwise `js/nav-rail.js` as before. Prerequisite P1: `portfolio-command.html` now honours `?tab=` ahead of the remembered tab. `js/nav-rail.js`, the eight inline rail copies and `js/auth-guard.js` are untouched.
 
@@ -170,5 +170,7 @@ Runtime credential containment took priority after generated secrets were found 
 **Wave 6 (2026-10-03, `claude/ATD-008-nav-wave-6`):** `trade-journal-pro.html` now loads `js/nav-loader.js`; its inline rail copy, correction patch and rail-label observer are removed, and it no longer loads `js/auth-guard.js`. Static review found that file contains only an outdated copy of the rail (no session check, no redirect, no `expired` handling); loaded deferred, it re-rendered the rail after the page's own. No file produces `login.html?expired=1`, so `login.html`'s session-expired banner is already unreachable. `switchTab()` reports Stock/Option vs Stats to the nav and nav links switch tabs in place. A unit test now fails if any page loads `auth-guard.js`. The file itself is left for ATD-007.
 
 **For ATD-007 (Codex):** `js/auth-guard.js` is unused after wave 6 and can be deleted; the `?expired=1` banner in `login.html` has no producer. Neither is changed here.
+
+**Close-out (2026-10-03, `claude/ATD-008-nav-closeout`):** the 14 tool pages that are not menu items get a registry `homes` entry, so their section (Research, Options desk, Portfolio & Risk, Journal & Review or Trading Command) is expanded and marked as containing the page, without `aria-current`. A unit test requires every migrated page to be either a menu item or have a home.
 
 **Remaining (owner decisions, defaults kept):** `whale-tracker.html` stays as-is pending the ATD-003 coaching merge; `arowana-trader.html` keeps its desktop top link bar; `tradingcommand.html` stays unmigrated (D5). `js/nav-rail.js` remains as the `ap_nav_v2 = "0"` fallback and for `tradingcommand.html`.
