@@ -179,7 +179,7 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Owner:** Claude Code
 
-**Status:** Proposal completed 2026-10-03; awaiting owner review. Documentation only; no page changed, moved, redirected or deleted.
+**Status:** Owner-approved 2026-10-03, including Q1–Q5 as recommended. Documentation only; phases are implemented in separate PRs.
 
 **Branch:** `claude/ATD-009-legacy-page-review`
 
@@ -187,4 +187,4 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Verification:** All 141 pages matched to ATD-001 rows and assigned to exactly one group by script; inbound links, sitemap entries and scanner capability counted from source; documentation links, secret scan and whitespace checks. No browser, data or hosting checks.
 
-**Next:** Owner decisions Q1–Q5 and group approvals; each approved phase becomes its own implementation PR.
+**Next:** Phase 1 — archive group M (pending one hosting check, Q3), retire duplicate catalogues (L), put the four registry-linked pages on the new navigation (C).

@@ -1,6 +1,6 @@
 # ATD-009 — Legacy page review (keep / merge / retire)
 
-Status: **proposal for owner review; documentation only; nothing changed, moved, redirected or deleted**. Date: 2026-10-03. Branch: `claude/ATD-009-legacy-page-review`. Baseline: `origin/main` at `33af7e8` (ATD-008 complete).
+Status: **owner-approved 2026-10-03, including the recommendations for Q1–Q5 (section 4); documentation only; nothing changed, moved, redirected or deleted by this document**. Date: 2026-10-03. Branch: `claude/ATD-009-legacy-page-review`. Baseline: `origin/main` at `33af7e8` (ATD-008 complete).
 
 Inputs: [ATD-001 repository audit](ATD-001_REPOSITORY_AUDIT.md) (per-page KEEP/MODIFY/MERGE/PORT/ARCHIVE/DELETE proposals), [ATD-003 navigation map](ATD-003_CANONICAL_NAVIGATION_MAP.md) §3 (route dispositions), [ATD-008 spec](ATD-008_NAVIGATION_IMPLEMENTATION_SPEC.md) and the navigation registry, plus fresh static evidence gathered for this review (section 2).
 
@@ -61,9 +61,11 @@ Two groups carry security value beyond tidiness, so they are worth doing early:
 - **Group M:** `test_webhook.html` is an external webhook test form and the Salon pages belong to another product's data and OAuth domain (ATD-001 marks the Salon pages P0 ARCHIVE). While they sit in the deployed root they are publicly reachable.
 - **Group F:** several scanner pages call providers from the browser, which ATD-002 lists as a client-key migration problem. Retiring them removes those call sites rather than fixing them one by one.
 
-## 4. Decisions needed from you
+## 4. Decisions (approved 2026-10-03)
 
-| ID | Question | Recommendation |
+The owner approved the recommendation for each question on 2026-10-03; the right-hand column is now the decision.
+
+| ID | Question | Approved decision |
 |---|---|---|
 | Q1 | Are the long-term planning tools (group J) part of the private beta? | Yes for `asset-allocation-builder`, `dca-planner`, `pick-my-mix`, `risk-quiz` (they fit the Long-Term desk); defer the rest. |
 | Q2 | Household and retirement planning (group K): defer, or keep promoting? | Defer, per ATD-001. URLs keep working. |
@@ -87,7 +89,7 @@ Each phase is one or more normal PRs with the same checks used in ATD-008: link 
 
 ## 6. Proposed task/status updates (for integration after review)
 
-Added to `TASKS.md` and `PROJECT_STATUS.md` in this PR as "proposal awaiting review"; no implementation task is started.
+Recorded in `TASKS.md` and `PROJECT_STATUS.md` as owner-approved; each phase is implemented in its own PR.
 
 ## 7. Verification for this document
 
