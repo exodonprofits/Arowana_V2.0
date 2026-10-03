@@ -138,9 +138,10 @@ class NavRegistryTests(unittest.TestCase):
     def test_migrated_pages_use_only_the_loader(self):
         migrated = sorted(p.name for p in ROOT.glob("*.html")
                           if 'src="./js/nav-loader.js' in p.read_text(encoding="utf-8", errors="replace"))
-        for required in ("tools.html", "trading-command.html"):
+        for required in ("tools.html", "trading-command.html", "portfolio-command.html", "options-hub.html",
+                         "analysis-central.html", "intrinsic-value.html", "portfolio-advisor.html"):
             self.assertIn(required, migrated)
-        self.assertEqual(len(migrated), 20, migrated)
+        self.assertEqual(len(migrated), 25, migrated)
         direct = re.compile(r'<script[^>]+src="[^"]*(nav-rail|arowana-nav[a-z-]*)\.js')
         for name in migrated:
             html = (ROOT / name).read_text(encoding="utf-8", errors="replace")

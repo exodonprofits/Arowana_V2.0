@@ -78,7 +78,7 @@ const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch
   // D. active-state resolution via same-origin history swap (no navigation)
   const cases = [
     ['/options-hub.html?tab=puts', 'wheel-puts'], ['/options-hub.html?tab=analyzer', 'options-recommender'],
-    ['/options-hub.html', 'desk-options'], ['/options-hub.html?tab=quality', 'wheel-quality'],
+    ['/options-hub.html', 'wheel-calls'], ['/options-hub.html?tab=quality', 'wheel-quality'],
     ['/portfolio-command.html?tab=performance', 'portfolio-performance'], ['/portfolio-command.html', 'portfolio-overview'],
     ['/trading-command.html', 'command-positions'], ['/trading-command.html#coach', 'command-coach'],
     ['/trading-command.html?tab=coach', 'command-coach'], ['/tradingcommand.html', null],
@@ -148,8 +148,10 @@ for (const width of [320, 375, 768]) {
 // W. Wave 2: every migrated page, default (no preference) vs opt-out.
 const MIGRATED = ['tools','ai-moat-finder','atr-stop-planner','credit-spread-planner','dcf-analyzer','discipline-scorecard',
   'dividend-tracker','expectancy-matrix','kelly-calculator','money-flow-alert','options-analyzer','r-multiple','risk-comfort',
-  'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis','trading-command'];
-const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-positions', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
+  'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis','trading-command',
+  'portfolio-command','options-hub','analysis-central','intrinsic-value','portfolio-advisor'];
+const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-positions', 'portfolio-command': 'portfolio-overview', 'options-hub': 'wheel-calls',
+  'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
   'strategy-backtesting': 'research-backtesting', 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': 'research-technical' };
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
@@ -227,6 +229,51 @@ for (const name of MIGRATED) {
   ok('T More sheet opens on Command page, More not active', await p.evaluate(() => !document.getElementById('anvMoreSheet').hidden && !document.querySelector('[data-nav-slot="more"]').classList.contains('active')));
   await p.keyboard.press('Escape');
   ok('T mobile no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+
+// W4. Wave 4 page specifics.
+const curIds = p => p.evaluate(() => [...new Set([...document.querySelectorAll('#railMount [aria-current="page"]')].map(n => n.getAttribute('data-nav-id')))].join(','));
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => localStorage.removeItem('oh_active_tab_v1'));
+  await p.goto(BASE + '/options-hub.html?tab=analyzer'); await p.waitForTimeout(1500);
+  ok('W4 options-hub ?tab=analyzer -> Options > Strategy Recommender', (await curIds(p)) === 'options-recommender', await curIds(p));
+  ok('W4 Options desk children shown, Wheel children hidden', await p.evaluate(() => !document.querySelector('#railMount [data-nav-nest="desk-options"]').hidden && document.querySelector('#railMount [data-nav-nest="desk-wheel"]').hidden));
+  await p.evaluate(() => { window.__noReload = 1; });
+  await p.click('#railMount a[data-nav-id="desk-wheel"]'); await p.waitForTimeout(400);
+  ok('W4 Wheel desk link switches in place to Puts', await p.evaluate(() => window.__noReload === 1 && document.getElementById('putsTab').classList.contains('active')) && (await curIds(p)) === 'wheel-puts', await curIds(p));
+  await p.click('#railMount a[data-nav-id="wheel-roll"]'); await p.waitForTimeout(400);
+  ok('W4 Roll Coach in place', await p.evaluate(() => window.__noReload === 1 && document.getElementById('rollTab').classList.contains('active')) && (await curIds(p)) === 'wheel-roll');
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  ok('W4 options-hub account menu opens (page + nav handlers)', await p.evaluate(() => document.getElementById('userMenu').classList.contains('open')));
+  ok('W4 options-hub no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => localStorage.setItem('oh_active_tab_v1', 'watchlist'));
+  await p.goto(BASE + '/options-hub.html'); await p.waitForTimeout(1500);
+  ok('W4 options-hub remembered Vol Watchlist highlighted', (await curIds(p)) === 'options-vol' && await p.evaluate(() => document.getElementById('watchlistTab').classList.contains('active')), await curIds(p));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => localStorage.setItem('pc_active_tab_v1', 'income'));
+  await p.goto(BASE + '/portfolio-command.html?tab=performance'); await p.waitForTimeout(1500);
+  ok('W4 portfolio ?tab=performance -> Performance', (await curIds(p)) === 'portfolio-performance' && await p.evaluate(() => document.getElementById('performanceTab').classList.contains('active')), await curIds(p));
+  await p.evaluate(() => { window.__noReload = 1; });
+  await p.click('#railMount a[data-nav-id="portfolio-overview"]'); await p.waitForTimeout(400);
+  ok('W4 Portfolio Overview opens Overview in place', await p.evaluate(() => window.__noReload === 1 && document.getElementById('overviewTab').classList.contains('active')) && (await curIds(p)) === 'portfolio-overview', await curIds(p));
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  ok('W4 portfolio account menu opens', await p.evaluate(() => document.getElementById('userMenu').classList.contains('open')));
+  ok('W4 portfolio no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/analysis-central.html'); await p.waitForTimeout(1500);
+  ok('W4 analysis-central clock still runs', await p.evaluate(() => /Chicago/.test((document.getElementById('workspaceClock') || {}).textContent || '')));
+  ok('W4 analysis-central collapse button labelled by nav', await p.evaluate(() => /navigation/i.test(document.getElementById('railCollapseBtn').getAttribute('aria-label'))));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/portfolio-advisor.html'); await p.waitForTimeout(1500);
+  ok('W4 portfolio-advisor keeps page signOut/openSupport', await p.evaluate(() => typeof window.signOut === 'function' && typeof window.openSupport === 'function'));
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  ok('W4 portfolio-advisor account menu opens', await p.evaluate(() => document.getElementById('userMenu').classList.contains('open')));
+  ok('W4 portfolio-advisor no nav errors', p._errors.length === 0, p._errors.join('; '));
   await p.context().close(); }
 
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
