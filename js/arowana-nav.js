@@ -687,7 +687,9 @@
           'background:var(--card,#fff);border-top:1px solid var(--border,#e2e8f0);' +
           'padding:4px 4px calc(4px + env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(0,0,0,.06)}' +
         'body.anv-has-mobile-bar{padding-bottom:calc(60px + env(safe-area-inset-bottom))}' +
-        'body.anv-v2 #sidebarTrigger{display:none}' +
+        // The More sheet replaces page hamburgers (D9). #sidebarTrigger is the
+        // common id; pages with another trigger mark it data-nav-drawer-trigger.
+        'body.anv-v2 #sidebarTrigger,body.anv-v2 [data-nav-drawer-trigger]{display:none}' +
       '}' +
       '.anv-mbn-item{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:48px;' +
         'padding:4px 2px;border:0;border-radius:8px;background:none;color:var(--text-muted,#64748b);text-decoration:none;' +

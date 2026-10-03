@@ -1657,40 +1657,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
      page. Its own account-section rendering is skipped on this page (see
      nav-rail.js's hasOwnAccountMenu check) since #user-menu-toggle already
      exists below, wired by auth-header.js. -->
-<script src="/js/nav-rail.js"></script>
-<script>
-/* Keep the collapse button's label in step with the arrow. nav-rail.js renders
-   the button once with a fixed label, so a collapsed rail would otherwise still
-   announce "Collapse side navigation" to screen readers and on hover. Same sync
-   Trading Command runs; observed because nav-rail.js injects the rail late. */
-(function(){
-  'use strict';
-  function sync(){
-    /* nav-rail.js labels the entry "Portfolio"; trading-command.html renames it
-       to "Portfolio Command" so the rail matches the destination page's own
-       title. Same rename here keeps the nav consistent across workspaces. */
-    document.querySelectorAll('#railMount .rail-item-label').forEach(function(label){
-      if(label.textContent.trim()==='Portfolio')label.textContent='Portfolio Command';
-    });
-    var sidebar=document.querySelector('.sidebar');
-    var button=sidebar&&sidebar.querySelector('.rail-collapse-btn');
-    if(!button)return false;
-    var text=sidebar.classList.contains('rail-collapsed')?'Open side navigation':'Collapse side navigation';
-    button.setAttribute('aria-label',text);
-    button.setAttribute('title',text);
-    button.setAttribute('aria-expanded',sidebar.classList.contains('rail-collapsed')?'false':'true');
-    return true;
-  }
-  function start(){
-    var sidebar=document.querySelector('.sidebar');
-    var mount=document.getElementById('railMount');
-    if(mount)new MutationObserver(sync).observe(mount,{childList:true,subtree:true});
-    if(sidebar)new MutationObserver(sync).observe(sidebar,{attributes:true,attributeFilter:['class']});
-    sync();
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
-})();
-</script>
+<script src="./js/nav-loader.js?v=20261003e"></script>
 
 <!-- Rail account row: username, flyout menu, support + sign out.
      nav-rail.js renders only the shell — the #userToggle / #userMenu /

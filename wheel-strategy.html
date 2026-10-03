@@ -2014,31 +2014,7 @@ function renderDecisions(){
   </script>
 
   <!-- Shared navigation rail — same module trading-command.html uses -->
-  <script src="./js/nav-rail.js"></script>
-  <script>
-    (() => {
-      const syncRail = () => {
-        document.querySelectorAll('#railMount .rail-item-label').forEach((label) => {
-          if (label.textContent.trim() === 'Portfolio') label.textContent = 'Portfolio Command';
-        });
-        const sidebar = document.getElementById('sidebarDrawer');
-        const button = sidebar?.querySelector('.rail-collapse-btn');
-        if (button) {
-          const collapsed = sidebar.classList.contains('rail-collapsed');
-          const text = collapsed ? 'Open side navigation' : 'Collapse side navigation';
-          button.setAttribute('aria-label', text);
-          button.setAttribute('title', text);
-        }
-      };
-      document.addEventListener('DOMContentLoaded', () => {
-        syncRail();
-        const mount = document.getElementById('railMount');
-        const sidebar = document.getElementById('sidebarDrawer');
-        if (mount) new MutationObserver(syncRail).observe(mount, { childList:true, subtree:true });
-        if (sidebar) new MutationObserver(syncRail).observe(sidebar, { attributes:true, attributeFilter:['class'] });
-      });
-    })();
-  </script>
+  <script src="./js/nav-loader.js?v=20261003e"></script>
 
   <!-- App config trio — exact order used by trading-command.html -->
   <script src="./js/app-config.js"></script>
