@@ -138,14 +138,18 @@ class NavRegistryTests(unittest.TestCase):
     def test_migrated_pages_use_only_the_loader(self):
         migrated = sorted(p.name for p in ROOT.glob("*.html")
                           if 'src="./js/nav-loader.js' in p.read_text(encoding="utf-8", errors="replace"))
-        self.assertIn("tools.html", migrated)
-        self.assertEqual(len(migrated), 19, migrated)
+        for required in ("tools.html", "trading-command.html"):
+            self.assertIn(required, migrated)
+        self.assertEqual(len(migrated), 20, migrated)
         direct = re.compile(r'<script[^>]+src="[^"]*(nav-rail|arowana-nav[a-z-]*)\.js')
         for name in migrated:
             html = (ROOT / name).read_text(encoding="utf-8", errors="replace")
             self.assertEqual(html.count('src="./js/nav-loader.js'), 1, name)
             self.assertIsNone(direct.search(html), "%s loads a nav script directly" % name)
             self.assertIn('id="railMount"', html, name)
+            # No inline rail copy or post-render correction patch may remain.
+            self.assertNotIn("The rail is inlined rather than loaded", html, name)
+            self.assertNotIn("Rail correction, inline and last", html, name)
 
 if __name__ == "__main__":
     unittest.main()
