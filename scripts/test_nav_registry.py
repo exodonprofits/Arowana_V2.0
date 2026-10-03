@@ -223,9 +223,12 @@ class NavRegistryTests(unittest.TestCase):
         self.assertIn("new URLSearchParams(location.search).get('scan')", scanner)
 
     def test_merged_pages_redirect(self):
-        # ATD-009 phase 2: pages whose function the target already covers.
+        # ATD-009 phase 2: pages whose function the target already covers, plus
+        # two demo-only pages and stock-checker (webhook token in page source).
         targets = {"risk-calculator.html": "position-sizer.html", "position-sizer_fresh.html": "position-sizer.html",
-                   "my-rules-short.html": "my-rules.html", "dividend-screener.html": "scanner.html?scan=dividend_safety"}
+                   "my-rules-short.html": "my-rules.html", "dividend-screener.html": "scanner.html?scan=dividend_safety",
+                   "automated-trading-plan.html": "trade-plan-builder.html", "news-trading.html": "trade-plan-builder.html",
+                   "stock-checker.html": "intrinsic-value.html"}
         for name, target in targets.items():
             html = (ROOT / name).read_text(encoding="utf-8")
             self.assertIn("var target = '%s';" % target, html, name)

@@ -436,7 +436,8 @@ for (const [from, id, label] of [['bb-snapback', 'bb_snapback', 'Bollinger Band 
   await p.context().close();
 }
 for (const [from, path, scan] of [['my-rules-short', '/my-rules.html', null], ['risk-calculator', '/position-sizer.html', null],
-  ['position-sizer_fresh', '/position-sizer.html', null], ['dividend-screener', '/scanner.html', 'dividend_safety']]) {
+  ['position-sizer_fresh', '/position-sizer.html', null], ['dividend-screener', '/scanner.html', 'dividend_safety'],
+  ['automated-trading-plan', '/trade-plan-builder.html', null], ['news-trading', '/trade-plan-builder.html', null], ['stock-checker', '/intrinsic-value.html', null]]) {
   const p = await newPage(desktop, null);
   await p.goto(BASE + '/' + from + '.html?a=1#h'); await p.waitForTimeout(1000);
   const u = new URL(p.url());

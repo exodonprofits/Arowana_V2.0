@@ -6,7 +6,7 @@ Owner-approved 2026-10-03 (Q1–Q5 as recommended): [legacy page review](docs/AT
 
 Phase 1 (groups C and L) on `claude/ATD-009-phase-1`: the four registry-linked pages without a menu now get the new navigation through a renderer-built rail (`<body data-nav-shell>`), and the four duplicate tool catalogues are redirect stubs to `tools.html` / `features.html`. Group M (archive) waits on the Cloudflare Pages build-settings check (Q3).
 
-Phase 2 (part) on `claude/ATD-009-phase-2`: the 26 standalone scanner pages redirect to their scan in `scanner.html` (new `?scan=` deep link; 17 pending scans registered with their filters), and 4 planning/research duplicates the target already covers are redirects. 12 research/planning pages are held: their target does not cover them yet.
+Phase 2 (part) on `claude/ATD-009-phase-2`: the 26 standalone scanner pages redirect to their scan in `scanner.html` (new `?scan=` deep link; 17 pending scans registered with their filters), and 4 planning/research duplicates the target already covers are redirects. Phase 2b retires `automated-trading-plan` and `news-trading` (demo-only) and `stock-checker` (n8n webhook token in its source, which needs rotating). The remaining 9 research/planning pages are held until their features move into the target pages.
 
 ## ATD-008 navigation - 2026-10-03
 

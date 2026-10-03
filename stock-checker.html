@@ -3,128 +3,32 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Stock Value Checker</title>
+  <title>Redirecting to Valuation — Arowana Profits</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=intrinsic-value.html">
+  <!-- ATD-009 phase 2: retired (called an n8n webhook with a token in the page source). Keeps the old URL working;
+       any query string and hash are carried over. -->
+  <script>
+    var target = 'intrinsic-value.html';
+    var q = window.location.search ? window.location.search.slice(1) : '';
+    if (q) target += (target.indexOf('?') === -1 ? '?' : '&') + q;
+    window.location.replace(target + window.location.hash);
+  </script>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 40px;
-      background-color: #f7f9fb;
-      color: #333;
-    }
-    .container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 30px;
-      border-radius: 8px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-    }
-    h1 {
-      text-align: center;
-      color: #1a3c5e;
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-      font-weight: bold;
-    }
-    input[type="text"] {
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
-      margin-bottom: 20px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      background-color: #1a3c5e;
-      color: white;
-      border: none;
-      padding: 12px 20px;
-      font-size: 16px;
-      border-radius: 5px;
-      cursor: pointer;
-      width: 100%;
-    }
-    button:hover {
-      background-color: #16324a;
-    }
-    .result {
-      margin-top: 20px;
-      padding: 15px;
-      border-left: 4px solid #1a3c5e;
-      background: #f0f4f9;
-    }
-    #spinner {
-      text-align: center;
-      display: none;
-      margin-top: 20px;
-    }
-    #spinner div {
-      border: 4px solid #f3f3f3;
-      border-top: 4px solid #1a3c5e;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      animation: spin 1s linear infinite;
-      margin: auto;
-    }
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; color: #1e293b; padding: 60px 20px; text-align: center; margin: 0; }
+    .redirect-card { max-width: 480px; margin: 0 auto; background: white; padding: 32px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    h1 { color: #0b4f8a; margin-bottom: 12px; font-size: 1.4rem; }
+    p { color: #64748b; line-height: 1.6; margin-bottom: 16px; }
+    a { color: #0b4f8a; font-weight: 700; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h1>📈 Stock Value Checker</h1>
-    <label for="ticker">Enter Stock Ticker:</label>
-    <input type="text" id="ticker" placeholder="e.g. AAPL">
-    <!--button onclick="checkStock()">Check Value</button-->
-    <button onclick="checkStock()">🚀 Check Value</button>
-    <div id="spinner"><div></div></div>
-    <div class="result" id="result"></div>
+  <div class="redirect-card">
+    <h1>The Stock Checker Has Moved</h1>
+    <p>It is now part of <strong>Valuation</strong>.</p>
+    <p>Redirecting you now…</p>
+    <p><a href="intrinsic-value.html">Click here if you're not redirected automatically</a></p>
   </div>
-  <div style="text-align: center; margin-top: 30px;">
-    <a href="short-term-dashboard.html" style="color: #1a3c5e; text-decoration: none; font-weight: bold;">
-      🔙 Go Back
-    </a>
-  </div>
-  
-  <script>
-    async function checkStock() {
-      const ticker = document.getElementById('ticker').value.trim();
-      const resultEl = document.getElementById('result');
-      const spinnerEl = document.getElementById('spinner');
-
-      if (!ticker) {
-        resultEl.innerHTML = "Please enter a stock ticker.";
-        return;
-      }
-
-      resultEl.innerHTML = "";
-      spinnerEl.style.display = 'block';
-
-      try {
-        const response = await fetch('https://exodonprofits.app.n8n.cloud/webhook/stock-checker/s3cur3t0k3n', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ ticker })
-        });
-        const data = await response.json();
-        spinnerEl.style.display = 'none';
-        resultEl.innerHTML = `<strong>${data.ticker}</strong><br>
-          Current Price: $${data.current_price}<br>
-          Estimated Value: $${data.estimated_value}<br>
-          <strong>Status: ${data.status}</strong><br><br>
-          <em>${data.explanation}</em>`;
-      } catch (err) {
-        spinnerEl.style.display = 'none';
-        resultEl.innerHTML = "Something went wrong. Please try again later.";
-        console.error(err);
-      }
-    }
-  </script>
 </body>
 </html>
