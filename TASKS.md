@@ -174,3 +174,17 @@ Runtime credential containment took priority after generated secrets were found 
 **Close-out (2026-10-03, `claude/ATD-008-nav-closeout`):** the 14 tool pages that are not menu items get a registry `homes` entry, so their section (Research, Options desk, Portfolio & Risk, Journal & Review or Trading Command) is expanded and marked as containing the page, without `aria-current`. A unit test requires every migrated page to be either a menu item or have a home.
 
 **Remaining (owner decisions, defaults kept):** `whale-tracker.html` stays as-is pending the ATD-003 coaching merge; `arowana-trader.html` keeps its desktop top link bar; `tradingcommand.html` stays unmigrated (D5). `js/nav-rail.js` remains as the `ap_nav_v2 = "0"` fallback and for `tradingcommand.html`.
+
+### ATD-009 — Legacy page review (keep / merge / retire)
+
+**Owner:** Claude Code
+
+**Status:** Proposal completed 2026-10-03; awaiting owner review. Documentation only; no page changed, moved, redirected or deleted.
+
+**Branch:** `claude/ATD-009-legacy-page-review`
+
+**Result:** [Legacy page review](docs/ATD-009_LEGACY_PAGE_REVIEW.md) assigns each of the 141 pages outside the new navigation to one of 14 groups with one recommended action per group (keep, adopt nav, merge, retire to a redirect, archive, defer), building on ATD-001's per-page proposals. Finding: almost all live links to these pages come from the internal `tool-audit.html`; the user-facing Tool Directory links to one. Standalone scanner pages show demo/random rows or depend on webhooks. Proposed order: archive scaffolds and Salon pages, retire duplicate catalogues and put four registry-linked pages on the menu first; journal/watchlist/portfolio duplicates last, after ATD-005/007 ownership fixes.
+
+**Verification:** All 141 pages matched to ATD-001 rows and assigned to exactly one group by script; inbound links, sitemap entries and scanner capability counted from source; documentation links, secret scan and whitespace checks. No browser, data or hosting checks.
+
+**Next:** Owner decisions Q1–Q5 and group approvals; each approved phase becomes its own implementation PR.
