@@ -179,6 +179,13 @@
     return resolveCurrent();
   }
 
+  // Tool pages that are not menu items have a "home" entry in the registry.
+  function homeEntry() {
+    var path = currentLocation().path;
+    var home = (REG.homes || []).filter(function (h) { return h.path === path; })[0];
+    return home && byId[home.entry] ? byId[home.entry] : null;
+  }
+
   function primaryOf(e) {
     var list = ancestors(e);
     return list.length ? list[list.length - 1] : e;
@@ -630,9 +637,13 @@
 
   function paintActive() {
     var cur = currentEntry();
-    var chain = cur ? [cur].concat(ancestors(cur)) : [];
+    // No entry for this page: fall back to its home section, which is marked
+    // as containing the page but never gets aria-current.
+    var home = cur ? null : homeEntry();
+    var anchor = cur || home;
+    var chain = anchor ? [anchor].concat(ancestors(anchor)) : [];
     var chainIds = chain.map(function (e) { return e.id; });
-    var primary = cur ? primaryOf(cur) : null;
+    var primary = anchor ? primaryOf(anchor) : null;
 
     Array.prototype.forEach.call(document.querySelectorAll('[data-nav-id]'), function (node) {
       var id = node.getAttribute('data-nav-id');
@@ -641,7 +652,7 @@
       else node.removeAttribute('aria-current');
       // Visual "contains the current page" marker for ancestors; only the
       // exact current item carries aria-current.
-      node.classList.toggle('active', !!cur && chainIds.indexOf(id) !== -1);
+      node.classList.toggle('active', !!anchor && chainIds.indexOf(id) !== -1);
       node.classList.toggle('anv-contains-current', !isCurrent && chainIds.indexOf(id) !== -1);
     });
 

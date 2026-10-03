@@ -24,6 +24,10 @@
  *   mobile    command | watchlists | portfolio | journal | more
  *   note      short reason shown for planned/legacy entries
  *
+ * homes: tool pages that are not menu items themselves. On such a page the
+ * named entry (and its parents) is marked as containing the current page;
+ * nothing gets aria-current, because the page is not that item.
+ *
  * Navigation is presentation, not authorization. Pages and the server
  * still enforce sign-in, ownership and entitlements.
  */
@@ -32,7 +36,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-03.2",
+    "version": "2026-10-03.3",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -145,6 +149,22 @@
       { "id": "util-account", "label": "Account Settings", "icon": "⚙️", "route": { "path": "account.html" } },
       { "id": "util-billing", "label": "Billing", "icon": "💳", "route": { "path": "billing.html" } },
       { "id": "util-broker", "label": "Broker Connections (read-only)", "icon": "🔗", "route": { "path": "broker-connections.html" } }
+    ],
+    "homes": [
+      { "path": "ai-moat-finder.html", "entry": "research" },
+      { "path": "dcf-analyzer.html", "entry": "research" },
+      { "path": "money-flow-alert.html", "entry": "research" },
+      { "path": "tool-audit.html", "entry": "research-tools" },
+      { "path": "options-analyzer.html", "entry": "desk-options" },
+      { "path": "atr-stop-planner.html", "entry": "portfolio" },
+      { "path": "kelly-calculator.html", "entry": "portfolio" },
+      { "path": "risk-comfort.html", "entry": "portfolio" },
+      { "path": "volatility-guardrails.html", "entry": "portfolio" },
+      { "path": "dividend-tracker.html", "entry": "portfolio" },
+      { "path": "discipline-scorecard.html", "entry": "journal" },
+      { "path": "r-multiple.html", "entry": "journal" },
+      { "path": "trading-journal-analysis.html", "entry": "journal" },
+      { "path": "trade-plan-builder.html", "entry": "command" }
     ],
     "brand": { "signedIn": "trading-command.html", "signedOut": "index.html" },
     "support": { "path": "support.html" },
