@@ -21,7 +21,15 @@ const ok = (name, cond, extra='') => { results.push(`${cond?'PASS':'FAIL'} ${nam
 const browser = await chromium.launch();
 async function newPage(opts, flag) {
   const ctx = await browser.newContext(opts);
-  await ctx.route('**/*', r => new URL(r.request().url()).hostname === '127.0.0.1' ? r.continue() : r.abort());
+  await ctx.route('**/*', r => {
+    const u = new URL(r.request().url());
+    if (u.hostname !== '127.0.0.1') return r.abort();
+    // Auth-gated pages (e.g. arowana-trader.html) redirect to login.html when
+    // there is no real Supabase session. A 204 makes Chromium keep the current
+    // page, so the page under test stays on screen; no session is created.
+    if (/\/login\.html$/.test(u.pathname) && r.request().isNavigationRequest()) return r.fulfill({ status: 204, body: '' });
+    return r.continue();
+  });
   // flag: '1' / '0' sets ap_nav_v2; true means '1', false/null leaves it unset.
   const pref = flag === true ? '1' : (flag === false ? null : flag);
   await ctx.addInitScript(f => { try { if (f !== null) localStorage.setItem('ap_nav_v2', f); localStorage.setItem('gs_auth_user_v1', JSON.stringify({ id: 'synthetic-test', email: 'synthetic@example.invalid' })); } catch(e){} }, pref);
@@ -149,9 +157,13 @@ for (const width of [320, 375, 768]) {
 const MIGRATED = ['tools','ai-moat-finder','atr-stop-planner','credit-spread-planner','dcf-analyzer','discipline-scorecard',
   'dividend-tracker','expectancy-matrix','kelly-calculator','money-flow-alert','options-analyzer','r-multiple','risk-comfort',
   'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis','trading-command',
-  'portfolio-command','options-hub','analysis-central','intrinsic-value','portfolio-advisor'];
+  'portfolio-command','options-hub','analysis-central','intrinsic-value','portfolio-advisor',
+  'arowana-trader','watchlist','scanner','position-sizer','trade-plan-builder','wheel-strategy','ai-morning-brief'];
+const NO_RAIL_MOUNT = ['arowana-trader'];   // sidebar is the coach panel: mobile bar + More sheet only
 const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-positions', 'portfolio-command': 'portfolio-overview', 'options-hub': 'wheel-calls',
-  'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
+  'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor',
+  'arowana-trader': 'wheel-coach', 'watchlist': 'watchlists', 'scanner': 'research-scanners', 'position-sizer': 'portfolio-sizer',
+  'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': 'command-brief', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
   'strategy-backtesting': 'research-backtesting', 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': 'research-technical' };
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
@@ -163,7 +175,7 @@ async function survey(name, opts, flag) {
     current: [...new Set([...document.querySelectorAll('[aria-current="page"]')].map(n => n.getAttribute('data-nav-id')))],
     bar: [...document.querySelectorAll('.anv-mobile-bar .anv-mbn-label')].map(n => n.textContent).join(','),
     overflow: document.documentElement.scrollWidth - window.innerWidth,
-    hamburger: (() => { const t = document.getElementById('sidebarTrigger'); return !!(t && t.offsetParent); })(),
+    hamburger: [...document.querySelectorAll('#sidebarTrigger, [data-nav-drawer-trigger]')].some(t => !!t.offsetParent),
   }));
   r.errors = p._errors.slice();
   await p.context().close();
@@ -171,7 +183,7 @@ async function survey(name, opts, flag) {
 }
 for (const name of MIGRATED) {
   const d = await survey(name, desktop, null);
-  ok(`W ${name} default: six primaries`, d.primaries.join('|') === 'Trading Command|Research|Strategy Desks|Portfolio & Risk|Watchlists|Journal & Review', d.primaries.join('|'));
+  if (!NO_RAIL_MOUNT.includes(name)) ok(`W ${name} default: six primaries`, d.primaries.join('|') === 'Trading Command|Research|Strategy Desks|Portfolio & Risk|Watchlists|Journal & Review', d.primaries.join('|'));
   const want = EXPECT_CURRENT[name] || null;
   ok(`W ${name} current = ${want}`, (d.current[0] || null) === want && d.current.length <= 1, JSON.stringify(d.current));
   const m = await survey(name, mobile, null);
@@ -181,7 +193,7 @@ for (const name of MIGRATED) {
   ok(`W ${name} no new horizontal overflow`, m.overflow <= Math.max(1, mo.overflow), `new ${m.overflow} / old ${mo.overflow}`);
   const newErrs = m.errors.filter(e => !mo.errors.includes(e));
   ok(`W ${name} no new page errors`, newErrs.length === 0, newErrs.join('; '));
-  ok(`W ${name} opt-out keeps old rail`, !mo.v2 && mo.oldBar && mo.oldGroups === 5);
+  ok(`W ${name} opt-out keeps old rail`, !mo.v2 && mo.oldBar && mo.oldGroups === (NO_RAIL_MOUNT.includes(name) ? 0 : 5));
 }
 
 // T. Wave 3: trading-command.html specifics.
@@ -274,6 +286,39 @@ const curIds = p => p.evaluate(() => [...new Set([...document.querySelectorAll('
   await p.click('#userToggle'); await p.waitForTimeout(150);
   ok('W4 portfolio-advisor account menu opens', await p.evaluate(() => document.getElementById('userMenu').classList.contains('open')));
   ok('W4 portfolio-advisor no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+
+// W5. Wave 5 page specifics.
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/watchlist.html'); await p.waitForTimeout(1500);
+  ok('W5 watchlist keeps its own header account menu (nav skips its own)', await p.evaluate(() => !!document.getElementById('user-menu-toggle') && !document.getElementById('userToggle')));
+  ok('W5 watchlist Watchlists current', (await curIds(p)) === 'watchlists', await curIds(p));
+  ok('W5 watchlist no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/arowana-trader.html'); await p.waitForTimeout(1500);
+  ok('W5 arowana-trader keeps desktop top bar and coach sidebar', await p.evaluate(() => !!document.querySelector('.nav-links') && !!document.getElementById('coachSidebar') && !document.getElementById('railMount')));
+  await p.evaluate(() => { location.hash = 'chat'; }); await p.waitForTimeout(300);
+  ok('W5 arowana-trader hash tabs still work', await p.evaluate(() => document.getElementById('tab-chat').classList.contains('active')));
+  ok('W5 arowana-trader no nav errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const p = await newPage(mobile, null);
+  await p.goto(BASE + '/arowana-trader.html'); await p.waitForTimeout(1500);
+  await p.click('.anv-mobile-bar button[data-nav-slot="more"]'); await p.waitForTimeout(150);
+  ok('W5 arowana-trader More sheet marks Wheel Coach', await p.evaluate(() => { const a = document.querySelector('#anvMoreSheet a[aria-current="page"]'); return !!a && a.getAttribute('data-nav-id') === 'wheel-coach'; }));
+  await p.context().close(); }
+for (const name of ['position-sizer', 'trade-plan-builder']) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + name + '.html'); await p.waitForTimeout(1500);
+  await p.click('#userToggle'); await p.waitForTimeout(150);
+  ok(`W5 ${name} account menu opens (page code + nav)`, await p.evaluate(() => document.getElementById('userMenu').classList.contains('open')));
+  ok(`W5 ${name} page account code painted the name`, await p.evaluate(() => /synthetic/.test(document.getElementById('menuUserEmail').textContent || '') || /synthetic/.test(document.getElementById('userName').textContent || '')));
+  ok(`W5 ${name} no nav errors`, p._errors.length === 0, p._errors.join('; '));
+  await p.context().close();
+}
+{ const p = await newPage(mobile, null);
+  await p.goto(BASE + '/ai-morning-brief.html'); await p.waitForTimeout(1500);
+  ok('W5 ai-morning-brief own hamburger hidden on mobile', await p.evaluate(() => { const b = document.getElementById('mobileRailButton'); return !!b && !b.offsetParent; }));
   await p.context().close(); }
 
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's

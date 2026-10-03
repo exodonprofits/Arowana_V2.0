@@ -139,15 +139,21 @@ class NavRegistryTests(unittest.TestCase):
         migrated = sorted(p.name for p in ROOT.glob("*.html")
                           if 'src="./js/nav-loader.js' in p.read_text(encoding="utf-8", errors="replace"))
         for required in ("tools.html", "trading-command.html", "portfolio-command.html", "options-hub.html",
-                         "analysis-central.html", "intrinsic-value.html", "portfolio-advisor.html"):
+                         "analysis-central.html", "intrinsic-value.html", "portfolio-advisor.html",
+                         "arowana-trader.html", "watchlist.html", "scanner.html", "position-sizer.html",
+                         "trade-plan-builder.html", "wheel-strategy.html", "ai-morning-brief.html"):
             self.assertIn(required, migrated)
-        self.assertEqual(len(migrated), 25, migrated)
+        self.assertEqual(len(migrated), 32, migrated)
+        # arowana-trader.html's sidebar is the coach panel: the nav renders only
+        # the mobile bar and More sheet there, by design.
+        no_rail_mount = {"arowana-trader.html"}
         direct = re.compile(r'<script[^>]+src="[^"]*(nav-rail|arowana-nav[a-z-]*)\.js')
         for name in migrated:
             html = (ROOT / name).read_text(encoding="utf-8", errors="replace")
             self.assertEqual(html.count('src="./js/nav-loader.js'), 1, name)
             self.assertIsNone(direct.search(html), "%s loads a nav script directly" % name)
-            self.assertIn('id="railMount"', html, name)
+            if name not in no_rail_mount:
+                self.assertIn('id="railMount"', html, name)
             # No inline rail copy or post-render correction patch may remain.
             self.assertNotIn("The rail is inlined rather than loaded", html, name)
             self.assertNotIn("Rail correction, inline and last", html, name)
