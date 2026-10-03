@@ -148,3 +148,15 @@
 ### ATD-007 continuation - 2026-10-01
 
 Runtime credential containment took priority after generated secrets were found tracked in merged main. Three runtime paths removed from index; CI tracking guard added; affected local stack stopped with volumes preserved. Nine tests, guard, secret scan and whitespace checks passed. Credential rotation/history containment and PostgreSQL/schema work remain open. No production changes or ATD-101 work. Details: [ATD-007 work record](docs/ATD-007_SECURITY_DEV_BASELINE.md).
+
+### ATD-008 — Frontend navigation implementation
+
+**Owner:** Claude Code
+
+**Status:** Specification completed and owner-approved 2026-10-02 (PR #14), including decisions D1–D13. Slice 1 implemented 2026-10-03 on `claude/ATD-008-nav-slice-1`; awaiting review. Opt-in only; default navigation unchanged.
+
+**Result:** [Implementation spec](docs/ATD-008_NAVIGATION_IMPLEMENTATION_SPEC.md). Slice 1 adds the data-only registry `js/arowana-nav-registry.js` and renderer `js/arowana-nav.js` (six approved destinations, five desks, Planned/Legacy states, mobile Command/Watchlists/Portfolio/Journal/More with a focus-managed More sheet). `tools.html` loads them only when `localStorage.ap_nav_v2 === "1"`, otherwise `js/nav-rail.js` as before. Prerequisite P1: `portfolio-command.html` now honours `?tab=` ahead of the remembered tab. `js/nav-rail.js`, the eight inline rail copies and `js/auth-guard.js` are untouched.
+
+**Verification:** `scripts/test_nav_registry.py` (8 tests: approved structure, safe and existing routes, opt-in loader) plus existing CI tests, tracking guard and secret scan. Browser checks in `scripts/browser/nav_v2_check.mjs` (71 checks, Chromium via a separately installed Playwright, all non-localhost requests blocked): default page unchanged, desktop rail and active state, 15 active-state URLs, mobile bar at 320/375/768 px, More sheet focus trap/inert/Escape/focus return, Back navigation, `portfolio-command.html` tab precedence. No production, Supabase or signed-in session testing (waits on ATD-007's DEV frontend config).
+
+**Next:** Owner review of slice 1 with `ap_nav_v2` enabled; then wave 2 per spec §9.
