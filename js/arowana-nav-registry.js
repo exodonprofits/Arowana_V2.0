@@ -32,7 +32,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-03.1",
+    "version": "2026-10-03.2",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -73,13 +73,14 @@
         "status": "legacy", "route": { "path": "swing-trader.html" }, "note": "Existing page; desk not yet migrated" },
       { "id": "desk-wheel", "parent": "desks", "label": "Wheel", "icon": "🛞",
         "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "puts" } },
-        "activeWhen": [ { "path": "options-hub.html", "query": { "tab": ["puts", "calls", "roll", "quality"] } } ] },
+        "activeWhen": [ { "path": "options-hub.html", "query": { "tab": [null, "puts", "calls", "roll", "quality"] } } ] },
       { "id": "wheel-quality", "parent": "desk-wheel", "label": "Want to Own", "icon": "⭐",
         "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "quality" } } },
       { "id": "wheel-puts", "parent": "desk-wheel", "label": "Cash-Secured Puts", "icon": "🪙",
         "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "puts" } } },
       { "id": "wheel-calls", "parent": "desk-wheel", "label": "Covered Calls", "icon": "📞",
-        "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "calls" } } },
+        "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "calls" } },
+        "activeWhen": [ { "path": "options-hub.html", "query": { "tab": [null] } } ] },
       { "id": "wheel-roll", "parent": "desk-wheel", "label": "Roll Coach", "icon": "🔁",
         "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "roll" } } },
       { "id": "wheel-coach", "parent": "desk-wheel", "label": "Wheel Coach", "icon": "🧭",
@@ -88,7 +89,7 @@
         "status": "legacy", "route": { "path": "wheel-strategy.html" }, "note": "Existing page; parity review pending" },
       { "id": "desk-options", "parent": "desks", "label": "Options", "icon": "📈",
         "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "analyzer" } },
-        "activeWhen": [ { "path": "options-hub.html", "query": { "tab": [null, "analyzer", "strategies", "watchlist"] } } ] },
+        "activeWhen": [ { "path": "options-hub.html", "query": { "tab": ["analyzer", "strategies", "watchlist"] } } ] },
       { "id": "options-recommender", "parent": "desk-options", "label": "Strategy Recommender", "icon": "📊",
         "status": "available", "route": { "path": "options-hub.html", "query": { "tab": "analyzer" } } },
       { "id": "options-matrix", "parent": "desk-options", "label": "Strategy Matrix", "icon": "⚡",
@@ -106,7 +107,7 @@
         "status": "available", "route": { "path": "portfolio-command.html" }, "mobile": "portfolio" },
       { "id": "portfolio-overview", "parent": "portfolio", "label": "Portfolio Overview", "icon": "🏦",
         "desc": "Holdings, income and allocation", "status": "available",
-        "route": { "path": "portfolio-command.html" },
+        "route": { "path": "portfolio-command.html", "query": { "tab": "overview" } },
         "activeWhen": [ { "path": "portfolio-command.html", "query": { "tab": [null, "overview", "holdings", "income", "analysis"] } } ] },
       { "id": "portfolio-performance", "parent": "portfolio", "label": "Performance", "icon": "📊",
         "desc": "Account returns over time", "status": "available",
