@@ -3203,4 +3203,3 @@ COMMENT ON COLUMN "public"."watchlist_items"."want_to_own" IS 'Arowana Wheel Des
 COMMENT ON COLUMN "public"."watchlist_items"."target_buy_price" IS 'Optional price the user would be glad to buy at; put strikes must be at or below it when set.';
 
 COMMIT;
-

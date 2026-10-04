@@ -123,7 +123,7 @@ def render(d):
             kind = 'COLUMN';target += '.'+ident(c['column'])
         out += [f'COMMENT ON {kind} {target} IS {literal(c["comment"])};']
     out += ['COMMIT;', '']
-    return '\n\n'.join(out).replace('\r\n', '\n')
+    return '\n\n'.join(out).replace('\r\n', '\n').rstrip() + '\n'
 
 if __name__=='__main__':
     data=json.loads(CATALOG.read_text(encoding='utf-8'))
