@@ -4253,11 +4253,6 @@ if(ltModal){
    - Collapsible sections: badge the toggle, intercept click → modal
    - Inline card sections: replace with a clean locked row
 */
-var LT_PRO_SECTIONS=[
-  /* The Wealth Engine Snapshot card is the main Pro-gated section */
-  {id:'wealthEngineCard', toggle:false, title:'Wealth Engine Snapshot', body:'The Wealth Engine runs a quarterly portfolio review using your live data feed. Available on Pro -- includes portfolio health, macro regime, sector exposure, and risk grade.'},
-  /* AI Coach is free but limited -- 5/day via Portfolio Advisor. Full unlimited = Pro */
-];
 
 /* Find Wealth Engine card -- it doesn't have an ID, find by heading */
 function findSectionByHeading(heading){
@@ -4852,88 +4847,9 @@ if(upgModal){
   });
 }
 
-/* ── 4. PRO SECTION LOCKING ──
-   Strategy: clean inline Pro badge on the section toggle.
-   - Section stays collapsed (body hidden)
-   - Toggle header gets a "⭐ Pro" pill badge on the right
-   - Clicking the toggle fires the upgrade modal instead of expanding
-   - No blurs, no overlays, no gray wash — sections look intentional not broken
-   - For non-collapsible sections (safetyStrip, alertsTop) we swap the
-     section heading row with a tidy locked-row banner.
-*/
-var PRO_SECTIONS=[
-  /* collapsible sm-block sections — badge the toggle, intercept click */
-  {id:'askAiBlock',    toggle:true,  title:'Ask AI Coach',           body:'The AI Coach uses your live workflow for real-time scan results. Upgrade to Pro to unlock unlimited AI coaching.'},
-  {id:'moversBlock',   toggle:true,  title:'Market Movers',          body:'Live Gainers & Losers are pulled from your live data feed. Available on Pro.'},
-  {id:'playbooksBlock',toggle:true,  title:'Intraday Momentum Scans',body:'Playbook scans run against live market data via your n8n webhook. Available on Pro.'},
-  /* inline card sections — replace content with a clean locked row */
-  {id:'morningBrief',  toggle:false, title:'AI Morning Brief',       body:'The AI Morning Brief runs a live market scan via your n8n workflow. Upgrade to Pro for unlimited daily scans.'},
-  {id:'alertsTop',     toggle:false, title:'Live Alerts',            body:'Live Alerts require an active webhook connection. Available on Pro.'},
-];
+/* (ATD-108) The section locks that stood here targeted askAiBlock, moversBlock,
+   playbooksBlock, morningBrief and alertsTop, none of which exist on this page. */
 
-/* Reusable Pro pill HTML */
-function proPill(){
-  var span=document.createElement('span');
-  span.innerHTML='&#9889; Pro';
-  span.style.cssText='display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:999px;background:linear-gradient(135deg,#0b4f8a,#1a6bbb);color:#fff;font-size:.68rem;font-weight:700;letter-spacing:.03em;white-space:nowrap;flex-shrink:0';
-  return span;
-}
-
-if(!isPro){
-  PRO_SECTIONS.forEach(function(sec){
-    var el=document.getElementById(sec.id);
-    if(!el)return;
-    var capturedTitle=sec.title;
-    var capturedBody=sec.body;
-
-    if(sec.toggle){
-      /* ── COLLAPSIBLE SECTIONS ──
-         Keep collapsed. Badge the toggle button. Intercept click. */
-      el.setAttribute('data-collapsed','true');
-      var toggle=el.querySelector('.sm-toggle');
-      if(toggle){
-        /* Add Pro pill to the meta span */
-        var meta=toggle.querySelector('.sm-meta');
-        if(meta){
-          meta.innerHTML='';
-          meta.appendChild(proPill());
-        }
-        /* Replace caret color */
-        var caret=toggle.querySelector('.sm-caret');
-        if(caret)caret.style.color='#94a3b8';
-        /* Intercept click */
-        toggle.addEventListener('click',function(e){
-          e.preventDefault();
-          e.stopImmediatePropagation();
-          window.openUpgradeModal(capturedTitle,capturedBody);
-        },true);
-      }
-      /* Hide body content entirely */
-      var body=el.querySelector('.sm-body');
-      if(body)body.style.display='none';
-
-    }else{
-      /* ── INLINE SECTIONS (safetyStrip, alertsTop) ──
-         Replace content with a clean locked row. */
-      el.innerHTML='';
-      el.style.cssText='';
-      var row=document.createElement('div');
-      row.style.cssText='display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;flex-wrap:wrap';
-      /* Left: lock icon + label */
-      var left=document.createElement('div');
-      left.style.cssText='display:flex;align-items:center;gap:10px';
-      left.innerHTML='<span style="font-size:1.1rem">&#128274;</span><span style="font-size:.86rem;font-weight:600;color:#64748b">'+capturedTitle+' &mdash; available on Pro</span>';
-      /* Right: upgrade button */
-      var btn=document.createElement('a');
-      btn.href='pricing.html';
-      btn.innerHTML='&#9889; Upgrade to Pro &mdash; $19/mo';
-      btn.style.cssText='padding:7px 16px;border-radius:999px;background:#0b4f8a;color:#fff;font-size:.78rem;font-weight:700;text-decoration:none;white-space:nowrap;flex-shrink:0';
-      row.appendChild(left);
-      row.appendChild(btn);
-      el.appendChild(row);
-    }
-  });
-}
 
 /* ── 5. TOOLS TIER SYSTEM ──
    Add tier metadata to the tools array so the grid renderer
