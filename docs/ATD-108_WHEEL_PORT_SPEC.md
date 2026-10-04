@@ -155,7 +155,8 @@ Each slice is one PR. They run in order because later slices build on the auth f
 
 | Slice | State | Notes |
 |---|---|---|
-| S1 Auth foundation | Implemented on `claude/ATD-108-s1-auth` | See below. |
+| S1 Auth foundation | Merged (PR #33) | See below. |
+| S2 Journal reliability | Implemented on `claude/ATD-108-s2-journal` | See below. |
 
 **What S1 changed:**
 
@@ -176,3 +177,26 @@ Each slice is one PR. They run in order because later slices build on the auth f
 - `scripts/test_supabase_client.py` keeps `sb.js` after every local SDK tag and keeps CDN SDKs off nav pages.
 
 **Not in S1:** the per-page `createClient()` call sites stay as they are, because `sb.js` turns them into the shared client. Rewriting them, and the three pages that point at a missing `/js/supabase.min.js`, are left for a later clean-up.
+
+**What S2 changed:**
+
+- **`js/journal-sync.js` is Wheel's version.** It syncs by manifest: it reads the server's `(id, updated_at)` list, downloads missing or newer rows, and uploads rows the server never had.
+  - A row this browser saw on the server and that is now gone was deleted on another device, so it is removed here too.
+  - A larger gap than max(5, 20% of the journal) is kept, with a console warning. An empty answer from the server (for example, row-level security hiding everything after a session problem) must never read as "every trade was deleted".
+  - Deletes the server has not confirmed are re-sent on the next sync.
+  - The module never builds its own Supabase client.
+- **`trade-journal-pro.html` takes these Wheel changes:**
+  - "Delete All" deletes through the shared client in chunks of 200, scoped to the session's user. One request with every id used to exceed the URL limit on large journals.
+  - The access token comes from `apGetAccessToken()`.
+  - An expired or assigned option records its exit date, keeps the premium as P&L when no close was entered, and is stamped `updatedAt`, so it syncs.
+  - Setup & Strategy Performance includes option strategies.
+  - Two new deep links: `?q=SYMBOL` and the option prefill `?asset=option&…`, which opens the form and saves nothing.
+  - Price refresh works without a personal Finnhub key when `market-data.js` is present.
+- **Not ported:** Wheel's inlined rail and its correction script, the `lab/` links and `data-lab-only` buttons, the removal of the ATD-008 in-place tab handler, the `momentum-hunter` and `lab/` back-link targets, the `.pc-desk-level` CSS removal, and script version stamps.
+
+**Tested** on synthetic data with all external network blocked:
+- `scripts/browser/journal_sync_check.mjs` runs two devices against an in-memory server. A delete on one device reaches the other, and an empty server response leaves the journal intact. It also covers settlement P&L, the deep links and chunked delete. Result: 23 of 23 checks pass; the same script on main fails 15.
+- `scripts/test_journal_sync.py` keeps the safety cap, the chunked delete and the ATD-008 tab handling, and keeps `lab/` paths out.
+
+**Not in S2:** the option form labels every credit trade "Max risk: Unlimited*", including cash-secured puts. This bug exists on main and in Wheel, so it is left for a separate fix.
+

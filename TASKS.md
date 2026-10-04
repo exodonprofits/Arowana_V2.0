@@ -173,7 +173,14 @@ Wheel's nav rail, redirects and feature removals are not ported. `wheel-strategy
 
 Pages with more than one auth client: 9 on main, 0 now, apart from the parked `tradingcommand`.
 
-**Next:** S2 (journal reliability).
+**S2 journal reliability, branch `claude/ATD-108-s2-journal`:**
+- `js/journal-sync.js` is Wheel's manifest sync: deletes propagate across devices, and a large unexplained gap (more than max(5, 20%) of the journal) is kept, not deleted;
+- `trade-journal-pro.html`: "Delete All" deletes in chunks of 200, scoped to the session user; expired/assigned options settle with exit date and P&L; option strategies count in Setup & Strategy Performance; `?q=` and option prefill deep links; prices work without a personal Finnhub key;
+- Wheel's rail, `lab/` links and nav changes are not ported.
+
+Tests: `scripts/test_journal_sync.py`, `scripts/browser/journal_sync_check.mjs` (23 checks, synthetic data; main fails 15).
+
+**Next:** S3 (wheel ledger and campaigns panel).
 
 ### ATD-007 continuation - 2026-10-01
 
