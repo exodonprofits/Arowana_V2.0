@@ -180,7 +180,14 @@ Pages with more than one auth client: 9 on main, 0 now, apart from the parked `t
 
 Tests: `scripts/test_journal_sync.py`, `scripts/browser/journal_sync_check.mjs` (23 checks, synthetic data; main fails 15).
 
-**Next:** S3 (wheel ledger and campaigns panel).
+**S3 wheel ledger, branch `claude/ATD-108-s3-ledger`:**
+- `js/wheel-ledger.js` and its Node tests; new `Node Tests` workflow;
+- Portfolio Command Income tab: Wheel campaigns panel replaces "Cost basis after premium"; expired/assigned count as settled;
+- Add / Edit / Delete Holding write journal lots (they wrote the retired `portfolio` table, so saves never showed); a holding made of several buys links to them in the journal.
+
+Tests: `tests/wheel-ledger.test.js` (10), `scripts/browser/portfolio_ledger_check.mjs` (15). Follow-up: Portfolio Command "Import CSV" still writes `portfolio`.
+
+**Next:** S4 (risk rules, trade check, Options Hub "Check a trade").
 
 ### ATD-007 continuation - 2026-10-01
 

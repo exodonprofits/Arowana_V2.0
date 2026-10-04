@@ -4901,6 +4901,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
 </head>
 
 <body>
+  <span id="journalSyncPill" hidden aria-hidden="true"></span>
   <!-- Toast Container -->
   <div class="toast-container" id="toastContainer"></div>
 
@@ -5242,7 +5243,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
 
         <section class="lt-section">
           <div class="lt-card hold-tip">
-            <strong>💡 Tip:</strong> Click any column header to sort. The "Edit" button on each row jumps to the full holdings editor where you can adjust shares, cost basis, and notes.
+            <strong>💡 Tip:</strong> Click any column header to sort. Holdings are calculated from open trades in your Trade Journal: "Edit" changes a single-buy position directly, and positions built from several buys are edited in the journal.
           </div>
         </section>
       </div>
@@ -5287,7 +5288,10 @@ html,body{font-size:13px!important;line-height:1.45!important}
         .pi-root td.num { font-family:var(--font-mono); }
         .pi-root td.pos { color:var(--success-dark); }
         .pi-root td.neg { color:var(--danger); }
-        .pi-root .pi-scroll { overflow-x:auto; }
+        /* contain:inline-size keeps a wide table (the 10-column wheel campaigns
+           table) from setting the page's minimum width on phones; it scrolls
+           inside its panel instead. */
+        .pi-root .pi-scroll { overflow-x:auto; contain:inline-size; }
         .pi-root .pi-wash { background:var(--warning-light); border:1px solid #f5d38a; color:#7c4a03; border-radius:var(--radius-sm); padding:11px 13px; font-size:.85rem; line-height:1.5; }
         .pi-root .pi-wash table { color:var(--text); }
         .pi-root .pi-rules { border:1px solid var(--border); border-radius:var(--radius); background:var(--surface); margin-bottom:16px; }
@@ -5364,7 +5368,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
           <div class="pi-head">
             <div>
               <h2>🪙 Premium Income</h2>
-              <p>What your options trades actually kept, by month and by ticker, from your trade journal. Realized means closed trades: premium received minus what you paid to close, minus fees.</p>
+              <p>What your options trades actually kept, by month and by ticker, from your trade journal. Realized means settled trades (closed, expired or assigned): premium received minus what you paid to close, minus fees.</p>
             </div>
             <div class="pi-controls">
               <label class="sr-only" for="pi-range">Period</label>
@@ -5403,10 +5407,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
           }
 
           function getClient() {
-            return window.supabaseClient || window.sbClient
-              || (window.supabase && window.AP_WEBHOOKS && window.AP_WEBHOOKS.supabase && window.AP_WEBHOOKS.supabase.url
-                  ? window.supabase.createClient(window.AP_WEBHOOKS.supabase.url, window.AP_WEBHOOKS.supabase.anonKey || window.AP_WEBHOOKS.supabase.anon_key)
-                  : null);
+            return window.supabaseClient || window.sbClient || null;
           }
           function waitForClient(ms) {
             return new Promise(function (resolve) {
@@ -5433,10 +5434,12 @@ html,body{font-size:13px!important;line-height:1.45!important}
             var pin = n(p.premiumIn) || 0, pout = n(p.premiumOut);
             var fees = (n(p.feeIn) || 0) + (n(p.feeOut) || 0);
             var credit = String(p.isCredit) === 'true' || p.isCredit === true;
-            var closed = String(r.status || p.status) === 'closed';
+            // Expired and assigned contracts are settled just like closed ones:
+            // the premium is kept (assignment moves on to the shares).
+            var closed = ['closed', 'expired', 'assigned'].indexOf(String(r.status || p.status)) >= 0;
             var pnl = n(p.pnl);
             if (pnl == null && closed) pnl = ((credit ? pin - (pout || 0) : (pout || 0) - pin) * qty * 100) - fees;
-            var date = String((closed ? (p.exitDate || p.entryDate) : p.entryDate) || '').slice(0, 10);
+            var date = String((closed ? (p.exitDate || p.expiry || p.entryDate) : p.entryDate) || '').slice(0, 10);
             return {
               ticker: String(p.ticker || '').toUpperCase(), strategy: p.strategy || '', optType: String(p.optType || '').toLowerCase(),
               broker: p.broker || 'Default', qty: qty, credit: credit, closed: closed,
@@ -5456,55 +5459,74 @@ html,body{font-size:13px!important;line-height:1.45!important}
             return { ticker: sym, qty: qty, cost: qty * (n(p.entryPrice) || 0), entry: String(p.entryDate || '').slice(0, 10), broker: p.broker || 'Default' };
           }
 
-          // Per-ticker basis: shares you hold now, less the option premium that
-          // ticker has realized since you started holding them.
-          function basisRows() {
+          // Wheel campaigns (js/wheel-ledger.js): each run of puts → shares →
+          // calls on one ticker in one account, with the basis the premium
+          // bought down to and the capital it tied up.
+          function campaigns() {
+            if (!window.AP_WHEEL) return [];
             var acct = activeAccount();
-            var byTicker = {};
-            (S.lots || []).forEach(function (l) {
-              if (acct && l.broker !== acct) return;
-              var t = byTicker[l.ticker] = byTicker[l.ticker] || { ticker: l.ticker, shares: 0, cost: 0, since: null, premium: 0 };
-              t.shares += l.qty; t.cost += l.cost;
-              if (l.entry && (!t.since || l.entry < t.since)) t.since = l.entry;
-            });
-            (S.rows || []).forEach(function (r) {
-              if (!r.closed) return;
-              if (acct && r.broker !== acct) return;
-              var t = byTicker[r.ticker];
-              if (!t) return;
-              if (t.since && r.date && r.date < t.since) return;   // premium from before you held the shares
-              t.premium += r.pnl;
-            });
-            return Object.keys(byTicker).map(function (k) {
-              var t = byTicker[k];
-              t.avgCost = t.shares ? t.cost / t.shares : null;
-              t.perShare = t.shares ? t.premium / t.shares : 0;
-              t.adjusted = t.avgCost == null ? null : t.avgCost - t.perShare;
-              t.last = S.prices[t.ticker] != null ? S.prices[t.ticker] : null;
-              t.vsAdjusted = (t.last != null && t.adjusted) ? (t.last / t.adjusted - 1) * 100 : null;
-              return t;
-            }).filter(function (t) { return t.shares > 0; }).sort(function (a, b) { return b.premium - a.premium; });
+            return window.AP_WHEEL.build(S.optPayloads, S.stockPayloads, { prices: S.prices })
+              .filter(function (c) { return !acct || c.account === acct; });
           }
 
-          function basisPanel() {
-            var rows = basisRows();
-            if (!rows.length) return '';
-            var totCost = 0, totPrem = 0, totShares = 0;
-            rows.forEach(function (t) { totCost += t.cost; totPrem += t.premium; totShares += t.shares; });
-            return '<div class="pi-panel"><h3>Cost basis after premium</h3>' +
-              '<p class="pi-sub">Shares you hold now, with the option premium that ticker has realized since you started holding them taken off the price you paid.</p>' +
-              '<div class="pi-scroll"><table><thead><tr><th>Ticker</th><th>Shares</th><th>Paid</th><th>Premium since</th><th>Adjusted basis</th><th>Last</th><th>vs. adjusted</th></tr></thead><tbody>' +
-              rows.map(function (t) {
-                return '<tr><td>' + esc(t.ticker) + '</td>' +
-                  '<td class="num">' + t.shares.toLocaleString('en-US') + '</td>' +
-                  '<td class="num">' + esc(money(t.avgCost)) + '</td>' +
-                  '<td class="num ' + (t.premium >= 0 ? 'pos' : 'neg') + '">' + esc(usd(t.premium)) + (t.since ? '<br><span style="font-size:.72rem;color:var(--text-muted)">since ' + esc(t.since) + '</span>' : '') + '</td>' +
-                  '<td class="num"><b>' + esc(money(t.adjusted)) + '</b></td>' +
-                  '<td class="num">' + esc(money(t.last)) + '</td>' +
-                  '<td class="num ' + (t.vsAdjusted == null ? '' : (t.vsAdjusted >= 0 ? 'pos' : 'neg')) + '">' + pct(t.vsAdjusted) + '</td></tr>';
-              }).join('') +
-              '</tbody><tfoot><tr><td><b>Total</b></td><td class="num">' + totShares.toLocaleString('en-US') + '</td><td class="num">' + esc(usd(totCost)) + '</td>' +
-              '<td class="num ' + (totPrem >= 0 ? 'pos' : 'neg') + '">' + esc(usd(totPrem)) + '</td><td class="num"><b>' + esc(usd(totCost - totPrem)) + '</b></td><td></td><td></td></tr></tfoot></table></div></div>';
+          function signed(v) { return '<td class="num ' + (v == null ? '' : (v >= 0 ? 'pos' : 'neg')) + '">' + esc(v == null ? '—' : usd(v)) + '</td>'; }
+          function plural(k, word) { return k + ' ' + word + (k === 1 ? '' : 's'); }
+          function small(t) { return '<br><span style="font-size:.72rem;color:var(--text-muted)">' + esc(t) + '</span>'; }
+
+          function campaignsPanel() {
+            var all = campaigns();
+            if (!all.length) return '';
+            var showAcct = !activeAccount() && all.some(function (c) { return c.account !== all[0].account; });
+            var open = all.filter(function (c) { return c.status === 'open'; });
+            var closed = all.filter(function (c) { return c.status === 'closed' && inRange(c.end); });
+            var warnings = [];
+            open.concat(closed).forEach(function (c) { c.warnings.forEach(function (w) { warnings.push(c.ticker + ': ' + w); }); });
+            var html = '<div class="pi-panel"><h3>Wheel campaigns</h3>' +
+              '<p class="pi-sub">Each run of puts, shares and calls on one ticker, start to finish. A campaign ends when you have had no shares and no open contracts on it for a week.</p>';
+
+            if (open.length) {
+              html += '<h3 style="font-size:.9rem;margin:6px 0 8px">Running now</h3><div class="pi-scroll"><table><thead><tr>' +
+                '<th>Ticker</th><th>Started</th><th>Shares</th><th>Paid</th><th>Banked</th><th>Adjusted basis</th><th>Last</th><th>Unrealized</th><th>Peak capital</th><th>Open premium</th></tr></thead><tbody>' +
+                open.map(function (c) {
+                  return '<tr><td>' + esc(c.ticker) + (showAcct ? small(c.account) : '') + '</td>' +
+                    '<td class="num">' + esc(c.start) + small(c.days + ' days') + '</td>' +
+                    '<td class="num">' + (c.shares ? c.shares.toLocaleString('en-US') : '—') + '</td>' +
+                    '<td class="num">' + esc(money(c.avgCost)) + '</td>' +
+                    signed(c.realized) +
+                    '<td class="num"><b>' + esc(money(c.adjustedBasis)) + '</b></td>' +
+                    '<td class="num">' + esc(money(c.last)) + '</td>' +
+                    signed(c.unrealized) +
+                    '<td class="num">' + esc(usd(c.peakCapital)) + '</td>' +
+                    '<td class="num">' + (c.openPremium ? esc(usd(c.openPremium)) + small(c.openLegs.length + ' open') : '—') + '</td></tr>';
+                }).join('') + '</tbody></table></div>';
+            }
+
+            if (closed.length) {
+              var tot = 0;
+              closed.forEach(function (c) { tot += c.realized; });
+              html += '<h3 style="font-size:.9rem;margin:14px 0 8px">Finished in this period</h3><div class="pi-scroll"><table><thead><tr>' +
+                '<th>Ticker</th><th>Ran</th><th>Premium</th><th>Stock P&amp;L</th><th>Result</th><th>Peak capital</th><th>Return</th><th>Annualized</th></tr></thead><tbody>' +
+                closed.map(function (c) {
+                  return '<tr><td>' + esc(c.ticker) + (showAcct ? small(c.account) : '') + '</td>' +
+                    '<td class="num">' + esc(c.start) + ' → ' + esc(c.end) + small(c.days + ' days · ' + plural(c.puts, 'put') + ', ' + plural(c.calls, 'call') + (c.assignments ? ' · assigned' : '') + (c.calledAway ? ' · called away' : '')) + '</td>' +
+                    signed(c.optionIncome) + signed(c.stockRealized) +
+                    '<td class="num ' + (c.realized >= 0 ? 'pos' : 'neg') + '"><b>' + esc(usd(c.realized)) + '</b></td>' +
+                    '<td class="num">' + esc(usd(c.peakCapital)) + '</td>' +
+                    '<td class="num">' + pct(c.returnOnPeak) + '</td>' +
+                    '<td class="num">' + pct(c.annualized) + '</td></tr>';
+                }).join('') +
+                '</tbody><tfoot><tr><td><b>Total</b></td><td class="num">' + plural(closed.length, 'campaign') + '</td><td></td><td></td>' +
+                '<td class="num ' + (tot >= 0 ? 'pos' : 'neg') + '"><b>' + esc(usd(tot)) + '</b></td><td></td><td></td><td></td></tr></tfoot></table></div>';
+            } else if (!open.length) {
+              html += '<p class="pi-sub">No campaigns finished in this period.</p>';
+            }
+
+            if (warnings.length) {
+              html += '<details class="pi-rules" style="margin:12px 0 0"><summary>' + warnings.length + ' journal gap' + (warnings.length === 1 ? '' : 's') + ' filled in</summary><ul>' +
+                warnings.map(function (w) { return '<li>' + esc(w) + '</li>'; }).join('') +
+                '</ul></details>';
+            }
+            return html + '</div>';
           }
 
           function shapeStock(r) {
@@ -5699,7 +5721,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
                 '</div></div>';
             }
 
-            html += basisPanel();
+            html += campaignsPanel();
 
             html += taxPanel();
 
@@ -5717,8 +5739,11 @@ html,body{font-size:13px!important;line-height:1.45!important}
               '<li>Win rate = closed trades with a positive result ÷ all closed trades.</li>' +
               '<li>Return on put collateral = realized profit on short puts ÷ average collateral held for a year, where collateral = strike × 100 × contracts for each day the put was open. Covered calls are left out because the collateral there is your shares, not cash.</li>' +
               '<li>A month counts a trade on its close date.</li>' +
-              '<li>Adjusted basis = what you paid per share − realized option premium on that ticker per share, counting only premium closed on or after the earliest purchase date of the shares you still hold. It ignores the period filter above, since basis is about the whole holding.</li>' +
-              '<li>Premium is applied per ticker, not per lot — an exact, lot-by-lot basis needs assigned puts to be tagged, which comes later.</li>' +
+              '<li>Expired and assigned contracts count as settled: you kept the premium. Assignment then moves on to the shares.</li>' +
+              '<li>A wheel campaign is every short put and short call (not spreads) on one ticker in one account, plus the shares in that account, from the first trade until you have held neither for 7 days. Rolls stay in the same campaign.</li>' +
+              '<li>Banked = option premium kept + gains or losses on shares already sold, within the campaign. Adjusted basis = (cost of the shares still held − banked) ÷ shares held.</li>' +
+              '<li>Peak capital = the most the campaign tied up on any day: strike × 100 for each open short put, plus the cost of shares held. Return = result ÷ peak capital; annualized once a campaign has run 30 days.</li>' +
+              '<li>An option marked Assigned with no matching stock row is counted as shares bought (put) or sold (call) at the strike, and listed under journal gaps so you can add the row.</li>' +
               '</ul></details>';
             el('pi-body').innerHTML = html;
           }
@@ -5742,6 +5767,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
                 all = all.concat(got);
                 if (got.length < PAGE) break;
               }
+              S.optPayloads = all.map(function (r) { return Object.assign({}, r.payload || {}, { status: r.status || (r.payload && r.payload.status) }); });
               S.rows = all.map(shape).filter(function (r) { return r.ticker; });
 
               // Every stock row: open lots feed the basis panel, closed ones the tax snapshot.
@@ -5756,9 +5782,12 @@ html,body{font-size:13px!important;line-height:1.45!important}
               }
               S.lots = stock.filter(function (r) { return String(r.status) === 'open'; }).map(shapeLot).filter(Boolean);
               S.stockTrades = stock.map(shapeStock).filter(Boolean);
+              S.stockPayloads = stock.map(function (r) { return Object.assign({}, r.payload || {}, { status: r.status || (r.payload && r.payload.status) }); });
 
               var syms = {};
               S.lots.forEach(function (l) { syms[l.ticker] = true; });
+              // Shares a campaign counts as held (e.g. an assigned put with no stock row).
+              if (window.AP_WHEEL) window.AP_WHEEL.build(S.optPayloads, S.stockPayloads).forEach(function (c) { if (c.shares) syms[c.ticker] = true; });
               var symList = Object.keys(syms);
               if (symList.length) {
                 var ms = await sb.from('market_snapshots').select('symbol,ts,ohlcv').eq('tf', '1d')
@@ -6840,6 +6869,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
       lastFetchedAt: null,      // timestamp of last successful Supabase fetch
       lastError: null,          // last error message if any
       isRefreshing: false,      // prevents concurrent fetches
+      lotsByHolding: {},        // holding id -> [{id, payload}] journal lots behind it — see pcIndexHoldingLots
       openOptionsByUnderlying: {}, // read-only overlay from arowana.portfolio_options, keyed by uppercase underlying — see pcRefreshOpenOptions
     };
 
@@ -7088,7 +7118,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
     // show as such here rather than being guessed into a specific
     // brokerage account.
     async function pcFetchOpenTjStocksFromSupabase(user, cfg) {
-      const url = `${cfg.url}/rest/v1/tj_stocks?user_id=eq.${user.id}&status=eq.open&select=symbol,payload`;
+      const url = `${cfg.url}/rest/v1/tj_stocks?user_id=eq.${user.id}&status=eq.open&select=id,symbol,payload`;
 
       const buildHeaders = (token) => ({
         'apikey': cfg.anonKey,
@@ -7164,6 +7194,26 @@ html,body{font-size:13px!important;line-height:1.45!important}
         groups.set(key, g);
       });
       return Array.from(groups.values());
+    }
+
+    // Which journal lots make up each holding. Uses the same filters and
+    // (symbol, broker) key as the aggregation above, so a holding's id maps to
+    // exactly the lots that were summed into it. Add/Edit/Delete Holding need
+    // this: a holding is derived from lots, so changes have to go to a lot.
+    function pcIndexHoldingLots(rows) {
+      const index = {};
+      (rows || []).forEach(row => {
+        const p = row.payload || {};
+        if (p.side === 'short') return;
+        const symbol = String(row.symbol || p.ticker || '').toUpperCase();
+        const qty = Number(p.qty);
+        const price = Number(p.entryPrice);
+        if (!symbol || !Number.isFinite(qty) || qty <= 0 || !Number.isFinite(price)) return;
+        const broker = (p.broker || '').trim() || 'Default';
+        const key = `tjstocks::${symbol}::${broker}`;
+        (index[key] = index[key] || []).push({ id: row.id || p.id, payload: p });
+      });
+      return index;
     }
 
     function pcMapTjStockAggregate(g) {
@@ -7534,6 +7584,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
       // portfolio table.
       try {
         const rawRows = await pcFetchOpenTjStocksFromSupabase(user, cfg);
+        _pcState.lotsByHolding = pcIndexHoldingLots(rawRows);
         const aggregated = pcAggregateTjStockRows(rawRows);
         const holdings = aggregated
           .map(pcMapTjStockAggregate)
@@ -8525,13 +8576,18 @@ html,body{font-size:13px!important;line-height:1.45!important}
     }
 
     // ── Add / Edit Holding modal ──────────────────────────────────────
-    // Replaces what used to be navigation to portfolio-holdings.html — a
-    // page referenced by both the "+ Add Holding" button and every row's
-    // "Edit" link, but which was never actually created (404 on click).
-    // holdingId is null/undefined for "Add", or a real holding id for
-    // "Edit" (looked up by id, not symbol — the same symbol can exist
-    // across multiple accounts, so symbol alone can't uniquely identify
-    // which row to edit).
+    // Holdings are calculated from open lots in the trade journal
+    // (tj_stocks), so this modal writes a journal lot — it no longer writes
+    // the retired `portfolio` table, which Holdings stopped reading (saves
+    // there "succeeded" and never appeared).
+    //   Add    → a new open long lot in the chosen account.
+    //   Edit   → only when the holding is a single lot; that lot is edited.
+    //   Multi-lot holding → a pointer to the journal instead. Shares and an
+    //            average cost can't be split back into individual buys
+    //            without inventing trade history.
+    // holdingId is null/undefined for "Add", or a holding id for "Edit"
+    // (looked up by id, not symbol — the same symbol can exist in more than
+    // one account).
     function pcOpenHoldingModal(holdingId) {
       const existing = document.getElementById('pcHoldModalRoot');
       if (existing) existing.remove();
@@ -8544,6 +8600,14 @@ html,body{font-size:13px!important;line-height:1.45!important}
         showToast('Could not find that holding — it may have been deleted or refreshed.', 'error');
         return;
       }
+
+      const lots = isEdit ? ((_pcState.lotsByHolding || {})[holding.id] || []) : [];
+      if (isEdit && lots.length !== 1) {
+        pcOpenMultiLotNotice(holding, lots.length);
+        return;
+      }
+      const lot = isEdit ? lots[0] : null;
+      const lp = lot ? (lot.payload || {}) : {};
 
       const accounts = pcLoadAccounts();
       const activeAccount = pcGetActiveAccount();
@@ -8564,6 +8628,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
       root.innerHTML = `
         <div class="acct-modal" style="max-width:440px">
           <h3>${isEdit ? 'Edit Holding' : 'Add Holding'}</h3>
+          <p style="margin:0 0 10px;color:var(--text-muted);font-size:0.82rem">Saved as an open position in your Trade Journal, which is where Holdings are calculated from.</p>
           <div class="dt-modal-row">
             <label for="hmSymbol">Symbol</label>
             <input type="text" id="hmSymbol" class="input" style="text-transform:uppercase"
@@ -8576,28 +8641,24 @@ html,body{font-size:13px!important;line-height:1.45!important}
                 value="${holding ? holding.shares : ''}" placeholder="100">
             </div>
             <div class="dt-modal-row" style="flex:1">
-              <label for="hmAvgCost">Avg cost / share</label>
+              <label for="hmAvgCost">Cost / share</label>
               <input type="number" id="hmAvgCost" class="input" step="any" min="0"
                 value="${holding ? holding.avgCost : ''}" placeholder="150.00">
             </div>
           </div>
-          <div class="dt-modal-row">
-            <label for="hmAccount">Account</label>
-            <select id="hmAccount" class="input">${accountOptions}</select>
-          </div>
           <div style="display:flex;gap:10px">
             <div class="dt-modal-row" style="flex:1">
-              <label for="hmSector">Sector <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
-              <input type="text" id="hmSector" class="input" value="${pcEscapeHtml(holding && holding.sector !== 'Unclassified' ? holding.sector : '')}" placeholder="Technology">
+              <label for="hmAccount">Account</label>
+              <select id="hmAccount" class="input">${accountOptions}</select>
             </div>
             <div class="dt-modal-row" style="flex:1">
-              <label for="hmPurchaseDate">Purchase date <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
-              <input type="date" id="hmPurchaseDate" class="input" value="${holding && holding.purchaseDate ? String(holding.purchaseDate).slice(0, 10) : ''}">
+              <label for="hmPurchaseDate">Purchase date</label>
+              <input type="date" id="hmPurchaseDate" class="input" value="${pcEscapeHtml(String(lp.entryDate || (holding && holding.purchaseDate) || pcTodayLocal()).slice(0, 10))}">
             </div>
           </div>
           <div class="dt-modal-row">
             <label for="hmNotes">Notes <span style="color:var(--text-muted);font-weight:400">(optional)</span></label>
-            <textarea id="hmNotes" class="input" rows="2">${pcEscapeHtml(holding ? holding.notes : '')}</textarea>
+            <textarea id="hmNotes" class="input" rows="2">${pcEscapeHtml(lp.notes || '')}</textarea>
           </div>
           <div id="hmError" style="color:#dc2626;font-size:0.85rem;min-height:1.2em;margin-top:4px"></div>
           <div class="acct-modal-actions" style="justify-content:${isEdit ? 'space-between' : 'flex-end'};margin-top:14px">
@@ -8621,24 +8682,21 @@ html,body{font-size:13px!important;line-height:1.45!important}
         const shares = parseFloat(document.getElementById('hmShares').value);
         const avgCost = parseFloat(document.getElementById('hmAvgCost').value);
         const account = document.getElementById('hmAccount').value;
-        const sector = document.getElementById('hmSector').value.trim();
         const purchaseDate = document.getElementById('hmPurchaseDate').value || null;
         const notes = document.getElementById('hmNotes').value.trim();
 
         if (!symbol) { errEl.textContent = 'Symbol is required.'; return; }
         if (!shares || shares <= 0) { errEl.textContent = 'Shares must be a positive number.'; return; }
-        if (isNaN(avgCost) || avgCost < 0) { errEl.textContent = 'Average cost must be a number.'; return; }
+        if (isNaN(avgCost) || avgCost <= 0) { errEl.textContent = 'Cost per share must be a positive number.'; return; }
         if (!account) { errEl.textContent = 'Pick an account.'; return; }
+        if (!purchaseDate) { errEl.textContent = 'Purchase date is required.'; return; }
 
         const saveBtn = document.getElementById('hmSaveBtn');
         saveBtn.disabled = true;
         saveBtn.textContent = 'Saving...';
 
         try {
-          await pcSaveHolding({
-            id: isEdit ? holding.id : null,
-            symbol, shares, avgCost, account, sector, purchaseDate, notes,
-          });
+          await pcSaveHolding({ symbol, shares, avgCost, account, purchaseDate, notes }, lot);
           close();
           showToast(`${symbol} ${isEdit ? 'updated' : 'added'}.`, 'success');
           await pcRefreshHoldings();
@@ -8652,12 +8710,12 @@ html,body{font-size:13px!important;line-height:1.45!important}
 
       if (isEdit) {
         document.getElementById('hmDeleteBtn').addEventListener('click', async () => {
-          if (!confirm(`Remove ${holding.symbol} (${holding.account}) from your portfolio?`)) return;
+          if (!confirm(`Delete this ${holding.symbol} trade (${holding.account}) from your Trade Journal? This removes the trade record, not just the holding.`)) return;
           const delBtn = document.getElementById('hmDeleteBtn');
           delBtn.disabled = true;
           delBtn.textContent = 'Deleting...';
           try {
-            await pcDeleteHolding(holding.id);
+            await pcDeleteHolding(lot);
             close();
             showToast(`${holding.symbol} removed.`, 'warn');
             await pcRefreshHoldings();
@@ -8671,89 +8729,143 @@ html,body{font-size:13px!important;line-height:1.45!important}
       }
     }
 
-    // Upsert (add) or update (edit) a single holding directly against
-    // Supabase's `portfolio` table — same auth/retry pattern as
-    // csvWriteToSupabase(), scaled down to one row.
-    async function pcSaveHolding(h) {
-      const user = pcGetAuthUser();
-      const cfg = pcGetSupabaseConfig();
-      if (!user || !cfg || !cfg.url || !cfg.anonKey) {
-        throw new Error('Not signed in or Supabase not configured.');
+    // A holding built from several journal lots can't be edited as one row.
+    // Built with createElement: the text includes the symbol and account name.
+    function pcOpenMultiLotNotice(holding, lotCount) {
+      const root = document.createElement('div');
+      root.id = 'pcHoldModalRoot';
+      root.className = 'acct-modal-backdrop';
+      const box = document.createElement('div');
+      box.className = 'acct-modal';
+      box.style.maxWidth = '440px';
+      const h = document.createElement('h3');
+      h.textContent = `Edit ${holding.symbol}`;
+      const p = document.createElement('p');
+      p.style.cssText = 'margin:0 0 14px;line-height:1.5';
+      p.textContent = `${holding.symbol} in ${holding.account} is made of ${lotCount} separate buys in your Trade Journal. ` +
+        'Holdings are calculated from those trades, so edit, close or delete the individual buys there.';
+      const actions = document.createElement('div');
+      actions.className = 'acct-modal-actions';
+      const cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.className = 'dt-btn dt-btn-ghost';
+      cancel.textContent = 'Close';
+      const open = document.createElement('a');
+      open.className = 'dt-btn dt-btn-primary';
+      open.href = 'trade-journal-pro.html?tab=stock&from=portfolio-command&q=' + encodeURIComponent(holding.symbol);
+      open.textContent = 'Open in Trade Journal';
+      actions.appendChild(cancel);
+      actions.appendChild(open);
+      box.appendChild(h);
+      box.appendChild(p);
+      box.appendChild(actions);
+      root.appendChild(box);
+      document.body.appendChild(root);
+      const close = () => { root.remove(); };
+      cancel.addEventListener('click', close);
+      root.addEventListener('click', (e) => { if (e.target === root) close(); });
+    }
+
+    function pcTodayLocal() {
+      const d = new Date();
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    }
+
+    // Same id format Trade Journal Pro's genId() uses for new trades.
+    function pcNewLotId() {
+      return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    }
+
+    // Journal writes go through js/journal-sync.js, the same path Trade
+    // Journal Pro uses, so the server row shape and retry handling stay in
+    // one place. Wait until its first sync has finished: before that it has
+    // not yet confirmed who owns this browser's journal cache.
+    async function pcJournalReady(timeoutMs) {
+      const deadline = Date.now() + (timeoutMs || 15000);
+      while (Date.now() < deadline) {
+        const js = window.journalSync;
+        const st = js && typeof js.getStatus === 'function' ? js.getStatus() : null;
+        if (st === 'synced' || st === 'error') return js;
+        if (st === 'signed-out') throw new Error('Your session has expired — sign in again.');
+        if (st === 'local-only') throw new Error('Could not reach your Trade Journal. Reload the page and try again.');
+        await new Promise(r => setTimeout(r, 250));
       }
-      let token = await pcGetAccessToken(user);
-      const buildHeaders = (tok, extra) => Object.assign({
-        'apikey': cfg.anonKey,
-        'Authorization': `Bearer ${tok || cfg.anonKey}`,
-        'Content-Type': 'application/json',
-      }, extra || {});
-      const requestWithRetry = async (url, options) => {
-        let res = await fetch(url, { ...options, headers: buildHeaders(token, options.extraHeaders) });
-        if (res.status === 401) {
-          const refreshed = await pcTryRefreshSession();
-          if (refreshed && refreshed !== token) {
-            token = refreshed;
-            res = await fetch(url, { ...options, headers: buildHeaders(token, options.extraHeaders) });
-          }
-        }
-        return res;
-      };
+      throw new Error('Your Trade Journal is still syncing — try again in a moment.');
+    }
 
-      const payload = {
-        user_id: user.id,
-        symbol: h.symbol,
-        shares_owned: h.shares,
-        avg_cost_basis: h.avgCost,
-        account_type: h.account,
-        sector: h.sector || null,
-        purchase_date: h.purchaseDate,
-        notes: h.notes || null,
-        last_updated: new Date().toISOString(),
-      };
-
-      let res;
-      if (h.id) {
-        // Edit: target the exact row by id, scoped to this user for safety.
-        res = await requestWithRetry(
-          `${cfg.url}/rest/v1/portfolio?id=eq.${encodeURIComponent(h.id)}&user_id=eq.${user.id}`,
-          { method: 'PATCH', body: JSON.stringify(payload), extraHeaders: { 'Prefer': 'return=minimal' } }
-        );
-      } else {
-        // Add: upsert on the same (user_id, symbol, account_type)
-        // constraint the CSV importer uses, so adding a symbol that
-        // already exists in that account updates it instead of erroring.
-        res = await requestWithRetry(
-          `${cfg.url}/rest/v1/portfolio?on_conflict=user_id,symbol,account_type`,
-          { method: 'POST', body: JSON.stringify(payload), extraHeaders: { 'Prefer': 'resolution=merge-duplicates,return=minimal' } }
-        );
-      }
-
-      if (!res.ok) {
-        const txt = await res.text().catch(() => '');
-        if (res.status === 401 || pcIsJwtExpired(txt)) {
-          throw new Error('Your session has expired — sign in again.');
-        }
-        throw new Error(txt || `Save failed (${res.status}).`);
+    // Keeps this browser's journal cache (tj_stocks_v2) in step, so Trade
+    // Journal Pro shows the change straight away. Only when journal-sync has
+    // stamped the cache as this user's — never write into someone else's.
+    function pcUpdateJournalCache(userId, mutate) {
+      const js = window.journalSync;
+      if (!js || typeof js.cacheOwner !== 'function' || js.cacheOwner() !== userId) return null;
+      try {
+        const arr = JSON.parse(localStorage.getItem('tj_stocks_v2') || '[]') || [];
+        const next = mutate(arr);
+        localStorage.setItem('tj_stocks_v2', JSON.stringify(next));
+        return next;
+      } catch (e) {
+        console.warn('[pc] journal cache not updated:', e);
+        return null;
       }
     }
 
-    async function pcDeleteHolding(id) {
+    async function pcFlushJournal(js) {
+      await js.flushNow();
+      if (js.getStatus() !== 'synced') {
+        throw new Error('Saved on this device, but your Trade Journal could not sync it yet. It will retry automatically.');
+      }
+    }
+
+    // Add (lot = null) or edit (lot = the holding's single journal lot).
+    async function pcSaveHolding(h, lot) {
       const user = pcGetAuthUser();
-      const cfg = pcGetSupabaseConfig();
-      if (!user || !cfg || !cfg.url || !cfg.anonKey) {
-        throw new Error('Not signed in or Supabase not configured.');
+      if (!user) throw new Error('Not signed in.');
+      const js = await pcJournalReady();
+
+      // Start from the freshest copy of the lot: this browser's cache if it
+      // has it, else the server payload the holding was built from.
+      let base = null;
+      if (lot) {
+        try {
+          const cached = (JSON.parse(localStorage.getItem('tj_stocks_v2') || '[]') || []).find(t => t.id === lot.id);
+          base = (cached && js.cacheOwner && js.cacheOwner() === user.id) ? cached : (lot.payload || {});
+        } catch (e) { base = lot.payload || {}; }
       }
-      let token = await pcGetAccessToken(user);
-      const res = await fetch(`${cfg.url}/rest/v1/portfolio?id=eq.${encodeURIComponent(id)}&user_id=eq.${user.id}`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': cfg.anonKey,
-          'Authorization': `Bearer ${token || cfg.anonKey}`,
-        },
+
+      const trade = Object.assign({}, base || {
+        side: 'long', status: 'open',
+        exitPrice: null, exitDate: null, stopLoss: null, target: null,
+        fees: 0, pnl: null, pnlPct: null, rMultiple: null,
+        setup: '', emotion: '', currentPrice: null, currentPriceAt: null,
+      }, {
+        id: lot ? lot.id : pcNewLotId(),
+        ticker: h.symbol,
+        qty: h.shares,
+        entryPrice: h.avgCost,
+        entryDate: h.purchaseDate,
+        broker: h.account,
+        notes: h.notes,
+        updatedAt: new Date().toISOString(),
       });
-      if (!res.ok) {
-        const txt = await res.text().catch(() => '');
-        throw new Error(txt || `Delete failed (${res.status}).`);
-      }
+
+      pcUpdateJournalCache(user.id, arr => {
+        const i = arr.findIndex(t => t.id === trade.id);
+        if (i === -1) arr.push(trade); else arr[i] = trade;
+        return arr;
+      });
+      js.upsertStock(trade);
+      await pcFlushJournal(js);
+    }
+
+    async function pcDeleteHolding(lot) {
+      const user = pcGetAuthUser();
+      if (!user) throw new Error('Not signed in.');
+      if (!lot || !lot.id) throw new Error('Could not find that trade in your journal.');
+      const js = await pcJournalReady();
+      pcUpdateJournalCache(user.id, arr => arr.filter(t => t.id !== lot.id));
+      js.deleteStock(lot.id);
+      await pcFlushJournal(js);
     }
 
     window.pcRenderAccountSwitcher = pcRenderAccountSwitcher;
@@ -12878,6 +12990,11 @@ html,body{font-size:13px!important;line-height:1.45!important}
   <script src="./js/app-config.js?v=20260918c"></script>
   <script src="./js/supabase_min.js?v=20260918c"></script>
   <script src="./js/sb.js?v=20261004a"></script>
+  <!-- ATD-108 S3: Add/Edit Holding writes journal lots through the same sync
+       layer as Trade Journal Pro (its status pill stays hidden here), and the
+       Income tab's wheel campaigns come from js/wheel-ledger.js. -->
+  <script src="./js/journal-sync.js?v=20261004b"></script>
+  <script src="./js/wheel-ledger.js?v=20261004b"></script>
   <!-- Market data runs on our licensed key; nobody brings their own. -->
   <script src="./js/market-data.js?v=20260918c"></script>
   <script src="./js/plan.js?v=20260918c"></script>

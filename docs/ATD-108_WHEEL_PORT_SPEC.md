@@ -156,7 +156,8 @@ Each slice is one PR. They run in order because later slices build on the auth f
 | Slice | State | Notes |
 |---|---|---|
 | S1 Auth foundation | Merged (PR #33) | See below. |
-| S2 Journal reliability | Implemented on `claude/ATD-108-s2-journal` | See below. |
+| S2 Journal reliability | Merged (PR #34) | See below. |
+| S3 Wheel ledger | Implemented on `claude/ATD-108-s3-ledger` | See below. |
 
 **What S1 changed:**
 
@@ -199,4 +200,31 @@ Each slice is one PR. They run in order because later slices build on the auth f
 - `scripts/test_journal_sync.py` keeps the safety cap, the chunked delete and the ATD-008 tab handling, and keeps `lab/` paths out.
 
 **Not in S2:** the option form labels every credit trade "Max risk: Unlimited*", including cash-secured puts. This bug exists on main and in Wheel, so it is left for a separate fix.
+
+**What S3 changed:**
+
+- **`js/wheel-ledger.js` is Wheel's version, unchanged.** It is a pure module: it groups journal rows into wheel campaigns, which run from a ticker's first short put or call (in one account) until there have been no shares and no open contracts on it for 7 days. For each campaign it reports premium banked, adjusted basis, peak capital and return. An option marked Assigned with no matching stock row is filled in at the strike and listed as a journal gap.
+- **Wheel's tests are copied unchanged** to `tests/wheel-ledger.test.js` and run by the new `.github/workflows/node-tests.yml` (`node --test`, no packages; decision Q2).
+- **Portfolio Command, Income tab:**
+  - The new Wheel campaigns panel replaces "Cost basis after premium". The old panel took premium off per ticker; the new one counts it per campaign and per account.
+  - Expired and assigned contracts now count as settled, matching S2.
+  - The page reads the journal only through the shared client and never builds its own.
+- **Portfolio Command, Add / Edit / Delete Holding:**
+  - Holdings have been read from the journal (`tj_stocks`), but these buttons still wrote to the retired `portfolio` table, so a save reported success and never appeared.
+  - They now write journal lots through `js/journal-sync.js`, which is now also loaded on this page, with its status pill hidden.
+  - A holding made of several buys opens a notice with a link to those buys in Trade Journal Pro (`?q=SYMBOL`) instead of a form. Shares and an average cost cannot be split back into individual buys.
+  - The modal loses the Sector field, which the journal does not store. Purchase date becomes required.
+- **Phone layout:** `.pi-scroll` gets `contain: inline-size`. Without it, the 10-column campaigns table set the page's minimum width, and the page scrolled sideways at 375px.
+- **Not ported:** Wheel's Free-plan single-account Income view (decision Q4), the "Explain in plain English" button (S5), the removal of the account-type selector, Wheel's rail, and version stamps.
+
+**Tested** with `scripts/browser/portfolio_ledger_check.mjs`, 15 of 15 checks passing. The page runs unmodified against a synthetic session and an in-memory fake of the Supabase REST API; every other host is blocked. The checks cover:
+- the campaigns panel (running and finished campaigns, the adjusted basis);
+- no sideways scroll at 375px;
+- the multi-buy notice and its link;
+- edit, add and delete reaching the journal;
+- no write to the `portfolio` table.
+
+On main, the Income checks fail because main counts only `closed` contracts, and the Edit flow cannot run.
+
+**Not in S3:** Portfolio Command's own "Import CSV" still writes the retired `portfolio` table. It needs the same treatment as Edit, and is a separate change.
 
