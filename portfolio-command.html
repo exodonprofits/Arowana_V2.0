@@ -5707,6 +5707,10 @@ html,body{font-size:13px!important;line-height:1.45!important}
               '<div class="pi-card"><span>Win rate</span><strong>' + pct(d.winRate) + '</strong><em>' + esc(usd(d.perTrade)) + ' average per trade</em></div>' +
               '<div class="pi-card"><span>Return on put collateral</span><strong>' + pct(d.returnOnCollateral) + '</strong><em>' + esc(usd(d.collateralYear)) + ' tied up for a year, annualized</em></div>' +
               '</div>';
+            if (window.AP_EXPLAIN && d.closed) {
+              html += '<div style="margin:-6px 0 16px"><button type="button" class="ax-btn" id="pi-explain-btn">Explain in plain English</button>' +
+                '<div class="ax-out" id="pi-explain-out" aria-live="polite" hidden></div></div>';
+            }
 
             html += '<div class="pi-panel"><h3>Realized premium by month</h3><p class="pi-sub">' +
               (best ? 'Best ' + esc(monthLabel(best.month)) + ' ' + esc(usd(best.realized)) + ' · worst ' + esc(monthLabel(worst.month)) + ' ' + esc(usd(worst.realized)) : '') +
@@ -5746,6 +5750,27 @@ html,body{font-size:13px!important;line-height:1.45!important}
               '<li>An option marked Assigned with no matching stock row is counted as shares bought (put) or sold (call) at the strike, and listed under journal gaps so you can add the row.</li>' +
               '</ul></details>';
             el('pi-body').innerHTML = html;
+            if (window.AP_EXPLAIN && el('pi-explain-btn')) {
+              AP_EXPLAIN.attach(el('pi-explain-btn'), el('pi-explain-out'), 'income', function () {
+                // The figures on this tab for the selected period, nothing else.
+                var rangeName = { ytd: 'This year', '12m': 'Last 12 months', all: 'All time' }[S.range] || S.range;
+                var facts = [
+                  { label: 'Period', value: rangeName + (acct ? ', account ' + acct : ', all accounts') },
+                  { label: 'Realized premium', value: usd(d.realized) + ' from ' + d.closed + ' closed trades' },
+                  { label: 'Fees', value: usd(d.fees) },
+                  { label: 'Credit received', value: usd(d.creditIn) },
+                  { label: 'Win rate', value: pct(d.winRate) + ', ' + usd(d.perTrade) + ' average per trade' },
+                  { label: 'Return on put collateral', value: d.returnOnCollateral == null ? 'not available' : pct(d.returnOnCollateral) + ' a year' },
+                  { label: 'Best month', value: best ? monthLabel(best.month) + ' ' + usd(best.realized) : 'none' },
+                  { label: 'Worst month', value: worst ? monthLabel(worst.month) + ' ' + usd(worst.realized) : 'none' },
+                  { label: 'Open contracts', value: d.openCount + (d.openCount ? ' with ' + usd(d.openCredit) + ' credit received, not yet settled' : '') }
+                ];
+                d.tickers.slice(0, 5).forEach(function (t) {
+                  facts.push({ label: 'Ticker ' + t.ticker, value: usd(t.realized) + ' realized from ' + t.trades + ' trades' });
+                });
+                return facts;
+              });
+            }
           }
 
           async function load(force) {
@@ -12995,6 +13020,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
        Income tab's wheel campaigns come from js/wheel-ledger.js. -->
   <script src="./js/journal-sync.js?v=20261004b"></script>
   <script src="./js/wheel-ledger.js?v=20261004b"></script>
+  <!-- ATD-108 S5: "Explain in plain English" on the Income tab (arowana-explain, Pro). -->
+  <script src="./js/explain.js?v=20261004d"></script>
   <!-- Market data runs on our licensed key; nobody brings their own. -->
   <script src="./js/market-data.js?v=20260918c"></script>
   <script src="./js/plan.js?v=20260918c"></script>

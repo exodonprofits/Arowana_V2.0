@@ -168,8 +168,15 @@
 
   function currentPlan() {
     if (devUnlocked()) return 'elite';
+    /* js/plan.js is the only authority on the plan (server-backed). The
+       user-object fallback below only runs on a page that never loaded it.
+       (ap_is_pro_v1 is gone: nothing ever set it, so it only let anyone
+       unlock Pro scans from the console.) */
+    if (window.AP_PLAN) {
+      if (AP_PLAN.slug() === 'elite') return 'elite';
+      return AP_PLAN.atLeast('pro') ? 'pro' : 'free';
+    }
     try {
-      if (localStorage.getItem('ap_is_pro_v1') === '1') return 'pro';
       var u = JSON.parse(localStorage.getItem('gs_auth_user_v1') || 'null');
       var p = u && u.plan ? String(u.plan).toLowerCase() : 'free';
       if (p.indexOf('elite') === 0) return 'elite';

@@ -655,61 +655,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
 .ap-right{display:flex; align-items:center; gap:18px;}
 </style>
 
-<script>
-  // ===== Real-time ticker using Twelve Data (or similar API) =====
-  const TICKER_SYMBOLS = ["AAPL","MSFT","GOOGL","AMZN","TSLA","NVDA","META"];
-  const TICKER_API_KEY = "__TWELVE_DATA_KEY_REMOVED__"; // TODO: replace
-  const TICKER_INTERVAL_MS = 60_000; // refresh every 60s
-
-  async function fetchTickerData() {
-      try {
-      const url = new URL("https://api.twelvedata.com/quote");
-      url.searchParams.set("symbol", TICKER_SYMBOLS.join(","));
-      url.searchParams.set("apikey", TICKER_API_KEY);
-
-      const res = await fetch(url.toString());
-      if (!res.ok) throw new Error("HTTP " + res.status);
-      const data = await res.json();
-
-      // TwelveData returns an object keyed by symbol OR an array (depending on plan)
-      const quotes = Array.isArray(data)
-          ? data
-          : TICKER_SYMBOLS.map(sym => ({ symbol: sym, ...(data[sym] || {}) }));
-
-      renderTicker(quotes);
-      } catch (err) {
-      console.error("Ticker error:", err);
-      // Fallback: leave existing content as-is if something fails
-      }
-  }
-
-  function renderTicker(quotes) {
-      const strip = document.getElementById("tickerStrip");
-      if (!strip) return;
-
-      strip.innerHTML = ""; // clear
-      quotes.forEach(q => {
-      if (!q || !q.symbol) return;
-
-      const price = Number(q.price || q.close || 0);
-      const change = Number(q.change || q.percent_change || 0);
-
-      const span = document.createElement("span");
-      span.textContent = `${q.symbol} $${price.toFixed(2)}`;
-
-      if (change > 0) span.classList.add("up");
-      else if (change < 0) span.classList.add("down");
-
-      strip.appendChild(span);
-      });
-  }
-
-  // Initial load + auto-refresh
-  document.addEventListener("DOMContentLoaded", () => {
-      fetchTickerData();
-      setInterval(fetchTickerData, TICKER_INTERVAL_MS);
-  });
-</script>
+<!-- ATD-108 S5: removed a dead Twelve Data ticker (placeholder key, no #tickerStrip on the page, polled every 60 s). -->
 
 </head>
 <body>

@@ -1453,6 +1453,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
 <script src="./js/sb.js?v=20261004a"></script>
 <script src="./js/nav-loader.js?v=20261003e"></script>
 <script src="/js/app-config.js"></script>
+<!-- ATD-108 S5: the plan comes from js/plan.js (server-backed); scanners.js asks it. -->
+<script src="./js/plan.js?v=20261004d"></script>
 <script src="/js/auth-header.js"></script>
 <script>window.GSAuthHeader&&window.GSAuthHeader.init({loginUrl:"./login.html",afterLogoutUrl:"./index.html"});</script>
 
@@ -1782,6 +1784,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
      Supabase on a new device). Three paths, as everywhere else: now, on the
      event, and a timeout — a listener alone loses the race on a warm cache. */
   window.addEventListener('ap:config:ready', function () { renderSources(); renderList(); });
+  /* Locks follow the plan once the server has answered. */
+  window.addEventListener('ap:plan:ready', function () { renderList(); });
   setTimeout(function () { renderSources(); renderList(); }, 2500);
 })();
 </script>

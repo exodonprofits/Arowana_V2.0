@@ -158,7 +158,8 @@ Each slice is one PR. They run in order because later slices build on the auth f
 | S1 Auth foundation | Merged (PR #33) | See below. |
 | S2 Journal reliability | Merged (PR #34) | See below. |
 | S3 Wheel ledger | Merged (PR #35) | See below. |
-| S4 Check a trade | Implemented on `claude/ATD-108-s4-trade-check` | See below. |
+| S4 Check a trade | Merged (PR #36) | See below. |
+| S5 Explanations + fixes | Implemented on `claude/ATD-108-s5-explain` | See below. |
 
 **What S1 changed:**
 
@@ -253,4 +254,39 @@ On main, the Income checks fail because main counts only `closed` contracts, and
   - that `?tab=analyzer` still opens;
   - no sideways scroll at 375px.
 - `scripts/test_trade_check.py` keeps the wiring and V2.0's tabs.
+
+**What S5 changed:**
+
+- **`js/explain.js` is Wheel's version, unchanged.** It calls the deployed `arowana-explain` function, which was checked read-only on 2026-10-04: it is active, requires a signed-in user's token, and its source matches the Wheel repo. The rules are enforced by the server:
+  - Pro only, with a monthly allowance.
+  - Any reply containing a number that is not in the facts the page sent is rejected.
+  - Replies are rendered as text.
+- **Where the buttons are:**
+  - Portfolio Command → Income has "Explain in plain English", which sends the tab's own figures.
+  - Options Hub → Check a Trade has "Argue both sides". Its code came in with S4; it appears now that `explain.js` loads.
+- **Wheel Calculator (P9):**
+  - For a covered call, the "expires worthless, you keep the shares" row now measures from your cost basis, as the called-away row does. It used to measure from today's price, so the result jumped at the strike.
+  - A note under the table explains the result.
+  - The "What happens" column now wraps, so the result column fits in its card. This was not part of Wheel's change.
+- **Scanners (P10):**
+  - `js/scanners.js` takes its plan from `js/plan.js` (server-backed) when the page loads it. `scanner.html` now loads it and repaints when the plan arrives.
+  - The `ap_is_pro_v1` shortcut is gone. Nothing set it, so its only effect was that anyone could unlock Pro scans from the browser console.
+  - Nothing from Wheel's `nav-rail.js` applied: its changes are for `lab/` paths and menu shapes the V2.0 fallback rail does not have.
+- **`option-roll-tracker.html`:** removed the dead Twelve Data ticker. It used a placeholder key, the page has no element for it, and it polled every 60 seconds.
+- **`options-hub.html`:** removed the script tag for the missing `js/options-hub-trading-layout.js`, which returned 404.
+
+**Tested:**
+- `scripts/browser/explain_fixes_check.mjs`: 19 of 19. It runs against the shared fake, with `arowana-explain` stubbed. It covers:
+  - the request kind, the facts and the user token for both buttons;
+  - hostile HTML in a reply rendered as text;
+  - the server's "part of Pro" refusal shown as its message;
+  - the calculator rows and table fit;
+  - scanner locks for Free and Pro accounts, judged under a non-local hostname because `scanners.js` unlocks everything on localhost;
+  - no Twelve Data requests;
+  - no 404s on Options Hub.
+
+  On main, the calculator row check fails.
+- `scripts/test_explain_fixes.py` keeps these in place.
+
+**Not in S5:** `wheel-calculator.html` still scrolls sideways at 375px, from its header rather than the table. Other pages still read `ap_is_pro_v1`: `long-term-dashboard`, `arowana-trader`, `portfolio-advisor`, `analysis-central`, `options-analyzer`, `retirement-planner` and `whale-tracker`. Each needs the same move to `plan.js`.
 

@@ -6,6 +6,8 @@
 //   const fake = await installFakeSupabase(ctx, { tj_stocks: [...], ... });
 //   fake.db.tj_stocks   // live rows, mutated by the page's writes
 //   fake.writes         // [{ method, table }] for every non-GET request
+//   opts.localHost      // the page's own host when not 127.0.0.1 (default)
+//   opts.functions      // { '<slug>': async ({ body, headers }) => ({ status, json }) }
 
 export const REF = 'pbojacnagutipfhcxltj';
 export const UID = '00000000-0000-4000-8000-000000000001';
@@ -72,15 +74,23 @@ export async function installFakeSupabase(ctx, db, opts = {}) {
     return json(405, null);
   }
 
-  await ctx.route('**/*', r => {
+  await ctx.route('**/*', async r => {
     const u = new URL(r.request().url());
     if (u.hostname === `${REF}.supabase.co`) {
       if (u.pathname.startsWith('/rest/v1/')) return rest(r);
       if (u.pathname === '/auth/v1/user') return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(user) });
       if (u.pathname === '/auth/v1/token') return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(session) });
+      const fn = u.pathname.startsWith('/functions/v1/') && (opts.functions || {})[u.pathname.slice('/functions/v1/'.length)];
+      if (fn) {
+        const req = r.request();
+        if (req.method() === 'OPTIONS') return r.fulfill({ status: 200, headers: { 'access-control-allow-origin': '*', 'access-control-allow-headers': '*' }, body: 'ok' });
+        let body = null; try { body = JSON.parse(req.postData() || 'null'); } catch (_) {}
+        const out = await fn({ body, headers: req.headers() });
+        return r.fulfill({ status: out.status || 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify(out.json) });
+      }
       return r.fulfill({ status: 503, body: '' });
     }
-    if (u.hostname !== '127.0.0.1') return r.abort();
+    if (u.hostname !== (opts.localHost || '127.0.0.1')) return r.abort();
     if (/\/login\.html$/.test(u.pathname) && r.request().isNavigationRequest()) return r.fulfill({ status: 204, body: '' });
     return r.continue();
   });
