@@ -3995,12 +3995,15 @@ document.getElementById('runReviewBtn2')?.addEventListener('click', ()=>{
 </script>
 
 <!-- ===== Auth (local /js) ===== -->
-<script src="/js/supabase.min.js"></script>
+<!-- Was /js/supabase.min.js, which does not exist (ATD-108 plan gates). -->
+<script src="./js/supabase_min.js?v=20260918c"></script>
+<script src="./js/sb.js?v=20261004a"></script>
 <script>
   window.GS_CONFIG_URL = "/js/config.json";
   window.GS_CONFIG_PATH = "/js/config.json";
 </script>
 <script src="/js/app-config.js"></script>
+<script src="./js/plan.js?v=20261004e"></script>
 <script src="/js/auth-header.js"></script>
 <script>
   // Initialize header auth (login.html is in the same folder as this dashboard)
@@ -4160,7 +4163,13 @@ window.quickAsk = function(prompt){
      V1 NAV + PRO GATING + TOOLS TIER SYSTEM
      ═══════════════════════════════════════════════════ -->
 <script>
-(function(){
+/* Runs once the plan is known (js/plan.js), so locks never wipe a Pro
+   user's sections on a first visit; 4 s fallback if plan.js is unreachable. */
+(window.apAfterPlan = window.apAfterPlan || function (run) {
+  var done = false; function go() { if (!done) { done = true; run(); } }
+  if (window.AP_PLAN && AP_PLAN.ready) AP_PLAN.ready().then(go, go); else go();
+  setTimeout(go, 4000);
+})(function(){
 'use strict';
 
 /* ── 1. NAV AUTH ── */
@@ -4219,7 +4228,7 @@ window.addEventListener('resize',handleResize);
 handleResize();
 
 /* ── 2. PRO DETECTION ── */
-var isPro=(localStorage.getItem('ap_is_pro_v1')==='1');
+var isPro=!!(window.AP_PLAN && AP_PLAN.atLeast('pro'));
 
 /* ── 3. UPGRADE MODAL ── */
 window.openLtUpgradeModal=function(title,body){
@@ -4393,7 +4402,8 @@ function patchLtToolsGrid(){
   });
   observer.observe(grid,{childList:true,subtree:true});
 }
-document.addEventListener('DOMContentLoaded',patchLtToolsGrid);
+/* This block may run after DOMContentLoaded (it waits for the plan). */
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patchLtToolsGrid);else patchLtToolsGrid();
 
 /* ── 6. FORCE LOGIN ── */
 (function(){
@@ -4404,7 +4414,7 @@ document.addEventListener('DOMContentLoaded',patchLtToolsGrid);
   },300);
 })();
 
-})();
+});
 </script>
 
 
@@ -4754,7 +4764,13 @@ if(document.readyState==='loading'){
 </script>
 
 <script>
-(function(){
+/* Runs once the plan is known (js/plan.js), so locks never wipe a Pro
+   user's sections on a first visit; 4 s fallback if plan.js is unreachable. */
+(window.apAfterPlan = window.apAfterPlan || function (run) {
+  var done = false; function go() { if (!done) { done = true; run(); } }
+  if (window.AP_PLAN && AP_PLAN.ready) AP_PLAN.ready().then(go, go); else go();
+  setTimeout(go, 4000);
+})(function(){
 'use strict';
 
 /* ── 1. NAV AUTH ── */
@@ -4817,7 +4833,7 @@ window.addEventListener('resize',handleResize);
 handleResize();
 
 /* ── 2. PRO PLAN DETECTION ── */
-var isPro=(localStorage.getItem('ap_is_pro_v1')==='1');
+var isPro=!!(window.AP_PLAN && AP_PLAN.atLeast('pro'));
 
 /* ── 3. UPGRADE MODAL ── */
 window.openUpgradeModal=function(title,body){
@@ -5025,7 +5041,8 @@ function patchToolsGrid(){
   observer.observe(grid,{childList:true,subtree:true});
 }
 
-document.addEventListener('DOMContentLoaded',patchToolsGrid);
+/* This block may run after DOMContentLoaded (it waits for the plan). */
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patchToolsGrid);else patchToolsGrid();
 
 /* ── 6. FORCE LOGIN if not authenticated ── */
 (function(){
@@ -5039,7 +5056,7 @@ document.addEventListener('DOMContentLoaded',patchToolsGrid);
   },300);
 })();
 
-})();
+});
 </script>
 </script>
 <!-- ATD-009 phase 1: registry navigation in shell mode (data-nav-shell on <body>);

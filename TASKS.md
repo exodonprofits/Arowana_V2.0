@@ -201,6 +201,8 @@ Tests: `tests/trade-check.test.js`, `scripts/test_trade_check.py`, `scripts/brow
 
 Tests: `scripts/test_explain_fixes.py`, `scripts/browser/explain_fixes_check.mjs` (19). Follow-ups: seven pages still read `ap_is_pro_v1`; calculator header overflows at 375px.
 
+**Plan gates follow-up, branch `claude/ATD-108-plan-gates`:** seven pages decided Pro from `ap_is_pro_v1`, which nothing sets (Pro users treated as Free; Pro unlockable from the console). They now use `js/plan.js`; `long-term-dashboard` loads the real SDK. Tests: `scripts/test_plan_gates.py`, `scripts/browser/plan_gates_check.mjs` (28; main fails 10).
+
 **Next:** S6 ("Your wheel today"), blocked until the edge-function source is in Git (Q6, Codex).
 
 ### ATD-007 continuation - 2026-10-01

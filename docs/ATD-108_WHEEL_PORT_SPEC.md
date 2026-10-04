@@ -159,7 +159,8 @@ Each slice is one PR. They run in order because later slices build on the auth f
 | S2 Journal reliability | Merged (PR #34) | See below. |
 | S3 Wheel ledger | Merged (PR #35) | See below. |
 | S4 Check a trade | Merged (PR #36) | See below. |
-| S5 Explanations + fixes | Implemented on `claude/ATD-108-s5-explain` | See below. |
+| S5 Explanations + fixes | Merged (PR #37) | See below. |
+| Follow-up: plan gates | Implemented on `claude/ATD-108-plan-gates` | See below. |
 
 **What S1 changed:**
 
@@ -289,4 +290,23 @@ On main, the Income checks fail because main counts only `closed` contracts, and
 - `scripts/test_explain_fixes.py` keeps these in place.
 
 **Not in S5:** `wheel-calculator.html` still scrolls sideways at 375px, from its header rather than the table. Other pages still read `ap_is_pro_v1`: `long-term-dashboard`, `arowana-trader`, `portfolio-advisor`, `analysis-central`, `options-analyzer`, `retirement-planner` and `whale-tracker`. Each needs the same move to `plan.js`.
+
+**Follow-up: plan gates (after S5).** Seven pages decided Pro from localStorage `ap_is_pro_v1`. Nothing ever set that key, so paying users were treated as Free (free limits, upgrade banners, Options Analyzer locked), and anyone could unlock Pro from the console. They now ask `js/plan.js`, which reads the plan from the server:
+
+- **`arowana-trader`, `portfolio-advisor`, `analysis-central`, `options-analyzer`, `whale-tracker`:**
+  - `isPro()` reads `AP_PLAN.atLeast('pro')`.
+  - `plan.js` is loaded where it wasn't.
+  - Upgrade banners and the Options Analyzer gate repaint on `ap:plan:ready`.
+  - `whale-tracker` is owner-parked, so it only got this minimal change.
+- **`long-term-dashboard`:**
+  - It loaded `/js/supabase.min.js`, which does not exist. It now loads the real SDK, `sb.js` and `plan.js`.
+  - Its two nav-and-lock blocks wait for the plan, with a 4-second fallback, so they never lock a Pro user's sections on a first visit.
+  - Those lock blocks target sections and tool tiers this page does not have, which is the same on main. Cleaning them up is a separate change.
+- **`retirement-planner`:**
+  - The page has no SDK or config, so it does not load `plan.js`. The "managed AI" tier is no longer claimable from the console.
+  - The managed path was never wired here: it needs `AP_WEBHOOKS.retirementNarrative`, which this page never loads. It now says it is not configured instead of throwing.
+
+**Tested:**
+- `scripts/browser/plan_gates_check.mjs` opens each page twice: as a Free account with `ap_is_pro_v1` set, and as a Pro account from the server. Result: 28 of 28. The same script on main fails 10.
+- `scripts/test_plan_gates.py` stops any page reading the key again.
 

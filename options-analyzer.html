@@ -5199,7 +5199,9 @@ var fy=document.getElementById('footYear'); if(fy) fy.textContent=new Date().get
 var KEY='gs_auth_user_v1'; var aKeys=[KEY,'gs_session','ap_session','sb-access-token'];
 var u=JSON.parse(localStorage.getItem(KEY)||'null');
 var hasSess=u||aKeys.some(function(k){try{var v=localStorage.getItem(k);return v&&v.length>10;}catch(e){return false;}});
-var isPro=localStorage.getItem('ap_is_pro_v1')==='1';
+/* Plan from js/plan.js (server-backed). ap_is_pro_v1 was never set by anything,
+   so it treated paying users as Free and let anyone unlock Pro from the console. */
+function isPro(){return !!(window.AP_PLAN && AP_PLAN.atLeast('pro'));}
 var $=function(id){return document.getElementById(id);};
 var si=$('navSignIn'),su=$('navSignUp'),dd=$('navUserDrop'),utog=$('navUserBtn'),nm=$('navUserName'),mob=$('mobAuthLinks');
 if(hasSess){
@@ -5217,9 +5219,13 @@ if(sob)sob.addEventListener('click',signOut);
 var burger=$('navBurger'),mm=$('mobMenu');
 if(burger&&mm){burger.addEventListener('click',function(){mm.setAttribute('data-open',mm.getAttribute('data-open')==='true'?'false':'true');});}
 
-/* ══ Pro gate ══ */
-$('proGate').style.display     = isPro ? 'none' : '';
-$('toolContent').style.display = isPro ? '' : 'none';
+/* ══ Pro gate ══ (re-applied once the server has answered) */
+function applyProGate(){
+  $('proGate').style.display     = isPro() ? 'none' : '';
+  $('toolContent').style.display = isPro() ? '' : 'none';
+}
+applyProGate();
+window.addEventListener('ap:plan:ready', function(){ applyProGate(); if(isPro()) calc(); });
 
 /* ══ Helpers ══ */
 function fmtD(n,dec){dec=dec||2;if(!isFinite(n))return'—';var s=n<0?'-$':'$';return s+Math.abs(n).toLocaleString('en-US',{minimumFractionDigits:dec,maximumFractionDigits:dec});}
@@ -5296,7 +5302,7 @@ $('fetchBtn')&&$('fetchBtn').addEventListener('click',fetchPrice);
 $('ticker')&&$('ticker').addEventListener('keydown',function(e){if(e.key==='Enter')fetchPrice();});
 
 async function fetchPrice(){
-  if(!isPro) return;
+  if(!isPro()) return;
   var sym=($('ticker')&&$('ticker').value||'').trim().toUpperCase();
   if(!sym){toast('Enter a ticker first','warn');return;}
   var key=getFinnhubKey();
@@ -5338,7 +5344,7 @@ async function fetchPrice(){
      This was in the file as shipped; the inline attributes and the IIFE
      were added at different times and nobody re-tested typing. */
   function calc(){
-  if(!isPro) return;
+  if(!isPro()) return;
   var S=parseFloat($('stockPrice')&&$('stockPrice').value)||0;
   var K=parseFloat($('strike')&&$('strike').value)||0;
   var DTE=parseFloat($('dte')&&$('dte').value)||0;
@@ -5548,7 +5554,7 @@ window.loadEg=function(key){
     otm_put:  {type:'put', pos:'short',S:'185',K:'180',DTE:'30',IV:'28',r:'4.5'},
     high_iv:  {type:'call',pos:'long',S:'500',K:'500',DTE:'7', IV:'45',r:'4.5'},
   };
-  var eg=egs[key]; if(!eg||!isPro) return;
+  var eg=egs[key]; if(!eg||!isPro()) return;
   optType=eg.type; posType=eg.pos;
   document.querySelectorAll('.type-btn').forEach(function(b){b.classList.remove('on','call','put');if(b.dataset.type===eg.type)b.classList.add('on',eg.type);});
   document.querySelectorAll('.pos-btn').forEach(function(b){b.classList.toggle('on',b.dataset.pos===eg.pos);});
@@ -5564,7 +5570,7 @@ $('calcBtn')&&$('calcBtn').addEventListener('click',calc);
 });
 
 /* ══ Init ══ */
-if(isPro) calc();
+if(isPro()) calc();
 
 })();
 </script>
@@ -5595,6 +5601,7 @@ updateKeyBar();
 <script src="./js/journal-context.js"></script>
 <script src="./js/supabase_min.js"></script>
 <script src="./js/sb.js?v=20261004a"></script>
+<script src="./js/plan.js?v=20261004e"></script>
 <script>window.GS_CONFIG_URL="./js/config.json";</script>
 <script src="./js/app-config.js"></script>
 <script src="./js/auth-header.js"></script>
