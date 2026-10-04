@@ -204,6 +204,18 @@ Each slice is one PR. They run in order because later slices build on the auth f
 
 **Not in S2:** the option form labels every credit trade "Max risk: Unlimited*", including cash-secured puts. This bug exists on main and in Wheel, so it is left for a separate fix.
 
+**Fixed afterwards (branch `claude/ATD-108-max-risk`):** the option form's Max Risk and Max Profit now follow the trade, before fees:
+
+| Trade | Max risk | Max profit |
+|---|---|---|
+| Short put | (strike − premium) × 100 × contracts | The premium |
+| Covered call | "Covered by your shares" | The premium |
+| Long call | The premium paid | Unlimited |
+| Long put | The premium paid | (strike − premium) × 100 × contracts |
+| Naked call | Unlimited | The premium |
+
+Multi-leg strategies show only the side the premium settles. Changing Strategy or Credit/Debit now refreshes the preview. Tested with `scripts/browser/option_preview_check.mjs` (19 checks) and `scripts/test_option_preview.py`.
+
 **What S3 changed:**
 
 - **`js/wheel-ledger.js` is Wheel's version, unchanged.** It is a pure module: it groups journal rows into wheel campaigns, which run from a ticker's first short put or call (in one account) until there have been no shares and no open contracts on it for 7 days. For each campaign it reports premium banked, adjusted basis, peak capital and return. An option marked Assigned with no matching stock row is filled in at the strike and listed as a journal gap.
