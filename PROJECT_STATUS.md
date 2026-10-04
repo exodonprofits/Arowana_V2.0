@@ -1,5 +1,9 @@
 # Project Status
 
+## ATD-108 Wheel port specification - 2026-10-04
+
+[Wheel port specification](docs/ATD-108_WHEEL_PORT_SPEC.md) compares this repository with the Wheel repository (`exodonprofits/arowanaprofits` at `219e61f`) and proposes six port slices. It keeps everything V2.0 added: navigation, the ATD-009 merges and the platform pages the Wheel product removed. Owner decisions Q1–Q6 are pending. Documentation only; nothing changed.
+
 ## ATD-009 legacy page review - 2026-10-03
 
 Owner-approved 2026-10-03 (Q1–Q5 as recommended): [legacy page review](docs/ATD-009_LEGACY_PAGE_REVIEW.md) groups the 141 pages outside the new navigation into 14 groups with one recommended action each, building on ATD-001. Almost all live links to them come from the internal `tool-audit.html`, so most can retire without affecting the menu; journal/watchlist/portfolio duplicates wait on ATD-005/007 ownership fixes because they hold saved data. Documentation only; nothing changed.
