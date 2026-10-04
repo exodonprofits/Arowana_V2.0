@@ -81,6 +81,16 @@ body.mode-beginner .result-grid{grid-template-columns:1fr 1fr}
 .ai-btn:hover:not(:disabled){opacity:.9}
 .ai-btn:disabled{opacity:.55;cursor:not-allowed}
 .ai-draft-hint{font-size:.72rem;color:var(--muted);flex:1 1 200px}
+.sig-opts{margin-top:9px;font-size:.78rem}
+.sig-opts summary{cursor:pointer;color:var(--muted);font-weight:600}
+.sig-opts-grid{display:grid;grid-template-columns:auto auto 1fr;gap:9px 12px;align-items:center;margin-top:8px}
+@media(max-width:620px){.sig-opts-grid{grid-template-columns:1fr}}
+.sig-opts textarea{min-height:70px;font-size:.78rem}
+.sig-pill{display:inline-block;border-radius:99px;padding:2px 10px;font-weight:800;font-size:.75rem;background:#f1f5f9;color:#334155;margin-right:6px}
+.sig-pill.buy{background:#dcfce7;color:#166534}.sig-pill.sell{background:#fee2e2;color:#991b1b}
+.sig-warn{margin:8px 0 0;padding:8px 10px;border-radius:8px;background:#fff7ed;border:1px solid #fde68a;color:#7c2d12;font-size:.78rem}
+.sig-warn ul{margin:4px 0 0 16px;padding:0}
+.sig-conf{height:6px;border-radius:99px;background:#eef2f7;overflow:hidden;margin:6px 0 2px}.sig-conf i{display:block;height:100%;background:var(--ink)}
 .ai-proposal{margin-top:11px;padding:13px;border:1px solid var(--border);border-left:4px solid var(--ink);border-radius:10px;background:#f8fafb}
 .ai-proposal-body{font-size:.82rem;line-height:1.55;color:var(--ink)}
 .ai-proposal-body dl{display:grid;grid-template-columns:auto 1fr;gap:4px 14px;margin:9px 0 0}
@@ -138,7 +148,29 @@ body.mode-beginner .result-grid{grid-template-columns:1fr 1fr}
     <div class="ai-draft" id="aiDraft">
       <div class="ai-draft-head">
         <button class="btn ai-btn" id="aiDraftBtn" type="button">&#129302; Draft this with AI</button>
+        <button class="btn" id="sigBtn" type="button">&#128225; Signal check</button>
         <span class="ai-draft-hint">Needs a symbol. You review every number before it is used.</span>
+      </div>
+      <!-- Signal check (ATD-009): the n8n buy/sell signal from the retired
+           buy-sell-signal.html. Same payload; like the AI draft, nothing is
+           applied until the user presses Use. -->
+      <details class="sig-opts" id="sigOpts">
+        <summary>Signal options</summary>
+        <div class="sig-opts-grid">
+          <label class="label" for="sigTf" style="margin:0">Timeframe</label>
+          <select class="input" id="sigTf" style="max-width:140px"><option value="1h">1 hour</option><option value="4h">4 hours</option><option value="1d" selected>1 day</option><option value="1w">1 week</option></select>
+          <label style="display:flex;gap:6px;align-items:center;font-size:.78rem"><input type="checkbox" id="sigDeep"> Deep mode (full indicator confluence)</label>
+          <label class="label" for="sigAlert" style="margin:0;grid-column:1/-1">TradingView alert (optional) — paste the alert message; its ticker and timeframe are used</label>
+          <textarea class="textarea" id="sigAlert" style="grid-column:1/-1" placeholder='{"ticker":"NVDA","timeframe":"1d","signal":"BUY","reason":"Breakout","price":"{{close}}","exchange":"{{exchange}}"}'></textarea>
+        </div>
+      </details>
+      <div class="ai-proposal" id="sigProposal" hidden>
+        <div class="ai-proposal-body" id="sigProposalBody"></div>
+        <div class="ai-proposal-actions">
+          <button class="btn ai-apply" id="sigApplyBtn" type="button">Use these levels</button>
+          <button class="btn" id="sigDismissBtn" type="button">Dismiss</button>
+        </div>
+        <p class="ai-caveat">An automated signal, not a recommendation. Check the levels against a chart before you size anything.</p>
       </div>
       <div class="ai-proposal" id="aiProposal" hidden>
         <div class="ai-proposal-body" id="aiProposalBody"></div>
@@ -520,6 +552,7 @@ function clearPlan(){
 
   // An AI proposal left open after a clear would apply to a blank form.
   if($('aiProposal')){$('aiProposal').hidden=true;aiProposed=null}
+  if($('sigProposal')){$('sigProposal').hidden=true;sigProposed=null}
 
   $('draftNote').textContent='';
   $('startFreshBtn').hidden=true;
@@ -857,6 +890,130 @@ async function aiDraft(){
     aiSetBusy(false);
   }
 }
+
+/* ── Signal check (from buy-sell-signal.html, ATD-009) ─────────────────
+   Same request as the old page ({ticker,timeframe,deep,quick} plus the
+   TradingView alert fields). Differences on purpose: no demo prices when the
+   webhook is missing, every field rendered as text (the old page injected
+   the response as HTML), and no direct journal_trades insert with a
+   client-chosen user id: the plan's own journal hand-off covers that. */
+var sigProposed=null;
+function sigUrl(){
+  var w=window.AP_WEBHOOKS||{},u=w.signal;
+  if(!u){try{u=localStorage.getItem('ap_wh_signal')||''}catch(_){u=''}}
+  u=String(u||'').trim();
+  return /^https:\/\/\S+$/i.test(u)?u:'';
+}
+function sigNum(v){var n=Number(String(v==null?'':v).replace(/[$,\s]/g,''));return isFinite(n)&&n>0?n:null}
+function sigParse(msg){try{return JSON.parse(msg)}catch(_){return null}}
+function sigTf(tf){var m={'60':'1h','1h':'1h','240':'4h','4h':'4h','d':'1d','1d':'1d','w':'1w','1w':'1w'};return m[String(tf).toLowerCase()]||String(tf)}
+function sigCheckLevels(sig,e,t,sl){
+  var w=[];
+  if(sig==='BUY'&&t&&e&&t<=e)w.push('Target should be above entry for a BUY.');
+  if(sig==='BUY'&&sl&&e&&sl>=e)w.push('Stop should be below entry for a BUY.');
+  if(sig==='SELL'&&t&&e&&t>=e)w.push('Target should be below entry for a SELL.');
+  if(sig==='SELL'&&sl&&e&&sl<=e)w.push('Stop should be above entry for a SELL.');
+  return w;
+}
+function sigShow(d,ticker,tf){
+  var body=$('sigProposalBody');
+  while(body.firstChild)body.removeChild(body.firstChild);
+  var sig=String(d.signal||'neutral').toUpperCase();
+  var e=sigNum(d.entry_price||d.price),t=sigNum(d.target_price),sl=sigNum(d.stop_loss);
+  var head=document.createElement('div');
+  var pill=document.createElement('span');
+  pill.className='sig-pill'+(sig.indexOf('BUY')!==-1?' buy':sig.indexOf('SELL')!==-1?' sell':'');
+  pill.textContent=sig;
+  head.appendChild(pill);
+  head.appendChild(document.createTextNode(ticker+' · '+tf+(d.recommendation?' — '+String(d.recommendation):'')));
+  body.appendChild(head);
+  var conf=Number(d.confidence);
+  if(isFinite(conf)&&conf>0){
+    var bar=document.createElement('div');bar.className='sig-conf';
+    var fill=document.createElement('i');fill.style.width=Math.max(0,Math.min(100,conf))+'%';bar.appendChild(fill);
+    body.appendChild(bar);
+    var cl=document.createElement('div');cl.style.fontSize='.72rem';cl.style.color='var(--muted)';
+    cl.textContent=Math.round(Math.min(100,conf))+'% confidence'+(isFinite(Number(d.score))&&d.score!==''?' · score '+Number(d.score)+'/100':'');
+    body.appendChild(cl);
+  }
+  [['Reason',d.reason],['Why',d.explanation],['Trend',d.trend]].forEach(function(pair){
+    if(!pair[1])return;
+    var r=document.createElement('div');r.style.marginTop='6px';
+    var b=document.createElement('b');b.textContent=pair[0]+': ';r.appendChild(b);
+    r.appendChild(document.createTextNode(String(pair[1])));body.appendChild(r);
+  });
+  var dl=document.createElement('dl');
+  var rr=(e&&t&&sl&&sl!==e)?'1:'+(Math.abs(t-e)/Math.abs(e-sl)).toFixed(1):null;
+  [['Entry',e],['Stop',sl],['Target',t],['Support',sigNum(d.support||d.support_level)],['Resistance',sigNum(d.resistance||d.resistance_level)],['Reward:risk',rr]]
+    .forEach(function(pair){
+      if(pair[1]==null)return;
+      var dt=document.createElement('dt');dt.textContent=pair[0];
+      var dd=document.createElement('dd');dd.textContent=typeof pair[1]==='number'?money(pair[1]):pair[1];
+      dl.appendChild(dt);dl.appendChild(dd);
+    });
+  if(dl.childNodes.length)body.appendChild(dl);
+  var warns=(Array.isArray(d.warnings)?d.warnings.map(String):[]).concat(sigCheckLevels(sig,e,t,sl));
+  if(d.counter_trend)warns.unshift('Counter-trend signal: it goes against the prevailing trend. Higher risk; consider a smaller size.');
+  if(d.valid_trade===false)warns.unshift('The workflow says no trade is recommended here.');
+  if(warns.length){
+    var wb=document.createElement('div');wb.className='sig-warn';
+    var wt=document.createElement('b');wt.textContent='Check before using';wb.appendChild(wt);
+    var ul=document.createElement('ul');
+    warns.forEach(function(w){var li=document.createElement('li');li.textContent=w;ul.appendChild(li)});
+    wb.appendChild(ul);body.appendChild(wb);
+  }
+  sigProposed={
+    direction:sig.indexOf('SELL')!==-1?'short':sig.indexOf('BUY')!==-1?'long':null,
+    entry:e,stop:sl,target:t,
+    thesis:d.reason?String(d.reason)+(d.trend?' (trend: '+String(d.trend)+')':''):null
+  };
+  $('sigApplyBtn').disabled=!(e||sl||t||sigProposed.direction);
+  $('sigProposal').hidden=false;
+}
+async function sigRun(){
+  var alertMsg=String($('sigAlert').value||'').trim();
+  var payload={ticker:String($('symbol').value||'').trim().toUpperCase(),timeframe:$('sigTf').value,deep:$('sigDeep').checked,quick:!$('sigDeep').checked};
+  if(alertMsg){
+    var parsed=sigParse(alertMsg);
+    var m=alertMsg.match(/\b(ticker|symbol)\b\s*[:=]\s*"?([A-Z.\-]{1,10})/i);
+    var at=parsed&&parsed.ticker?String(parsed.ticker):(m?m[2]:'');
+    var atf=parsed&&(parsed.timeframe||parsed.interval)?sigTf(parsed.timeframe||parsed.interval):'';
+    if(!payload.ticker&&at)payload.ticker=at.toUpperCase();
+    if(atf)payload.timeframe=atf;
+    payload.source='tradingview';payload.alert_message=alertMsg;payload.alert_parsed=parsed;
+  }
+  if(!payload.ticker){toast('Add a symbol first.','warn');$('symbol').focus();return}
+  var url=sigUrl();
+  if(!url){toast('Signal check is not connected yet: no signal webhook is configured.','warn');return}
+  var btn=$('sigBtn');btn.disabled=true;btn.textContent='📡 Checking…';
+  try{
+    var ctrl=new AbortController(),timer=setTimeout(function(){ctrl.abort()},16000);
+    var res=await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload),signal:ctrl.signal});
+    clearTimeout(timer);
+    if(!res.ok)throw new Error('HTTP '+res.status);
+    var d=await res.json();
+    if(Array.isArray(d)&&d[0]&&d[0].json)d=d[0].json;
+    if(!d||typeof d!=='object')throw new Error('empty response');
+    sigShow(d,payload.ticker,payload.timeframe);
+  }catch(e){
+    toast('Signal check failed ('+((e&&e.name==='AbortError')?'timed out':(e&&e.message)||'error')+'). Nothing was changed.','error');
+  }finally{
+    btn.disabled=false;btn.textContent='📡 Signal check';
+  }
+}
+function sigApply(){
+  var p=sigProposed;if(!p)return;
+  function put(id,val){if(val==null||val==='')return;var el=$(id);if(el)el.value=val}
+  if(p.direction)setDirection(p.direction);
+  put('entryPrice',p.entry);put('stopPrice',p.stop);put('targetPrice',p.target);
+  if(p.thesis&&!String($('thesis').value||'').trim())put('thesis',p.thesis);
+  $('sigProposal').hidden=true;sigProposed=null;
+  saveDraft();calculate(true);
+  toast('Signal levels applied — edit anything before you commit.','warn');
+}
+$('sigBtn').addEventListener('click',sigRun);
+$('sigApplyBtn').addEventListener('click',sigApply);
+$('sigDismissBtn').addEventListener('click',function(){$('sigProposal').hidden=true;sigProposed=null});
 
 $('aiDraftBtn').addEventListener('click',aiDraft);
 $('aiApplyBtn').addEventListener('click',aiApply);

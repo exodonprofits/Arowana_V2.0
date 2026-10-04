@@ -600,6 +600,51 @@ for (const from of ['ai-valuation', 'intrinsic-value-rsi', 'long-term-intrinsic-
   ok('AI tab: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1 && document.getElementById('aiTab').classList.contains('active')));
   await m.context().close(); }
 
+// Q. ATD-009: quality-screener -> Quality Compounders scan; buy-sell-signal -> Trade Plan Builder signal check.
+{ const p = await newPage(desktop, null);
+  const calls = [];
+  await p.route('https://n8n.example.test/**', async r => {
+    calls.push({ url: r.request().url(), body: JSON.parse(r.request().postData() || '{}') });
+    if (r.request().url().includes('quality')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ results: [
+      { ticker: 'MSFT', name: 'Microsoft', sector: 'Technology', price: 430, mcapB: 3300, roic: 28, gm: 69, fcfm: 34, rev5: 14, eps5: 18, de: 0.4, ic: 48, pe: 35, evebit: 27, pfcf: 31, yield: 0.7, fscore: 8, zscore: 8.5, adr: false },
+      { ticker: 'AAPL', name: '<img src=x onerror="window.__q=1">Apple', sector: 'Technology', price: 230, mcapB: 3600, roic: 33, gm: 45, fcfm: 26, rev5: 8, eps5: 11, de: 1.7, ic: 35, pe: 32, evebit: 25, pfcf: 28, yield: 0.5, fscore: 7, zscore: 7.1, adr: false },
+      { ticker: 'PG', name: 'Procter & Gamble', sector: 'Consumer Staples', price: 160, mcapB: 380, roic: 19, gm: 51, fcfm: 17, rev5: 5, eps5: 8, de: 0.6, ic: 20, pe: 26, evebit: 22, pfcf: 24, yield: 2.5, fscore: 7, zscore: 5.0, adr: false } ] }) });
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ signal: 'BUY', entry_price: 100, target_price: 112, stop_loss: 95,
+      support_level: 94, confidence: 72, score: 70, trend: 'uptrend', reason: '<b>Breakout</b> over resistance', warnings: ['<img src=x onerror="window.__s=1">Earnings in 3 days'] }) });
+  });
+  await p.addInitScript(() => { window.__setWH = () => { window.AP_WEBHOOKS = Object.assign(window.AP_WEBHOOKS || {}, {
+    quality_screener: 'https://n8n.example.test/webhook/quality', signal: 'https://n8n.example.test/webhook/signal' }); }; });
+  await p.goto(BASE + '/quality-screener.html'); await p.waitForTimeout(1600);
+  const q0 = await p.evaluate(() => ({ url: location.pathname + location.search, title: runTitle.textContent, filters: document.querySelectorAll('#filterGrid .filter-field').length }));
+  ok('Q quality-screener -> scanner ?scan=quality_compounders with its filters', q0.url === '/scanner.html?scan=quality_compounders' && q0.title === 'Quality Compounders' && q0.filters === 18, JSON.stringify(q0));
+  await p.evaluate(() => window.__setWH());
+  await p.click('#runBtn'); await p.waitForTimeout(1200);
+  const q1 = await p.evaluate(() => ({ rows: [...document.querySelectorAll('#resultsBody tr, .results-table tbody tr')].map(t => t.querySelector('td strong') && t.querySelector('td strong').textContent).filter(Boolean),
+    imgs: document.querySelectorAll('#resultsBody img, .results-table tbody img').length, x: !!window.__q }));
+  ok('Q quality scan posts {index,tickers,sector} and ranks with the old formula', calls.length === 1 && calls[0].body.index === 'SP500' && calls[0].body.tickers === null &&
+     q1.rows.join() === 'MSFT,PG' && q1.imgs === 0 && !q1.x, JSON.stringify({ q1, body: calls[0] && calls[0].body }));
+  await p.goto(BASE + '/buy-sell-signal.html?ticker=nvda'); await p.waitForTimeout(1500);
+  const s0 = await p.evaluate(() => ({ url: location.pathname + location.search, sym: document.getElementById('symbol').value }));
+  ok('Q buy-sell-signal -> trade-plan-builder, ticker carried', s0.url === '/trade-plan-builder.html?ticker=nvda' && s0.sym === 'NVDA', JSON.stringify(s0));
+  const before = calls.length;
+  await p.evaluate(() => { window.AP_WEBHOOKS = Object.assign(window.AP_WEBHOOKS || {}, { signal: '' }); try { localStorage.removeItem('ap_wh_signal'); } catch (e) {} });
+  await p.click('#sigBtn'); await p.waitForTimeout(300);
+  ok('Q signal check with no webhook: no request, no proposal', calls.length === before && await p.evaluate(() => document.getElementById('sigProposal').hidden));
+  await p.evaluate(() => window.__setWH());
+  await p.click('#sigOpts > summary'); await p.check('#sigDeep');
+  await p.click('#sigBtn'); await p.waitForTimeout(800);
+  const s1 = await p.evaluate(() => ({ shown: !document.getElementById('sigProposal').hidden, text: sigProposalBody.textContent,
+    imgs: sigProposalBody.querySelectorAll('img').length + [...sigProposalBody.querySelectorAll('b')].filter(b => b.textContent === 'Breakout').length, s: !!window.__s }));
+  const sb = calls[calls.length - 1].body;
+  ok('Q signal check sends the old payload', sb.ticker === 'NVDA' && sb.timeframe === '1d' && sb.deep === true && sb.quick === false, JSON.stringify(sb));
+  ok('Q signal shown as text with R:R and warnings', s1.shown && /BUY/.test(s1.text) && /1:2\.4/.test(s1.text) && /<b>Breakout<\/b>/.test(s1.text) && /onerror/.test(s1.text) && !s1.s &&
+     s1.imgs === 0, JSON.stringify(s1));
+  await p.click('#sigApplyBtn'); await p.waitForTimeout(300);
+  const s2 = await p.evaluate(() => ({ e: entryPrice.value, st: stopPrice.value, t: targetPrice.value, dir: document.querySelector('[data-direction].active').dataset.direction, th: thesis.value }));
+  ok('Q Use these levels fills the plan', s2.e === '100' && s2.st === '95' && s2.t === '112' && s2.dir === 'long' && /Breakout/.test(s2.th), JSON.stringify(s2));
+  ok('Q no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {
