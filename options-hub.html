@@ -2271,6 +2271,11 @@ html,body{font-size:13px!important;line-height:1.45!important}
           <span class="tab-label">Cash-Secured Puts</span>
           <span class="tab-label-short">Puts</span>
         </button>
+        <button class="options-tab" role="tab" aria-selected="false" onclick="switchTab('check')" data-tab="check">
+          <span class="tab-icon">✅</span>
+          <span class="tab-label">Check a Trade</span>
+          <span class="tab-label-short">Check</span>
+        </button>
         <button class="options-tab" role="tab" aria-selected="false" onclick="switchTab('roll')" data-tab="roll">
           <span class="tab-icon">🔁</span>
           <span class="tab-label">Roll Coach</span>
@@ -4706,6 +4711,8 @@ const OH_STRATEGIES = [
               '</div>' +
               (flags.length ? '<div class="cc-flags">' + flags.join('') + '</div>' : '') +
               '<details class="cc-why"><summary>Why this score</summary><ul>' + breakdown + '</ul>' + expTable + '</details>' +
+              '<button type="button" class="tc-card-btn" data-tc-check data-type="call" data-symbol="' + esc(r.underlying) + '" data-strike="' + (strike == null ? '' : strike) + '"' +
+              ' data-expiry="' + esc(r.suggested_expiration || '') + '" data-premium="' + (prem == null ? '' : prem) + '" data-contracts="' + contracts + '">Check this trade against my rules</button>' +
             '</article>';
           }
 
@@ -4724,6 +4731,8 @@ const OH_STRATEGIES = [
 
         <style>
 
+        .tc-card-btn { margin-top:10px; background:none; border:1px solid var(--brand); color:var(--brand); border-radius:var(--radius-sm); min-height:34px; padding:0 12px; font:600 .8rem var(--font-sans); cursor:pointer; }
+        .tc-card-btn:hover { background:var(--brand); color:#fff; }
         .rk-strip { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:13px 15px; margin-bottom:14px; font-size:.85rem; }
         .rk-strip.breach { border-color:#f5d38a; background:var(--warning-light); color:#7c4a03; }
         .rk-line { display:flex; flex-wrap:wrap; gap:6px 16px; align-items:center; }
@@ -5041,6 +5050,8 @@ const OH_STRATEGIES = [
               '</div>' +
               (flags.length ? '<div class="cp-flags">' + flags.join('') + '</div>' : '') +
               '<details class="cp-why"><summary>Why this score</summary><ul>' + breakdown + '</ul>' + expTable + '</details>' +
+              '<button type="button" class="tc-card-btn" data-tc-check data-type="put" data-symbol="' + esc(r.underlying) + '" data-strike="' + (strike == null ? '' : strike) + '"' +
+              ' data-expiry="' + esc(r.suggested_expiration || '') + '" data-premium="' + (n(r.premium) == null ? '' : n(r.premium)) + '" data-contracts="1">Check this trade against my rules</button>' +
             '</article>';
           }
 
@@ -5056,6 +5067,513 @@ const OH_STRATEGIES = [
             });
             var panel = el('putsTab');
             if (panel && panel.classList.contains('active')) load(false);
+          });
+        })();
+        </script>
+      </div>
+
+      <!-- Check a trade: one proposed short put or covered call, checked
+           against the user's own rules (js/trade-check.js). A check, not a
+           recommendation: every rule shows its numbers, nothing is blocked. -->
+      <div class="tab-content" id="checkTab">
+        <style>
+        .tc-root { font-family:var(--font-sans); }
+        .tc-root .tc-head h1 { font-size:1.5rem; font-weight:700; color:var(--text-primary); margin:0 0 4px; }
+        .tc-root .tc-head p { color:var(--text-muted); font-size:.9rem; margin:0 0 16px; max-width:70ch; }
+        .tc-root .tc-grid { display:grid; grid-template-columns:minmax(300px,380px) minmax(0,1fr); gap:16px; align-items:start; }
+        .tc-root .tc-panel { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:16px; }
+        .tc-root .tc-panel h2 { font-size:1rem; margin:0 0 10px; color:var(--text-primary); }
+        .tc-root .tc-legs { display:inline-flex; background:var(--border-light); border-radius:999px; padding:3px; margin-bottom:12px; }
+        .tc-root .tc-legs button { border:0; background:none; border-radius:999px; padding:6px 14px; font:600 .84rem var(--font-sans); color:var(--text-muted); cursor:pointer; }
+        .tc-root .tc-legs button[aria-pressed="true"] { background:var(--brand); color:#fff; }
+        .tc-root .tc-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 12px; }
+        .tc-root .tc-field { display:flex; flex-direction:column; gap:3px; min-width:0; }
+        .tc-root .tc-field.wide { grid-column:1 / -1; }
+        .tc-root .tc-field label { font-size:.72rem; color:var(--text-muted); font-weight:600; }
+        .tc-root .tc-field input, .tc-root .tc-field select { width:100%; min-height:38px; border:1px solid var(--border-strong); border-radius:var(--radius-sm); padding:0 9px; font:500 .9rem var(--font-mono); color:var(--text-primary); background:#fff; }
+        .tc-root .tc-field input:focus-visible, .tc-root .tc-field select:focus-visible, .tc-root button:focus-visible { outline:2px solid var(--brand); outline-offset:2px; }
+        .tc-root .tc-field em { font-style:normal; font-size:.7rem; color:var(--text-muted); }
+        .tc-root .tc-go { margin-top:14px; width:100%; min-height:42px; border-radius:var(--radius-sm); border:1px solid var(--brand); background:var(--brand); color:#fff; font:700 .92rem var(--font-sans); cursor:pointer; }
+        .tc-root .tc-go[disabled] { opacity:.6; cursor:wait; }
+        .tc-root .tc-err { color:var(--danger); font-size:.82rem; min-height:1.2em; margin-top:8px; }
+        .tc-root .tc-empty { color:var(--text-muted); font-size:.9rem; padding:28px 10px; text-align:center; }
+        .tc-root .tc-verdict { border-radius:var(--radius); padding:14px 16px; margin-bottom:14px; border:1px solid; }
+        .tc-root .tc-verdict.ok { background:var(--success-light, #e7f7f1); border-color:#a5e2cd; }
+        .tc-root .tc-verdict.bad { background:var(--danger-light, #fdeaed); border-color:#f4b3bf; }
+        .tc-root .tc-verdict strong { display:block; font-size:1.1rem; color:var(--text-primary); }
+        .tc-root .tc-verdict span { font-size:.82rem; color:var(--text); }
+        .tc-root .tc-math { display:grid; grid-template-columns:repeat(auto-fit,minmax(118px,1fr)); gap:8px; margin-bottom:14px; }
+        .tc-root [hidden] { display:none !important; }
+        .tc-root .tc-stat { border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:9px 11px; }
+        .tc-root .tc-stat span { display:block; font-size:.7rem; color:var(--text-muted); }
+        .tc-root .tc-stat strong { display:block; font:700 1.02rem var(--font-mono); color:var(--text-primary); }
+        .tc-root .tc-stat em { display:block; font-style:normal; font-size:.7rem; color:var(--text-muted); }
+        .tc-root .tc-checks { list-style:none; margin:0; padding:0; display:grid; gap:6px; }
+        .tc-root .tc-check { display:grid; grid-template-columns:26px minmax(0,1fr); gap:8px; padding:9px 10px; border:1px solid var(--border-light); border-radius:var(--radius-sm); }
+        .tc-root .tc-check b { font-size:.86rem; color:var(--text-primary); }
+        .tc-root .tc-check p { margin:2px 0 0; font-size:.8rem; color:var(--text); line-height:1.45; }
+        .tc-root .tc-mark { width:22px; height:22px; border-radius:50%; display:grid; place-items:center; font:700 .78rem var(--font-sans); color:#fff; }
+        .tc-root .tc-check.pass .tc-mark { background:var(--success); }
+        .tc-root .tc-check.fail { border-color:#f4b3bf; background:var(--danger-light, #fdeaed); }
+        .tc-root .tc-check.fail .tc-mark { background:var(--danger); }
+        .tc-root .tc-check.skip .tc-mark { background:var(--border-strong); }
+        .tc-root .tc-check.skip b, .tc-root .tc-check.skip p { color:var(--text-muted); }
+        .tc-root .tc-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; align-items:center; }
+        .tc-root .tc-case { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:12px; }
+        .tc-root .tc-side { border:1px solid var(--border-light); border-radius:var(--radius-sm); padding:10px 12px; }
+        .tc-root .tc-side.for { border-top:3px solid var(--success); }
+        .tc-root .tc-side.against { border-top:3px solid var(--danger); }
+        .tc-root .tc-side h4 { margin:0 0 6px; font-size:.78rem; text-transform:uppercase; letter-spacing:.05em; color:var(--text-primary); }
+        .tc-root .tc-side ul { margin:0; padding-left:18px; display:grid; gap:4px; font-size:.82rem; line-height:1.45; color:var(--text); }
+        .tc-root .tc-case-note { margin:6px 0 0; font-size:.76rem; color:var(--text-muted); }
+        @media (max-width:640px) { .tc-root .tc-case { grid-template-columns:1fr; } }
+        .tc-root .tc-actions a { display:inline-flex; align-items:center; min-height:36px; padding:0 14px; border-radius:var(--radius-sm); border:1px solid var(--brand); color:var(--brand); font:600 .84rem var(--font-sans); text-decoration:none; }
+        .tc-root .tc-foot { font-size:.74rem; color:var(--text-muted); line-height:1.5; margin:12px 0 0; }
+        .tc-root .tc-rules { margin-top:16px; }
+        .tc-root .tc-rules summary { cursor:pointer; font-weight:600; font-size:.9rem; color:var(--text-primary); }
+        .tc-root .tc-rules .tc-fields { margin-top:12px; }
+        .tc-root .tc-rules .tc-check-row { grid-column:1 / -1; display:flex; align-items:center; gap:8px; font-size:.84rem; }
+        .tc-root .tc-save { margin-top:12px; min-height:36px; padding:0 14px; border-radius:var(--radius-sm); border:1px solid var(--brand); background:var(--brand); color:#fff; font:600 .84rem var(--font-sans); cursor:pointer; }
+        .tc-root .tc-note { font-size:.76rem; color:var(--text-muted); margin-top:8px; line-height:1.45; }
+        @media (max-width: 900px) { .tc-root .tc-grid { grid-template-columns:1fr; } }
+        </style>
+
+        <div class="tc-root">
+          <div class="tc-head">
+            <h1>✅ Check a trade</h1>
+            <p>Enter a put or covered call you are thinking about. It is checked against the rules you set below, with the numbers shown for each. This is a checklist, not a recommendation: whether to place the trade is your call.</p>
+          </div>
+          <div class="tc-grid">
+            <div>
+              <form class="tc-panel" id="tc-form" novalidate>
+                <h2>The trade</h2>
+                <div class="tc-legs" role="group" aria-label="Option type">
+                  <button type="button" data-tc-type="put" aria-pressed="true">Sell a put</button>
+                  <button type="button" data-tc-type="call" aria-pressed="false">Sell a covered call</button>
+                </div>
+                <div class="tc-fields">
+                  <div class="tc-field"><label for="tc-ticker">Ticker</label><input id="tc-ticker" autocomplete="off" spellcheck="false" placeholder="e.g. KO" maxlength="10"></div>
+                  <div class="tc-field"><label for="tc-account">Account</label><select id="tc-account"><option value="">All accounts</option></select></div>
+                  <div class="tc-field"><label for="tc-strike">Strike</label><input id="tc-strike" type="number" step="0.5" min="0" inputmode="decimal" placeholder="e.g. 58"></div>
+                  <div class="tc-field"><label for="tc-expiry">Expiration</label><input id="tc-expiry" type="date"><em id="tc-expiry-note" hidden>next monthly expiration; change it if yours differs</em></div>
+                  <div class="tc-field"><label for="tc-premium">Premium per share</label><input id="tc-premium" type="number" step="0.01" min="0" inputmode="decimal" placeholder="e.g. 0.90"><em>the price you would sell at</em></div>
+                  <div class="tc-field"><label for="tc-contracts">Contracts</label><input id="tc-contracts" type="number" step="1" min="1" value="1"></div>
+                  <div class="tc-field wide" id="tc-exdiv-wrap" hidden><label for="tc-exdiv">Ex-dividend date (optional)</label><input id="tc-exdiv" type="date"><em>from your broker; not looked up automatically</em></div>
+                </div>
+                <button type="submit" class="tc-go" id="tc-go">Check it</button>
+                <div class="tc-err" id="tc-err" role="alert"></div>
+              </form>
+
+              <details class="tc-panel tc-rules" id="tc-rules">
+                <summary>Your rules</summary>
+                <div class="tc-fields">
+                  <div class="tc-field"><label for="tc-r-capital">Wheel capital ($)</label><input id="tc-r-capital" type="number" min="1" step="any" placeholder="e.g. 250000"></div>
+                  <div class="tc-field"><label for="tc-r-yield">Min yield (% a year)</label><input id="tc-r-yield" type="number" min="0" step="0.5" placeholder="off"></div>
+                  <div class="tc-field"><label for="tc-r-mindte">Min days to expiration</label><input id="tc-r-mindte" type="number" min="0" step="1" placeholder="off"></div>
+                  <div class="tc-field"><label for="tc-r-maxdte">Max days to expiration</label><input id="tc-r-maxdte" type="number" min="1" step="1" placeholder="off"></div>
+                  <div class="tc-field"><label for="tc-r-ticker">Max in one name (%)</label><input id="tc-r-ticker" type="number" min="1" max="100" step="1"></div>
+                  <div class="tc-field"><label for="tc-r-total">Max put collateral (%)</label><input id="tc-r-total" type="number" min="1" max="100" step="1"></div>
+                  <div class="tc-field"><label for="tc-r-puts">Max puts per ticker</label><input id="tc-r-puts" type="number" min="1" max="20" step="1"></div>
+                  <label class="tc-check-row"><input type="checkbox" id="tc-r-wto"> Puts only on my Want-to-Own list</label>
+                  <label class="tc-check-row"><input type="checkbox" id="tc-r-target"> Put strike at or below my target price</label>
+                  <label class="tc-check-row"><input type="checkbox" id="tc-r-earnings"> No earnings before expiration</label>
+                  <label class="tc-check-row"><input type="checkbox" id="tc-r-basis"> Call strike at or above my adjusted basis</label>
+                  <label class="tc-check-row"><input type="checkbox" id="tc-r-exdiv"> No ex-dividend date before a call expires</label>
+                </div>
+                <button type="button" class="tc-save" id="tc-r-save">Save rules</button>
+                <div class="tc-note" id="tc-r-msg" role="status"></div>
+              </details>
+            </div>
+
+            <div class="tc-panel" id="tc-result" aria-live="polite">
+              <div class="tc-empty">Fill in a trade and press <b>Check it</b>. Your positions, Want-to-Own list and journal are read automatically.</div>
+            </div>
+          </div>
+        </div>
+
+        <script src="./js/wheel-ledger.js?v=20261004c"></script>
+        <script src="./js/trade-check.js?v=20261004c"></script>
+        <script>
+        (function tradeCheckModule() {
+          'use strict';
+          var S = { ready: null, uid: null, wto: null, opts: [], stocks: [], campaigns: [], journalOk: false, market: {}, type: 'put' };
+
+          function el(id) { return document.getElementById(id); }
+          function n(v) { if (v == null || v === '') return null; var x = Number(v); return isFinite(x) ? x : null; }
+          function today() { return new Date().toISOString().slice(0, 10); }
+          function h(tag, props, kids) {
+            var node = document.createElement(tag);
+            if (props) Object.keys(props).forEach(function (k) {
+              if (k === 'text') node.textContent = props[k];
+              else if (k === 'className') node.className = props[k];
+              else node.setAttribute(k, props[k]);
+            });
+            (kids || []).forEach(function (c) { if (c != null) node.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+            return node;
+          }
+          function usd(v, cents) {
+            if (v == null) return '—';
+            if (window.AP_FMT && AP_FMT.usd) return AP_FMT.usd(v, { cents: !!cents });
+            return (v < 0 ? '−$' : '$') + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: cents ? 2 : 0, maximumFractionDigits: cents ? 2 : 0 });
+          }
+          function pct(v, dp) { return v == null ? '—' : v.toFixed(dp == null ? 1 : dp) + '%'; }
+          function client() { var c = window.supabaseClient || window.sbClient; return c && c.auth ? c : null; }
+          function waitForClient(ms) {
+            return new Promise(function (resolve) {
+              var t0 = Date.now();
+              (function tick() { var c = client(); if (c) return resolve(c); if (Date.now() - t0 > ms) return resolve(null); setTimeout(tick, 150); })();
+            });
+          }
+          async function pageAll(sb, table) {
+            var out = [], PAGE = 1000;
+            for (var p = 0; p < 50; p++) {
+              var q = await sb.from(table).select('payload,status').eq('user_id', S.uid).range(p * PAGE, p * PAGE + PAGE - 1);
+              if (q.error) throw q.error;
+              out = out.concat(q.data || []);
+              if (!q.data || q.data.length < PAGE) break;
+            }
+            return out.map(function (r) { return Object.assign({}, r.payload || {}, { status: r.status || (r.payload && r.payload.status) }); });
+          }
+
+          /* Everything the rules need that isn't in the form. Each part is
+             optional: a part that fails leaves its rules skipped, not guessed. */
+          function loadContext(force) {
+            if (S.ready && !force) return S.ready;
+            S.ready = (async function () {
+              var sb = await waitForClient(8000);
+              if (!sb) return;
+              var sess = await sb.auth.getSession();
+              var user = sess && sess.data && sess.data.session && sess.data.session.user;
+              if (!user) return;
+              S.uid = user.id;
+              if (window.AP_RISK) { try { await AP_RISK.load(force); } catch (e) { console.warn('[check] risk', e); } }
+              try {
+                var lists = await sb.from('watchlists').select('id').eq('user_id', S.uid);
+                if (lists.error) throw lists.error;
+                var map = {};
+                if (lists.data && lists.data.length) {
+                  var wi = await sb.from('watchlist_items').select('symbol,target_buy_price')
+                    .in('watchlist_id', lists.data.map(function (l) { return l.id; })).eq('want_to_own', true);
+                  if (wi.error) throw wi.error;
+                  (wi.data || []).forEach(function (r) {
+                    var s = String(r.symbol || '').trim().toUpperCase(); if (!s) return;
+                    var t = n(r.target_buy_price);
+                    if (!map[s]) map[s] = { target: t };
+                    else if (t != null && (map[s].target == null || t < map[s].target)) map[s].target = t;
+                  });
+                }
+                S.wto = map;
+              } catch (e) { S.wto = null; console.warn('[check] want to own', e); }
+              try {
+                S.opts = await pageAll(sb, 'tj_options');
+                S.stocks = await pageAll(sb, 'tj_stocks');
+                S.campaigns = window.AP_WHEEL ? AP_WHEEL.build(S.opts, S.stocks) : [];
+                S.journalOk = true;
+              } catch (e) { S.journalOk = false; console.warn('[check] journal', e); }
+              fillAccounts();
+              fillRules();
+            })();
+            return S.ready;
+          }
+
+          function acctOf(p) { return String(p.broker || '').trim() || 'Default'; }
+
+          function fillAccounts() {
+            var sel = el('tc-account'); if (!sel) return;
+            var seen = {};
+            S.opts.concat(S.stocks).forEach(function (p) { seen[acctOf(p)] = true; });
+            var keep = sel.value;
+            while (sel.options.length > 1) sel.remove(1);
+            Object.keys(seen).sort().forEach(function (a) { sel.appendChild(h('option', { value: a, text: a })); });
+            if (keep && seen[keep]) sel.value = keep;
+          }
+
+          /* Shares, cost and adjusted basis for one ticker in one account (or
+             all). An open wheel campaign has the basis net of premium; shares
+             held with no option ever sold against them are at cost. */
+          function holdingFor(sym, acct) {
+            if (!S.journalOk) return {};
+            var shares = 0, cost = 0, banked = 0, covered = 0;
+            var withCampaign = {};
+            S.campaigns.forEach(function (c) {
+              if (c.status !== 'open' || c.ticker !== sym || (acct && c.account !== acct)) return;
+              withCampaign[c.account] = true;
+              shares += c.shares; cost += c.heldCost || 0; banked += (c.realized || 0);
+              c.openLegs.forEach(function (g) { if (g.type === 'call') covered += g.qty * 100; });
+            });
+            S.stocks.forEach(function (p) {
+              var a = acctOf(p);
+              if (withCampaign[a] || (acct && a !== acct)) return;
+              if (String(p.ticker || '').trim().toUpperCase() !== sym) return;
+              if (String(p.status) !== 'open' || String(p.side || 'long').toLowerCase() !== 'long') return;
+              var q = n(p.qty) || 0, px = n(p.entryPrice);
+              if (q <= 0 || px == null) return;
+              shares += q; cost += q * px;
+            });
+            return { shares: shares, heldCost: cost, coveredShares: covered,
+                     adjustedBasis: shares ? Math.round((cost - banked) / shares * 100) / 100 : null };
+          }
+
+          /* Last price and the next earnings date, through the licensed
+             market-data proxy. Cached for the session to spare lookups. */
+          async function marketFor(sym, expiry) {
+            var key = sym + '|' + expiry;
+            if (S.market[key]) return S.market[key];
+            var out = { price: null, earningsDate: undefined };
+            try {
+              var q = await fetch('https://finnhub.io/api/v1/quote?symbol=' + encodeURIComponent(sym));
+              if (q.ok) { var d = await q.json(); if (n(d.c)) out.price = n(d.c); }
+            } catch (e) {}
+            try {
+              var e = await fetch('https://finnhub.io/api/v1/calendar/earnings?from=' + today() + '&to=' + expiry + '&symbol=' + encodeURIComponent(sym));
+              if (e.ok) {
+                var j = await e.json();
+                var list = (j && j.earningsCalendar) || [];
+                var dates = list.map(function (x) { return String(x.date || '').slice(0, 10); }).filter(Boolean).sort();
+                out.earningsDate = dates.length ? dates[0] : null;
+              }
+            } catch (err) {}
+            if (out.price == null) {
+              var sb = client();
+              if (sb) {
+                var ms = await sb.from('market_snapshots').select('ohlcv,ts').eq('symbol', sym).eq('tf', '1d').order('ts', { ascending: false }).limit(1);
+                var row = ms.data && ms.data[0];
+                if (row && row.ohlcv) out.price = n(row.ohlcv.close);
+              }
+            }
+            S.market[key] = out;
+            return out;
+          }
+
+          function setType(t) {
+            S.type = t === 'call' ? 'call' : 'put';
+            document.querySelectorAll('[data-tc-type]').forEach(function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-tc-type') === S.type ? 'true' : 'false'); });
+            var w = el('tc-exdiv-wrap'); if (w) w.hidden = S.type !== 'call';
+          }
+
+          function readTrade() {
+            return {
+              ticker: String(el('tc-ticker').value || '').trim().toUpperCase(),
+              type: S.type,
+              strike: n(el('tc-strike').value),
+              expiry: el('tc-expiry').value || null,
+              premium: n(el('tc-premium').value),
+              contracts: Math.max(1, Math.round(n(el('tc-contracts').value) || 1)),
+              account: el('tc-account').value || '',
+              today: today()
+            };
+          }
+
+          async function run(e) {
+            if (e) e.preventDefault();
+            var t = readTrade(), err = el('tc-err');
+            err.textContent = '';
+            if (!/^[A-Z][A-Z0-9.\-]{0,9}$/.test(t.ticker)) { err.textContent = 'Enter a ticker.'; return; }
+            if (!(t.strike > 0)) { err.textContent = 'Enter the strike.'; return; }
+            if (!t.expiry || t.expiry < t.today) { err.textContent = 'Enter an expiration date that is today or later.'; return; }
+            if (!(t.premium > 0)) { err.textContent = 'Enter the premium per share.'; return; }
+            var btn = el('tc-go'); btn.disabled = true; btn.textContent = 'Checking…';
+            try {
+              await loadContext(false);
+              var mkt = await marketFor(t.ticker, t.expiry);
+              var ctx = {
+                price: mkt.price, earningsDate: mkt.earningsDate,
+                exDivDate: t.type === 'call' ? (el('tc-exdiv').value || null) : null,
+                wantToOwn: S.wto,
+                exposure: window.AP_RISK ? AP_RISK.exposure() : { total: 0, byTicker: {}, putsByTicker: {} },
+                holding: holdingFor(t.ticker, t.account)
+              };
+              var rules = window.AP_RISK ? AP_RISK.settings() : {};
+              render(t, ctx, AP_TRADECHECK.evaluate(t, ctx, rules));
+            } catch (x) {
+              console.warn('[check] failed', x);
+              err.textContent = 'The check did not finish. Try again in a moment.';
+            } finally { btn.disabled = false; btn.textContent = 'Check it'; }
+          }
+
+          function stat(label, value, note) { return h('div', { className: 'tc-stat' }, [h('span', { text: label }), h('strong', { text: value }), note ? h('em', { text: note }) : null]); }
+
+          function journalLink(t) {
+            var q = new URLSearchParams({ asset: 'option', from: 'options-hub', ticker: t.ticker, type: t.type, strike: String(t.strike),
+              expiry: t.expiry, premium: String(t.premium), contracts: String(t.contracts) });
+            if (t.account) q.set('account', t.account);
+            return 'trade-journal-pro.html?' + q.toString();
+          }
+
+          function render(t, ctx, r) {
+            var box = el('tc-result');
+            box.textContent = '';
+            var m = r.math, checked = r.passed + r.failed;
+            var title = r.failed
+              ? 'Breaks ' + r.failed + ' of your rules'
+              : (checked ? 'Meets all ' + checked + ' rules checked' : 'No rules could be checked');
+            var sub = t.contracts + ' × ' + t.ticker + ' ' + t.expiry + ' $' + t.strike + ' ' + t.type + (t.account ? ' · ' + t.account : '') +
+              (r.skipped ? ' · ' + r.skipped + ' skipped' : '');
+            box.appendChild(h('div', { className: 'tc-verdict ' + (r.failed ? 'bad' : 'ok') }, [h('strong', { text: title }), h('span', { text: sub })]));
+
+            var stats = [
+              stat('Premium', usd(m.premiumTotal), usd(t.premium, true) + ' × ' + m.shares + ' shares'),
+              stat('Yield', pct(m.yieldPct, 2), m.annualized != null ? pct(m.annualized) + ' a year' : null),
+              stat('Days left', m.dte == null ? '—' : String(m.dte), 'to ' + t.expiry),
+              t.type === 'put'
+                ? stat('Cash set aside', usd(m.collateral), 'you would pay ' + usd(m.breakeven, true) + ' a share')
+                : stat('If called away', usd(m.ifCalled), ctx.holding.adjustedBasis != null ? 'vs basis ' + usd(ctx.holding.adjustedBasis, true) : 'no basis in journal'),
+              stat('Last price', usd(ctx.price, true), m.otmPct != null ? pct(Math.abs(m.otmPct)) + (m.otmPct >= 0 ? ' out of the money' : ' in the money') : null)
+            ];
+            box.appendChild(h('div', { className: 'tc-math' }, stats));
+
+            var list = h('ul', { className: 'tc-checks' });
+            r.checks.forEach(function (c) {
+              list.appendChild(h('li', { className: 'tc-check ' + c.status }, [
+                h('span', { className: 'tc-mark', 'aria-label': c.status, text: c.status === 'pass' ? '✓' : c.status === 'fail' ? '✗' : '–' }),
+                h('div', null, [h('b', { text: c.label }), h('p', { text: c.detail })])
+              ]));
+            });
+            box.appendChild(list);
+
+            // For and against: the same facts, sorted into the two sides of
+            // the decision (js/trade-check.js). Every plan; no AI.
+            var k = AP_TRADECHECK.cases(t, ctx, r);
+            var side = function (cls, title, lines, empty) {
+              var ul = h('ul', null, (lines.length ? lines : [empty]).map(function (x) { return h('li', { text: x }); }));
+              return h('div', { className: 'tc-side ' + cls }, [h('h4', { text: title }), ul]);
+            };
+            box.appendChild(h('div', { className: 'tc-case' }, [
+              side('for', 'For', k.for, 'Nothing on this side.'),
+              side('against', 'Against', k.against, 'Nothing on this side.')
+            ]));
+            if (k.unchecked) box.appendChild(h('p', { className: 'tc-case-note', text: k.unchecked + ' of your rules could not be checked (missing data), so they are on neither side.' }));
+
+            var logLink = h('a', { href: journalLink(t), text: 'Log it in the journal →' });
+            // Pro: the AI argues both sides from the points above. Replaced
+            // "Explain in plain English" here, which mostly restated the card.
+            var caseBtn = window.AP_EXPLAIN && AP_EXPLAIN.attachCase ? h('button', { type: 'button', className: 'ax-btn', text: 'Argue both sides' }) : null;
+            box.appendChild(h('div', { className: 'tc-actions' }, [logLink, caseBtn]));
+            var caseOut = h('div', { className: 'ax-out', 'aria-live': 'polite' });
+            caseOut.hidden = true;
+            box.appendChild(caseOut);
+            if (caseBtn) AP_EXPLAIN.attachCase(caseBtn, caseOut, function () {
+              // The points shown above, and nothing else.
+              var facts = [{ label: 'Trade', value: sub }, { label: 'Your rules', value: title }];
+              k.for.forEach(function (x) { facts.push({ label: 'For', value: x }); });
+              k.against.forEach(function (x) { facts.push({ label: 'Against', value: x }); });
+              r.checks.forEach(function (c) { if (c.status !== 'skip') facts.push({ label: 'Rule: ' + c.label + ' (' + c.status + ')', value: c.detail }); });
+              if (k.unchecked) facts.push({ label: 'Not checked', value: k.unchecked + ' rules (missing data)' });
+              return facts;
+            });
+            var notes = [];
+            if (!S.journalOk) notes.push('Your journal could not be read, so shares and basis are unknown.');
+            if (window.AP_RISK && !AP_RISK.rulesOnServer()) notes.push('Your newer rules are saved in this browser only until the database update is applied.');
+            notes.push('Yield uses the premium you entered. Earnings come from the market-data feed and can move; confirm with your broker. Educational tool, not investment advice.');
+            box.appendChild(h('p', { className: 'tc-foot', text: notes.join(' ') }));
+          }
+
+          function fillRules() {
+            if (!window.AP_RISK) return;
+            var st = AP_RISK.settings();
+            function v(id, x) { var e = el(id); if (e) e.value = x == null ? '' : x; }
+            function c(id, x) { var e = el(id); if (e) e.checked = !!x; }
+            v('tc-r-capital', st.wheelCapital); v('tc-r-yield', st.minAnnualYield);
+            v('tc-r-mindte', st.minDte); v('tc-r-maxdte', st.maxDte);
+            v('tc-r-ticker', st.maxTickerPct); v('tc-r-total', st.maxTotalPct); v('tc-r-puts', st.maxPutsPerTicker);
+            c('tc-r-wto', st.requireWantToOwn); c('tc-r-target', st.putAtOrBelowTarget); c('tc-r-earnings', st.warnEarnings);
+            c('tc-r-basis', st.callAboveBasis); c('tc-r-exdiv', st.warnExDiv);
+          }
+
+          async function saveRules() {
+            var msg = el('tc-r-msg');
+            var patch = {
+              wheelCapital: n(el('tc-r-capital').value),
+              minAnnualYield: n(el('tc-r-yield').value),
+              minDte: n(el('tc-r-mindte').value), maxDte: n(el('tc-r-maxdte').value),
+              maxTickerPct: n(el('tc-r-ticker').value), maxTotalPct: n(el('tc-r-total').value),
+              maxPutsPerTicker: n(el('tc-r-puts').value),
+              requireWantToOwn: el('tc-r-wto').checked, putAtOrBelowTarget: el('tc-r-target').checked,
+              warnEarnings: el('tc-r-earnings').checked, callAboveBasis: el('tc-r-basis').checked, warnExDiv: el('tc-r-exdiv').checked
+            };
+            var bad = (patch.wheelCapital != null && !(patch.wheelCapital > 0)) ||
+              !(patch.maxTickerPct > 0 && patch.maxTickerPct <= 100) || !(patch.maxTotalPct > 0 && patch.maxTotalPct <= 100) ||
+              !(patch.maxPutsPerTicker >= 1 && patch.maxPutsPerTicker <= 20) ||
+              (patch.minAnnualYield != null && patch.minAnnualYield < 0) ||
+              (patch.minDte != null && patch.maxDte != null && patch.minDte > patch.maxDte);
+            if (bad) { msg.textContent = 'Check those numbers: percentages are 1–100, puts 1–20, and min days no more than max days.'; msg.style.color = 'var(--danger)'; return; }
+            try {
+              await loadContext(false);
+              await AP_RISK.save(patch);
+              msg.textContent = AP_RISK.rulesOnServer() ? 'Rules saved.' : 'Limits saved. The new rules are saved in this browser until the database update is applied.';
+              msg.style.color = 'var(--success-dark)';
+            } catch (x) {
+              console.warn('[check] save rules', x);
+              msg.textContent = 'Those rules were not saved. Try again in a moment.'; msg.style.color = 'var(--danger)';
+            }
+          }
+
+          /* Fill the form from a scanner card or a ?tab=check link. */
+          function prefill(p) {
+            if (!p) return;
+            if (p.type) setType(p.type);
+            if (p.ticker) el('tc-ticker').value = String(p.ticker).toUpperCase();
+            if (p.strike != null) el('tc-strike').value = p.strike;
+            if (p.expiry) { el('tc-expiry').value = String(p.expiry).slice(0, 10); if (el('tc-expiry-note')) el('tc-expiry-note').hidden = true; }
+            if (p.premium != null) el('tc-premium').value = p.premium;
+            if (p.contracts) el('tc-contracts').value = p.contracts;
+            if (p.account) loadContext(false).then(function () { var s = el('tc-account'); if ([].some.call(s.options, function (o) { return o.value === p.account; })) s.value = p.account; });
+            el('tc-result').scrollIntoView({ block: 'nearest' });
+          }
+
+          /* The next standard monthly expiration (third Friday) at least a
+             week out, as a starting value. Exchange holidays that move an
+             expiration to Thursday are not handled; the note says to check. */
+          function nextMonthly(from) {
+            var d = new Date(Date.UTC(from.getFullYear(), from.getMonth(), from.getDate()));
+            for (var i = 0; i < 3; i++) {
+              var y = d.getUTCFullYear(), m = d.getUTCMonth() + i;
+              var first = new Date(Date.UTC(y, m, 1));
+              var third = new Date(Date.UTC(first.getUTCFullYear(), first.getUTCMonth(), 1 + ((5 - first.getUTCDay() + 7) % 7) + 14));
+              if ((third - d) / 86400000 >= 7) return third.toISOString().slice(0, 10);
+            }
+            return null;
+          }
+          function defaultExpiry() {
+            var f = el('tc-expiry');
+            if (!f || f.value) return;
+            var v = nextMonthly(new Date());
+            if (!v) return;
+            f.value = v;
+            var note = el('tc-expiry-note');
+            if (note) {
+              note.hidden = false;
+              f.addEventListener('input', function () { note.hidden = true; }, { once: true });
+            }
+          }
+
+          window.tcLoad = function () { loadContext(false); };
+          window.tcPrefill = prefill;
+          window.tcRun = run;
+
+          document.addEventListener('DOMContentLoaded', function () {
+            var form = el('tc-form');
+            if (!form) return;
+            form.addEventListener('submit', run);
+            defaultExpiry();
+            document.querySelectorAll('[data-tc-type]').forEach(function (b) { b.addEventListener('click', function () { setType(b.getAttribute('data-tc-type')); }); });
+            el('tc-r-save').addEventListener('click', saveRules);
+            window.addEventListener('ap:risk:ready', fillRules);
+            // "Check this trade" on a Covered Calls / Cash-Secured Puts card
+            document.addEventListener('click', function (e) {
+              var b = e.target.closest && e.target.closest('[data-tc-check]');
+              if (!b) return;
+              e.preventDefault();
+              if (typeof switchTab === 'function') switchTab('check');
+              prefill({ type: b.getAttribute('data-type'), ticker: b.getAttribute('data-symbol'), strike: b.getAttribute('data-strike'),
+                        expiry: b.getAttribute('data-expiry'), premium: b.getAttribute('data-premium'), contracts: b.getAttribute('data-contracts') });
+              run();
+            });
+            var q = new URLSearchParams(location.search);
+            if (q.get('tab') === 'check' && q.get('ticker')) {
+              prefill({ type: q.get('type'), ticker: q.get('ticker'), strike: q.get('strike'), expiry: q.get('expiry'),
+                        premium: q.get('premium'), contracts: q.get('contracts'), account: q.get('account') });
+            }
           });
         })();
         </script>
@@ -8685,7 +9203,7 @@ const OH_STRATEGIES = [
         tabs[nextIndex].click();
       });
 
-      // Deep-link support: ?tab=analyzer / ?tab=calls / ?tab=puts / ?tab=quality (Want to Own) / ?tab=strategies
+      // Deep-link support: ?tab=analyzer / ?tab=calls / ?tab=puts / ?tab=check / ?tab=quality (Want to Own) / ?tab=strategies
       // Used by redirects from old standalone files (options-recommender.html, options-strategies.html)
       // Falls back to the last tab the user was actually on (persisted by
       // switchTab() itself) when there's no explicit URL request —
@@ -8696,7 +9214,7 @@ const OH_STRATEGIES = [
         const requestedTab = params.get('tab');
         // 'analyzer' and 'strategies' stay valid: old bookmarks and any links
         // from Tools should still open those panels.
-        const validTabs = ['calls', 'puts', 'roll', 'watchlist', 'quality', 'analyzer', 'strategies'];
+        const validTabs = ['calls', 'puts', 'check', 'roll', 'watchlist', 'quality', 'analyzer', 'strategies'];
         let tabToOpen = null;
         if (requestedTab && validTabs.includes(requestedTab)) {
           tabToOpen = requestedTab;
@@ -8768,7 +9286,7 @@ const OH_STRATEGIES = [
       const bare = function (path) { return path.replace(/\.html$/, ''); };
       if (url.origin !== location.origin || bare(url.pathname) !== bare(location.pathname)) return;
       const tab = url.searchParams.get('tab');
-      if (['calls', 'puts', 'roll', 'quality', 'analyzer', 'strategies', 'watchlist'].indexOf(tab) === -1) return;
+      if (['calls', 'puts', 'check', 'roll', 'quality', 'analyzer', 'strategies', 'watchlist'].indexOf(tab) === -1) return;
       e.preventDefault();
       switchTab(tab);
     });
@@ -8796,7 +9314,8 @@ const OH_STRATEGIES = [
         'roll': 'rollTab',
         'strategies': 'strategiesTab',
         'watchlist': 'watchlistTab',
-        'quality': 'qualityTab'
+        'quality': 'qualityTab',
+        'check': 'checkTab'
       };
       
       const tabContent = document.getElementById(tabMap[tabName]);
@@ -8807,7 +9326,7 @@ const OH_STRATEGIES = [
         // The visible tab is restored from storage without changing the URL,
         // so tell the navigation which entry is current (ATD-008). The preset
         // covers the case where js/arowana-nav.js has not loaded yet.
-        const navId = ({ calls: 'wheel-calls', puts: 'wheel-puts', roll: 'wheel-roll', quality: 'wheel-quality',
+        const navId = ({ calls: 'wheel-calls', puts: 'wheel-puts', check: 'wheel-check', roll: 'wheel-roll', quality: 'wheel-quality',
           analyzer: 'options-recommender', strategies: 'options-matrix', watchlist: 'options-vol' })[tabName] || 'desk-options';
         window.ArowanaNavPreset = navId;
         if (window.ArowanaNav && typeof window.ArowanaNav.setActive === 'function') window.ArowanaNav.setActive(navId);
@@ -8822,6 +9341,12 @@ const OH_STRATEGIES = [
       }
       if (tabName === 'watchlist' && typeof window.vwLoad === 'function') {
         try { window.vwLoad(false); } catch (e) { console.warn('[vol watchlist] load failed', e); }
+      }
+      if (tabName === 'check' && typeof window.tcLoad === 'function') {
+        try { window.tcLoad(); } catch (e) { console.warn('[check a trade] load failed', e); }
+      }
+      if (tabName === 'check' && typeof window.tcLoad === 'function') {
+        try { window.tcLoad(); } catch (e) { console.warn('[check a trade] load failed', e); }
       }
       if (tabName === 'roll' && typeof window.rcLoad === 'function') {
         try { window.rcLoad(false); } catch (e) { console.warn('[roll coach] load failed', e); }
@@ -8920,7 +9445,7 @@ const OH_STRATEGIES = [
   <!-- Market data runs on our licensed key; nobody brings their own. -->
   <script src="./js/market-data.js?v=20260918c"></script>
   <script src="./js/plan.js?v=20260918c"></script>
-  <script src="./js/risk.js?v=20260918c"></script>
+  <script src="./js/risk.js?v=20261004c"></script>
   <script src="./js/auth-header.js?v=20260918c"></script>
 
 <!-- Slims the site footer to a single compliance line on workspace pages.
@@ -8933,7 +9458,7 @@ const OH_STRATEGIES = [
      content sits behind an upgrade panel. The data itself is protected by
      row-level security, this is the visible half. */
   (function () {
-    var PRO_TABS = { callsTab: 'pro', putsTab: 'pro', qualityTab: 'pro', rollTab: 'pro' };
+    var PRO_TABS = { callsTab: 'pro', putsTab: 'pro', checkTab: 'pro', qualityTab: 'pro', rollTab: 'pro' };
     function applyGates() {
       if (!window.AP_PLAN) return;
       Object.keys(PRO_TABS).forEach(function (id) {
