@@ -238,7 +238,9 @@ class NavRegistryTests(unittest.TestCase):
                    "daytrade.html": "trading-command.html", "ai-trading-agent.html": "arowana-trader.html",
                    "earning-watcher.html": "trading-command.html", "sector-sentiment.html": "ai-morning-brief.html",
                    "sector-sentiment-gauge.html": "ai-morning-brief.html", "option-recommender.html": "options-hub.html?tab=calls",
-                   "option-trader.html": "options-hub.html?tab=analyzer", "wheel_strategy_web_tool.html": "wheel-strategy.html?tab=import"}
+                   "option-trader.html": "options-hub.html?tab=analyzer", "wheel_strategy_web_tool.html": "wheel-strategy.html?tab=import",
+                   "short-term-dashboard.html": "trading-command.html", "daily-bias.html": "trade-plan-builder.html",
+                   "daily-summary.html": "ai-morning-brief.html", "option-roll-analyzer.html": "options-hub.html?tab=roll"}
         for name, target in targets.items():
             html = (ROOT / name).read_text(encoding="utf-8")
             self.assertIn("var target = '%s';" % target, html, name)

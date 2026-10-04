@@ -227,6 +227,13 @@ body.mode-beginner .result-grid{grid-template-columns:1fr 1fr}
 
 </div><div class="stack">
 
+<!-- Saved signals from the retired short-term dashboard (ATD-009). Read-only
+     view of localStorage arowana_journal_v1, which nothing else reads; shown
+     only when this browser has entries. Nothing is moved or rewritten. -->
+<section class="card" id="savedSignals" hidden><div class="card-head"><div><h2>&#128190; Saved signals</h2><p>Signals you saved on the old Short-Term dashboard, kept on this device. Some may hold demo prices from when its signal service was offline &mdash; check before you plan.</p></div></div><div class="card-body">
+  <ul id="savedSignalsList" style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px"></ul>
+  <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px"><button class="btn" type="button" id="savedSignalsCsv">Download CSV</button><button class="btn" type="button" id="savedSignalsClear">Clear saved signals</button></div>
+</div></section>
 <section class="card" id="resultCard"><div class="card-head"><div><h2>&#128203; The plan</h2><p>A calculation from your inputs&mdash;not a recommendation.</p></div></div><div class="card-body">
 <div class="placeholder" id="placeholder"><div class="icon">&#128221;</div><strong>Start with the symbol and the reason</strong><span>Write why you are taking this trade before sizing it.</span></div>
 <div class="result-output" id="resultOutput" hidden>
@@ -1020,6 +1027,65 @@ $('aiApplyBtn').addEventListener('click',aiApply);
 $('aiDismissBtn').addEventListener('click',function(){
   $('aiProposal').hidden=true;aiProposed=null;
 });
+
+/* ── Saved signals (arowana_journal_v1, from short-term-dashboard.html and
+   buy-sell-signal.html). Two shapes were written: {symbol, entry, stop,
+   targets:"$x / $y"} and {ticker, direction, entry_price, stop_loss,
+   exit_price}. "Plan it" fills the form the same way ?ticker&entry links do. */
+var SAVED_KEY='arowana_journal_v1';
+function savedList(){try{var a=JSON.parse(localStorage.getItem(SAVED_KEY)||'[]');return Array.isArray(a)?a.filter(function(r){return r&&typeof r==='object'}):[]}catch(_){return[]}}
+function firstNum(v){var m=String(v==null?'':v).replace(/,/g,'').match(/-?\d+(\.\d+)?/);var n=m?Number(m[0]):NaN;return isFinite(n)&&n>0?n:null}
+function savedNorm(r){
+  return {
+    symbol:String(r.ticker||r.symbol||'').toUpperCase().replace(/[^A-Z0-9.\-]/g,'').slice(0,10),
+    date:r.date||'',
+    direction:r.direction==='short'?'short':r.direction==='long'?'long':null,
+    entry:firstNum(r.entry_price!=null?r.entry_price:r.entry),
+    stop:firstNum(r.stop_loss!=null?r.stop_loss:r.stop),
+    target:firstNum(r.exit_price!=null?r.exit_price:r.targets),
+    note:String(r.notes||r.setup||r.strategy||'').slice(0,300)
+  };
+}
+function renderSaved(){
+  var list=savedList(),sec=$('savedSignals'),ul=$('savedSignalsList');
+  if(!sec||!ul)return;
+  sec.hidden=!list.length;
+  while(ul.firstChild)ul.removeChild(ul.firstChild);
+  list.forEach(function(raw){
+    var r=savedNorm(raw);if(!r.symbol)return;
+    var li=document.createElement('li');
+    li.style.cssText='display:flex;gap:10px;align-items:center;justify-content:space-between;border:1px solid var(--border);border-radius:10px;padding:8px 10px';
+    var txt=document.createElement('div');txt.style.minWidth='0';
+    var b=document.createElement('strong');b.textContent=r.symbol;txt.appendChild(b);
+    var meta=document.createElement('div');meta.style.cssText='font-size:.74rem;color:var(--muted)';
+    meta.textContent=[r.date?new Date(r.date).toLocaleDateString():'',r.entry?'entry '+money(r.entry):'',r.stop?'stop '+money(r.stop):'',r.target?'target '+money(r.target):''].filter(Boolean).join(' · ');
+    txt.appendChild(meta);
+    var btn=document.createElement('button');btn.type='button';btn.className='btn';btn.textContent='Plan it';
+    btn.addEventListener('click',function(){
+      function put(id,v){var el=$(id);if(el&&v!=null&&v!=='')el.value=v}
+      put('symbol',r.symbol);put('entryPrice',r.entry);put('stopPrice',r.stop);put('targetPrice',r.target);
+      if(r.direction)setDirection(r.direction);
+      if(r.note&&!String($('thesis').value||'').trim())put('thesis',r.note);
+      saveDraft();calculate(true);
+      toast('Loaded '+r.symbol+' from your saved signals — check every number before you size it.','warn');
+    });
+    li.appendChild(txt);li.appendChild(btn);ul.appendChild(li);
+  });
+}
+$('savedSignalsCsv').addEventListener('click',function(){
+  var rows=[['date','symbol','direction','entry','stop','target','note']].concat(savedList().map(function(raw){var r=savedNorm(raw);return [r.date,r.symbol,r.direction||'',r.entry||'',r.stop||'',r.target||'',r.note]}));
+  var csv=rows.map(function(row){return row.map(function(c){c=String(c==null?'':c);return /[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c}).join(',')}).join('\n');
+  var url=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));
+  var a=document.createElement('a');a.href=url;a.download='saved-signals.csv';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(function(){URL.revokeObjectURL(url)},1000);
+});
+$('savedSignalsClear').addEventListener('click',function(){
+  if(!confirm('Remove all saved signals from this device? Download the CSV first if you want a copy.'))return;
+  try{localStorage.removeItem(SAVED_KEY)}catch(_){}
+  renderSaved();
+});
+try{localStorage.setItem('ap_saved_signals_seen_v1','1')}catch(_){}
+renderSaved();
 
 loadDraft();
 if(applyQueryParams()) calculate(false);
