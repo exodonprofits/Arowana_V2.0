@@ -1780,7 +1780,10 @@ function getScanCount(){
   }catch{return 0;}
 }
 function incrementScanCount(){try{const n=getScanCount()+1;localStorage.setItem('ap_scan_count',String(n));localStorage.setItem('ap_scan_date',new Date().toISOString().split('T')[0]);return n;}catch{return 1;}}
-function isPro(){try{return localStorage.getItem('ap_is_pro_v1')==='1';}catch{return false;}}
+/* Plan from js/plan.js (server-backed). ap_is_pro_v1 was never set by anything,
+   so it treated paying users as Free and let anyone unlock Pro from the console. */
+function isPro(){return !!(window.AP_PLAN && AP_PLAN.atLeast('pro'));}
+window.addEventListener('ap:plan:ready',function(){renderUpgradeBanner();});
 function renderUpgradeBanner(){
   /* The old banner counted "AI scans" against a daily free limit, which was
      the previous product's model. What a free account actually lacks now is

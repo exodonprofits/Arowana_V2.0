@@ -1032,6 +1032,7 @@ body.rail-collapsed .app-shell{grid-template-columns:68px minmax(0,1fr)}
 <script src="./js/app-config.js?v=20260918c"></script>
 <script src="./js/supabase_min.js?v=20260918c"></script>
 <script src="./js/sb.js?v=20261004a"></script>
+<script src="./js/plan.js?v=20261004e"></script>
 <script src="./js/auth-header.js?v=20260918c"></script>
 <script>window.GSAuthHeader&&window.GSAuthHeader.init({loginUrl:"./login.html",afterLogoutUrl:"./index.html"});</script>
 <script>
@@ -2124,7 +2125,10 @@ const TBL_GOALS='goals';
 const SUPABASE_ANON='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBib2phY25hZ3V0aXBmaGN4bHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDkwODAsImV4cCI6MjA2MzU4NTA4MH0.ZLCcAzTYljoZycpBGwMtthP5VyAJ4schuIvt4HibGc0';
 const SB={get h(){return{'apikey':SUPABASE_ANON,'Authorization':'Bearer '+SUPABASE_ANON,'Content-Type':'application/json'}}};
 function getUID(){try{return JSON.parse(localStorage.getItem('gs_auth_user_v1')||'null')?.id||null;}catch{return null;}}
-function isPro(){try{return localStorage.getItem('ap_is_pro_v1')==='1';}catch{return false;}}
+/* Plan from js/plan.js (server-backed). ap_is_pro_v1 was never set by anything,
+   so it treated paying users as Free and let anyone unlock Pro from the console. */
+function isPro(){return !!(window.AP_PLAN && AP_PLAN.atLeast('pro'));}
+window.addEventListener('ap:plan:ready',function(){renderUpgradeBanner();updateAnalysisCounterBadge();});
 
 /* Analysis usage counter (5/day free) */
 const FREE_LIMIT=5;

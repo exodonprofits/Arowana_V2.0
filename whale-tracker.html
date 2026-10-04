@@ -935,6 +935,7 @@ footer:not(.site-footer){display:none!important}.site-footer{background:#e8f0f4!
 <script src="./js/supabase_min.js"></script>
 <script>window.GS_CONFIG_URL="./js/config.json";window.GS_CONFIG_PATH="./js/config.json";</script>
 <script src="./js/app-config.js"></script>
+<script src="./js/plan.js?v=20261004e"></script>
 <script src="./js/auth-header.js"></script>
 <script defer src="./js/journal-sync.js"></script>
 <script>window.GSAuthHeader&&window.GSAuthHeader.init({loginUrl:"./login.html",afterLogoutUrl:"./index.html"});</script>
@@ -1756,7 +1757,10 @@ function getScanCount(){
   }catch{return 0;}
 }
 function incrementScanCount(){try{const n=getScanCount()+1;localStorage.setItem('ap_scan_count',String(n));localStorage.setItem('ap_scan_date',new Date().toISOString().split('T')[0]);return n;}catch{return 1;}}
-function isPro(){try{return localStorage.getItem('ap_is_pro_v1')==='1';}catch{return false;}}
+/* Plan from js/plan.js (server-backed). ap_is_pro_v1 was never set by anything,
+   so it treated paying users as Free and let anyone unlock Pro from the console. */
+function isPro(){return !!(window.AP_PLAN && AP_PLAN.atLeast('pro'));}
+window.addEventListener('ap:plan:ready',function(){if(typeof renderUpgradeBanner==='function')renderUpgradeBanner();});
 function renderUpgradeBanner(){
   const el=$('upgradeBanner');if(!el||isPro()){if(el)el.style.display='none';return;}
   const left=Math.max(0,getFreeLimit()-getScanCount());

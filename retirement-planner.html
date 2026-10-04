@@ -1868,8 +1868,9 @@ function getAuthUser(){
 function getAccountTier(){
   const user = getAuthUser();
   if (!user) return 'anonymous';
-  const isPro = localStorage.getItem('ap_is_pro_v1') === 'true'; // sacred key, set by billing sync elsewhere
-  if (isPro) return 'subscription';
+  // Plan from js/plan.js when the page has it. ap_is_pro_v1 was never set by
+  // anything, so it only let anyone claim the managed tier from the console.
+  if (window.AP_PLAN && AP_PLAN.atLeast('pro')) return 'subscription';
   const byokKey = localStorage.getItem('ap_retirement_ai_key');
   if (byokKey) return 'byok';
   return 'free';
@@ -1970,7 +1971,7 @@ function renderAINarrativeGate(){
     }
     const webhookUrl = tier === 'byok'
       ? localStorage.getItem('ap_retirement_ai_key')
-      : window.AP_WEBHOOKS.retirementNarrative;
+      : (window.AP_WEBHOOKS && window.AP_WEBHOOKS.retirementNarrative);
 
     if (!webhookUrl){
       box.innerHTML = tier === 'byok'

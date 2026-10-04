@@ -46,6 +46,7 @@
   <script src="./js/app-config.js?v=20260918c"></script>
   <script src="./js/supabase_min.js?v=20260918c"></script>
   <script src="./js/sb.js?v=20261004a"></script>
+  <script src="./js/plan.js?v=20261004e"></script>
   <!-- Market data runs on our licensed key; nobody brings their own. -->
   <script src="./js/market-data.js?v=20260918c"></script>
 
@@ -11119,7 +11120,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
   }
   chips('aiChartInd', IND); chips('aiChartCtx', CTX);
   function picked(id) { return Array.prototype.map.call($(id).querySelectorAll('[aria-pressed=true]'), function (b) { return b.textContent; }); }
-  function isPro() { try { return localStorage.getItem('ap_is_pro_v1') === '1'; } catch (_) { return false; } }
+  // Plan from js/plan.js (server-backed); ap_is_pro_v1 was never set by anything.
+  function isPro() { return !!(window.AP_PLAN && AP_PLAN.atLeast('pro')); }
   function scansToday() {
     var today = new Date().toISOString().slice(0, 10);
     try { if (localStorage.getItem(SCAN_DATE) !== today) return 0; return Number(localStorage.getItem(SCAN_KEY) || 0) || 0; } catch (_) { return 0; }
