@@ -143,7 +143,27 @@
 - ATD-105 Portfolio & Risk Engine
 - ATD-106 Trading Command 2.0 MVP
 - ATD-107 Morning Brief / What Changed
-- ATD-108 Wheel module port from current Wheel-focused repo
+- ATD-108 Wheel module port from current Wheel-focused repo — see the ATD-108 section below
+
+### ATD-108 — Wheel module port
+
+**Owner:** Claude Code (frontend); backend pieces in the Codex lane
+
+**Status:** Specification drafted 2026-10-04 for owner review. Documentation only; nothing ported yet.
+
+**Branch:** `claude/ATD-108-wheel-port-spec`
+
+**Result:** [Wheel port specification](docs/ATD-108_WHEEL_PORT_SPEC.md). Source is `exodonprofits/arowanaprofits` at `219e61f` (the Wheel Strategy Desk). The spec ports selected pieces in six slices and replaces no page wholesale:
+1. single Supabase client and live access token (fixes the multi-client sign-out race and stale-token RLS reads);
+2. journal manifest sync and journal fixes;
+3. wheel ledger and campaigns panel;
+4. Options Hub "Check a trade";
+5. plain-English explanations and small fixes;
+6. "Your wheel today", blocked until the edge-function source is in Git.
+
+Wheel's nav rail, redirects and feature removals are not ported. `wheel-strategy.html` and `option-roll-tracker.html` stay. Decisions Q1–Q6 are in section 6.
+
+**Next:** owner review of Q1–Q6, then slice S1.
 
 ### ATD-007 continuation - 2026-10-01
 
