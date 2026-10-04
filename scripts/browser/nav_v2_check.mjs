@@ -533,6 +533,73 @@ for (const from of ['ai-valuation', 'intrinsic-value-rsi', 'long-term-intrinsic-
   ok('V More models: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1));
   await m.context().close(); }
 
+// AI. ATD-009: stock-analyzer + chart-analysis-form merged into analysis-central's AI Analysis tab.
+{ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+  const p = await newPage(desktop, null);
+  const calls = [];
+  let mode = 'ok';
+  await p.route('https://n8n.example.test/**', async r => {
+    calls.push({ url: r.request().url(), body: JSON.parse(r.request().postData() || '{}') });
+    if (mode === 'fail') return r.fulfill({ status: 500, body: 'boom' });
+    if (r.request().url().includes('analyze')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ json: {
+      ticker: 'MSFT', fundamentals: 8, valuation: 6, technical: 7, market: 7.5, strategy: '<b>Buy in stages</b>', summary: 'Solid.',
+      insights: ['<img src=x onerror="window.__x=1">One', 'Two'] } }]) });
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ output: {
+      verdict: 'Bullish', entry: '101.5', stop: '99', target1: '105', rr: '2.1', summary: '<script>window.__y=1</script>Higher lows' } }) });
+  });
+  await p.goto(BASE + '/stock-analyzer.html?ticker=msft'); await p.waitForTimeout(1600);
+  const s0 = await p.evaluate(() => ({ url: location.pathname + location.search, active: document.getElementById('aiTab').classList.contains('active'),
+    sym: document.getElementById('aiSymbol').value }));
+  ok('AI stock-analyzer -> analysis-central?tab=ai, ticker carried', s0.url === '/analysis-central.html?tab=ai&ticker=msft' && s0.active && s0.sym === 'MSFT', JSON.stringify(s0));
+  await p.click('#aiScoreRun'); await p.waitForTimeout(300);
+  ok('AI scorecard with no webhook says so and shows nothing made up', await p.evaluate(() =>
+    /not connected/.test(aiScoreStatus.textContent) && document.getElementById('aiScoreResult').hidden) && calls.length === 0);
+  await p.evaluate(() => localStorage.setItem('arowana_analyzer_webhook_url', 'http://n8n.example.test/webhook/analyze'));
+  await p.click('#aiScoreRun'); await p.waitForTimeout(300);
+  ok('AI scorecard ignores a non-https saved URL', calls.length === 0);
+  await p.evaluate(() => localStorage.setItem('arowana_analyzer_webhook_url', 'https://n8n.example.test/webhook/analyze'));
+  await p.selectOption('#aiMode', 'options'); await p.fill('#aiNotes', 'check IV');
+  await p.click('#aiScoreRun'); await p.waitForTimeout(800);
+  const s1 = await p.evaluate(() => ({ text: aiScoreResult.innerText, imgs: aiScoreResult.querySelectorAll('img').length + [...aiScoreResult.querySelectorAll('b')].filter(b => /Buy in stages/.test(b.textContent)).length, x: !!window.__x,
+    pill: aiScoreResult.querySelector('.ai-pill').textContent, hist: JSON.parse(localStorage.getItem('ac_ai_scorecard_history_v1') || '[]').length }));
+  ok('AI scorecard sends the old payload', calls.length === 1 && JSON.stringify(calls[0].body) === JSON.stringify({ ticker: 'MSFT', mode: 'options', timeframe: '1-3y', notes: 'check IV' }), JSON.stringify(calls[0] && calls[0].body));
+  ok('AI scorecard renders scores; webhook HTML stays text', s1.pill === 'Neutral · 7.1' && /<b>Buy in stages<\/b>/.test(s1.text) && /onerror/.test(s1.text) && s1.imgs === 0 && !s1.x && s1.hist === 1, JSON.stringify(s1));
+  mode = 'fail'; await p.click('#aiScoreRun'); await p.waitForTimeout(600);
+  ok('AI scorecard error is reported, no demo fallback', await p.evaluate(() => /HTTP 500/.test(aiScoreStatus.textContent) && aiScoreStatus.className.includes('err')));
+  mode = 'ok';
+  // Chart analysis
+  await p.evaluate(() => localStorage.setItem('arowana_chart_webhook_url', 'https://n8n.example.test/webhook/chart'));
+  await p.setInputFiles('#aiChartFile', { name: 'c.png', mimeType: 'image/png', buffer: PNG });
+  await p.setInputFiles('#aiChartFile', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('x') });
+  await p.waitForTimeout(300);
+  await p.click('#aiChartInd .ai-chip:first-child');
+  const before = calls.length;
+  await p.click('#aiChartRun'); await p.waitForTimeout(1000);
+  const c1 = await p.evaluate(() => ({ thumbs: aiChartThumbs.querySelectorAll('img').length, pill: aiChartResult.querySelector('.ai-pill').textContent,
+    entry: aiChartResult.querySelectorAll('.ai-level b')[0].textContent, y: !!window.__y, scripts: aiChartResult.querySelectorAll('script').length,
+    hist: JSON.parse(localStorage.getItem('arowana_chart_history_v2') || '[]'), scans: localStorage.getItem('ap_chart_scan_count') }));
+  const body = calls[before] && calls[before].body;
+  ok('AI chart sends the old payload shape with the image', body && /^data:image\/png/.test(body.chartImage) && body.ticker === 'MSFT' && body.indicators[0] === 'VWAP' &&
+     body.timeframe === '15m' && body.imageCount === 1 && body.source === 'analysis-central', JSON.stringify(body && Object.keys(body)));
+  ok('AI chart renders levels; text-only, history + scan count saved', c1.thumbs === 1 && c1.pill === 'Bullish' && c1.entry === '$101.5' && !c1.y && c1.scripts === 0 &&
+     c1.hist.length === 1 && /^data:image\/jpeg/.test(c1.hist[0].thumb || '') && c1.scans === '1', JSON.stringify({ ...c1, hist: c1.hist.length }));
+  await p.evaluate(() => { localStorage.setItem('ap_chart_scan_count', '5'); localStorage.setItem('ap_chart_scan_date', new Date().toISOString().slice(0, 10)); });
+  const n = calls.length; await p.click('#aiChartRun'); await p.waitForTimeout(300);
+  ok('AI chart daily free limit kept', calls.length === n && await p.evaluate(() => /free chart analyses/.test(aiChartStatus.textContent)));
+  ok('AI analysis-central no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => localStorage.setItem('arowana_chart_history_v2', JSON.stringify([
+    { ts: new Date().toISOString(), ticker: '<img src=x onerror="window.__z=1">', tf: '1d', verdict: 'Bearish', summary: 'old', thumb: 'javascript:alert(1)', raw: { verdict: 'Bearish' } }])));
+  await p.goto(BASE + '/chart-analysis-form.html'); await p.waitForTimeout(1500);
+  const h = await p.evaluate(() => ({ url: location.pathname + location.search, items: aiChartHist.querySelectorAll('li').length, imgs: aiChartHist.querySelectorAll('img').length, z: !!window.__z }));
+  ok('AI chart-analysis-form -> ?tab=ai; old history shown as text, unsafe thumb dropped', h.url === '/analysis-central.html?tab=ai' && h.items === 1 && h.imgs === 0 && !h.z, JSON.stringify(h));
+  await p.context().close(); }
+{ const m = await newPage(mobile, null);
+  await m.goto(BASE + '/analysis-central.html?tab=ai'); await m.waitForTimeout(1500);
+  ok('AI tab: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1 && document.getElementById('aiTab').classList.contains('active')));
+  await m.context().close(); }
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {

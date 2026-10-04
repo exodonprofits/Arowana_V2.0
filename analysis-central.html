@@ -5255,6 +5255,11 @@ html,body{font-size:13px!important;line-height:1.45!important}
           <span class="tab-label">Sentiment</span>
           <span class="tab-label-short">Sentiment</span>
         </button>
+        <button class="analysis-tab" role="tab" aria-selected="false" onclick="switchTab('ai')" data-tab="ai">
+          <span class="tab-icon">🤖</span>
+          <span class="tab-label">AI Analysis</span>
+          <span class="tab-label-short">AI</span>
+        </button>
       
     </div>
 
@@ -6215,6 +6220,114 @@ html,body{font-size:13px!important;line-height:1.45!important}
         </div>
       </div>
 
+      <!-- AI Analysis (ATD-009): the n8n tools from stock-analyzer.html (AI
+           scorecard) and chart-analysis-form.html (chart screenshots), moved
+           here so those pages could retire. Webhook URLs come from
+           AP_WEBHOOKS (admin-managed); nothing here invents a result. -->
+      <div class="tab-content" id="aiTab">
+        <style>
+          #aiTab .ai-card{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:14px;padding:16px;margin:0 0 14px}
+          #aiTab .ai-card h2{margin:0 0 4px;font-size:1.05rem}
+          #aiTab .ai-sub{font-size:.82rem;color:var(--text-muted,#64748b);margin:0 0 12px;line-height:1.5}
+          #aiTab .ai-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+          #aiTab .ai-grid.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+          @media (max-width:760px){#aiTab .ai-grid,#aiTab .ai-grid.three{grid-template-columns:1fr 1fr}}
+          @media (max-width:420px){#aiTab .ai-grid,#aiTab .ai-grid.three{grid-template-columns:1fr}}
+          #aiTab label{display:block;font-size:.74rem;font-weight:700;color:var(--text-muted,#64748b);margin-bottom:4px;text-transform:uppercase;letter-spacing:.04em}
+          #aiTab input[type=text],#aiTab select,#aiTab textarea{width:100%;box-sizing:border-box;padding:9px 10px;border:1px solid var(--border,#d6dde8);border-radius:9px;font:inherit;font-size:.9rem;background:#fff}
+          #aiTab textarea{min-height:64px;resize:vertical}
+          #aiTab .ai-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+          #aiTab .ai-btn{border:none;border-radius:9px;padding:9px 16px;font-weight:700;cursor:pointer;background:#0b4f8a;color:#fff;font-size:.88rem}
+          #aiTab .ai-btn[disabled]{opacity:.55;cursor:default}
+          #aiTab .ai-btn.ghost{background:#fff;color:#0b4f8a;border:1px solid #c9d6e6}
+          #aiTab .ai-status{font-size:.82rem;color:var(--text-muted,#64748b)}
+          #aiTab .ai-status.err{color:#b91c1c}
+          #aiTab .ai-status.ok{color:#15803d}
+          #aiTab .ai-result{border-top:1px solid var(--border,#e2e8f0);margin-top:14px;padding-top:14px}
+          #aiTab .ai-result[hidden]{display:none}
+          #aiTab .ai-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start;flex-wrap:wrap}
+          #aiTab .ai-pill{display:inline-block;border-radius:99px;padding:3px 10px;font-size:.78rem;font-weight:800;background:#f1f5f9;color:#334155}
+          #aiTab .ai-pill.good{background:#dcfce7;color:#166534}
+          #aiTab .ai-pill.bad{background:#fee2e2;color:#991b1b}
+          #aiTab .ai-scores{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:12px 0}
+          @media (max-width:620px){#aiTab .ai-scores{grid-template-columns:1fr 1fr}}
+          #aiTab .ai-score{border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:8px 10px}
+          #aiTab .ai-score b{font-size:1.15rem}
+          #aiTab .ai-bar{height:6px;background:#eef2f7;border-radius:99px;margin-top:6px;overflow:hidden}
+          #aiTab .ai-bar i{display:block;height:100%;background:#0b4f8a}
+          #aiTab .ai-levels{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:12px 0}
+          @media (max-width:760px){#aiTab .ai-levels{grid-template-columns:repeat(3,minmax(0,1fr))}}
+          #aiTab .ai-level{border:1px solid var(--border,#e2e8f0);border-radius:10px;padding:8px;text-align:center}
+          #aiTab .ai-level span{display:block;font-size:.7rem;color:var(--text-muted,#64748b);text-transform:uppercase}
+          #aiTab .ai-level b{font-size:.95rem;word-break:break-word}
+          #aiTab .ai-text{white-space:pre-wrap;font-size:.9rem;line-height:1.55;margin:8px 0}
+          #aiTab .ai-list{margin:6px 0 0 18px;padding:0;font-size:.88rem;line-height:1.5}
+          #aiTab .ai-chips{display:flex;flex-wrap:wrap;gap:6px}
+          #aiTab .ai-chip{border:1px solid #c9d6e6;background:#fff;border-radius:99px;padding:4px 10px;font-size:.8rem;cursor:pointer}
+          #aiTab .ai-chip[aria-pressed=true]{background:#0b4f8a;color:#fff;border-color:#0b4f8a}
+          #aiTab .ai-drop{border:2px dashed #c9d6e6;border-radius:12px;padding:16px;text-align:center;color:var(--text-muted,#64748b);font-size:.86rem;cursor:pointer}
+          #aiTab .ai-drop.over{border-color:#0b4f8a;background:#f0f6fc}
+          #aiTab .ai-thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+          #aiTab .ai-thumb{position:relative;width:96px;height:64px;border-radius:8px;overflow:hidden;border:2px solid transparent;cursor:pointer}
+          #aiTab .ai-thumb.primary{border-color:#0b4f8a}
+          #aiTab .ai-thumb img{width:100%;height:100%;object-fit:cover}
+          #aiTab .ai-thumb button{position:absolute;top:2px;right:2px;border:none;border-radius:50%;width:20px;height:20px;line-height:20px;padding:0;background:rgba(15,23,42,.7);color:#fff;cursor:pointer;font-size:.75rem}
+          #aiTab .ai-hist{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}
+          #aiTab .ai-hist button{width:100%;display:flex;gap:10px;align-items:center;justify-content:space-between;text-align:left;border:1px solid var(--border,#e2e8f0);background:#fff;border-radius:10px;padding:8px 10px;cursor:pointer;font:inherit}
+          #aiTab .ai-hist img{width:44px;height:32px;object-fit:cover;border-radius:5px;flex:0 0 auto}
+          #aiTab .ai-hist .meta{font-size:.76rem;color:var(--text-muted,#64748b)}
+          #aiTab details.ai-raw summary{cursor:pointer;font-size:.8rem;color:var(--text-muted,#64748b)}
+          #aiTab details.ai-raw pre{white-space:pre-wrap;font-size:.75rem;max-height:240px;overflow:auto;background:#f8fafc;border-radius:8px;padding:8px}
+        </style>
+
+        <section class="ai-card" aria-labelledby="aiScoreTitle">
+          <h2 id="aiScoreTitle">🧠 AI scorecard</h2>
+          <p class="ai-sub">Fundamentals, valuation, technicals and market context scored 0–10 by the AI workflow, with a suggested approach for your horizon.</p>
+          <div class="ai-grid">
+            <div><label for="aiSymbol">Ticker</label><input type="text" id="aiSymbol" maxlength="10" autocomplete="off" placeholder="AAPL"></div>
+            <div><label for="aiMode">Approach</label><select id="aiMode"><option value="balanced">Balanced View</option><option value="longterm">Long-Term Investing</option><option value="trading">Trading Setup</option><option value="options">Options Income</option></select></div>
+            <div><label for="aiTimeframe">Horizon</label><select id="aiTimeframe"><option value="1-3y">1–3 Years</option><option value="3-5y">3–5 Years</option><option value="swing">Swing Trade</option><option value="30-45d">30–45 DTE Options</option></select></div>
+            <div><label for="aiNotes">Notes (optional)</label><input type="text" id="aiNotes" maxlength="400" placeholder="What you want checked"></div>
+          </div>
+          <div class="ai-row">
+            <button type="button" class="ai-btn" id="aiScoreRun">Analyze</button>
+            <span class="ai-status" id="aiScoreStatus" role="status"></span>
+          </div>
+          <div class="ai-result" id="aiScoreResult" hidden></div>
+          <div id="aiScoreHistWrap" hidden>
+            <div class="ai-sub" style="margin:14px 0 0">Recent scorecards on this device</div>
+            <ul class="ai-hist" id="aiScoreHist"></ul>
+          </div>
+        </section>
+
+        <section class="ai-card" aria-labelledby="aiChartTitle">
+          <h2 id="aiChartTitle">📸 Chart analysis</h2>
+          <p class="ai-sub">Upload or paste up to three chart screenshots (different timeframes work well). The AI reads bias, levels and risks from the chart.</p>
+          <div class="ai-grid">
+            <div><label for="aiChartStyle">Trade style</label><select id="aiChartStyle"><option value="scalp">Scalp (minutes)</option><option value="day" selected>Day trade</option><option value="swing">Swing (days–weeks)</option><option value="position">Position (weeks–months)</option></select></div>
+            <div><label for="aiChartTf">Chart timeframe</label><select id="aiChartTf"><option value="1m">1 min</option><option value="5m">5 min</option><option value="15m" selected>15 min</option><option value="30m">30 min</option><option value="1h">1 hour</option><option value="4h">4 hour</option><option value="1d">Daily</option><option value="1w">Weekly</option></select></div>
+            <div><label for="aiChartSession">Session</label><select id="aiChartSession"><option value="premarket">Premarket</option><option value="rth" selected>Regular hours</option><option value="afterhours">After hours</option></select></div>
+            <div><label for="aiChartNotes">Notes (optional)</label><input type="text" id="aiChartNotes" maxlength="600" placeholder="What you see or want checked"></div>
+          </div>
+          <div style="margin-top:10px"><label>Indicators on the chart</label><div class="ai-chips" id="aiChartInd"></div></div>
+          <div style="margin-top:10px"><label>Setups you see</label><div class="ai-chips" id="aiChartCtx"></div></div>
+          <div style="margin-top:12px">
+            <div class="ai-drop" id="aiChartDrop" tabindex="0" role="button" aria-label="Add chart images">Drop, paste (Ctrl/Cmd+V) or click to add chart screenshots · up to 3</div>
+            <input type="file" id="aiChartFile" accept="image/*" multiple hidden>
+            <div class="ai-thumbs" id="aiChartThumbs"></div>
+          </div>
+          <div class="ai-row">
+            <button type="button" class="ai-btn" id="aiChartRun">Analyze chart</button>
+            <span class="ai-status" id="aiChartStatus" role="status"></span>
+          </div>
+          <div class="ai-result" id="aiChartResult" hidden></div>
+          <div id="aiChartHistWrap" hidden>
+            <div class="ai-row" style="justify-content:space-between"><span class="ai-sub" style="margin:0">Recent chart analyses on this device</span><button type="button" class="ai-btn ghost" id="aiChartClear" style="padding:5px 10px;font-size:.78rem">Clear</button></div>
+            <ul class="ai-hist" id="aiChartHist"></ul>
+          </div>
+        </section>
+      </div>
+
 
       <!-- W4.4: Performance Analytics retired here. Portfolio Command owns
            performance and income, so keeping a second copy meant two sets of
@@ -6484,7 +6597,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
       
       const tabMap = {
         'fundamental': 'fundamentalTab',
-        'sentiment': 'sentimentTab'
+        'sentiment': 'sentimentTab',
+        'ai': 'aiTab'
       };
       
       const tabContent = document.getElementById(tabMap[tabName]);
@@ -6664,7 +6778,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
       // in-flight init above completes first.
       try {
         const remembered = localStorage.getItem('ac_active_tab_v1');
-        const validTabs = ['fundamental', 'sentiment'];
+        const validTabs = ['fundamental', 'sentiment', 'ai'];
         if (remembered && validTabs.includes(remembered) && remembered !== 'fundamental' && typeof switchTab === 'function') {
           setTimeout(() => switchTab(remembered), 0);
         }
@@ -10862,6 +10976,311 @@ html,body{font-size:13px!important;line-height:1.45!important}
      the header still looks signed in. -->
 <script src="./js/session-user.js"></script>
 <script src="./js/account-switcher.js"></script>
+<script>
+/* AI Analysis tab (ATD-009): the AI scorecard from stock-analyzer.html and
+   the chart-screenshot analysis from chart-analysis-form.html. Same n8n
+   payloads and response handling as those pages, so the workflows need no
+   change. Differences, on purpose:
+   - No demo results. With no webhook configured the tab says so instead of
+     showing made-up scores.
+   - Webhook URLs come from AP_WEBHOOKS (admin-managed). A URL the user saved
+     on the old analyzer page is still honoured, but only over https.
+   - The analyzer's history read the shared stock_analysis table with no
+     user filter, and its watchlist buttons deleted rows by ticker alone; both
+     are replaced by a per-device recent list and the Watchlists page.
+   - Everything is rendered with createElement/textContent: webhook output
+     is treated as text. */
+(function () {
+  'use strict';
+  var $ = function (id) { return document.getElementById(id); };
+  if (!$('aiTab')) return;
+  function node(tag, props, kids) {
+    var n = document.createElement(tag);
+    Object.keys(props || {}).forEach(function (k) {
+      if (k === 'text') n.textContent = props[k]; else if (k in n) n[k] = props[k]; else n.setAttribute(k, props[k]);
+    });
+    (kids || []).forEach(function (c) { if (c != null) n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c); });
+    return n;
+  }
+  function readJSON(k, d) { try { var v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? d : v; } catch (_) { return d; } }
+  function writeJSON(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (_) { return false; } }
+  function httpsOnly(u) { return typeof u === 'string' && /^https:\/\/[^\s]+$/i.test(u.trim()) ? u.trim() : ''; }
+  function hook(names, legacyKey) {
+    var w = window.AP_WEBHOOKS || {};
+    for (var i = 0; i < names.length; i++) { var u = httpsOnly(w[names[i]]); if (u) return u; }
+    var saved = ''; try { saved = localStorage.getItem(legacyKey) || ''; } catch (_) {}
+    return httpsOnly(saved);
+  }
+  function status(id, msg, cls) { var el = $(id); el.textContent = msg || ''; el.className = 'ai-status' + (cls ? ' ' + cls : ''); }
+  function unwrap(data, keys) {
+    if (Array.isArray(data) && data[0] && data[0].json) data = data[0].json;
+    keys.forEach(function (k) { if (data && data[k] && typeof data[k] === 'object' && !Array.isArray(data[k])) data = data[k]; });
+    return data;
+  }
+  async function postJSON(url, payload) {
+    var res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+    if (!res.ok) throw new Error('The AI workflow returned HTTP ' + res.status + '.');
+    var text = await res.text();
+    try { return JSON.parse(text); } catch (_) { throw new Error('The AI workflow did not return JSON.'); }
+  }
+  function str(v) { return v == null ? '' : String(v); }
+  function relDate(d) {
+    var t = new Date(d); if (isNaN(t)) return '';
+    var h = Math.floor((Date.now() - t) / 3600000), days = Math.floor(h / 24);
+    return h < 1 ? 'Just now' : h < 24 ? h + 'h ago' : days === 1 ? 'Yesterday' : days < 7 ? days + 'd ago' : t.toLocaleDateString();
+  }
+  function cleanSym(v) { return str(v).trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 10); }
+
+  /* ── Ticker: ?ticker= / ?symbol=, else the Fundamental tab's symbol ── */
+  (function () {
+    var q = new URLSearchParams(location.search);
+    var t = cleanSym(q.get('ticker') || q.get('symbol') || '');
+    var fund = $('fundamentalSymbolInput');
+    $('aiSymbol').value = t || (fund ? cleanSym(fund.value) : '');
+  })();
+
+  /* ══ AI scorecard ══════════════════════════════════════════════════════ */
+  var SC_HIST = 'ac_ai_scorecard_history_v1', SC_MAX = 8;
+  var DIMS = [['fundamentals', 'Fundamentals'], ['valuation', 'Valuation'], ['technical', 'Technicals'], ['market', 'Market']];
+  function clamp10(v) { var n = Number(v); return isFinite(n) ? Math.max(0, Math.min(10, n)) : NaN; }
+  function renderScore(d) {
+    var box = $('aiScoreResult');
+    box.textContent = '';
+    var scores = DIMS.map(function (x) { return clamp10(d[x[0]]); });
+    var known = scores.filter(isFinite);
+    var overall = clamp10(d.overall_score != null ? d.overall_score : d.overall);
+    if (!isFinite(overall) && known.length) overall = known.reduce(function (a, b) { return a + b; }, 0) / known.length;
+    var rating = !isFinite(overall) ? ['No overall score', ''] : overall >= 8 ? ['Strong · ' + overall.toFixed(1), 'good'] :
+      overall >= 6 ? ['Neutral · ' + overall.toFixed(1), ''] : ['Avoid · ' + overall.toFixed(1), 'bad'];
+    box.appendChild(node('div', { className: 'ai-head' }, [
+      node('div', {}, [node('strong', { text: (d.ticker || '—') + ' — ' + (d.modeLabel || '') }),
+        d.strategy ? node('div', { className: 'ai-sub', style: 'margin:2px 0 0', text: str(d.strategy) }) : null]),
+      node('span', { className: 'ai-pill ' + rating[1], text: rating[0] })]));
+    box.appendChild(node('div', { className: 'ai-scores' }, DIMS.map(function (x, i) {
+      var v = scores[i];
+      return node('div', { className: 'ai-score' }, [node('div', { className: 'ai-sub', style: 'margin:0', text: x[1] }),
+        node('b', { text: isFinite(v) ? v.toFixed(1) : '—' }),
+        node('div', { className: 'ai-bar' }, [node('i', { style: 'width:' + (isFinite(v) ? v * 10 : 0) + '%' })])]);
+    })));
+    if (d.summary) box.appendChild(node('p', { className: 'ai-text', text: str(d.summary) }));
+    var ins = Array.isArray(d.insights) ? d.insights : (typeof d.insights === 'string' ? [d.insights] : []);
+    if (ins.length) box.appendChild(node('ul', { className: 'ai-list' }, ins.slice(0, 12).map(function (t) { return node('li', { text: str(t) }); })));
+    box.appendChild(node('p', { className: 'ai-sub', style: 'margin:10px 0 0', text: 'AI output for research — not advice. Check it against the Fundamental tab before acting.' }));
+    box.hidden = false;
+  }
+  function renderScoreHist() {
+    var list = readJSON(SC_HIST, []);
+    var ul = $('aiScoreHist'); ul.textContent = '';
+    $('aiScoreHistWrap').hidden = !list.length;
+    list.forEach(function (h) {
+      var b = node('button', { type: 'button' }, [node('span', {}, [node('strong', { text: str(h.ticker) + ' ' }), node('span', { className: 'meta', text: str(h.modeLabel) })]),
+        node('span', { className: 'meta', text: relDate(h.ts) })]);
+      b.addEventListener('click', function () { $('aiSymbol').value = str(h.ticker); renderScore(h.data || {}); status('aiScoreStatus', 'Showing a saved scorecard from ' + relDate(h.ts) + '.'); });
+      ul.appendChild(node('li', {}, [b]));
+    });
+  }
+  $('aiScoreRun').addEventListener('click', async function () {
+    var ticker = cleanSym($('aiSymbol').value);
+    if (!ticker) { status('aiScoreStatus', 'Enter a ticker first.', 'err'); return; }
+    var url = hook(['stock_analyzer', 'stockAnalyzer', 'analyzer'], 'arowana_analyzer_webhook_url');
+    if (!url) { status('aiScoreStatus', 'The AI scorecard is not connected yet: no stock_analyzer webhook is configured.', 'err'); return; }
+    var modeSel = $('aiMode'), modeLabel = modeSel.options[modeSel.selectedIndex].text;
+    var btn = this; btn.disabled = true; status('aiScoreStatus', 'Asking the AI workflow…');
+    try {
+      var data = unwrap(await postJSON(url, { ticker: ticker, mode: modeSel.value, timeframe: $('aiTimeframe').value, notes: $('aiNotes').value.trim() }), ['data']);
+      if (!data || typeof data !== 'object' || (data.fundamentals === undefined && !data.ticker)) throw new Error('The AI workflow answered without scores.');
+      data.ticker = cleanSym(data.ticker) || ticker; data.modeLabel = modeLabel;
+      renderScore(data);
+      var list = readJSON(SC_HIST, []);
+      list.unshift({ ts: new Date().toISOString(), ticker: data.ticker, modeLabel: modeLabel, data: data });
+      writeJSON(SC_HIST, list.slice(0, SC_MAX)); renderScoreHist();
+      status('aiScoreStatus', 'Scorecard ready for ' + data.ticker + '.', 'ok');
+    } catch (e) {
+      status('aiScoreStatus', (e && e.message) || 'The AI workflow failed.', 'err');
+    } finally { btn.disabled = false; }
+  });
+  renderScoreHist();
+
+  /* ══ Chart analysis ════════════════════════════════════════════════════ */
+  var CH_HIST = 'arowana_chart_history_v2', CH_MAX = 12, MAX_IMAGES = 3, MAX_BYTES = 8 * 1024 * 1024;
+  var SCAN_KEY = 'ap_chart_scan_count', SCAN_DATE = 'ap_chart_scan_date', FREE_LIMIT = 5;
+  var IND = ['VWAP', 'RSI', 'MACD', 'EMA 9/21', 'SMA 50', 'SMA 200', 'Bollinger Bands', 'Volume', 'ATR', 'Anchored VWAP'];
+  var CTX = ['Breakout', 'Pullback', 'VWAP Reclaim', 'ORB', 'Gap Fill', 'Support Bounce', 'Resistance Rejection', 'Trend Continuation', 'Reversal'];
+  var TF = { '1m': '1min', '5m': '5min', '15m': '15min', '30m': '30min', '1h': '1H', '4h': '4H', '1d': 'Daily', '1w': 'Weekly' };
+  var images = [], primary = 0;
+  function chips(id, list) {
+    var wrap = $(id);
+    list.forEach(function (t) {
+      var b = node('button', { type: 'button', className: 'ai-chip', text: t, 'aria-pressed': 'false' });
+      b.addEventListener('click', function () { b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') === 'true' ? 'false' : 'true'); });
+      wrap.appendChild(b);
+    });
+  }
+  chips('aiChartInd', IND); chips('aiChartCtx', CTX);
+  function picked(id) { return Array.prototype.map.call($(id).querySelectorAll('[aria-pressed=true]'), function (b) { return b.textContent; }); }
+  function isPro() { try { return localStorage.getItem('ap_is_pro_v1') === '1'; } catch (_) { return false; } }
+  function scansToday() {
+    var today = new Date().toISOString().slice(0, 10);
+    try { if (localStorage.getItem(SCAN_DATE) !== today) return 0; return Number(localStorage.getItem(SCAN_KEY) || 0) || 0; } catch (_) { return 0; }
+  }
+  function countScan() {
+    try { localStorage.setItem(SCAN_DATE, new Date().toISOString().slice(0, 10)); localStorage.setItem(SCAN_KEY, String(scansToday() + 1)); } catch (_) {}
+  }
+  function renderThumbs() {
+    var wrap = $('aiChartThumbs'); wrap.textContent = '';
+    images.forEach(function (img, i) {
+      var x = node('button', { type: 'button', text: '✕', 'aria-label': 'Remove ' + img.filename });
+      x.addEventListener('click', function (e) { e.stopPropagation(); images.splice(i, 1); primary = Math.min(primary, Math.max(0, images.length - 1)); renderThumbs(); });
+      var t = node('div', { className: 'ai-thumb' + (i === primary ? ' primary' : ''), title: i === primary ? 'Primary chart' : 'Click to make this the primary chart' },
+        [node('img', { src: img.dataUrl, alt: 'Chart ' + (i + 1) }), x]);
+      t.addEventListener('click', function () { primary = i; renderThumbs(); });
+      wrap.appendChild(t);
+    });
+    $('aiChartDrop').textContent = images.length >= MAX_IMAGES ? 'Three charts added — remove one to add another.'
+      : 'Drop, paste (Ctrl/Cmd+V) or click to add chart screenshots · ' + images.length + ' of ' + MAX_IMAGES;
+  }
+  function addFiles(files) {
+    Array.prototype.forEach.call(files || [], function (f) {
+      if (images.length >= MAX_IMAGES) { status('aiChartStatus', 'Up to three charts.', 'err'); return; }
+      if (!/^image\//.test(f.type)) { status('aiChartStatus', f.name + ' is not an image.', 'err'); return; }
+      if (f.size > MAX_BYTES) { status('aiChartStatus', f.name + ' is larger than 8 MB.', 'err'); return; }
+      var r = new FileReader();
+      r.onload = function () {
+        if (images.length >= MAX_IMAGES || !/^data:image\//.test(String(r.result))) return;
+        images.push({ dataUrl: String(r.result), filename: f.name || 'pasted-chart.png', timeframe: $('aiChartTf').value });
+        renderThumbs(); status('aiChartStatus', '');
+      };
+      r.readAsDataURL(f);
+    });
+  }
+  var drop = $('aiChartDrop'), file = $('aiChartFile');
+  drop.addEventListener('click', function () { if (images.length < MAX_IMAGES) file.click(); });
+  drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); drop.click(); } });
+  file.addEventListener('change', function () { addFiles(file.files); file.value = ''; });
+  drop.addEventListener('dragover', function (e) { e.preventDefault(); drop.classList.add('over'); });
+  drop.addEventListener('dragleave', function () { drop.classList.remove('over'); });
+  drop.addEventListener('drop', function (e) { e.preventDefault(); drop.classList.remove('over'); addFiles(e.dataTransfer && e.dataTransfer.files); });
+  document.addEventListener('paste', function (e) {
+    if (!$('aiTab').classList.contains('active')) return;
+    var items = (e.clipboardData && e.clipboardData.files) || [];
+    if (items.length) { e.preventDefault(); addFiles(items); }
+  });
+  renderThumbs();
+
+  function lvl(v) { var s = str(v).trim(); return !s || s === '—' ? '—' : (/^[\d.]/.test(s) ? '$' + s : s); }
+  function verdictCls(v) { var l = str(v).toLowerCase(); return /bull|long|buy/.test(l) ? 'good' : /bear|short|sell/.test(l) ? 'bad' : ''; }
+  function renderChart(d, ticker, tf, style) {
+    var box = $('aiChartResult'); box.textContent = '';
+    var verdict = str(d.verdict || d.bias || d.direction || d.signal) || 'Mixed';
+    var styleSel = $('aiChartStyle');
+    var styleLabel = (Array.prototype.filter.call(styleSel.options, function (o) { return o.value === style; })[0] || {}).text || style || '';
+    box.appendChild(node('div', { className: 'ai-head' }, [
+      node('div', {}, [node('strong', { text: (ticker || cleanSym(d.ticker) || 'Chart') + ' — ' + (TF[tf] || tf || '') + ' ' + styleLabel }),
+        node('div', { className: 'ai-sub', style: 'margin:2px 0 0', text: new Date().toLocaleString() })]),
+      node('span', { className: 'ai-pill ' + verdictCls(verdict), text: verdict })]));
+    var levels = [['Entry', d.entry || d.entry_zone || d.entry_price || d.buy_zone], ['Stop', d.stop || d.stop_loss || d.invalidation],
+      ['Target 1', d.target1 || d.t1 || d.target_1 || d.target], ['Target 2', d.target2 || d.t2 || d.target_2],
+      ['R:R', d.rr || d.risk_reward || d.rrr], ['Trend', d.trend || d.bias || d.direction || verdict]];
+    box.appendChild(node('div', { className: 'ai-levels' }, levels.map(function (l, i) {
+      return node('div', { className: 'ai-level' }, [node('span', { text: l[0] }), node('b', { text: i < 4 ? lvl(l[1]) : (str(l[1]) || '—') })]);
+    })));
+    var summary = d.summary || d.analysis || d.description || d.explanation;
+    if (summary && typeof summary !== 'object') box.appendChild(node('p', { className: 'ai-text', text: str(summary) }));
+    var risks = d.risks || d.invalidation_notes || d.caution;
+    if (risks) box.appendChild(node('div', {}, [node('strong', { text: 'Risks' }), node('p', { className: 'ai-text', text: Array.isArray(risks) ? risks.join('\n') : str(risks) })]));
+    var copy = node('button', { type: 'button', className: 'ai-btn ghost', text: 'Copy' });
+    copy.addEventListener('click', function () {
+      var text = 'Chart analysis — ' + (ticker || 'Chart') + '\n' + levels.map(function (l, i) { return l[0] + ': ' + (i < 4 ? lvl(l[1]) : (str(l[1]) || '—')); }).join('\n') +
+        (summary && typeof summary !== 'object' ? '\n\n' + str(summary) : '');
+      if (navigator.clipboard) navigator.clipboard.writeText(text).then(function () { status('aiChartStatus', 'Copied.', 'ok'); });
+    });
+    var journal = node('a', { className: 'ai-btn ghost', text: 'Open in journal', style: 'text-decoration:none',
+      href: 'trade-journal-pro.html?from=analysis-central' + (ticker ? '&ticker=' + encodeURIComponent(ticker) : '') });
+    box.appendChild(node('div', { className: 'ai-row' }, [copy, journal]));
+    box.appendChild(node('details', { className: 'ai-raw' }, [node('summary', { text: 'Raw response' }), node('pre', { text: typeof d === 'string' ? d : JSON.stringify(d, null, 2) })]));
+    box.appendChild(node('p', { className: 'ai-sub', style: 'margin:10px 0 0', text: 'AI reading of a picture of a chart — check the levels on a live chart before trading.' }));
+    box.hidden = false;
+  }
+  function makeThumb(dataUrl) {
+    return new Promise(function (res) {
+      var img = new Image();
+      img.onload = function () {
+        var sc = Math.min(1, 120 / img.width), c = document.createElement('canvas');
+        c.width = Math.round(img.width * sc); c.height = Math.round(img.height * sc);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        res(c.toDataURL('image/jpeg', 0.6));
+      };
+      img.onerror = function () { res(null); };
+      img.src = dataUrl;
+    });
+  }
+  function renderChartHist() {
+    var list = readJSON(CH_HIST, []);
+    if (!Array.isArray(list)) list = [];
+    var ul = $('aiChartHist'); ul.textContent = '';
+    $('aiChartHistWrap').hidden = !list.length;
+    list.forEach(function (h) {
+      if (!h || typeof h !== 'object') return;
+      var thumb = typeof h.thumb === 'string' && /^data:image\//.test(h.thumb) ? node('img', { src: h.thumb, alt: '' }) : null;
+      var b = node('button', { type: 'button' }, [
+        node('span', { style: 'display:flex;gap:8px;align-items:center;min-width:0' }, [thumb,
+          node('span', { style: 'min-width:0' }, [node('strong', { text: str(h.ticker) + ' ' }), node('span', { className: 'meta', text: str(h.tf) }),
+            node('div', { className: 'meta', style: 'white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:220px', text: str(h.summary).slice(0, 70) })])]),
+        node('span', { style: 'text-align:right' }, [node('span', { className: 'ai-pill ' + verdictCls(h.verdict), text: str(h.verdict) || '—' }),
+          node('div', { className: 'meta', text: relDate(h.ts) })])]);
+      b.addEventListener('click', function () { renderChart(h.raw && typeof h.raw === 'object' ? h.raw : {}, str(h.ticker), str(h.tf), ''); status('aiChartStatus', 'Showing a saved analysis from ' + relDate(h.ts) + '.'); });
+      ul.appendChild(node('li', {}, [b]));
+    });
+  }
+  $('aiChartClear').addEventListener('click', function () {
+    if (!confirm('Clear all chart analysis history on this device?')) return;
+    try { localStorage.removeItem(CH_HIST); } catch (_) {}
+    renderChartHist();
+  });
+  $('aiChartRun').addEventListener('click', async function () {
+    var notes = $('aiChartNotes').value.trim();
+    if (!images.length && !notes) { status('aiChartStatus', 'Add a chart image or notes first.', 'err'); return; }
+    var url = hook(['chart', 'st_main'], 'arowana_chart_webhook_url');
+    if (!url) { status('aiChartStatus', 'Chart analysis is not connected yet: no chart webhook is configured.', 'err'); return; }
+    if (!isPro() && scansToday() >= FREE_LIMIT) { status('aiChartStatus', 'You have used today’s ' + FREE_LIMIT + ' free chart analyses. Pro plans are unlimited.', 'err'); return; }
+    var ticker = cleanSym($('aiSymbol').value), tf = $('aiChartTf').value, style = $('aiChartStyle').value;
+    var ind = picked('aiChartInd'), ctx = picked('aiChartCtx');
+    var payload = {
+      ticker: ticker || null, tradeStyle: style, timeframe: tf, session: $('aiChartSession').value, indicators: ind, patterns: ctx,
+      chartText: [ind.length ? 'Indicators visible: ' + ind.join(', ') : '', ctx.length ? 'Patterns/setups I see: ' + ctx.join(', ') : '', notes ? 'Trader notes: ' + notes : ''].filter(Boolean).join('\n'),
+      chartImage: images.length ? images[primary].dataUrl : null,
+      additionalImages: images.filter(function (_, i) { return i !== primary; }).map(function (im) { return { dataUrl: im.dataUrl, timeframe: im.timeframe, filename: im.filename }; }),
+      imageCount: images.length, source: 'analysis-central'
+    };
+    var btn = this; btn.disabled = true; status('aiChartStatus', 'Sending the chart to the AI workflow…');
+    try {
+      var d = unwrap(await postJSON(url, payload), ['output', 'result', 'analysis']);
+      if (d == null) throw new Error('The AI workflow returned nothing.');
+      countScan();
+      renderChart(d, ticker, tf, style);
+      var thumb = images.length ? await makeThumb(images[primary].dataUrl) : null;
+      var list = readJSON(CH_HIST, []); if (!Array.isArray(list)) list = [];
+      list.unshift({ id: Date.now(), ts: new Date().toISOString(), ticker: ticker || cleanSym(d.ticker) || 'Chart', tf: tf,
+        verdict: str(d.verdict || d.bias) || 'Mixed', entry: d.entry || d.entry_zone || '—', stop: d.stop || d.stop_loss || '—',
+        t1: d.target1 || d.t1 || '—', rr: d.rr || d.risk_reward || '—', summary: str(d.summary).slice(0, 120), thumb: thumb, raw: d });
+      list = list.slice(0, CH_MAX);
+      while (list.length && !writeJSON(CH_HIST, list)) list.pop();   // storage full: drop the oldest
+      renderChartHist();
+      var left = isPro() ? '' : ' ' + Math.max(0, FREE_LIMIT - scansToday()) + ' free analyses left today.';
+      status('aiChartStatus', 'Analysis complete.' + left, 'ok');
+    } catch (e) {
+      status('aiChartStatus', (e && e.message) || 'The AI workflow failed.', 'err');
+    } finally { btn.disabled = false; }
+  });
+  renderChartHist();
+
+  /* ── ?tab=ai (and the other tabs) opens that tab; used by the redirects ── */
+  document.addEventListener('DOMContentLoaded', function () {
+    var t = new URLSearchParams(location.search).get('tab');
+    if (t && ['fundamental', 'sentiment', 'ai'].indexOf(t) !== -1 && typeof switchTab === 'function') setTimeout(function () { switchTab(t); }, 30);
+  });
+})();
+</script>
 <!-- ATD-008 wave 4: the registry-driven navigation (js/arowana-nav.js)
      replaces the inline rail copy and its post-render correction patch.
      js/nav-loader.js chooses it by default; localStorage ap_nav_v2 = "0"
