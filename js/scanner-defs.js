@@ -350,4 +350,118 @@
       num('maxFcfPayout', 'Maximum FCF payout %', '90'), num('maxDebtEbitda', 'Maximum debt / EBITDA', '5'),
       num('minCoverage', 'Minimum interest coverage', '2'),
       sel('sortBy', 'Sort by', 'score', [['score', 'Safety score'], ['yield', 'Yield'], ['payout', 'Payout ratio'], ['debt', 'Debt'], ['ticker', 'Ticker']])]);
+  // ══════════════════════════════════════════════════════════════════════════
+  // QUALITY COMPOUNDERS (from the retired quality-screener.html, ATD-009)
+  // Runs for real when an n8n `quality_screener` webhook is configured: the
+  // workflow returns company metrics for an index or a ticker list, and the
+  // thresholds and composite rank below are the old page's, unchanged. Its
+  // "mock mode" (five hardcoded companies) is not carried over.
+  // ══════════════════════════════════════════════════════════════════════════
+  /* Company shape: {ticker, name, sector, price, mcapB, roic, gm, fcfm, rev5,
+     eps5, de, ic, pe, evebit, pfcf, yield, fscore, zscore, adr} */
+  function qualityPasses(c, f) {
+    var n = function (v, d) { var x = Number(v); return v === '' || v == null || !isFinite(x) ? d : x; };
+    var deMax = n(f.debtToEqMax, Infinity), peMax = n(f.peMax, Infinity),
+        evMax = n(f.evEbitMax, Infinity), pfcfMax = n(f.pfcfMax, Infinity);
+    if (f.excludeADR === 'yes' && c.adr) return false;
+    if (c.mcapB < n(f.mcapMin, 0)) return false;
+    if (c.roic < n(f.roicMin, 0)) return false;
+    if (c.gm < n(f.gmMin, 0)) return false;
+    if (c.fcfm < n(f.fcfMarginMin, 0)) return false;
+    if (c.rev5 < n(f.revCAGRMin, 0)) return false;
+    if (c.eps5 < n(f.epsCAGRMin, 0)) return false;
+    if (c.de > deMax) return false;
+    if (c.ic < n(f.interestCovMin, 0)) return false;
+    if (isFinite(peMax) && c.pe > peMax) return false;
+    if (isFinite(evMax) && c.evebit > evMax) return false;
+    if (isFinite(pfcfMax) && c.pfcf > pfcfMax) return false;
+    if (c.yield < n(f.yieldMin, 0)) return false;
+    if (c.fscore < n(f.fscoreMin, 0)) return false;
+    if (c.zscore < n(f.zscoreMin, 0)) return false;
+    return true;
+  }
+  /* Composite: quality 60% + growth 20% + valuation 20%, each metric scaled
+     into 0..1 with soft caps. */
+  function qualityScore(c) {
+    var clamp = function (x, a, b) { return Math.max(a, Math.min(b, x)); };
+    var q = clamp(c.roic / 30, 0, 1) * 0.35 + clamp(c.gm / 60, 0, 1) * 0.15 + clamp(c.fcfm / 20, 0, 1) * 0.15 +
+            clamp(c.ic / 30, 0, 1) * 0.10 + clamp((c.fscore - 3) / 6, 0, 1) * 0.15 + clamp((c.zscore - 1.8) / 2.2, 0, 1) * 0.10;
+    var g = clamp(c.rev5 / 15, 0, 1) * 0.5 + clamp(c.eps5 / 15, 0, 1) * 0.5;
+    var v = clamp(35 / (c.pe || 35), 0, 1) * 0.34 + clamp(25 / (c.evebit || 25), 0, 1) * 0.33 + clamp(30 / (c.pfcf || 30), 0, 1) * 0.33;
+    return 0.6 * q + 0.2 * g + 0.2 * v;
+  }
+  window.AP_QUALITY = { passes: qualityPasses, score: qualityScore };
+
+  R.register({
+    id: 'quality_compounders',
+    label: 'Quality Compounders',
+    category: 'Fundamentals',
+    minMode: 'guided',
+    plan: 'free',
+    blurb: 'Durable businesses: high returns on capital, cash generation and a sound balance sheet, ranked by a quality-first score.',
+    needs: ['backend'],
+    filters: [
+      sel('index', 'Universe', 'SP500', [['SP500', 'S&P 500'], ['NASDAQ100', 'Nasdaq-100'], ['RUSSELL1000', 'Russell 1000'], ['CUSTOM', 'My tickers']]),
+      { id: 'tickers', label: 'Tickers (for "My tickers")', type: 'text', default: '' },
+      { id: 'sector', label: 'Sector contains', type: 'text', default: '' },
+      num('mcapMin', 'Market cap at least ($B)', '5'),
+      num('roicMin', 'ROIC at least (%)', '10'),
+      num('gmMin', 'Gross margin at least (%)', '35'),
+      num('fcfMarginMin', 'FCF margin at least (%)', '5'),
+      num('revCAGRMin', '5-yr revenue growth at least (%)', '5'),
+      num('epsCAGRMin', '5-yr EPS growth at least (%)', '5'),
+      num('debtToEqMax', 'Debt / equity at most', '1.0'),
+      num('interestCovMin', 'Interest coverage at least (×)', '5'),
+      num('peMax', 'P/E at most (blank = any)', ''),
+      num('evEbitMax', 'EV/EBIT at most (blank = any)', ''),
+      num('pfcfMax', 'P/FCF at most (blank = any)', ''),
+      num('yieldMin', 'Dividend yield at least (%)', ''),
+      num('fscoreMin', 'Piotroski F-Score at least', '6'),
+      num('zscoreMin', 'Altman Z-Score at least', '2.5'),
+      sel('excludeADR', 'ADRs', 'no', [['no', 'Include'], ['yes', 'Exclude']])
+    ],
+    async run(ctx) {
+      var f = ctx.filters || {};
+      var url = window.AP_WEBHOOKS && window.AP_WEBHOOKS.quality_screener;
+      if (!url || !/^https:\/\//i.test(String(url))) {
+        return { rows: [], universeSize: 0,
+          note: 'This scan needs the quality_screener n8n workflow, which is not configured yet. Nothing is broken — the data pipeline for it is not live.' };
+      }
+      var tickers = String(f.tickers || '').trim();
+      if (f.index === 'CUSTOM' && !tickers) return { rows: [], universeSize: 0, note: 'Add tickers for "My tickers", separated by commas.' };
+      var data = await window.callWebhook(String(url), { index: f.index || 'SP500', tickers: tickers || null, sector: String(f.sector || '').trim() || null });
+      var list = Array.isArray(data) ? data : (data && Array.isArray(data.results) ? data.results : []);
+      var sector = String(f.sector || '').trim().toLowerCase();
+      if (sector) list = list.filter(function (c) { return String(c && c.sector || '').toLowerCase().indexOf(sector) !== -1; });
+      var ranked = list.filter(function (c) { return c && c.ticker && qualityPasses(c, f); })
+        .map(function (c) { return { c: c, s: qualityScore(c) }; })
+        .sort(function (a, b) { return b.s - a.s; });
+      var pct = function (v) { return isFinite(Number(v)) ? Number(v).toFixed(1) + '%' : '—'; };
+      var x1 = function (v) { return isFinite(Number(v)) ? Number(v).toFixed(1) : '—'; };
+      return {
+        universeSize: list.length,
+        rows: ranked.map(function (r, i) {
+          var c = r.c, reasons = [];
+          if (c.roic >= 20) reasons.push('High ROIC');
+          if (c.fcfm >= 20) reasons.push('Strong FCF');
+          if (c.evebit <= 20) reasons.push('Reasonable EV/EBIT');
+          if (c.adr) reasons.push('ADR');
+          return {
+            symbol: String(c.ticker).toUpperCase(),
+            price: isFinite(Number(c.price)) ? Number(c.price) : null,
+            change: null,
+            metrics: [
+              { label: '#' + (i + 1) + ' score', value: (r.s * 100).toFixed(0) },
+              { label: 'ROIC', value: pct(c.roic) }, { label: 'GM', value: pct(c.gm) }, { label: 'FCF', value: pct(c.fcfm) },
+              { label: 'Rev 5y', value: pct(c.rev5) }, { label: 'EV/EBIT', value: x1(c.evebit) },
+              { label: 'F', value: c.fscore != null ? String(c.fscore) : '—' }, { label: 'Z', value: x1(c.zscore) }
+            ],
+            verdict: r.s >= 0.7 ? 'good' : 'neutral',
+            reasons: reasons.concat(c.name ? [String(c.name)] : [])
+          };
+        }),
+        note: list.length ? ranked.length + ' of ' + list.length + ' companies pass your thresholds.' : 'The workflow returned no companies.'
+      };
+    }
+  });
 })(window);

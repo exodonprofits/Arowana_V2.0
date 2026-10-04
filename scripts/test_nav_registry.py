@@ -232,7 +232,8 @@ class NavRegistryTests(unittest.TestCase):
                    "my-rules-long.html": "my-rules.html?tab=longterm", "discipline-checklist.html": "my-rules.html?tab=habits",
                    "ai-valuation.html": "intrinsic-value.html", "intrinsic-value-rsi.html": "intrinsic-value.html",
                    "long-term-intrinsic-value.html": "intrinsic-value.html",
-                   "stock-analyzer.html": "analysis-central.html?tab=ai", "chart-analysis-form.html": "analysis-central.html?tab=ai"}
+                   "stock-analyzer.html": "analysis-central.html?tab=ai", "chart-analysis-form.html": "analysis-central.html?tab=ai",
+                   "quality-screener.html": "scanner.html?scan=quality_compounders", "buy-sell-signal.html": "trade-plan-builder.html"}
         for name, target in targets.items():
             html = (ROOT / name).read_text(encoding="utf-8")
             self.assertIn("var target = '%s';" % target, html, name)
