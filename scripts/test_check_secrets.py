@@ -53,6 +53,14 @@ class SecretCheckTests(unittest.TestCase):
             self.assertIn('.env.example:2', output.getvalue())
             self.assertNotIn(secret, output.getvalue())
 
+    def test_backend_file_types_are_scanned(self):
+        for suffix in ['.ts', '.sql', '.toml']:
+            with self.subTest(suffix=suffix), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                (root / ('backend' + suffix)).write_text('API_KEY="' + 'a1' * 16 + '"')
+                with contextlib.redirect_stdout(io.StringIO()):
+                    self.assertEqual(1, scanner.main(root))
+
     def test_history_is_outside_scan_scope(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

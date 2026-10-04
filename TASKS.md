@@ -272,3 +272,18 @@ Runtime credential containment took priority after generated secrets were found 
 **Quality screen + signal, branch `claude/ATD-009-quality-signal`:** `quality-screener` becomes the **Quality Compounders** scan (real run via an n8n `quality_screener` webhook, with the old thresholds and ranking). `buy-sell-signal` becomes **Signal check** in Trade Plan Builder (`AP_WEBHOOKS.signal`, as before). Groups H and I are complete. **Owner action:** add a `quality_screener` webhook to `AP_WEBHOOKS`; until then the scan explains that it is not connected.
 
 **Phase 3 (part), branch `claude/ATD-009-phase-3`:** the phase 3 feature and saved-data inventory is in the ATD-009 progress table. Retired: `daytrade`, `earning-watcher` (→ Trading Command), `ai-trading-agent` (→ Arowana Trader), `sector-sentiment`, `sector-sentiment-gauge` (→ Morning Brief), `option-recommender`, `option-trader` (→ Options Hub), `wheel_strategy_web_tool` (→ Wheel Strategy, which now opens `?tab=`). **Phase 3b (owner-approved), branch `claude/ATD-009-phase-3b`:** `short-term-dashboard` → Trading Command; its saved signals (`arowana_journal_v1`) are listed in Trade Plan Builder's new Saved signals card. `daily-bias` → Trade Plan Builder, `daily-summary` → Morning Brief, `option-roll-analyzer` → Options Hub Roll Coach. **Held:** `option-roll-tracker` (with ATD-108).
+
+
+### ATD-108 Q6 - Deployed backend into Git (ATD-007 lane)
+
+**Owner:** Codex; **Reviewer:** Claude Code.
+
+**Branch:** `codex/ATD-108-q6-backend`
+
+**Status:** Capture prepared for review; no deploys. [Report and limitations](supabase/baselines/README.md).
+
+**Result:** Nine deployed functions, three helpers, version/hash manifest, exact frontend digest parity, scoped baseline for 28 tables/five views with RLS/grants/RPCs, unchanged Wheel guard tests, expanded backend secret scan. Schwab callback defect flagged without changing the page.
+
+**Verification:** Python 59/59; TypeScript syntax checks 9/9; secret scan, tracking and whitespace pass. Node 38/39; existing backend/frontend Founders-price disagreement newly exposed by copied tests. No live endpoints, rows, production writes, migration replay or deployment.
+
+**Next:** Claude Code reviews the one PR. Resolve the pricing decision separately; dependency baselines and ATD-007 security work remain open. Do not merge or deploy automatically.
