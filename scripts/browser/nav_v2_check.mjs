@@ -657,6 +657,37 @@ for (const [from, path, q] of [['daytrade', '/trading-command.html', ''], ['ai-t
   await p.context().close();
 }
 
+// P3b. ATD-009 phase 3: short-term-dashboard saved signals, plus three owner-approved retirements.
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/short-term-dashboard.html'); await p.waitForTimeout(1000);
+  ok('P3b short-term-dashboard with no saved signals -> trading-command', new URL(p.url()).pathname === '/trading-command.html', p.url());
+  await p.evaluate(() => { localStorage.removeItem('ap_saved_signals_seen_v1'); localStorage.setItem('arowana_journal_v1', JSON.stringify([
+    { id: 2, date: '2026-09-01T10:00:00Z', symbol: 'NVDA', entry: '$100.25', stop: '$97.80', targets: '$105.50 / $110', setup: 'Quick Signal', source: 'dashboard', notes: '' },
+    { id: 1, date: '2026-08-15T10:00:00Z', ticker: '<img src=x onerror="window.__j=1">amd', direction: 'short', entry_price: 150, stop_loss: 156, exit_price: 140, notes: 'Lower highs' } ])); });
+  await p.goto(BASE + '/short-term-dashboard.html'); await p.waitForTimeout(1500);
+  const r = await p.evaluate(() => ({ path: location.pathname, shown: !document.getElementById('savedSignals').hidden,
+    rows: [...document.querySelectorAll('#savedSignalsList li strong')].map(n => n.textContent), imgs: document.querySelectorAll('#savedSignalsList img').length, j: !!window.__j,
+    seen: localStorage.getItem('ap_saved_signals_seen_v1') }));
+  ok('P3b first visit with saved signals -> plan builder card lists them safely', r.path === '/trade-plan-builder.html' && r.shown && r.rows.join() === 'NVDA,IMGSRCXONE' && r.imgs === 0 && !r.j && r.seen === '1', JSON.stringify(r));
+  await p.click('#savedSignalsList li:nth-child(2) button'); await p.waitForTimeout(300);
+  const f = await p.evaluate(() => ({ sym: symbol.value, e: entryPrice.value, st: stopPrice.value, t: targetPrice.value, dir: document.querySelector('[data-direction].active').dataset.direction }));
+  await p.click('#savedSignalsList li:nth-child(1) button'); await p.waitForTimeout(300);
+  const f1 = await p.evaluate(() => ({ e: entryPrice.value, st: stopPrice.value, t: targetPrice.value }));
+  ok('P3b Plan it parses both saved shapes', f.e === '150' && f.st === '156' && f.t === '140' && f.dir === 'short' && f1.e === '100.25' && f1.st === '97.8' && f1.t === '105.5', JSON.stringify({ f, f1 }));
+  await p.goto(BASE + '/short-term-dashboard.html?x=1#h'); await p.waitForTimeout(1000);
+  const u = new URL(p.url());
+  ok('P3b later visits -> trading-command, query + hash kept', u.pathname === '/trading-command.html' && u.search === '?x=1' && u.hash === '#h', p.url());
+  ok('P3b saved signals untouched', await p.evaluate(() => JSON.parse(localStorage.getItem('arowana_journal_v1')).length === 2));
+  ok('P3b no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+for (const [from, path, q] of [['daily-bias', '/trade-plan-builder.html', ''], ['daily-summary', '/ai-morning-brief.html', ''], ['option-roll-analyzer', '/options-hub.html', 'roll']]) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?x=1#h'); await p.waitForTimeout(1000);
+  const u = new URL(p.url());
+  ok(`P3b ${from} -> ${path}${q ? '?tab=' + q : ''}`, u.pathname === path && u.searchParams.get('x') === '1' && u.hash === '#h' && (!q || u.searchParams.get('tab') === q), p.url());
+  await p.context().close();
+}
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {
