@@ -157,7 +157,8 @@ Each slice is one PR. They run in order because later slices build on the auth f
 |---|---|---|
 | S1 Auth foundation | Merged (PR #33) | See below. |
 | S2 Journal reliability | Merged (PR #34) | See below. |
-| S3 Wheel ledger | Implemented on `claude/ATD-108-s3-ledger` | See below. |
+| S3 Wheel ledger | Merged (PR #35) | See below. |
+| S4 Check a trade | Implemented on `claude/ATD-108-s4-trade-check` | See below. |
 
 **What S1 changed:**
 
@@ -227,4 +228,29 @@ Each slice is one PR. They run in order because later slices build on the auth f
 On main, the Income checks fail because main counts only `closed` contracts, and the Edit flow cannot run.
 
 **Not in S3:** Portfolio Command's own "Import CSV" still writes the retired `portfolio` table. It needs the same treatment as Edit, and is a separate change.
+
+**What S4 changed:**
+
+- **`js/trade-check.js` is Wheel's version, unchanged.** It is pure. It checks one proposed short put or covered call against the user's rules: yield, days to expiry, Want-to-Own, put at or below the target price, call above adjusted basis, ex-dividend, earnings, and the existing concentration limits. Each rule reports pass, fail or skip with the numbers, and nothing is blocked. Its Node tests (`tests/trade-check.test.js`) are copied unchanged and run in the Node Tests workflow.
+- **`js/risk.js` is Wheel's version**, with only the header note reworded. The rules are stored in `ap_risk_settings.rules`.
+  - The column exists in production; checked read-only on 2026-10-04, along with `watchlist_items.want_to_own` and `target_buy_price`.
+  - V2.0 has no migration for this table at all. Bringing it into Git belongs with the Q6 follow-up.
+  - If the column is ever missing, rules stay in this browser (`ap_risk_rules_v1`).
+  - `risk.js` no longer builds its own Supabase client.
+- **Options Hub:**
+  - New **Check a Trade** tab (`?tab=check`, which can be prefilled from the URL), with a rules editor. A "Check this trade" button on every Covered Calls and Cash-Secured Puts card opens the tab already filled in.
+  - "Log it in the journal" opens the Trade Journal Pro option prefill from S2.
+  - The tab is Pro, like the other wheel tabs.
+  - New nav registry entry `wheel-check` under Wheel.
+- **Not ported:** "Argue both sides" (`explain.js`, S5). Also not taken: Wheel's removal of the Recommender and Strategy Matrix tabs, the ATD-008 in-place tab handler, and the per-module `createClient` fallbacks (`sb.js` already covers those), the rail and version stamps.
+
+**Tested:**
+- `scripts/browser/trade_check_check.mjs`: 16 of 16. It runs against the shared fake Supabase, which is now `scripts/browser/lib/fake_supabase.mjs` and also used by the S3 check. It covers:
+  - the deep link and nav state;
+  - rules read from and saved to the server;
+  - pass and fail cases for the target price, Want-to-Own and yield rules;
+  - the "Log it" link and the card button;
+  - that `?tab=analyzer` still opens;
+  - no sideways scroll at 375px.
+- `scripts/test_trade_check.py` keeps the wiring and V2.0's tabs.
 

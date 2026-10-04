@@ -17,12 +17,45 @@
          → [{ level:'warn'|'block', rule, message }]
        AP_RISK.summary()                      // current standing vs each limit
        AP_RISK.save(partialSettings)          // persists, returns settings
+       AP_RISK.rulesOnServer()                // false until the rules column exists
+
+   The pre-trade check rules (min yield, DTE range, Want-to-Own, target
+   price, basis, ex-dividend) live in ap_risk_settings.rules (jsonb; the
+   column exists in production, added from the Wheel repo's migration
+   20260925_ap_risk_settings_rules.sql). If it is ever missing they are kept
+   in this browser only (ap_risk_rules_v1), per user.
    ========================================================================== */
 (function () {
   'use strict';
 
   var DEFAULTS = { wheelCapital: null, maxTickerPct: 20, maxTotalPct: 60, maxPutsPerTicker: 2, warnEarnings: true };
-  var state = { settings: Object.assign({}, DEFAULTS), positions: null, loaded: false, userId: null };
+  // Rules for the pre-trade check. Off-by-default numbers stay null so an
+  // unset rule is reported as skipped, never judged against a made-up value.
+  var RULE_DEFAULTS = { minAnnualYield: null, minDte: null, maxDte: null, requireWantToOwn: true,
+                        putAtOrBelowTarget: true, callAboveBasis: true, warnExDiv: true };
+  var RULE_KEYS = Object.keys(RULE_DEFAULTS);
+  var LOCAL_RULES = 'ap_risk_rules_v1';          // { [userId]: rules } when the column is missing
+  var state = { settings: Object.assign({}, DEFAULTS, RULE_DEFAULTS), positions: null, loaded: false, userId: null, rulesOnServer: false };
+
+  function cleanRules(r) {
+    var out = {};
+    RULE_KEYS.forEach(function (k) {
+      var v = r && r[k];
+      if (typeof RULE_DEFAULTS[k] === 'boolean') out[k] = v == null ? RULE_DEFAULTS[k] : !!v;
+      else out[k] = num(v);
+    });
+    return out;
+  }
+  function localRules(uid) {
+    try { var all = JSON.parse(localStorage.getItem(LOCAL_RULES) || '{}'); return all[uid] || null; } catch (e) { return null; }
+  }
+  function saveLocalRules(uid, rules) {
+    try {
+      var all = JSON.parse(localStorage.getItem(LOCAL_RULES) || '{}');
+      all[uid] = rules;
+      localStorage.setItem(LOCAL_RULES, JSON.stringify(all));
+    } catch (e) {}
+  }
 
   function num(v) { if (v == null || v === '') return null; var n = Number(v); return isFinite(n) ? n : null; }
   function money(v) {
@@ -32,12 +65,12 @@
   }
   function pct(v) { v = num(v); return v == null ? '—' : v.toFixed(1) + '%'; }
 
+  // Only ever the shared client from app-config.js. This used to call
+  // createClient() when the shared one wasn't there yet — which it isn't
+  // at ap:config:ready — adding a second GoTrueClient to the page that
+  // raced the shared one over refresh-token rotation.
   function getClient() {
-    return window.supabaseClient || window.sbClient
-      || (window.supabase && window.AP_WEBHOOKS && window.AP_WEBHOOKS.supabase && window.AP_WEBHOOKS.supabase.url
-          ? window.supabase.createClient(window.AP_WEBHOOKS.supabase.url,
-              window.AP_WEBHOOKS.supabase.anonKey || window.AP_WEBHOOKS.supabase.anon_key)
-          : null);
+    return window.supabaseClient || window.sbClient || null;
   }
   function waitForClient(ms) {
     return new Promise(function (resolve) {
@@ -45,8 +78,8 @@
       if (c && c.auth) return resolve(c);
       var done = false;
       function finish() { if (done) return; var x = getClient(); if (x && x.auth) { done = true; cleanup(); resolve(x); } }
-      function cleanup() { window.removeEventListener('ap:config:ready', finish); clearInterval(poll); }
-      window.addEventListener('ap:config:ready', finish);
+      function cleanup() { window.removeEventListener('ap:client:ready', finish); clearInterval(poll); }
+      window.addEventListener('ap:client:ready', finish);
       var poll = setInterval(finish, 200);
       setTimeout(function () { if (!done) { done = true; cleanup(); resolve(null); } }, ms);
     });
@@ -84,14 +117,20 @@
         .select('wheel_capital, max_ticker_pct, max_total_pct, max_puts_per_ticker, warn_earnings')
         .eq('user_id', user.id).maybeSingle();
       if (!s.error && s.data) {
-        state.settings = {
+        state.settings = Object.assign({}, state.settings, {
           wheelCapital: num(s.data.wheel_capital),
           maxTickerPct: num(s.data.max_ticker_pct) || DEFAULTS.maxTickerPct,
           maxTotalPct: num(s.data.max_total_pct) || DEFAULTS.maxTotalPct,
           maxPutsPerTicker: num(s.data.max_puts_per_ticker) || DEFAULTS.maxPutsPerTicker,
           warnEarnings: s.data.warn_earnings !== false
-        };
+        });
       }
+
+      // Asked for separately: a missing column must not lose the limits above.
+      var r = await sb.from('ap_risk_settings').select('rules').eq('user_id', user.id).maybeSingle();
+      state.rulesOnServer = !r.error;
+      var stored = (!r.error && r.data && r.data.rules && Object.keys(r.data.rules).length) ? r.data.rules : localRules(user.id);
+      if (stored) Object.assign(state.settings, cleanRules(stored));
 
       var o = await sb.from('tj_options').select('payload').eq('user_id', user.id).eq('status', 'open');
       state.positions = shapePositions(o.data || []);
@@ -116,9 +155,12 @@
       warn_earnings: !!next.warnEarnings,
       updated_at: new Date().toISOString()
     };
+    var rules = cleanRules(next);
+    if (state.rulesOnServer) row.rules = rules;
     var res = await sb.from('ap_risk_settings').upsert(row, { onConflict: 'user_id' });
     if (res.error) throw res.error;
-    state.settings = next;
+    saveLocalRules(state.userId, rules);
+    state.settings = Object.assign(next, rules);
     window.dispatchEvent(new CustomEvent('ap:risk:ready', { detail: snapshot() }));
     return next;
   }
@@ -201,6 +243,7 @@
     load: load, save: save, settings: function () { return Object.assign({}, state.settings); },
     exposure: function () { return snapshot().exposure; },
     checkCandidate: checkCandidate, summary: summary, snapshot: snapshot,
+    rulesOnServer: function () { return state.rulesOnServer; },
     fmtMoney: money, fmtPct: pct
   };
 })();

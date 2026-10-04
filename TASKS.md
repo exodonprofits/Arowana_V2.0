@@ -187,7 +187,13 @@ Tests: `scripts/test_journal_sync.py`, `scripts/browser/journal_sync_check.mjs` 
 
 Tests: `tests/wheel-ledger.test.js` (10), `scripts/browser/portfolio_ledger_check.mjs` (15). Follow-up: Portfolio Command "Import CSV" still writes `portfolio`.
 
-**Next:** S4 (risk rules, trade check, Options Hub "Check a trade").
+**S4 check a trade, branch `claude/ATD-108-s4-trade-check`:**
+- `js/trade-check.js` and its Node tests; Wheel's `js/risk.js` (rules in `ap_risk_settings.rules`, which exists in production);
+- Options Hub "Check a Trade" tab (`?tab=check`), rules editor, "Check this trade" on every Calls/Puts card, "Log it" into the journal; nav entry `wheel-check`.
+
+Tests: `tests/trade-check.test.js`, `scripts/test_trade_check.py`, `scripts/browser/trade_check_check.mjs` (16). Follow-up: `ap_risk_settings` has no migration in this repo (Q6).
+
+**Next:** S5 (explanations, wheel calculator fix, roll-tracker ticker, Options Hub 404 script).
 
 ### ATD-007 continuation - 2026-10-01
 
