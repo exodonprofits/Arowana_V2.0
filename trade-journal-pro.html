@@ -1703,7 +1703,7 @@ td{font-size:10.5px!important;line-height:1.4!important;padding:8px 9px!importan
       <div class="stat"><div class="k">Unrealized P/L <span style="font-weight:400;color:var(--muted);font-size:.68rem">(holdings)</span></div><div class="v" id="kpiUnrealizedPl">—</div><div class="sub" id="kpiUnrealizedPlSub"></div></div>
       <div class="stat"><div class="k">Overall Win Rate</div><div class="v" id="kpiWinRate">—</div><div class="sub" id="kpiWinRateSub"></div></div>
       <div class="stat"><div class="k">Open Positions</div><div class="v" id="kpiOpen">—</div><div class="sub" id="kpiOpenSub"></div></div>
-      <div class="stat"><div class="k">Avg R-Multiple</div><div class="v" id="kpiAvgR">—</div><div class="sub">closed trades only</div></div>
+      <div class="stat"><div class="k">Avg R-Multiple</div><div class="v" id="kpiAvgR">—</div><div class="sub">stock trades with a stop</div></div>
     </div>
     <div class="tjp-stat-panels">
       <div class="tjp-stat-panel-grid" style="background:#f8fafc;border:1px solid var(--border);border-radius:10px;padding:12px 16px">
@@ -1988,7 +1988,7 @@ td{font-size:10.5px!important;line-height:1.4!important;padding:8px 9px!importan
       <div id="statsByTicker" class="tbl-wrap"><div class="empty-state"><div class="es-title">No closed trades yet.</div></div></div>
     </div>
     <div class="card" style="margin-top:1rem;">
-      <h3 style="margin:0 0 .75rem;">Setup Performance</h3>
+      <h3 style="margin:0 0 .75rem;">Setup &amp; Strategy Performance</h3>
       <div id="statsBySetup" class="tbl-wrap"><div class="empty-state"><div class="es-title">No closed trades yet.</div></div></div>
     </div>
     <div class="card" style="margin-top:1rem;">
@@ -2707,7 +2707,7 @@ function esc(s){ const d=document.createElement('div'); d.textContent=s||''; ret
 
   async function fetchQuote(symbol, key){
     try{
-      const url = FH_BASE+'/quote?symbol='+encodeURIComponent(symbol)+'&token='+encodeURIComponent(key);
+      const url = FH_BASE+'/quote?symbol='+encodeURIComponent(symbol)+'&token='+encodeURIComponent(key||'');
       const ctrl = new AbortController();
       const timer = setTimeout(()=>ctrl.abort(), 8000);
       const res = await fetch(url, {signal:ctrl.signal});
@@ -2722,7 +2722,8 @@ function esc(s){ const d=document.createElement('div'); d.textContent=s||''; ret
 
   async function fetchAllOpenStocks(trades){
     const key = getFinnhubKey();
-    if(!key) return {noKey:true, updated:[], failed:[]};
+    // js/market-data.js proxies Finnhub with the user's session — no key needed.
+    if(!key && !window.__apMarketDataShim) return {noKey:true, updated:[], failed:[]};
 
     // One Finnhub call per unique ticker — every trade lot for that
     // ticker gets the same fresh price.
@@ -2750,7 +2751,7 @@ function esc(s){ const d=document.createElement('div'); d.textContent=s||''; ret
   }
 
   window.priceFetcher = {
-    hasKey: () => !!getFinnhubKey(),
+    hasKey: () => !!getFinnhubKey() || !!window.__apMarketDataShim,
     fetchAllOpenStocks
   };
 })();
@@ -3997,7 +3998,24 @@ function optActionBtns(t){
 }
 function markOptStatus(id,status){
   const t=options.find(x=>x.id===id); if(!t) return;
-  t.status=status; saveLS(LS_OPTIONS,options);
+  t.status=status;
+  // Expired / assigned settle the contract: record when, and the premium kept
+  // (nothing paid to close), so income, basis and campaigns count it.
+  if(status==='expired'||status==='assigned'){
+    const today=new Date().toISOString().slice(0,10);
+    if(!t.exitDate) t.exitDate=(t.expiry&&t.expiry<today)?t.expiry:today;
+    if(t.pnl==null&&t.premiumOut==null){
+      const qty=Number(t.qty)||1, prIn=Number(t.premiumIn)||0;
+      const fees=(Number(t.feeIn)||0)+(Number(t.feeOut)||0);
+      const credit=String(t.isCredit)==='true'||t.isCredit===true;
+      t.premiumOut=0;
+      t.pnl=parseFloat(((credit?prIn:-prIn)*qty*100-fees).toFixed(2));
+      const cost=prIn*qty*100;
+      t.pnlPct=cost?(t.pnl/cost)*100:null;
+    }
+  }
+  t.updatedAt=new Date().toISOString();
+  saveLS(LS_OPTIONS,options);
   window.journalSync?.upsertOption(t);
 
   renderOptTable(); renderKPIs();
@@ -4752,7 +4770,7 @@ async function refreshAllStockPrices(){
     const result = await window.priceFetcher.fetchAllOpenStocks(tradesToFetch);
 
     if(result.noKey){
-      toast('Finnhub key missing — add it in Settings', 'warn');
+      toast('Sign in to refresh prices automatically', 'warn');
       return;
     }
 
@@ -4784,7 +4802,7 @@ async function refreshAllStockPrices(){
     } else if(result.rateLimited){
       toast('Rate limited by Finnhub — try again in 60 seconds', 'err');
     } else {
-      toast('No prices fetched — check tickers + Finnhub key', 'err');
+      toast('No prices fetched — check the tickers, or sign in again', 'err');
     }
   } catch(err){
     console.error('[refreshAllStockPrices] error:', err);
@@ -5997,15 +6015,25 @@ function renderStats(){
       </tr>`).join('')+`</tbody></table>`;
   }
 
-  // P/L by setup
+  const allClosedAny = _sAcct.some(t=>t.status==='closed'&&t.pnl!=null) || _oAcct.some(t=>t.status!=='open'&&t.pnl!=null);
+  // P/L by setup (stocks) and by strategy (options). Wheel traders rarely
+  // tag stock setups, so without the option strategies this table said
+  // "No closed trades yet" beside a full list of settled puts and calls.
   const setupMap = {};
-  _sAcct.filter(t=>t.setup&&t.pnl!=null).forEach(t=>{
-    if(!setupMap[t.setup]) setupMap[t.setup]={setup:t.setup,count:0,pl:0,wins:0};
-    setupMap[t.setup].count++;
-    setupMap[t.setup].pl += t.pnl;
-    if(t.pnl>0) setupMap[t.setup].wins++;
-  });
+  const addSetup = (name, t) => {
+    if(!setupMap[name]) setupMap[name]={setup:name,count:0,pl:0,wins:0};
+    setupMap[name].count++;
+    setupMap[name].pl += t.pnl;
+    if(t.pnl>0) setupMap[name].wins++;
+  };
+  _sAcct.filter(t=>t.status==='closed'&&t.setup&&t.pnl!=null).forEach(t=>addSetup(t.setup, t));
+  _oAcct.filter(t=>t.status!=='open'&&t.strategy&&t.pnl!=null).forEach(t=>addSetup(t.strategy, t));
   const setupRows = Object.values(setupMap).sort((a,b)=>b.pl-a.pl);
+  if(!setupRows.length){
+    document.getElementById('statsBySetup').innerHTML = allClosedAny
+      ? '<div class="empty-state"><div class="es-title">No setup or strategy on your closed trades.</div><div class="muted" style="font-size:.82rem;margin-top:4px">Pick a strategy (e.g. Cash-Secured Put) when you log an option, or a setup on a stock trade, and results group here.</div></div>'
+      : '<div class="empty-state"><div class="es-title">No closed trades yet.</div></div>';
+  }
   if(setupRows.length){
     document.getElementById('statsBySetup').innerHTML =
       `<table><thead><tr><th>Setup</th><th>Trades</th><th>Win %</th><th>Total P/L</th><th>Avg P/L</th></tr></thead><tbody>`+
@@ -6261,7 +6289,18 @@ document.addEventListener('DOMContentLoaded', async ()=>{
   // is an ESTIMATE derived from cost basis, not the true fill price, so
   // both need explicit user confirmation before saving.
   handlePrefillOptionFromURL();
+  handleStockSearchFromURL();
 });
+
+// ?q=SYMBOL pre-fills the stock search. Portfolio Command links here with it
+// when a holding is made of several buys and has to be edited lot by lot.
+function handleStockSearchFromURL(){
+  const q = (new URLSearchParams(location.search).get('q') || '').trim();
+  const input = document.getElementById('stockSearch');
+  if(!q || !input) return;
+  input.value = q;
+  renderStockTable();
+}
 
 function handlePrefillOptionFromURL(){
   const params = new URLSearchParams(location.search);
@@ -6332,13 +6371,38 @@ function handleViewOptionFromURL(){
    an external source (e.g. Momentum Hunter "Log Trade" button).
    Auto-opens the New Stock Trade modal with fields populated.
    ══════════════════════════════════════════════════════════════ */
+/* Option prefill, from Options Hub → Check a trade:
+   ?asset=option&ticker=&type=put|call&strike=&expiry=&premium=&contracts=&account=
+   Opens a new short put / covered call with those values; nothing is saved
+   until the user presses Save. */
+function prefillOptionFromURL(params){
+  const type = params.get('type') === 'call' ? 'call' : 'put';
+  openModal('option');
+  setTimeout(() => {
+    const f = (id, v) => { const el = document.getElementById(id); if(el && v != null && v !== '') el.value = v; };
+    f('oTicker', (params.get('ticker') || '').toUpperCase());
+    f('oStrategy', type === 'call' ? 'Covered Call' : 'Cash-Secured Put');
+    if(typeof setOptType === 'function') setOptType(type);
+    f('oStrike', params.get('strike'));
+    f('oExpiry', params.get('expiry'));
+    f('oQty', params.get('contracts') || '1');
+    f('oPremiumIn', params.get('premium'));
+    f('oCreditDebit', 'credit');
+    f('oStatus', 'open');
+    f('oEntryDate', new Date().toISOString().slice(0,10));
+    const acct = params.get('account');
+    if(acct){ const ob = document.getElementById('oBroker'); if(ob && [...ob.options].some(o => o.value === acct)) ob.value = acct; }
+    if(typeof calcOptPreview === 'function') calcOptPreview();
+  }, 60);
+}
+
 function handlePrefillFromURL(){
   const params = new URLSearchParams(location.search);
   const ticker = params.get('ticker');
   if(!ticker) return;  // nothing to prefill
 
-  // Supported asset so far is stock. Option prefill can reuse this pattern later.
   const asset = (params.get('asset') || 'stock').toLowerCase();
+  if(asset === 'option'){ prefillOptionFromURL(params); return; }
   if(asset !== 'stock') return;
 
   // Map the incoming strategy name to the journal's fixed Setup dropdown,
@@ -6778,41 +6842,31 @@ function updateDeletePreview(){
 // Finds a REAL per-user Supabase access token — not the anon key. Every
 // RLS policy on tj_stocks/tj_options is `auth.uid() = user_id`, which the
 // anon key alone can never satisfy (auth.uid() resolves to null without a
-// genuine user JWT). Resolution order mirrors journal-sync.js's own client
-// resolution, since that module — when it successfully initializes — is
-// the most reliable source of a live, already-authenticated session:
-//   1. window.sbClient.auth.getSession() — if journal-sync.js (or anything
-//      else on the page) already established a real client and session.
-//   2. The Supabase JS SDK's own persisted-session storage key
-//      (sb-<project-ref>-auth-token), read directly — covers the case
-//      where a session exists but no live client object is on window.
+// genuine user JWT).
 async function tjGetRealAccessToken(cfg){
+  // Shared helper (js/app-config.js): getSession on the one shared client,
+  // then one refreshSession before concluding the user is signed out.
+  // No longer reads sb-<ref>-auth-token out of localStorage directly —
+  // that copy can hold an access token that has already expired.
   try {
-    if(window.sbClient?.auth?.getSession){
-      const { data } = await window.sbClient.auth.getSession();
-      if(data?.session?.access_token) return data.session.access_token;
-    }
-  } catch(e) { /* fall through to storage-based lookup */ }
-
-  try {
-    const ref = (cfg?.url || '').match(/^https?:\/\/([a-z0-9]+)\.supabase\.co/i)?.[1];
-    if(!ref) return null;
-    const raw = localStorage.getItem(`sb-${ref}-auth-token`);
-    if(!raw) return null;
-    const parsed = JSON.parse(raw);
-    const token = parsed?.access_token || parsed?.currentSession?.access_token;
-    return token || null;
+    return window.apGetAccessToken ? await window.apGetAccessToken() : null;
   } catch(e) { return null; }
 }
 
+// Rows per DELETE request. The ids go into the query string
+// (id=in.(...)), so "Delete All" on a ~2,000-trade journal used to build a
+// ~30KB URL in ONE request, which the API gateway rejects with
+// 400 Bad Request. Same limit and chunk size as journal-sync.js's own
+// deleteRows (DELETE_CHUNK = 200).
+const TJ_DELETE_CHUNK = 200;
+
 async function tjDirectSupabaseDelete(table, ids){
   if(!ids || ids.length === 0) return { ok: true, skipped: true };
-  const user = tjGetAuthUserFallback();
-  const cfg = tjGetSupabaseConfigFallback();
-  if(!user || !cfg || !cfg.url || !cfg.anonKey){
+  const sb = window.supabaseClient;
+  if(!sb || !sb.auth){
     return { ok: false, reason: 'no-auth-or-config' };
   }
-  const accessToken = await tjGetRealAccessToken(cfg);
+  const accessToken = await tjGetRealAccessToken();
   if(!accessToken){
     // Deliberately NOT falling back to the anon key here — RLS requires
     // auth.uid() = user_id, which an anon-key-only request can never
@@ -6821,28 +6875,34 @@ async function tjDirectSupabaseDelete(table, ids){
     // mode this whole fix exists to eliminate. Report it honestly instead.
     return { ok: false, reason: 'no-real-session' };
   }
+  // user_id from the live session (what RLS checks), not gs_auth_user_v1.
+  let userId = null;
   try {
-    const idList = ids.map(id => encodeURIComponent(id)).join(',');
-    const url = `${cfg.url}/rest/v1/${table}?id=in.(${idList})&user_id=eq.${user.id}`;
-    const res = await fetch(url, {
-      method: 'DELETE',
-      headers: {
-        'apikey': cfg.anonKey,
-        'Authorization': `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
+    const { data } = await sb.auth.getSession();
+    userId = data && data.session && data.session.user && data.session.user.id;
+  } catch(e) { /* handled below */ }
+  if(!userId) return { ok: false, reason: 'no-real-session' };
+
+  let failed = 0, lastError = '';
+  for(let i = 0; i < ids.length; i += TJ_DELETE_CHUNK){
+    const chunk = ids.slice(i, i + TJ_DELETE_CHUNK);
+    try {
+      const { error } = await sb.from(table).delete().in('id', chunk).eq('user_id', userId);
+      if(error){
+        failed += chunk.length;
+        lastError = error.message || error.code || 'error';
+        console.warn(`[tj] Direct Supabase delete failed for ${table} (rows ${i + 1}-${i + chunk.length}):`, error);
       }
-    });
-    if(!res.ok){
-      const txt = await res.text().catch(() => '');
-      console.warn(`[tj] Direct Supabase delete failed for ${table}:`, res.status, txt);
-      return { ok: false, reason: `HTTP ${res.status}` };
+    } catch(e) {
+      failed += chunk.length;
+      lastError = e.message || String(e);
+      console.warn(`[tj] Direct Supabase delete error for ${table}:`, e);
     }
-    return { ok: true };
-  } catch(e) {
-    console.warn(`[tj] Direct Supabase delete error for ${table}:`, e);
-    return { ok: false, reason: e.message };
   }
+  if(failed){
+    return { ok: false, reason: `${failed} of ${ids.length} not removed: ${lastError}` };
+  }
+  return { ok: true };
 }
 
 function tjGetAuthUserFallback(){

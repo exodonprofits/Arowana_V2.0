@@ -131,11 +131,9 @@
    * Resolution order:
    *  1. window.sbClient        — explicit client created by host page (legacy)
    *  2. SB                     — page-local global (legacy)
-   *  3. Create our own         — using window.supabase + credentials from
-   *                              window.AP_WEBHOOKS.supabase (set by app-config.js)
+   *  3. window.supabaseClient  — the shared client built by js/sb.js
    *
-   * Path #3 is the canonical post-Sprint-1.1 path; it removes the need for
-   * any sync glue code in the host page.
+   * Never creates a client of its own.
    */
   function waitForClient() {
     return new Promise(resolve => {
@@ -152,24 +150,11 @@
           }
         } catch { /* SB not defined in this scope — fall through */ }
 
-        // Path 3: build our own from the @supabase/supabase-js global +
-        // credentials exposed by app-config.js (or legacy GS_SUPABASE_*).
-        if (window.supabase && typeof window.supabase.createClient === 'function') {
-          const cfg = (window.AP_WEBHOOKS && window.AP_WEBHOOKS.supabase) || {};
-          const url = cfg.url || window.GS_SUPABASE_URL;
-          const key = cfg.anonKey || cfg.anon_key || window.GS_SUPABASE_KEY;
-          if (url && key) {
-            try {
-              const client = window.supabase.createClient(url, key, {
-                auth: { persistSession: true, autoRefreshToken: true }
-              });
-              // Cache so other modules in the page can reuse the same client
-              window.sbClient = client;
-              return resolve(client);
-            } catch (e) {
-              console.warn('[journal-sync] Failed to create Supabase client:', e);
-            }
-          }
+        // (Path 3, building a private client here, was removed: js/sb.js
+        // creates the one shared client synchronously, and a second
+        // GoTrueClient races it over refresh-token rotation.)
+        if (window.supabaseClient && typeof window.supabaseClient.from === 'function') {
+          return resolve(window.supabaseClient);
         }
 
         if (Date.now() > deadline) return resolve(null);
@@ -182,43 +167,21 @@
   async function pullThenSync() {
     setStatus('syncing');
     try {
-      await pullFromServer();
       await drainRetryQueue();
-      // Also flush anything sitting in the pending upsert/delete maps —
-      // these are writes made while there was no session at all, so
-      // schedulePush() returned early and they were never even attempted,
-      // meaning they were never added to retryQueue either. Without this,
-      // "will drain on next sign-in" (see schedulePush()) was only true
-      // for writes that had already been tried and failed — a write made
-      // entirely offline would sit here until some unrelated future edit
-      // happened to call schedulePush() again.
+      // Writes made while there was no session sit in the pending maps —
+      // schedulePush() returned early, so they were never attempted. Send
+      // them before diffing, so the manifest below already includes them.
       if (pendingStocks.size || pendingOptions.size || pendingDeletes.stocks.size || pendingDeletes.options.size) {
         await flushPending();
       }
-
-      /* Reconcile once per device per user.
-         ------------------------------------------------------------------
-         The two paths above only ever move rows that CHANGED: the push sends
-         what was edited this session, and pullFromServer() asks only for rows
-         newer than the newest local updatedAt. Neither can see a row that
-         simply never arrived — so a device that falls behind stays behind,
-         silently, forever. That is how this browser ended up holding 1,125
-         stock trades the server had never received while missing 210 the
-         server had, with no error anywhere.
-
-         An id-diff is the only thing that catches that, and it is expensive
-         enough (a full id list for both tables) not to run on every load. Once
-         per device is the right frequency: a fresh browser, a cleared cache or
-         a new machine each get exactly one reconciliation, and steady-state
-         syncing handles everything after that. */
-      await reconcileOnce();
-
+      await syncManifest();
       setStatus('synced');
     } catch (e) {
-      console.warn('[journal-sync] Initial pull failed:', e);
+      console.warn('[journal-sync] Initial sync failed:', e);
       setStatus('error');
     }
   }
+
 
   // ============================================================================
   // PULL — fetch server rows newer than local and merge by id
@@ -230,7 +193,7 @@
    * Pulls every row matching a query, paging through in PULL_PAGE_SIZE
    * chunks instead of a single unbounded request. Without this, an
    * account with more rows than Supabase's default cap (1000) would
-   * silently lose everything past that point — and since pullFromServer
+   * silently lose everything past that point — and since the old incremental pull
    * only ever asks for rows newer than what's already local, a
    * truncated pull never gets a second chance to catch the rest.
    * queryFactory must return a FRESH query builder each call (Supabase's
@@ -250,41 +213,7 @@
     return allRows;
   }
 
-  async function pullFromServer() {
-    if (!sb || !userId) return;
 
-    const localStocks  = loadLS(LS_STOCKS);
-    const localOptions = loadLS(LS_OPTIONS);
-
-    const stocksMax   = localStocks.reduce((m, r)  => maxIso(m, r.updatedAt || r.updated_at), null);
-    const optionsMax  = localOptions.reduce((m, r) => maxIso(m, r.updatedAt || r.updated_at), null);
-
-    // Stocks
-    const serverStocks = await pullAllPages(() => {
-      let q = sb.from(SB_STOCKS).select('*').eq('user_id', userId);
-      if (stocksMax) q = q.gt('updated_at', stocksMax);
-      return q;
-    });
-
-    if (Array.isArray(serverStocks) && serverStocks.length) {
-      const merged = mergeById(localStocks, serverStocks.map(unwrapStock));
-      saveLS(LS_STOCKS, merged);
-      notifyPage('stocks');
-    }
-
-    // Options
-    const serverOptions = await pullAllPages(() => {
-      let q2 = sb.from(SB_OPTIONS).select('*').eq('user_id', userId);
-      if (optionsMax) q2 = q2.gt('updated_at', optionsMax);
-      return q2;
-    });
-
-    if (Array.isArray(serverOptions) && serverOptions.length) {
-      const merged = mergeById(localOptions, serverOptions.map(unwrapOption));
-      saveLS(LS_OPTIONS, merged);
-      notifyPage('options');
-    }
-  }
 
   /**
    * Server row -> local row shape. Server has both promoted columns and a
@@ -323,6 +252,155 @@
   }
 
   // ============================================================================
+  // MANIFEST SYNC — runs on every load and on pullNow()
+  // ============================================================================
+  /**
+   * The old pull asked only for rows newer than this browser's newest local
+   * edit, and nothing ever carried a deletion. So an edit made on another
+   * device before that point never arrived, and a trade deleted on one device
+   * came back from the others: backfill saw a local row the server lacked and
+   * re-uploaded it.
+   *
+   * Instead, fetch the server's (id, updated_at) list — small even for
+   * thousands of trades — and diff it against this browser:
+   *   - server row missing locally, or newer          → download it
+   *   - local row missing on the server, and this browser has seen it there
+   *     before (SEEN_KEY)                             → deleted elsewhere: drop it
+   *   - local row missing on the server, never seen   → new here: upload it
+   *   - local delete not yet confirmed (TOMBSTONE_KEY) → retry; never re-download
+   *
+   * Newer updatedAt wins when both sides changed, as before.
+   */
+  const SEEN_KEY = 'tj_server_ids_v1';           // { [userId]: { stocks: [ids], options: [ids] } }
+  const TOMBSTONE_KEY = 'tj_pending_deletes_v1'; // same shape: deletes the server has not confirmed
+  const KIND_OF = { tj_stocks: 'stocks', tj_options: 'options' };
+
+  /* A remote-delete sweep larger than this share of the local journal is not
+     applied automatically. A session problem can make the server return an
+     empty list with HTTP 200 (row-level security hides everything), and that
+     must never read as "every trade was deleted". */
+  const MAX_REMOTE_DELETE_SHARE = 0.2;
+  const MAX_REMOTE_DELETE_SMALL = 5;
+
+  function idStoreOwner() { return userId || cacheOwner() || '_'; }
+
+  function readIds(key, kind) {
+    try {
+      const all = JSON.parse(localStorage.getItem(key) || '{}') || {};
+      const mine = all[idStoreOwner()] || {};
+      return new Set(mine[kind] || []);
+    } catch (_) { return new Set(); }
+  }
+
+  function writeIds(key, kind, set) {
+    try {
+      const all = JSON.parse(localStorage.getItem(key) || '{}') || {};
+      const owner = idStoreOwner();
+      all[owner] = all[owner] || {};
+      all[owner][kind] = Array.from(set);
+      localStorage.setItem(key, JSON.stringify(all));
+    } catch (_) { /* storage full or blocked — sync still works, just less precisely */ }
+  }
+
+  function rememberIds(key, kind, ids) {
+    if (!kind || !ids || !ids.length) return;
+    const set = readIds(key, kind);
+    ids.forEach(id => set.add(id));
+    writeIds(key, kind, set);
+  }
+
+  function forgetIds(key, kind, ids) {
+    if (!kind || !ids || !ids.length) return;
+    const set = readIds(key, kind);
+    ids.forEach(id => set.delete(id));
+    writeIds(key, kind, set);
+  }
+
+  function rememberDelete(kind, id) { rememberIds(TOMBSTONE_KEY, kind, [id]); }
+
+  async function syncManifest() {
+    if (!sb || !userId) return;
+
+    /* A cache that is not provably this user's is only ever read into: no
+       uploads, and no local rows dropped on the strength of a diff. */
+    const owned = ensureCacheOwnership();
+
+    for (const [kind, table, lsKey, unwrap, build] of [
+      ['stocks',  SB_STOCKS,  LS_STOCKS,  unwrapStock,  buildStockRow],
+      ['options', SB_OPTIONS, LS_OPTIONS, unwrapOption, buildOptionRow],
+    ]) {
+      // Throws on any error, so a failed read changes nothing locally.
+      const manifest = await pullAllPages(() =>
+        sb.from(table).select('id,updated_at').eq('user_id', userId));
+
+      const tomb = readIds(TOMBSTONE_KEY, kind);
+      const seen = readIds(SEEN_KEY, kind);
+      const server = new Map(manifest.map(r => [r.id, r.updated_at || '']));
+      let local = loadLS(lsKey);
+      const localById = new Map(local.map(r => [r && r.id, r]));
+      let changed = false;
+
+      // Download: missing here, or newer on the server. Never a row this
+      // browser deleted and is still waiting to confirm.
+      const need = manifest.filter(r => !tomb.has(r.id) && (() => {
+        const mine = localById.get(r.id);
+        if (!mine) return true;
+        return (r.updated_at || '') > (mine.updatedAt || mine.updated_at || '');
+      })()).map(r => r.id);
+      if (need.length) {
+        const fetched = [];
+        for (let i = 0; i < need.length; i += DELETE_CHUNK) {
+          const { data, error } = await sb.from(table)
+            .select('*').eq('user_id', userId).in('id', need.slice(i, i + DELETE_CHUNK));
+          if (error) throw error;
+          if (data) fetched.push(...data);
+        }
+        local = mergeById(local, fetched.map(unwrap));
+        changed = true;
+      }
+
+      // Local rows the server does not have.
+      const absent = local.filter(r => r && r.id && !server.has(r.id) && !tomb.has(r.id));
+      const goneRemotely = absent.filter(r => seen.has(r.id)).map(r => r.id);
+      const neverSent = absent.filter(r => !seen.has(r.id));
+
+      if (owned && goneRemotely.length) {
+        const limit = Math.max(MAX_REMOTE_DELETE_SMALL, Math.floor(local.length * MAX_REMOTE_DELETE_SHARE));
+        if (goneRemotely.length > limit) {
+          console.warn(`[journal-sync] ${table}: ${goneRemotely.length} local rows are missing on the server — ` +
+            'more than an ordinary delete. Keeping them; check the session and run journalSync.pullNow().');
+        } else {
+          const drop = new Set(goneRemotely);
+          local = local.filter(r => !drop.has(r && r.id));
+          forgetIds(SEEN_KEY, kind, goneRemotely);
+          changed = true;
+          console.info(`[journal-sync] ${table}: removed ${goneRemotely.length} row(s) deleted on another device.`);
+        }
+      }
+
+      if (changed) {
+        saveLS(lsKey, local);
+        notifyPage(kind);
+      }
+
+      if (owned && neverSent.length) {
+        await upsertWithRetry(table, neverSent.map(build));   // marks confirmed ids as seen
+      }
+
+      // Deletes this browser made that the server still has: send them again.
+      // Ones the server no longer has are done.
+      const stillThere = Array.from(tomb).filter(id => server.has(id));
+      const confirmed = Array.from(tomb).filter(id => !server.has(id));
+      if (confirmed.length) forgetIds(TOMBSTONE_KEY, kind, confirmed);
+      if (owned && stillThere.length) await deleteRows(table, stillThere);
+
+      // Everything on the server now counts as seen, so a later absence means
+      // it was deleted somewhere.
+      rememberIds(SEEN_KEY, kind, manifest.map(r => r.id).filter(id => !tomb.has(id)));
+    }
+  }
+
+  // ============================================================================
   // PUSH — debounced upserts
   // ============================================================================
 
@@ -340,6 +418,7 @@
 
   function deleteStock(id) {
     if (!id) return;
+    rememberDelete('stocks', id);
     pendingStocks.delete(id);            // cancel any pending upsert
     pendingDeletes.stocks.add(id);
     schedulePush();
@@ -347,6 +426,7 @@
 
   function deleteOption(id) {
     if (!id) return;
+    rememberDelete('options', id);
     pendingOptions.delete(id);
     pendingDeletes.options.add(id);
     schedulePush();
@@ -419,6 +499,8 @@
           .eq('user_id', userId);
         if (error) throw error;
       }
+      forgetIds(TOMBSTONE_KEY, KIND_OF[table], ids);
+      forgetIds(SEEN_KEY, KIND_OF[table], ids);
       return true;
     } catch (e) {
       console.warn(`[journal-sync] delete ${table} failed:`, e);
@@ -507,6 +589,7 @@
         console.info(`[journal-sync] ✓ ${table}: ${verified} rows upserted and verified`);
       }
       _successfulWrites += verified;
+      rememberIds(SEEN_KEY, KIND_OF[table], Array.from(returnedIds));
       return true;
     } catch (e) {
       console.error(`[journal-sync] ✗ upsert ${table} attempt ${attempt} failed:`, e.message || e);
@@ -725,8 +808,8 @@
     if (!sb || !userId) return;
     setStatus('syncing');
     try {
-      await pullFromServer();
       await drainRetryQueue();
+      await syncManifest();
       setStatus('synced');
     } catch (e) {
       console.warn('[journal-sync] pullNow failed:', e);
