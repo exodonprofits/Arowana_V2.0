@@ -2,7 +2,7 @@
 
 ## ATD-108 Wheel port specification - 2026-10-04
 
-[Wheel port specification](docs/ATD-108_WHEEL_PORT_SPEC.md) compares this repository with the Wheel repository (`exodonprofits/arowanaprofits` at `219e61f`) and proposes six port slices. It keeps everything V2.0 added: navigation, the ATD-009 merges and the platform pages the Wheel product removed. Owner decisions Q1–Q6 are pending. Documentation only; nothing changed.
+[Wheel port specification](docs/ATD-108_WHEEL_PORT_SPEC.md) compares this repository with the Wheel repository (`exodonprofits/arowanaprofits` at `219e61f`) and proposes six port slices. It keeps everything V2.0 added: navigation, the ATD-009 merges and the platform pages the Wheel product removed. Approved with Q1–Q6 as recommended. **S1 (auth foundation):** one shared Supabase client per page via `js/sb.js`, and a live access token for REST and edge-function calls. This fixes the multi-client sign-out race (9 pages affected on main) and the stale-token RLS reads.
 
 ## ATD-009 legacy page review - 2026-10-03
 

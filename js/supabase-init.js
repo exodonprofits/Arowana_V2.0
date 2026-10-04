@@ -1,50 +1,58 @@
 // /js/supabase-init.js  (ES module)
-// Uses local UMD build: /js/supabase.min.js (no CDN, avoids Tracking Prevention & esm.sh outages)
+// Returns the ONE shared client built by ./js/sb.js. Loads the local UMD
+// build (./js/supabase_min.js) and sb.js on demand for pages that only
+// import this module. Never calls createClient() itself — a second
+// GoTrueClient in the tab races the shared one over refresh-token rotation
+// and ends up wiping the session.
+//
+// (This used to inject "./js/supabase.min.js", a file that does not exist
+// in the repo; the real build is supabase_min.js.)
 
 export const SUPABASE_URL = "https://pbojacnagutipfhcxltj.supabase.co";
 export const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBib2phY25hZ3V0aXBmaGN4bHRqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgwMDkwODAsImV4cCI6MjA2MzU4NTA4MH0.ZLCcAzTYljoZycpBGwMtthP5VyAJ4schuIvt4HibGc0";
 
-/** Load the local Supabase UMD library if it's not already present. */
-async function ensureSupabaseUMD(src = "./js/supabase.min.js") {
-  if (window.supabase && typeof window.supabase.createClient === "function") return window.supabase;
+const V = "20260923a";
 
-  await new Promise((resolve, reject) => {
-    // Avoid double-inject
-    const existing = document.querySelector('script[data-gs-supabase-umd="1"]');
+function loadScriptOnce(src, marker) {
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[data-gs-' + marker + '="1"]');
     if (existing) {
-      existing.addEventListener("load", resolve, { once: true });
+      if (existing.dataset.loaded === "1") return resolve();
+      existing.addEventListener("load", () => resolve(), { once: true });
       existing.addEventListener("error", () => reject(new Error("Failed to load " + src)), { once: true });
       return;
     }
-
     const s = document.createElement("script");
     s.src = src;
-    s.async = true;
-    s.defer = true;
-    s.setAttribute("data-gs-supabase-umd", "1");
-    s.onload = () => resolve();
+    s.setAttribute("data-gs-" + marker, "1");
+    s.onload = () => { s.dataset.loaded = "1"; resolve(); };
     s.onerror = () => reject(new Error("Failed to load " + src));
     document.head.appendChild(s);
   });
-
-  if (!window.supabase || typeof window.supabase.createClient !== "function") {
-    throw new Error("Supabase UMD loaded but window.supabase.createClient is missing.");
-  }
-  return window.supabase;
 }
 
-const { createClient } = await ensureSupabaseUMD();
+// Pages one folder down (/lab/) load the shared scripts from one level up.
+const ROOT = /\/lab\//.test(location.pathname) ? "../" : "./";
+
+/** Resolve the shared client, loading the SDK and sb.js if the page didn't. */
+async function ensureSharedClient() {
+  if (window.supabaseClient && window.supabaseClient.auth) return window.supabaseClient;
+  if (!(window.supabase && typeof window.supabase.createClient === "function")) {
+    await loadScriptOnce(ROOT + "js/supabase_min.js?v=" + V, "supabase-umd");
+  }
+  if (!(window.supabaseClient && window.supabaseClient.auth)) {
+    await loadScriptOnce(ROOT + "js/sb.js?v=" + V, "sb");
+  }
+  if (!(window.supabaseClient && window.supabaseClient.auth)) {
+    throw new Error("Shared Supabase client missing after loading ./js/sb.js");
+  }
+  return window.supabaseClient;
+}
 
 /** ───────────────────────────────────────────────────────────────────
- *  2) Client with session persistence
+ *  2) The shared client (session persistence + auto refresh live in sb.js)
  *  ─────────────────────────────────────────────────────────────────── */
-export const client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: true,
-    autoRefreshToken: true,
-    detectSessionInUrl: true, // handle magic-link / OAuth redirects
-  },
-});
+export const client = await ensureSharedClient();
 
 // Back-compat exports (older pages may import `supabase`)
 export const supabase = client;

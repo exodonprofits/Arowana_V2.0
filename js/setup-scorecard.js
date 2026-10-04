@@ -21,8 +21,10 @@
    page's own class names.
 
    DATA REALITY:
-   - Entry auto-fill uses a Finnhub /quote call (current price only) via
-     the same ap_user_api_keys.finnhub BYOK key every other tool reads.
+   - Entry auto-fill uses a Finnhub /quote call (current price only).
+     js/market-data.js reroutes finnhub.io requests through the signed-in
+     user's session, so no user key is needed; a stored legacy
+     ap_user_api_keys.finnhub key is still passed along if present.
      This module fetches its own quote — it does not assume any other
      script on the page (trading-command.html's tcFetchQuote, etc.) exists.
    - Stop/Target are NOT fetched — a quote can't tell you those. They're
@@ -121,11 +123,13 @@
 
   async function fetchQuote(symbol, key) {
     try {
-      const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}&token=${encodeURIComponent(key)}`;
+      const url = `https://finnhub.io/api/v1/quote?symbol=${encodeURIComponent(symbol)}` + (key ? `&token=${encodeURIComponent(key)}` : '');
       const ctrl = new AbortController();
       const t = setTimeout(() => ctrl.abort(), 8000);
       const res = await fetch(url, { signal: ctrl.signal });
       clearTimeout(t);
+      // js/market-data.js answers 401 when nobody is signed in.
+      if (res.status === 401) return { signIn: true };
       if (!res.ok) return null;
       const q = await res.json();
       if (q && typeof q.c === 'number' && q.c > 0) return q.c;
@@ -344,8 +348,15 @@
       const entryEmpty = !entryEl.value;
       if (!force && !entryEmpty) return;
 
+      // Optional legacy key — market-data.js routes the call either way.
       const key = getFinnhubKey();
-      if (!key) { statusEl.textContent = 'Add your Finnhub API key in Account settings to auto-fill from a live price.'; return; }
+      // V2.0 (ATD-108 S1): many pages load this without js/market-data.js.
+      // There a keyless call would go straight to Finnhub and fail, so keep
+      // the old prompt instead of a misleading "Sign in".
+      if (!key && !window.__apMarketDataShim) {
+        statusEl.textContent = 'Add your Finnhub API key in Account settings to auto-fill from a live price.';
+        return;
+      }
 
       generation++;
       const myGeneration = generation;
@@ -358,6 +369,7 @@
           // "Use live price") happened while this was in flight — don't
           // apply now-stale results on top of whatever the user did next.
           if (myGeneration !== generation) return;
+          if (price && price.signIn) { statusEl.textContent = 'Sign in to load market data'; return; }
           if (!price) { statusEl.textContent = `Couldn't fetch a live price for ${symbol} — enter manually.`; return; }
 
           entryEl.value = price.toFixed(2);

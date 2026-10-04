@@ -18,15 +18,35 @@
   var nativeFetch = window.fetch.bind(window);
   var lastUsage = null;
 
-  function client() { return window.supabaseClient || window.sbClient || null; }
+  // Token comes from the shared helper in app-config.js, which waits for
+  // the shared client and refreshes once before calling anyone signed out.
+  // Some pages load app-config.js after this file, so give it a moment to
+  // define the helper instead of reading window.supabaseClient at a time
+  // it may not exist yet (that was one source of false "Sign in" errors).
+  function waitForHelper(ms) {
+    if (typeof window.apGetAccessToken === 'function') return Promise.resolve(true);
+    return new Promise(function (resolve) {
+      var deadline = Date.now() + ms;
+      (function poll() {
+        if (typeof window.apGetAccessToken === 'function') return resolve(true);
+        if (Date.now() > deadline) return resolve(false);
+        setTimeout(poll, 100);
+      })();
+    });
+  }
 
-  async function accessToken() {
-    var sb = client();
-    if (!sb || !sb.auth) return null;
-    try {
-      var s = await sb.auth.getSession();
-      return (s && s.data && s.data.session && s.data.session.access_token) || null;
-    } catch (e) { return null; }
+  async function accessToken(forceRefresh) {
+    if (!(await waitForHelper(10000))) return null;
+    try { return await window.apGetAccessToken({ forceRefresh: !!forceRefresh }); }
+    catch (e) { return null; }
+  }
+
+  function callResearch(token, path, query) {
+    return nativeFetch(FN, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + token },
+      body: JSON.stringify({ path: path, query: query })
+    });
   }
 
   function notice(message) {
@@ -74,11 +94,13 @@
 
     var res;
     try {
-      res = await nativeFetch(FN, {
-        method: 'POST',
-        headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + token },
-        body: JSON.stringify({ path: path, query: query })
-      });
+      res = await callResearch(token, path, query);
+      // 401 with a token we believed was good: it expired or was rotated
+      // under us. Swap in a fresh one and retry once before giving up.
+      if (res.status === 401) {
+        var fresh = await accessToken(true);
+        if (fresh && fresh !== token) res = await callResearch(fresh, path, query);
+      }
     } catch (e) {
       return new Response(JSON.stringify({ error: 'Market data is unreachable right now' }),
         { status: 503, headers: { 'content-type': 'application/json' } });

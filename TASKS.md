@@ -163,7 +163,17 @@
 
 Wheel's nav rail, redirects and feature removals are not ported. `wheel-strategy.html` and `option-roll-tracker.html` stay. Decisions Q1–Q6 are in section 6.
 
-**Next:** owner review of Q1–Q6, then slice S1.
+**Approved:** 2026-10-04 (PR #32), Q1–Q6 as recommended.
+
+**S1 auth foundation, branch `claude/ATD-108-s1-auth`:**
+- one shared Supabase client on 41 pages (`js/sb.js`);
+- live access token (`apGetAccessToken`);
+- Wheel's `supabase-init`, `market-data`, `price-fetcher` and `setup-scorecard`;
+- three nav pages moved off the CDN SDK.
+
+Pages with more than one auth client: 9 on main, 0 now, apart from the parked `tradingcommand`.
+
+**Next:** S2 (journal reliability).
 
 ### ATD-007 continuation - 2026-10-01
 
