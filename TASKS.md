@@ -180,6 +180,8 @@ Pages with more than one auth client: 9 on main, 0 now, apart from the parked `t
 
 Tests: `scripts/test_journal_sync.py`, `scripts/browser/journal_sync_check.mjs` (23 checks, synthetic data; main fails 15).
 
+**Max-risk fix, branch `claude/ATD-108-max-risk`:** the Trade Journal option form showed "Unlimited*" risk for every credit trade (including cash-secured puts) and "Unlimited*" profit for every debit trade. It now computes both from the trade type and strategy. Tests: `scripts/test_option_preview.py`, `scripts/browser/option_preview_check.mjs` (19).
+
 **S3 wheel ledger, branch `claude/ATD-108-s3-ledger`:**
 - `js/wheel-ledger.js` and its Node tests; new `Node Tests` workflow;
 - Portfolio Command Income tab: Wheel campaigns panel replaces "Cost basis after premium"; expired/assigned count as settled;

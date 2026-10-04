@@ -2305,7 +2305,7 @@ td{font-size:10.5px!important;line-height:1.4!important;padding:8px 9px!importan
       <div class="row two">
         <div class="field">
           <label class="field-label">Strategy *</label>
-          <select class="input" id="oStrategy">
+          <select class="input" id="oStrategy" onchange="calcOptPreview()">
             <option value="">— Select —</option>
             <option>Long Call</option><option>Long Put</option>
             <option>Covered Call</option><option>Cash-Secured Put</option>
@@ -2349,7 +2349,7 @@ td{font-size:10.5px!important;line-height:1.4!important;padding:8px 9px!importan
       <div class="row two">
         <div class="field">
           <label class="field-label">Credit or Debit?</label>
-          <select class="input" id="oCreditDebit">
+          <select class="input" id="oCreditDebit" onchange="calcOptPreview()">
             <option value="debit">Debit (paid premium)</option>
             <option value="credit">Credit (received premium)</option>
           </select>
@@ -3158,6 +3158,39 @@ function parseTOSString(){
   }
 }
 
+/* Max risk / max profit of the option position as entered, before fees.
+   Used to say "Unlimited*" for every credit trade (and every debit trade's
+   profit), which is wrong for the wheel's two main trades:
+     short put   risk = (strike - premium) x 100 x contracts, profit = premium
+     covered call  the shares cover the call; profit = premium
+     long put    risk = premium, profit = (strike - premium) x 100 x contracts
+     long call   risk = premium, profit unlimited
+     naked call  risk unlimited, profit = premium
+   Multi-leg strategies depend on legs this form doesn't record, so only the
+   side the premium settles is shown. Returns numbers (dollars) or strings;
+   null means "not known from these inputs". */
+function optMaxRiskProfit(o){
+  const qty = Number(o.qty) || 0, prem = Number(o.premium) || 0, strike = Number(o.strike);
+  const total = prem * qty * 100;
+  const s = String(o.strategy || '').toLowerCase();
+  const hasStrike = isFinite(strike) && strike > 0;
+  if (!qty || !prem) return { risk: null, profit: null };
+  if (s === 'straddle' || s === 'strangle') {
+    return o.credit ? { risk: 'Unlimited', profit: total } : { risk: total, profit: 'Unlimited' };
+  }
+  if (['credit spread', 'iron condor', 'debit spread', 'calendar spread', 'diagonal'].indexOf(s) >= 0) {
+    return o.credit ? { risk: null, profit: total } : { risk: total, profit: null };
+  }
+  if (o.type === 'put') {
+    const intrinsic = hasStrike ? Math.max(0, (strike - prem) * qty * 100) : null;
+    return o.credit ? { risk: intrinsic, profit: total } : { risk: total, profit: intrinsic };
+  }
+  // call
+  if (!o.credit) return { risk: total, profit: 'Unlimited' };
+  if (s === 'covered call') return { risk: 'Covered by your shares', profit: total };
+  return { risk: s ? 'Unlimited' : 'Unlimited if uncovered', profit: total };
+}
+
 function calcOptPreview(){
   const qty      = parseFloat(document.getElementById('oQty').value)||0;
   const premIn   = parseFloat(document.getElementById('oPremiumIn').value)||0;
@@ -3174,8 +3207,12 @@ function calcOptPreview(){
 
   document.getElementById('opDTE').textContent   = dte!==null ? dte+'d' : '—';
   document.getElementById('opTotal').textContent = total ? (isCredit?'+':'-')+fmt$(total) : '—';
-  document.getElementById('opMaxRisk').textContent   = isCredit ? 'Unlimited*' : fmt$(total);
-  document.getElementById('opMaxProfit').textContent = isCredit ? fmt$(total)  : 'Unlimited*';
+  const strike   = parseFloat(document.getElementById('oStrike').value);
+  const mm = optMaxRiskProfit({ type: optType, strategy: document.getElementById('oStrategy').value,
+                                credit: isCredit, strike: strike, premium: premIn, qty: qty });
+  const show = v => v == null ? '—' : (typeof v === 'number' ? fmt$(v) : v);
+  document.getElementById('opMaxRisk').textContent   = show(mm.risk);
+  document.getElementById('opMaxProfit').textContent = show(mm.profit);
 
   // P/L calc if exit filled
   if(premIn && qty){
