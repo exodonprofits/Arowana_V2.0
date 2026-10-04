@@ -3,7 +3,7 @@ from pathlib import Path
 import base64, json, re, sys
 ROOT=Path(__file__).resolve().parents[1]
 SKIP={'.git','node_modules','dist','build'}
-TEXT_EXT={'.html','.js','.json','.md','.txt','.xml','.css','.yml','.yaml','.py','.env'}
+TEXT_EXT={'.html','.js','.json','.md','.txt','.xml','.css','.yml','.yaml','.py','.env','.ts','.sql','.toml'}
 patterns={
  'OpenAI private key': re.compile(r'\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}'),
  'Supabase service role hint': re.compile(r'(?i)(service[_-]?role|SUPABASE_SERVICE_ROLE_KEY)\s*[:=]\s*["\'][^"\']{20,}["\']'),

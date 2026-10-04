@@ -1,0 +1,138 @@
+{
+  "project": "pbojacnagutipfhcxltj",
+  "captured_at": "2026-10-04",
+  "wheel_commit": "219e61f27f5d76d512570b0fc1e061dddd15e19f",
+  "functions": [
+    {
+      "slug": "arowana-digest",
+      "version": 3,
+      "verify_jwt": false,
+      "entrypoint": "supabase/functions/arowana-digest/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_739a42af-2a53-401f-8b0c-b90ae47fcdba_3/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "91efa18af49288328f7cbbf6c52cc04a678249cbbc36c3c4a17647b0ef436e8c"
+    },
+    {
+      "slug": "arowana-explain",
+      "version": 2,
+      "verify_jwt": true,
+      "entrypoint": "supabase/functions/arowana-explain/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_1c7c10dd-a5d3-43bb-9630-57c0169aba24_2/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "6d57a1759979ef5f54a507048cf46391c87a77b41ff5e23d1175b32536e58900"
+    },
+    {
+      "slug": "arowana-ai-coach",
+      "version": 18,
+      "verify_jwt": true,
+      "entrypoint": "supabase/functions/arowana-ai-coach/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_6d51cb0c-5c42-4575-b556-e5df655169e0_18/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "8b88d0e2fd242915d3d3c56c56ac3f7476c2a8dd1ac7345bd52078d14993904c"
+    },
+    {
+      "slug": "arowana-checkout",
+      "version": 14,
+      "verify_jwt": false,
+      "entrypoint": "supabase/functions/arowana-checkout/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_bb939926-bcfb-445d-aa04-bf84cb8a504e_14/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "80026d2759e738ac87c8da7d81efc64cabf55839b037ef2b33dcb3b263d4e77f"
+    },
+    {
+      "slug": "arowana-research",
+      "version": 7,
+      "verify_jwt": false,
+      "entrypoint": "supabase/functions/arowana-research/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_0323eaad-7641-417b-933c-93cf39d2e7ff_6/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "5e9f9743781697eaca19c1c139dda41f85b9bcf852e4024a4f038c913434b557"
+    },
+    {
+      "slug": "arowana-billing-portal",
+      "version": 3,
+      "verify_jwt": false,
+      "entrypoint": "supabase/functions/arowana-billing-portal/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_ee85a675-bb28-4eef-931d-127b5ce7e17c_1/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "bf071d352b7de0827bfc4f3cf1f8894aba131ea6c5c205183f05e740e10f5bd4"
+    },
+    {
+      "slug": "arowana-founders-count",
+      "version": 3,
+      "verify_jwt": false,
+      "entrypoint": "supabase/functions/arowana-founders-count/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_d17f9de5-3573-49ae-804b-e23d8b127b56_1/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "0b0bcf7133efeed12a3a45f9f6506e22166ca52027e4d00dedc19f063470cef4"
+    },
+    {
+      "slug": "arowana-stripe-webhook",
+      "version": 11,
+      "verify_jwt": false,
+      "entrypoint": "supabase/functions/arowana-stripe-webhook/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_53f312c8-529f-4d99-a817-a4fa021a491f_1/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "44c360c21bf8d199ac61c8248d268b6e8ed7dc6316194c2d364fd5254bc41a94"
+    },
+    {
+      "slug": "arowana-coach",
+      "version": 4,
+      "verify_jwt": false,
+      "entrypoint": "supabase/functions/arowana-coach/index.ts",
+      "deployed_entrypoint": "/tmp/user_fn_pbojacnagutipfhcxltj_8d402e42-0029-476c-9328-4d6df624c8fe_2/source/index.ts",
+      "import_map": false,
+      "ezbr_sha256": "23eafc7b6e3a0020a9123869f8827ebedcb6e2ff900be3c756a3e543c22b83b8"
+    }
+  ],
+  "files": [
+    {
+      "path": "supabase/functions/_shared/number-guard.js",
+      "sha256_lf": "b73e3e2e21a42e6424de827468c8c662d5c8e70a5e66d986ddcfeb9a4033bb1d"
+    },
+    {
+      "path": "supabase/functions/arowana-ai-coach/index.ts",
+      "sha256_lf": "fb038242d9485f7e666a3d23b1ee75a4d860e37908289aec0540c0c55b51de86"
+    },
+    {
+      "path": "supabase/functions/arowana-billing-portal/index.ts",
+      "sha256_lf": "73bee597cf55435f44fee0823c25d97bf4b797c9934ba773cc230d71063e4249"
+    },
+    {
+      "path": "supabase/functions/arowana-checkout/index.ts",
+      "sha256_lf": "d2772edef988c546403fd570879cbef07b77a1bbcebcc4db45eeac26c2f746f2"
+    },
+    {
+      "path": "supabase/functions/arowana-checkout/price-guard.js",
+      "sha256_lf": "aac82d05fde8a92513e400b47acd3603045496768a8a3d699df7dec4c9b0ac1c"
+    },
+    {
+      "path": "supabase/functions/arowana-coach/index.ts",
+      "sha256_lf": "4d959c6bf895f83901a54a3a543f6947cb0f02bc74a6bbd3c3407735ca3c0c50"
+    },
+    {
+      "path": "supabase/functions/arowana-digest/digest.js",
+      "sha256_lf": "6328bd9ba4cf295c6b84bc04dac9b2e5ae0bf0624bfba080a997eebadab51840"
+    },
+    {
+      "path": "supabase/functions/arowana-digest/index.ts",
+      "sha256_lf": "c15b8f826027fab32c4a7e3de9a23b4dbf3733da395aa33358fd8f2b45cc0b94"
+    },
+    {
+      "path": "supabase/functions/arowana-explain/index.ts",
+      "sha256_lf": "8a810175acfc6cd34e6edd1aafefd2bc40c9f20e3d7d8009641c55f950c64dd9"
+    },
+    {
+      "path": "supabase/functions/arowana-founders-count/index.ts",
+      "sha256_lf": "1c93ed9a7951b8ad763ae4974125283954bc843afc08672a93cd9e880d512012"
+    },
+    {
+      "path": "supabase/functions/arowana-research/index.ts",
+      "sha256_lf": "bc2f49ad796998aeab94bbcba5d10c48cb52126e54c646946f475884dad4c7ac"
+    },
+    {
+      "path": "supabase/functions/arowana-stripe-webhook/index.ts",
+      "sha256_lf": "7cc9b92f9e2003b46449ed438d7269964b1a27decb8f96734f4a6723ecac5b93"
+    }
+  ]
+}
