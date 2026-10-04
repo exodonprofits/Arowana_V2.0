@@ -436,7 +436,8 @@ for (const [from, id, label] of [['bb-snapback', 'bb_snapback', 'Bollinger Band 
   await p.context().close();
 }
 for (const [from, path, scan] of [['my-rules-short', '/my-rules.html', null], ['risk-calculator', '/position-sizer.html', null],
-  ['position-sizer_fresh', '/position-sizer.html', null], ['dividend-screener', '/scanner.html', 'dividend_safety']]) {
+  ['position-sizer_fresh', '/position-sizer.html', null], ['dividend-screener', '/scanner.html', 'dividend_safety'],
+  ['automated-trading-plan', '/trade-plan-builder.html', null], ['news-trading', '/trade-plan-builder.html', null], ['stock-checker', '/intrinsic-value.html', null]]) {
   const p = await newPage(desktop, null);
   await p.goto(BASE + '/' + from + '.html?a=1#h'); await p.waitForTimeout(1000);
   const u = new URL(p.url());
@@ -448,6 +449,156 @@ for (const [from, path, scan] of [['my-rules-short', '/my-rules.html', null], ['
   const anyActive = await p.evaluate(() => !!document.querySelector('.scan-item.active'));
   ok('P2 unknown ?scan= ignored', p._errors.length === 0 && !anyActive);
   await p.context().close(); }
+
+// R. ATD-009: long-term rules and habits merged into my-rules.html, reading the old keys.
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => {
+    localStorage.setItem('my_rules_longterm_v1', JSON.stringify({ eqPct: '60', bondPct: '40', rebalanceBand: '7', rebalanceFreq: 'Quarterly',
+      rulesBehavior: 'Never sell in a panic\nSecond rule', rulesTriggers: 'Review in January', savedAt: '2026-01-02T03:04:05Z' }));
+    localStorage.setItem('my_rules_longterm_check', JSON.stringify({ ck1: true }));
+    localStorage.setItem('gs_discipline_v1', JSON.stringify({ prefs: { carryForward: true }, scope: 'daily', streaks: {},
+      items: { daily: [{ id: 'a1', t: '<img src=x onerror="window.__xss=1">Log trades', d: true, n: 'note <b>x</b>' }, { id: 'a2', t: 'Stop at -2R', d: false, n: '' }],
+               weekly: [{ id: 'w1', t: 'Review week', d: false, n: '' }], monthly: [] } }));
+  });
+  await p.goto(BASE + '/my-rules-long.html'); await p.waitForTimeout(1200);
+  const lt = await p.evaluate(() => ({ url: location.pathname + location.search,
+    panel: !document.getElementById('mrPanelLongterm').hidden && document.getElementById('mrPanelTrading').hidden,
+    eq: document.getElementById('ltEqPct').value, freq: document.getElementById('ltRebalanceFreq').value,
+    behavior: document.getElementById('ltBehavior').value.split('\n')[0],
+    checks: [...document.querySelectorAll('#ltChecklist input')].map(c => c.checked),
+    first: document.querySelector('#ltChecklist li:nth-child(3) label').textContent,
+    selected: document.querySelector('.mr-tabs [aria-selected="true"]').dataset.tab }));
+  ok('R my-rules-long -> my-rules?tab=longterm with saved rules', lt.url === '/my-rules.html?tab=longterm' && lt.panel && lt.eq === '60' && lt.freq === 'Quarterly' &&
+     lt.behavior === 'Never sell in a panic' && lt.checks.join() === 'false,true,false,false,false' && lt.first === 'Rules set: Never sell in a panic' && lt.selected === 'longterm', JSON.stringify(lt));
+  await p.fill('#ltEqPct', '55'); await p.click('#ltSave'); await p.click('#lt_ck0');
+  const saved = await p.evaluate(() => [JSON.parse(localStorage.getItem('my_rules_longterm_v1')).eqPct, JSON.parse(localStorage.getItem('my_rules_longterm_check')).ck0]);
+  ok('R long-term save + tick use the old keys', saved[0] === '55' && saved[1] === true, JSON.stringify(saved));
+  await p.goto(BASE + '/discipline-checklist.html'); await p.waitForTimeout(1200);
+  const hb = await p.evaluate(() => ({ url: location.pathname + location.search, panel: !document.getElementById('mrPanelHabits').hidden,
+    texts: [...document.querySelectorAll('#hbList .hb-text')].map(n => n.textContent), imgs: document.querySelectorAll('#hbList img').length,
+    xss: !!window.__xss, daily: document.getElementById('hbKpiDaily').textContent, note: document.querySelector('#hbList .hb-note').value }));
+  ok('R discipline-checklist -> my-rules?tab=habits with saved habits, text not HTML', hb.url === '/my-rules.html?tab=habits' && hb.panel &&
+     hb.texts.length === 2 && hb.texts[0].startsWith('<img') && hb.imgs === 0 && !hb.xss && hb.daily === '50%' && hb.note === 'note <b>x</b>', JSON.stringify(hb));
+  await p.fill('#hbNew', 'Journal before close'); await p.press('#hbNew', 'Enter');
+  await p.click('.hb-scopes [data-scope="weekly"]');
+  const after = await p.evaluate(() => { const st = JSON.parse(localStorage.getItem('gs_discipline_v1'));
+    return { daily: st.items.daily.length, scope: st.scope, prefs: st.prefs.carryForward, shown: document.querySelectorAll('#hbList .hb-item').length }; });
+  ok('R habits add + period switch saved to gs_discipline_v1', after.daily === 3 && after.scope === 'weekly' && after.prefs === true && after.shown === 1, JSON.stringify(after));
+  await p.click('.mr-tabs [data-tab="trading"]');
+  ok('R Trading tab restores the original page and clears ?tab', await p.evaluate(() => !document.getElementById('mrPanelTrading').hidden && location.search === '' && !!document.getElementById('riskPct').offsetParent));
+  ok('R my-rules no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const m = await newPage(mobile, null);
+  await m.goto(BASE + '/my-rules.html?tab=habits'); await m.waitForTimeout(1200);
+  ok('R my-rules habits tab: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1));
+  await m.context().close(); }
+
+// V. ATD-009: valuation pages' models live in intrinsic-value.html's "More models".
+for (const from of ['ai-valuation', 'intrinsic-value-rsi', 'long-term-intrinsic-value']) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?t=1#h'); await p.waitForTimeout(800);
+  const u = new URL(p.url());
+  ok(`V ${from} -> intrinsic-value.html keeps query + hash`, u.pathname === '/intrinsic-value.html' && u.search === '?t=1' && u.hash === '#h', p.url());
+  await p.context().close();
+}
+{ const p = await newPage(desktop, null);
+  await p.goto(BASE + '/intrinsic-value.html'); await p.waitForTimeout(1500);
+  await p.fill('#price', '150'); await p.waitForTimeout(500);
+  const before = await p.evaluate(() => ['gn','ri','epv','pe','fcf'].map(k => document.getElementById(k + 'Why').textContent));
+  ok('V price only: each card says what it needs', before.every(t => t.length > 5), JSON.stringify(before));
+  await p.click('#cardMore > summary');
+  const set = async (id, v) => { await p.fill('#' + id, String(v)); };
+  await set('price', 150); await set('eps', 6); await set('growth', 8); await set('years', 10); await set('discount', 9); await set('terminalMultiple', 15);
+  await set('mxBvps', 24); await set('mxRoe', 20); await set('mxPayout', 25); await set('mxPhi', 0.5); await set('mxHair', 10); await set('mxPe', 18);
+  await set('mxFcf', 9500); await set('mxShares', 1250); await set('mxNetDebt', 3000); await set('mxG1', 10); await set('mxG2', 4); await set('mxGt', 2.5);
+  await p.waitForTimeout(600);
+  const got = await p.evaluate(() => ({ gn: gnIV.textContent, ri: riIV.textContent, epv: epvIV.textContent, pe: peIV.textContent, fcf: fcfIV.textContent,
+    fcfWhy: fcfWhy.textContent, peUp: peUpside.textContent,
+    exp: { gn: computeGrahamNumber(6, 24).v, ri: computeResidualIncome(24, 0.2, 0.09, 0.25, 10, 0.5).v, epv: 6 * 0.9 / 0.09,
+           fcf: computeFcfDcf(9500, 1250, 3000, 0.10, 0.04, 0.025, 0.09, 10).v } }));
+  const money = v => '$' + v.toFixed(2);
+  ok('V cards show the ported models', got.gn === money(got.exp.gn) && got.ri === money(got.exp.ri) && got.epv === money(got.exp.epv) &&
+     got.pe === '$108.00' && got.peUp === '-28.0%' && got.fcf === money(got.exp.fcf) && /terminal value/.test(got.fcfWhy), JSON.stringify(got));
+  await set('mxGt', 9.5); await p.waitForTimeout(500);
+  ok('V FCF DCF refuses terminal growth >= discount, with the reason', await p.evaluate(() => fcfIV.textContent === '—' && /below the discount rate/.test(fcfWhy.textContent)));
+  await set('mxNetDebt', 999999); await set('mxGt', 2.5); await p.waitForTimeout(500);
+  ok('V negative value is named, not shown as a positive price', await p.evaluate(() => fcfIV.textContent === '—' && /at or below zero/.test(fcfWhy.textContent)));
+  const snap = await p.evaluate(() => { const o = ivSnapshot(); return [o.mxBvps, o.mxFcf, o.mxPe]; });
+  ok('V saved valuations keep the new inputs', snap.join() === '24,9500,18', snap.join());
+  ok('V intrinsic-value no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const m = await newPage(mobile, null);
+  await m.goto(BASE + '/intrinsic-value.html'); await m.waitForTimeout(1200);
+  await m.click('#cardMore > summary'); await m.waitForTimeout(200);
+  ok('V More models: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1));
+  await m.context().close(); }
+
+// AI. ATD-009: stock-analyzer + chart-analysis-form merged into analysis-central's AI Analysis tab.
+{ const PNG = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64');
+  const p = await newPage(desktop, null);
+  const calls = [];
+  let mode = 'ok';
+  await p.route('https://n8n.example.test/**', async r => {
+    calls.push({ url: r.request().url(), body: JSON.parse(r.request().postData() || '{}') });
+    if (mode === 'fail') return r.fulfill({ status: 500, body: 'boom' });
+    if (r.request().url().includes('analyze')) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ json: {
+      ticker: 'MSFT', fundamentals: 8, valuation: 6, technical: 7, market: 7.5, strategy: '<b>Buy in stages</b>', summary: 'Solid.',
+      insights: ['<img src=x onerror="window.__x=1">One', 'Two'] } }]) });
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ output: {
+      verdict: 'Bullish', entry: '101.5', stop: '99', target1: '105', rr: '2.1', summary: '<script>window.__y=1</script>Higher lows' } }) });
+  });
+  await p.goto(BASE + '/stock-analyzer.html?ticker=msft'); await p.waitForTimeout(1600);
+  const s0 = await p.evaluate(() => ({ url: location.pathname + location.search, active: document.getElementById('aiTab').classList.contains('active'),
+    sym: document.getElementById('aiSymbol').value }));
+  ok('AI stock-analyzer -> analysis-central?tab=ai, ticker carried', s0.url === '/analysis-central.html?tab=ai&ticker=msft' && s0.active && s0.sym === 'MSFT', JSON.stringify(s0));
+  await p.click('#aiScoreRun'); await p.waitForTimeout(300);
+  ok('AI scorecard with no webhook says so and shows nothing made up', await p.evaluate(() =>
+    /not connected/.test(aiScoreStatus.textContent) && document.getElementById('aiScoreResult').hidden) && calls.length === 0);
+  await p.evaluate(() => localStorage.setItem('arowana_analyzer_webhook_url', 'http://n8n.example.test/webhook/analyze'));
+  await p.click('#aiScoreRun'); await p.waitForTimeout(300);
+  ok('AI scorecard ignores a non-https saved URL', calls.length === 0);
+  await p.evaluate(() => localStorage.setItem('arowana_analyzer_webhook_url', 'https://n8n.example.test/webhook/analyze'));
+  await p.selectOption('#aiMode', 'options'); await p.fill('#aiNotes', 'check IV');
+  await p.click('#aiScoreRun'); await p.waitForTimeout(800);
+  const s1 = await p.evaluate(() => ({ text: aiScoreResult.innerText, imgs: aiScoreResult.querySelectorAll('img').length + [...aiScoreResult.querySelectorAll('b')].filter(b => /Buy in stages/.test(b.textContent)).length, x: !!window.__x,
+    pill: aiScoreResult.querySelector('.ai-pill').textContent, hist: JSON.parse(localStorage.getItem('ac_ai_scorecard_history_v1') || '[]').length }));
+  ok('AI scorecard sends the old payload', calls.length === 1 && JSON.stringify(calls[0].body) === JSON.stringify({ ticker: 'MSFT', mode: 'options', timeframe: '1-3y', notes: 'check IV' }), JSON.stringify(calls[0] && calls[0].body));
+  ok('AI scorecard renders scores; webhook HTML stays text', s1.pill === 'Neutral · 7.1' && /<b>Buy in stages<\/b>/.test(s1.text) && /onerror/.test(s1.text) && s1.imgs === 0 && !s1.x && s1.hist === 1, JSON.stringify(s1));
+  mode = 'fail'; await p.click('#aiScoreRun'); await p.waitForTimeout(600);
+  ok('AI scorecard error is reported, no demo fallback', await p.evaluate(() => /HTTP 500/.test(aiScoreStatus.textContent) && aiScoreStatus.className.includes('err')));
+  mode = 'ok';
+  // Chart analysis
+  await p.evaluate(() => localStorage.setItem('arowana_chart_webhook_url', 'https://n8n.example.test/webhook/chart'));
+  await p.setInputFiles('#aiChartFile', { name: 'c.png', mimeType: 'image/png', buffer: PNG });
+  await p.setInputFiles('#aiChartFile', { name: 'notes.txt', mimeType: 'text/plain', buffer: Buffer.from('x') });
+  await p.waitForTimeout(300);
+  await p.click('#aiChartInd .ai-chip:first-child');
+  const before = calls.length;
+  await p.click('#aiChartRun'); await p.waitForTimeout(1000);
+  const c1 = await p.evaluate(() => ({ thumbs: aiChartThumbs.querySelectorAll('img').length, pill: aiChartResult.querySelector('.ai-pill').textContent,
+    entry: aiChartResult.querySelectorAll('.ai-level b')[0].textContent, y: !!window.__y, scripts: aiChartResult.querySelectorAll('script').length,
+    hist: JSON.parse(localStorage.getItem('arowana_chart_history_v2') || '[]'), scans: localStorage.getItem('ap_chart_scan_count') }));
+  const body = calls[before] && calls[before].body;
+  ok('AI chart sends the old payload shape with the image', body && /^data:image\/png/.test(body.chartImage) && body.ticker === 'MSFT' && body.indicators[0] === 'VWAP' &&
+     body.timeframe === '15m' && body.imageCount === 1 && body.source === 'analysis-central', JSON.stringify(body && Object.keys(body)));
+  ok('AI chart renders levels; text-only, history + scan count saved', c1.thumbs === 1 && c1.pill === 'Bullish' && c1.entry === '$101.5' && !c1.y && c1.scripts === 0 &&
+     c1.hist.length === 1 && /^data:image\/jpeg/.test(c1.hist[0].thumb || '') && c1.scans === '1', JSON.stringify({ ...c1, hist: c1.hist.length }));
+  await p.evaluate(() => { localStorage.setItem('ap_chart_scan_count', '5'); localStorage.setItem('ap_chart_scan_date', new Date().toISOString().slice(0, 10)); });
+  const n = calls.length; await p.click('#aiChartRun'); await p.waitForTimeout(300);
+  ok('AI chart daily free limit kept', calls.length === n && await p.evaluate(() => /free chart analyses/.test(aiChartStatus.textContent)));
+  ok('AI analysis-central no page errors', p._errors.length === 0, p._errors.join('; '));
+  await p.context().close(); }
+{ const p = await newPage(desktop, null);
+  await p.addInitScript(() => localStorage.setItem('arowana_chart_history_v2', JSON.stringify([
+    { ts: new Date().toISOString(), ticker: '<img src=x onerror="window.__z=1">', tf: '1d', verdict: 'Bearish', summary: 'old', thumb: 'javascript:alert(1)', raw: { verdict: 'Bearish' } }])));
+  await p.goto(BASE + '/chart-analysis-form.html'); await p.waitForTimeout(1500);
+  const h = await p.evaluate(() => ({ url: location.pathname + location.search, items: aiChartHist.querySelectorAll('li').length, imgs: aiChartHist.querySelectorAll('img').length, z: !!window.__z }));
+  ok('AI chart-analysis-form -> ?tab=ai; old history shown as text, unsafe thumb dropped', h.url === '/analysis-central.html?tab=ai' && h.items === 1 && h.imgs === 0 && !h.z, JSON.stringify(h));
+  await p.context().close(); }
+{ const m = await newPage(mobile, null);
+  await m.goto(BASE + '/analysis-central.html?tab=ai'); await m.waitForTimeout(1500);
+  ok('AI tab: no horizontal overflow on mobile', await m.evaluate(() => document.documentElement.scrollWidth - innerWidth <= 1 && document.getElementById('aiTab').classList.contains('active')));
+  await m.context().close(); }
 
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
