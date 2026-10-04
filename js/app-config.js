@@ -95,11 +95,12 @@ window.getSupabaseHeaders = function() {
     return {};
   }
   
-  const user = JSON.parse(localStorage.getItem('gs_auth_user_v1') || '{}');
-  
+  // Synchronous, so it can't await a refresh: uses the latest token the
+  // shared client reported (kept current by onAuthStateChange, including
+  // TOKEN_REFRESHED). Never gs_auth_user_v1.access_token, which goes stale.
   return {
     'apikey': SUPABASE_CONFIG.anonKey,
-    'Authorization': `Bearer ${user.access_token || SUPABASE_CONFIG.anonKey}`,
+    'Authorization': `Bearer ${_apLiveAccessToken || SUPABASE_CONFIG.anonKey}`,
     'Content-Type': 'application/json',
     'Prefer': 'return=minimal'
   };
@@ -114,7 +115,9 @@ window.createSupabaseClient = function() {
   return {
     url: SUPABASE_CONFIG.url,
     key: SUPABASE_CONFIG.anonKey,
-    headers: getSupabaseHeaders(),
+    // Getter, not a snapshot: this object is built once at init, so a
+    // fixed headers value would keep sending the token from page load.
+    get headers() { return getSupabaseHeaders(); },
     
     // Helper methods for common operations
     async get(table, query = '') {
@@ -380,17 +383,21 @@ function _apLocalStorageHasKeys() {
   } catch (e) { return false; }
 }
 
-// Fetch user's API keys from Supabase REST API directly.
-// We use raw fetch (not the Supabase JS SDK) because app-config.js doesn't
-// load the SDK — only account.html does. The raw REST call works with
-// just the anon key + the user's access_token (RLS handles authorization).
+// Fetch user's API keys from Supabase REST API directly, with the user's
+// live access token from apGetAccessToken() (RLS handles authorization).
 async function _apFetchKeysFromSupabase(user, cfg) {
   if (!user || !cfg || !cfg.url || !cfg.anonKey) return null;
+
+  // Live token from the shared client (refreshes once if needed). This used
+  // to send gs_auth_user_v1.access_token, written once at login and expired
+  // within the hour — after that RLS saw no user and returned nothing.
+  const token = await apGetAccessToken();
+  if (!token) return null;
 
   const url = `${cfg.url}/rest/v1/user_api_keys?user_id=eq.${encodeURIComponent(user.id)}&select=service,api_key`;
   const headers = {
     'apikey': cfg.anonKey,
-    'Authorization': `Bearer ${user.access_token || cfg.anonKey}`,
+    'Authorization': `Bearer ${token}`,
     'Content-Type': 'application/json',
   };
 
@@ -520,10 +527,10 @@ window.hydrateUserKeys = hydrateUserKeys;
 // which expires (~1hr, Supabase default) and is never refreshed,
 // producing "Session expired" even though the user is still signed in.
 //
-// Fix: create ONE real client here, as soon as the Supabase SDK and
-// config are both available, and expose it under all three names so
-// every page that already expects one of them just starts working.
-// No changes needed in the pages themselves.
+// Fix: ONE real client, created synchronously by js/sb.js right after
+// supabase_min.js (URL + anon key are public, so there is no reason to
+// wait for config.json). This section adopts it, exposes it under all
+// three names, and fires ap:client:ready for scripts that wait on it.
 //
 // NOTE: this is a different object from `window.SUPABASE` (all-caps)
 // created below by createSupabaseClient() — that one is a lightweight
@@ -533,46 +540,154 @@ window.hydrateUserKeys = hydrateUserKeys;
 // ============================================================
 
 let _apSharedClient = null;
+// Latest access token the shared client has reported. Only for the
+// synchronous getSupabaseHeaders(); async code should use apGetAccessToken().
+let _apLiveAccessToken = null;
+
+function _apExposeSharedClient(c) {
+  _apSharedClient = c;
+  try {
+    c.auth.onAuthStateChange((_event, session) => {
+      _apLiveAccessToken = (session && session.access_token) || null;
+    });
+  } catch (e) { /* older SDK without the event — headers fall back to anon */ }
+  // Expose under every name other files in this app already look for.
+  window.supabaseClient = c;      // portfolio-command.html
+  window.sbClient       = c;      // journal-sync.js
+  window.GSClient = window.GSClient || {};
+  window.GSClient.getAsync = async () => c; // auth-header.js sign-out
+  console.log('✅ Shared Supabase client ready (supabaseClient / sbClient / GSClient)');
+  window.dispatchEvent(new CustomEvent('ap:client:ready', { detail: c }));
+  return c;
+}
 
 async function initSharedSupabaseClient() {
   if (_apSharedClient) return _apSharedClient;
-  if (!SUPABASE_CONFIG || !SUPABASE_CONFIG.url || !SUPABASE_CONFIG.anonKey) return null;
 
-  // The SDK (window.supabase, from whichever <script> tag the host page
-  // uses — supabase_min.js, the unpkg CDN build, etc.) may not have
-  // loaded yet relative to this script. Poll briefly rather than assume
-  // an order that isn't guaranteed across pages.
+  // js/sb.js creates the one client synchronously, right after
+  // supabase_min.js, so it normally exists before this runs. This file no
+  // longer calls createClient() itself: it only adopts that client and
+  // announces it (ap:client:ready) for scripts that wait on the event.
+  // Poll briefly for pages whose script order puts sb.js later.
+  //
+  // ATD-108 S1 (V2.0): not every page loads sb.js yet. On a page without it
+  // (no window.__apSb) this keeps the old behaviour and builds the client
+  // here once the SDK is present, so those pages are no worse off than
+  // before. Pages with sb.js never reach that branch.
   const deadline = Date.now() + 10_000;
-  while (!(window.supabase && typeof window.supabase.createClient === 'function')) {
+  const fallbackAt = Date.now() + 1_000;
+  for (;;) {
+    const c = window.supabaseClient || window.sbClient;
+    if (c && c.auth && typeof c.from === 'function') return _apExposeSharedClient(c);
+    if (!window.__apSb && Date.now() > fallbackAt && SUPABASE_CONFIG && SUPABASE_CONFIG.url && SUPABASE_CONFIG.anonKey &&
+        window.supabase && typeof window.supabase.createClient === 'function') {
+      try {
+        return _apExposeSharedClient(window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
+          auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+        }));
+      } catch (e) {
+        console.warn('[shared-client] Failed to create fallback Supabase client:', e);
+        return null;
+      }
+    }
     if (Date.now() > deadline) {
-      console.warn('[shared-client] Supabase SDK never loaded — pages relying on window.supabaseClient will fall back to cached tokens.');
+      console.warn('[shared-client] No Supabase client — load ./js/supabase_min.js then ./js/sb.js on this page.');
       return null;
     }
     await new Promise(r => setTimeout(r, 200));
   }
-
-  try {
-    _apSharedClient = window.supabase.createClient(SUPABASE_CONFIG.url, SUPABASE_CONFIG.anonKey, {
-      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
-    });
-  } catch (e) {
-    console.warn('[shared-client] Failed to create shared Supabase client:', e);
-    return null;
-  }
-
-  // Expose under every name other files in this app already look for.
-  window.supabaseClient = _apSharedClient;      // portfolio-command.html
-  window.sbClient       = _apSharedClient;      // journal-sync.js
-  window.GSClient = window.GSClient || {};
-  window.GSClient.getAsync = async () => _apSharedClient; // auth-header.js sign-out
-
-  console.log('✅ Shared Supabase client ready (supabaseClient / sbClient / GSClient)');
-  window.dispatchEvent(new CustomEvent('ap:client:ready', { detail: _apSharedClient }));
-  return _apSharedClient;
 }
 
 // Expose for manual use / re-init if ever needed
 window.initSharedSupabaseClient = initSharedSupabaseClient;
+
+// Resolves to the shared client once it exists (or null after timeoutMs).
+// With js/sb.js on the page this resolves immediately.
+function apGetSupabaseClient(timeoutMs) {
+  if (_apSharedClient) return Promise.resolve(_apSharedClient);
+  // sb.js already built it (normal case): no need to wait for app-config.
+  const ready = window.supabaseClient;
+  if (ready && ready.auth && typeof ready.from === 'function') return Promise.resolve(ready);
+  const ms = typeof timeoutMs === 'number' ? timeoutMs : 10000;
+  return new Promise((resolve) => {
+    let done = false;
+    const finish = (c) => {
+      if (done) return;
+      done = true;
+      window.removeEventListener('ap:client:ready', onReady);
+      resolve(c || null);
+    };
+    const onReady = () => finish(_apSharedClient);
+    window.addEventListener('ap:client:ready', onReady);
+    setTimeout(() => finish(_apSharedClient), ms);
+  });
+}
+window.apGetSupabaseClient = apGetSupabaseClient;
+
+// ============================================================
+// SHARED ACCESS-TOKEN HELPER
+//
+// The one place pages get a user JWT for Edge Functions
+// (arowana-research, arowana-ai-coach, ...). Never read tokens from
+// localStorage — the cached copy in gs_auth_user_v1 is written once at
+// login and goes stale within the hour.
+//
+//   const token = await window.apGetAccessToken();
+//   if (!token) -> the user really is signed out (session AND refresh
+//                  both came back empty), safe to say "Sign in".
+//
+// Pass { forceRefresh: true } after an Edge Function answers 401 to
+// swap in a fresh token and retry once.
+//
+// Refreshes are single-flight: parallel callers share one
+// refreshSession() call. Refresh tokens rotate, so two concurrent
+// refreshes with the same token make the second one fail and
+// supabase-js then signs the user out.
+// ============================================================
+
+let _apRefreshPromise = null;
+
+function _apHasCachedUser() {
+  return !!_apGetAuthedUser();
+}
+
+function _apRefreshOnce(client) {
+  if (_apRefreshPromise) return _apRefreshPromise;
+  _apRefreshPromise = (async () => {
+    try {
+      const { data, error } = await client.auth.refreshSession();
+      if (error) console.warn('[auth-token] refreshSession failed:', error.message || error);
+      return (data && data.session && data.session.access_token) || null;
+    } catch (e) {
+      console.warn('[auth-token] refreshSession threw:', e);
+      return null;
+    } finally {
+      _apRefreshPromise = null;
+    }
+  })();
+  return _apRefreshPromise;
+}
+
+async function apGetAccessToken(opts) {
+  const forceRefresh = !!(opts && opts.forceRefresh);
+  const client = await apGetSupabaseClient();
+  if (!client || !client.auth) return null;
+
+  if (!forceRefresh) {
+    try {
+      const { data } = await client.auth.getSession();
+      const token = data && data.session && data.session.access_token;
+      if (token) return token;
+    } catch (e) {
+      console.warn('[auth-token] getSession threw:', e);
+    }
+    // No session and no sign of a login on this device: signed out.
+    if (!_apHasCachedUser()) return null;
+  }
+
+  return _apRefreshOnce(client);
+}
+window.apGetAccessToken = apGetAccessToken;
 
 // Initialize configuration
 async function initializeApp() {
@@ -619,10 +734,6 @@ async function initializeApp() {
             requestsPerDay: 30000
           }
         },
-        claude: {
-          baseUrl: 'https://api.anthropic.com/v1',
-          model: 'claude-3-sonnet-20240229'
-        },
         alphavantage: {
           baseUrl: 'https://www.alphavantage.co/query',
           rateLimit: {
@@ -640,6 +751,17 @@ async function initializeApp() {
     window.AP_WEBHOOKS = AP_WEBHOOKS;
     window.AP_CONFIG = AP_WEBHOOKS; // Backward compatibility
     window.SUPABASE = createSupabaseClient();
+
+    // Build the shared auth client BEFORE announcing config. Listeners of
+    // ap:config:ready (risk.js, arowana-trader, trading-command...) used to
+    // find AP_WEBHOOKS.supabase set but no client yet, and each built its
+    // own — several GoTrueClients racing to refresh the same token. When
+    // the SDK is already loaded this creates the client synchronously
+    // (no await is hit before createClient); otherwise it polls in the
+    // background and pages wait on ap:client:ready / apGetSupabaseClient().
+    initSharedSupabaseClient().catch(err => {
+      console.warn('[init] Shared Supabase client init encountered an issue:', err);
+    });
     
     // Dispatch ready event
     window.dispatchEvent(new CustomEvent('ap:config:ready', { 
@@ -663,12 +785,6 @@ async function initializeApp() {
       console.warn('[init] Key hydration encountered an issue:', err);
     });
 
-    // Also runs in background — does NOT block ap:config:ready. Pages that
-    // need the live client should listen for `ap:client:ready`, or just
-    // read window.supabaseClient (it'll be null until this resolves).
-    initSharedSupabaseClient().catch(err => {
-      console.warn('[init] Shared Supabase client init encountered an issue:', err);
-    });
     
   } catch (error) {
     console.error('❌ App initialization failed:', error);

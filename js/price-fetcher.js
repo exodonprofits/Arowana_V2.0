@@ -64,8 +64,16 @@
     catch { return ''; }
   }
 
+  // js/market-data.js routes finnhub.io requests through the arowana-research
+  // edge function with the user's session, so no personal key is needed when
+  // it is on the page. A stored key is still sent if present; the proxy
+  // ignores it.
+  function viaProxy() {
+    return !!window.__apMarketDataShim;
+  }
+
   function hasKey() {
-    return !!getKey();
+    return !!getKey() || viaProxy();
   }
 
   // ---- Fetch with timeout (defensive against slow networks) -------------
@@ -83,7 +91,7 @@
   async function fetchStock(ticker) {
     if (!ticker) return null;
     const key = getKey();
-    if (!key) return null;
+    if (!key && !viaProxy()) return null;
     const sym = String(ticker).trim().toUpperCase();
     const url = `${FINNHUB_BASE}/quote?symbol=${encodeURIComponent(sym)}&token=${encodeURIComponent(key)}`;
     try {

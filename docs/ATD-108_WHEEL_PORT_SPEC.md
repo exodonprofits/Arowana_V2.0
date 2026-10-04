@@ -1,6 +1,6 @@
 # ATD-108 — Wheel module port: specification
 
-**Status:** Draft for owner review. Documentation only; nothing is ported until this is approved.
+**Status:** Owner-approved 2026-10-04 (PR #32), with Q1–Q6 as recommended. Slice S1 is in progress (section 9).
 **Owner:** Claude Code (frontend). Backend items are marked **Codex lane** and are not done here.
 **Sources compared:**
 - Wheel repository `exodonprofits/arowanaprofits` at `219e61f` (2026-10-03). Its README says "The product is the Wheel Strategy Desk".
@@ -150,3 +150,29 @@ Each slice is one PR. They run in order because later slices build on the auth f
   - `wheel-status.js` importing `digest.js` from the site
 - `ap_risk_settings.rules` was confirmed from ATD-005's deployed-schema tables.
 - **Not done:** no code was run against Supabase, no page from the Wheel repository was opened in a browser, and no deployed function was called.
+
+## 9. Progress
+
+| Slice | State | Notes |
+|---|---|---|
+| S1 Auth foundation | Implemented on `claude/ATD-108-s1-auth` | See below. |
+
+**What S1 changed:**
+
+- **`js/sb.js` is ported** and loaded right after the local SDK on 41 pages. The exceptions are `reset-password` (its recovery flow keeps its own client) and the owner-parked `tradingcommand` and `whale-tracker`.
+- **`trade-journal-pro`, `watchlist` and `scanner` now use the local SDK.** They loaded the unpkg 2.45.4 CDN build before; the local build is 2.45.3.
+- **`app-config.js` takes Wheel's changes**: it adopts the shared client, uses the live `apGetAccessToken()` with single-flight refresh, builds `headers` from a getter, drops the dead Anthropic config, and builds the client before announcing config. Two V2.0 differences:
+  - It does not take Wheel's `/lab/` path.
+  - It keeps a fallback client for pages without `sb.js`, so they are no worse off than before.
+- **`supabase-init.js`, `market-data.js` and `price-fetcher.js`** are Wheel's versions.
+- **`setup-scorecard.js`** is Wheel's version, with one change: it keeps the "add your Finnhub key" prompt on pages that do not load `market-data.js`. That is about 19 pages; without the change they would show a misleading "Sign in".
+- **The key stays hardcoded.** Section 7 suggested reading the anon key from config. That is not possible synchronously, so `sb.js` holds the canonical public copy, as in Wheel.
+
+**Measured** with `scripts/browser/auth_client_check.mjs` (external network blocked):
+- On main, 9 pages created more than one session-sharing auth client. Trading Command created 4 and Options Hub 3.
+- With S1, every page has one, except the parked `tradingcommand`.
+- No page lost its client.
+- Four pages that had none now have one: `login`, `scanner`, `trade-journal-pro` and `watchlist`.
+- `scripts/test_supabase_client.py` keeps `sb.js` after every local SDK tag and keeps CDN SDKs off nav pages.
+
+**Not in S1:** the per-page `createClient()` call sites stay as they are, because `sb.js` turns them into the shared client. Rewriting them, and the three pages that point at a missing `/js/supabase.min.js`, are left for a later clean-up.
