@@ -2,21 +2,33 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Covered Call Finder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting to Options Hub — Arowana Profits</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=options-hub.html?tab=calls">
+  <!-- ATD-009 phase 3: retired; its form posted to a placeholder webhook. Covered by Options Hub covered calls. Keeps the old URL working;
+       any query string and hash are carried over. -->
+  <script>
+    var target = 'options-hub.html?tab=calls';
+    var q = window.location.search ? window.location.search.slice(1) : '';
+    if (q) target += (target.indexOf('?') === -1 ? '?' : '&') + q;
+    window.location.replace(target + window.location.hash);
+  </script>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; }
-    form { max-width: 400px; margin: auto; }
-    input, button { padding: 10px; width: 100%; margin-top: 10px; }
-    button { background-color: green; color: white; font-weight: bold; border: none; cursor: pointer; }
-    button:hover { background-color: darkgreen; }
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; color: #1e293b; padding: 60px 20px; text-align: center; margin: 0; }
+    .redirect-card { max-width: 480px; margin: 0 auto; background: white; padding: 32px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    h1 { color: #0b4f8a; margin-bottom: 12px; font-size: 1.4rem; }
+    p { color: #64748b; line-height: 1.6; margin-bottom: 16px; }
+    a { color: #0b4f8a; font-weight: 700; text-decoration: none; }
+    a:hover { text-decoration: underline; }
   </style>
 </head>
 <body>
-  <h2>🧠 Covered Call Recommendation Tool</h2>
-  <form action="https://your-n8n-url/webhook/options-scan" method="POST">
-    <label for="symbol">Stock Ticker:</label>
-    <input type="text" name="symbol" placeholder="e.g. AAPL, NVDA" required />
-    <button type="submit">🔍 Find Covered Call</button>
-  </form>
+  <div class="redirect-card">
+    <h1>The Option Recommender Has Moved</h1>
+    <p>It is now part of <strong>Options Hub</strong>.</p>
+    <p>Redirecting you now…</p>
+    <p><a href="options-hub.html?tab=calls">Click here if you're not redirected automatically</a></p>
+  </div>
 </body>
 </html>

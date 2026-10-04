@@ -233,7 +233,12 @@ class NavRegistryTests(unittest.TestCase):
                    "ai-valuation.html": "intrinsic-value.html", "intrinsic-value-rsi.html": "intrinsic-value.html",
                    "long-term-intrinsic-value.html": "intrinsic-value.html",
                    "stock-analyzer.html": "analysis-central.html?tab=ai", "chart-analysis-form.html": "analysis-central.html?tab=ai",
-                   "quality-screener.html": "scanner.html?scan=quality_compounders", "buy-sell-signal.html": "trade-plan-builder.html"}
+                   "quality-screener.html": "scanner.html?scan=quality_compounders", "buy-sell-signal.html": "trade-plan-builder.html",
+                   # ATD-009 phase 3
+                   "daytrade.html": "trading-command.html", "ai-trading-agent.html": "arowana-trader.html",
+                   "earning-watcher.html": "trading-command.html", "sector-sentiment.html": "ai-morning-brief.html",
+                   "sector-sentiment-gauge.html": "ai-morning-brief.html", "option-recommender.html": "options-hub.html?tab=calls",
+                   "option-trader.html": "options-hub.html?tab=analyzer", "wheel_strategy_web_tool.html": "wheel-strategy.html?tab=import"}
         for name, target in targets.items():
             html = (ROOT / name).read_text(encoding="utf-8")
             self.assertIn("var target = '%s';" % target, html, name)

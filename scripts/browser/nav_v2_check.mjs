@@ -645,6 +645,18 @@ for (const from of ['ai-valuation', 'intrinsic-value-rsi', 'long-term-intrinsic-
   ok('Q no page errors', p._errors.length === 0, p._errors.join('; '));
   await p.context().close(); }
 
+// P3. ATD-009 phase 3: retired dashboard and options pages.
+for (const [from, path, q] of [['daytrade', '/trading-command.html', ''], ['ai-trading-agent', '/arowana-trader.html', ''], ['earning-watcher', '/trading-command.html', ''],
+  ['sector-sentiment', '/ai-morning-brief.html', ''], ['sector-sentiment-gauge', '/ai-morning-brief.html', ''], ['option-recommender', '/options-hub.html', 'calls'],
+  ['option-trader', '/options-hub.html', 'analyzer'], ['wheel_strategy_web_tool', '/wheel-strategy.html', 'import']]) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?x=1#h'); await p.waitForTimeout(1200);
+  const u = new URL(p.url());
+  ok(`P3 ${from} -> ${path}${q ? '?tab=' + q : ''} keeps query + hash`, u.pathname === path && u.searchParams.get('x') === '1' && u.hash === '#h' && (!q || u.searchParams.get('tab') === q), p.url());
+  if (from === 'wheel_strategy_web_tool') ok('P3 wheel-strategy opens the Import tab from ?tab=import', await p.evaluate(() => document.getElementById('importTab').classList.contains('active')));
+  await p.context().close();
+}
+
 // F. portfolio-command ?tab= (P1). Cached fake user only bypasses the page's
 // client-side redirect; all network is blocked.
 for (const [q, remembered, want] of [['?tab=performance', 'income', 'performance'], ['?tab=bogus', 'income', 'income'], ['', null, 'holdings'], ['?tab=analysis', null, 'analysis']]) {

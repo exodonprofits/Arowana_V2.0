@@ -1,168 +1,34 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Wheel Strategy / Option Chain Tracker</title>
-<link rel="icon" href="data:,">
-<style>
-  :root{--bg:#0f172a;--card:#111827;--muted:#94a3b8;--text:#e5e7eb;--line:#334155;--accent:#22c55e;--warn:#f59e0b;--bad:#ef4444;--good:#10b981;--blue:#38bdf8}
-  body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#0f172a,#020617);color:var(--text)}
-  .wrap{max-width:100%;margin:0 auto;padding:24px}
-  h1{margin:0 0 8px;font-size:28px}.sub{color:var(--muted);margin-bottom:18px}
-  .grid{display:grid;grid-template-columns:1fr 1fr;gap:16px}.card{background:rgba(17,24,39,.88);border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-  textarea{width:100%;min-height:240px;border-radius:10px;border:1px solid var(--line);background:#020617;color:var(--text);padding:12px;font-family:Consolas,monospace;box-sizing:border-box}
-  input,select{background:#020617;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px} button{background:var(--accent);border:0;border-radius:9px;padding:10px 14px;font-weight:700;cursor:pointer}button.secondary{background:#334155;color:#fff}button.warn{background:var(--warn)}button.bad{background:var(--bad);color:#fff}
-  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.hint{font-size:13px;color:var(--muted);line-height:1.45}.drop{border:2px dashed #475569;border-radius:12px;padding:18px;text-align:center;color:var(--muted);margin:10px 0}.drop.drag{border-color:var(--accent);color:#fff}
-  table{width:100%;border-collapse:collapse;font-size:13px;margin-top:10px}th,td{border-bottom:1px solid var(--line);padding:8px;text-align:left;vertical-align:top}th{background:#1e293b;position:sticky;top:0}td.num{text-align:right;font-variant-numeric:tabular-nums}.pill{display:inline-block;border-radius:999px;padding:2px 8px;font-size:12px}.good{background:rgba(16,185,129,.18);color:#6ee7b7}.badp{background:rgba(239,68,68,.18);color:#fecaca}.open{background:rgba(56,189,248,.18);color:#bae6fd}.small{font-size:12px;color:var(--muted)}.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px}.kpi{background:#020617;border:1px solid var(--line);border-radius:12px;padding:12px}.kpi .v{font-size:22px;font-weight:800;margin-top:4px}.full{grid-column:1/-1}#imgPreview{max-width:100%;border-radius:10px;border:1px solid var(--line);margin-top:10px}.tabs{display:flex;gap:8px;margin:16px 0}.tab{padding:9px 12px;border:1px solid var(--line);border-radius:999px;cursor:pointer}.tab.active{background:#1e293b;border-color:#64748b}.hidden{display:none}.editable{background:#020617;border:1px solid #475569;border-radius:6px;color:#fff;padding:5px;width:100%;box-sizing:border-box}
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting to Wheel Strategy — Arowana Profits</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=wheel-strategy.html?tab=import">
+  <!-- ATD-009 phase 3: merged into wheel-strategy.html (same parser, plus the roll window). Keeps the old URL working;
+       any query string and hash are carried over. -->
+  <script>
+    var target = 'wheel-strategy.html?tab=import';
+    var q = window.location.search ? window.location.search.slice(1) : '';
+    if (q) target += (target.indexOf('?') === -1 ? '?' : '&') + q;
+    window.location.replace(target + window.location.hash);
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; color: #1e293b; padding: 60px 20px; text-align: center; margin: 0; }
+    .redirect-card { max-width: 480px; margin: 0 auto; background: white; padding: 32px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    h1 { color: #0b4f8a; margin-bottom: 12px; font-size: 1.4rem; }
+    p { color: #64748b; line-height: 1.6; margin-bottom: 16px; }
+    a { color: #0b4f8a; font-weight: 700; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <h1>Wheel Strategy / Option Chain Tracker</h1>
-  <div class="sub">Paste Thinkorswim/Schwab history, upload CSV/XLSX/HTML, or paste a screenshot. Screenshot OCR may require allowing CDN scripts in your browser. The tool groups option rolls and calculates true chain P/L.</div>
-
-  <div class="grid">
-    <div class="card">
-      <h2>1) Import trades</h2>
-      <div class="row">
-        <input type="file" id="file" accept=".csv,.txt,.html,.htm,.xlsx,.xls,image/*" />
-        <button class="secondary" onclick="pasteClipboard()">Paste from clipboard</button>
-        <button class="bad" onclick="clearAll()">Clear</button>
-      </div>
-      <div id="drop" class="drop">Drag/drop CSV, Excel, HTML, text, or screenshot here</div>
-      <textarea id="raw" placeholder="Paste history here. Example rows:
-7/1/26 13:29:48 SINGLE SELL -1 TO OPEN LITE 24 JUL 26 730 PUT 39.48
-7/8/26 08:35:27 CALENDAR SELL -1 TO OPEN LITE 31 JUL 26 730 PUT 84.75
-7/8/26 08:35:27 CALENDAR BUY +1 TO CLOSE LITE 24 JUL 26 730 PUT 73.21"></textarea>
-      <div class="row" style="margin-top:10px">
-        <button onclick="parseAndAnalyze()">Analyze Chains</button>
-        <button class="secondary" onclick="loadSample()">Load LITE Sample</button>
-        <button class="secondary" onclick="exportCsv('trades')">Export Trades CSV</button>
-        <button class="secondary" onclick="exportCsv('chains')">Export Chains CSV</button>
-      </div>
-      <p class="hint"><b>Screenshot note:</b> If you paste/upload a screenshot, this page will try browser OCR using Tesseract.js CDN. OCR may make mistakes; review the extracted rows before using the P/L.</p>
-      <img id="imgPreview" class="hidden" />
-      <div id="ocrStatus" class="small"></div>
-    </div>
-
-    <div class="card">
-      <h2>2) Settings</h2>
-      <div class="row">
-        <label>Contract multiplier <input id="mult" type="number" value="100" style="width:90px"></label>
-        <label>Group roll window days <input id="rollDays" type="number" value="10" style="width:70px"></label>
-        <label>Current close price <input id="currentClose" type="number" step="0.01" placeholder="optional" style="width:110px"></label>
-        <label>Ticker filter <input id="tickerFilter" placeholder="LITE" style="width:90px"></label>
-      </div>
-      <p class="hint">Same chain logic: same symbol + put/call + side strategy. If a BTC is followed by STO within the roll window, it is treated as a roll, even if expiration/strike changes. Stock trades are kept separately for wheel cycle view.</p>
-      <h3>Dashboard</h3>
-      <div class="kpis">
-        <div class="kpi"><div class="small">Total closed option P/L</div><div class="v" id="kClosed">$0</div></div>
-        <div class="kpi"><div class="small">Open option P/L</div><div class="v" id="kOpen">$0</div></div>
-        <div class="kpi"><div class="small">Lifetime option P/L</div><div class="v" id="kLife">$0</div></div>
-        <div class="kpi"><div class="small">Open chains</div><div class="v" id="kChains">0</div></div>
-      </div>
-      <h3>Manual chain review</h3>
-      <p class="hint">After analysis, edit Chain ID if you want to move a trade to another chain, then click Recalculate.</p>
-      <button class="secondary" onclick="recalcFromTable()">Recalculate after edits</button>
-    </div>
+  <div class="redirect-card">
+    <h1>The Wheel Import Tool Has Moved</h1>
+    <p>It is now part of <strong>Wheel Strategy</strong>.</p>
+    <p>Redirecting you now…</p>
+    <p><a href="wheel-strategy.html?tab=import">Click here if you're not redirected automatically</a></p>
   </div>
-
-  <div class="tabs"><div class="tab active" onclick="showTab('chains')">Chain Summary</div><div class="tab" onclick="showTab('trades')">Parsed Trades</div><div class="tab" onclick="showTab('wheel')">Wheel Positions</div></div>
-  <div id="chains" class="card full"><h2>Chain Summary</h2><div id="chainTable"></div></div>
-  <div id="trades" class="card full hidden"><h2>Parsed Trades</h2><div id="tradeTable"></div></div>
-  <div id="wheel" class="card full hidden"><h2>Wheel Positions</h2><div id="wheelTable"></div></div>
-</div>
-
-<script>
-let trades=[], chains=[];
-const money=n=> (n<0?'-':'')+'$'+Math.abs(n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-const pts=n=> (n||0).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2});
-function showTab(id){document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));event.target.classList.add('active');['chains','trades','wheel'].forEach(x=>document.getElementById(x).classList.toggle('hidden',x!==id));}
-function loadSample(){document.getElementById('raw').value=`6/26/26 12:10:16 SINGLE SELL -1 TO OPEN LITE 24 JUL 26 750 PUT 49.00
-6/29/26 13:01:33 SINGLE BUY +1 TO CLOSE LITE 24 JUL 26 750 PUT 44.60
-7/1/26 13:29:48 SINGLE SELL -1 TO OPEN LITE 24 JUL 26 730 PUT 39.48
-7/8/26 08:35:27 CALENDAR SELL -1 TO OPEN LITE 31 JUL 26 730 PUT 84.75
-7/8/26 08:35:27 CALENDAR BUY +1 TO CLOSE LITE 24 JUL 26 730 PUT 73.21`;parseAndAnalyze();}
-function clearAll(){trades=[];chains=[];document.getElementById('raw').value='';document.getElementById('chainTable').innerHTML='';document.getElementById('tradeTable').innerHTML='';document.getElementById('wheelTable').innerHTML='';updateKpis();}
-async function pasteClipboard(){try{const items=await navigator.clipboard.read();for(const item of items){for(const type of item.types){const blob=await item.getType(type);if(type.startsWith('image/')){handleImage(blob);return;} if(type==='text/plain'){document.getElementById('raw').value+=await blob.text();return;}}}}catch(e){try{document.getElementById('raw').value+=await navigator.clipboard.readText();}catch(err){alert('Clipboard permission blocked. Paste manually with Ctrl+V.');}}}
-const drop=document.getElementById('drop');drop.ondragover=e=>{e.preventDefault();drop.classList.add('drag')};drop.ondragleave=()=>drop.classList.remove('drag');drop.ondrop=e=>{e.preventDefault();drop.classList.remove('drag');handleFile(e.dataTransfer.files[0])};document.getElementById('file').onchange=e=>handleFile(e.target.files[0]);
-function handleFile(f){if(!f)return;if(f.type.startsWith('image/')) return handleImage(f); const r=new FileReader(); r.onload=async e=>{let txt=e.target.result;if(f.name.match(/\.xlsx?$/i)){await loadSheetJs(); const wb=XLSX.read(txt,{type:'binary'}); txt=XLSX.utils.sheet_to_csv(wb.Sheets[wb.SheetNames[0]],{FS:'\t'});} else if(f.name.match(/\.html?$/i)){let doc=new DOMParser().parseFromString(txt,'text/html'); txt=[...doc.querySelectorAll('tr')].map(tr=>[...tr.children].map(td=>td.innerText.trim()).join('\t')).join('\n') || doc.body.innerText;} document.getElementById('raw').value=txt; parseAndAnalyze();}; if(f.name.match(/\.xlsx?$/i)) r.readAsBinaryString(f); else r.readAsText(f);}
-async function loadSheetJs(){if(window.XLSX)return;await new Promise((res,rej)=>{let s=document.createElement('script');s.src='https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});}
-async function handleImage(blob){let url=URL.createObjectURL(blob), img=document.getElementById('imgPreview');img.src=url;img.classList.remove('hidden');document.getElementById('ocrStatus').textContent='Loading OCR...';try{if(!window.Tesseract) await new Promise((res,rej)=>{let s=document.createElement('script');s.src='https://unpkg.com/tesseract.js@5/dist/tesseract.min.js';s.onload=res;s.onerror=rej;document.head.appendChild(s);});let result=await Tesseract.recognize(blob,'eng',{logger:m=>document.getElementById('ocrStatus').textContent='OCR: '+Math.round((m.progress||0)*100)+'% '+(m.status||'')});document.getElementById('raw').value=result.data.text;document.getElementById('ocrStatus').textContent='OCR done. Review the text, then click Analyze Chains.';}catch(e){document.getElementById('ocrStatus').textContent='OCR failed or was blocked by browser privacy settings. Use CSV/HTML export, paste copied rows, or open this page in Chrome/Edge with tracking protection disabled for local files.'}}
-function parseAndAnalyze(){
-  let raw=document.getElementById('raw').value;
-  let filter=document.getElementById('tickerFilter').value.trim().toUpperCase();
-  trades=[]; let failed=[];
-  raw.split(/\n/).forEach((line,i)=>{
-    let t=parseLine(line,i);
-    if(t && (!filter||t.symbol===filter)) trades.push(t);
-    else if(line.trim() && !/Exec Time|Symbol|Price/i.test(line)) failed.push(i+1);
-  });
-  assignChains();renderAll();
-  const msg = trades.length ? `Parsed ${trades.length} trades.` + (failed.length?` Could not read lines: ${failed.join(', ')}. Try copy/paste rows or CSV for best accuracy.`:'') : `No trades parsed. Screenshot OCR text is too garbled; paste/export CSV or edit the text so each row has Date, BUY/SELL, OPEN/CLOSE, Symbol, Exp, Strike, PUT/CALL, Price.`;
-  document.getElementById('ocrStatus').textContent=msg;
-}
-function cleanOcr(s){
-  return s
-    .replace(/[\[\]\|]/g,' ')
-    .replace(/_/g,' ')
-    .replace(/\bSINGLE\b|\bCALENDAR\b/gi,' ')
-    .replace(/cr\s*e?d?i?t|CREDIT/gi,' ')
-    .replace(/MKT|LMT|STP/gi,' ')
-    .replace(/([A-Z]{1,5})(\d{1,2})(JUL|JAN|FEB|MAR|APR|MAY|JUN|AUG|SEP|OCT|NOV|DEC)/gi,'$1 $2 $3')
-    .replace(/(\d{1,2})(JUL|JAN|FEB|MAR|APR|MAY|JUN|AUG|SEP|OCT|NOV|DEC)\s*(\d{2,4})/gi,'$1 $2 $3')
-    .replace(/(\d)(PUT|CALL)/gi,'$1 $2')
-    .replace(/\s+/g,' ').trim();
-}
-function fixPrice(x){
-  if(x==null || x==='') return 0;
-  let n=parseFloat(x);
-  if(!isFinite(n)) return 0;
-  // OCR often drops decimal: 8475 means 84.75, 3948 means 39.48, 4460 means 44.60
-  if(!String(x).includes('.') && n>=1000 && n<100000) n=n/100;
-  return n;
-}
-function parseLine(line,i){
-  let original=line;
-  let s=cleanOcr(line); if(!s || /Exec Time|Symbol|Price/i.test(s))return null;
-  let action=(/SELL/i.test(s)?'SELL':/BUY/i.test(s)?'BUY':null);
-  let effect=(/(TO\s*)?OPEN/i.test(s)?'OPEN':/(TO\s*)?CLOSE/i.test(s)?'CLOSE':null);
-  let qm=s.match(/([+-])\s*(\d{1,3})(?=\s*(TO\s*)?(OPEN|CLOSE))/i);
-  let qty=qm?parseInt(qm[2]):1;
-  // If OCR reads +170 CLOSE, it probably means +1 TO CLOSE.
-  if(qty>20 && /[+-]\s*1\s*(TO\s*)?(OPEN|CLOSE)/i.test(s.replace(/7O/gi,'TO'))) qty=1;
-  let type=(/\bPUT\b/i.test(s)?'PUT':/\bCALL\b/i.test(s)?'CALL':(/\bSTOCK\b/i.test(s)?'STOCK':''));
-  let symbol='';
-  let sym1=s.match(/\b([A-Z]{1,5})\b\s+(?=\d{1,2}\s+(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\b)/i);
-  let sym2=s.match(/\b([A-Z]{1,5})\b\s+STOCK\b/i);
-  let sym3=s.match(/\b([A-Z]{1,5})\b\s+\d+(?:\.\d+)?\s+(PUT|CALL)\b/i);
-  symbol=((sym1||sym2||sym3||[])[1]||'').toUpperCase();
-  let date=(s.match(/\d{1,2}\/\d{1,2}\/\d{2,4}/)||[''])[0];
-  // Handle OCR date like 718126 -> 7/8/26 or 71126 -> 7/1/26 when exact date is not critical for grouping.
-  if(!date){let dm=s.match(/\b(\d)(\d{1,2})(\d{2})(?:\s+\d{2}:\d{2}:\d{2})?/); if(dm) date=`${dm[1]}/${dm[2]}/${dm[3]}`;}
-  let exp=(s.match(/(\d{1,2}\s+(JAN|FEB|MAR|APR|MAY|JUN|JUL|AUG|SEP|OCT|NOV|DEC)\s+\d{2,4})/i)||[])[1]||'';
-  let strike=(s.match(/(\d+(?:\.\d+)?)\s+(PUT|CALL)\b/i)||[])[1]||'';
-  let price=0;
-  // Prefer number after PUT/CALL as option price, otherwise last decimal/integer token.
-  let pm=s.match(/\b(?:PUT|CALL)\b\s+(\d+(?:\.\d+)?)/i);
-  if(pm) price=fixPrice(pm[1]);
-  else {let nums=[...s.matchAll(/\b\d+(?:\.\d+)?\b/g)].map(m=>m[0]).filter(x=>!['26','2026'].includes(x)); price=nums.length?fixPrice(nums[nums.length-1]):0;}
-  if(type==='STOCK'){
-    let nums=[...s.matchAll(/\b\d+(?:\.\d+)?\b/g)].map(m=>m[0]); price=nums.length?fixPrice(nums[nums.length-1]):0;
-  }
-  if(!symbol || !action || !effect || !type || !price) return null;
-  return {row:i+1,date,action,effect,qty:Math.abs(qty)||1,symbol,type,exp,strike:parseFloat(strike)||'',price,chainId:'',raw:original};
-}
-function assignChains(){let rollDays=+document.getElementById('rollDays').value||10; trades.sort((a,b)=>(new Date(a.date)-new Date(b.date))||a.row-b.row); let openChain={}; let chainNo={}; for(let t of trades){ if(t.type==='STOCK'){t.chainId='STOCK-'+t.symbol;continue;} let key=t.symbol+'-'+t.type; chainNo[key]=chainNo[key]||0; if(t.action==='SELL'&&t.effect==='OPEN'){ if(!openChain[key]) openChain[key]=`${t.symbol}-${t.type}-${++chainNo[key]}`; t.chainId=openChain[key]; } else if(t.action==='BUY'&&t.effect==='CLOSE'){ t.chainId=openChain[key]||`${t.symbol}-${t.type}-${++chainNo[key]}`; openChain[key]=null; } else {t.chainId=openChain[key]||`${t.symbol}-${t.type}-${++chainNo[key]}`;} } }
-function chainCalc(group){let mult=+document.getElementById('mult').value||100, credit=0,debit=0, openQty=0,last=null; group.forEach(t=>{let cash=t.price*t.qty*mult; if(t.action==='SELL') {credit+=cash; openQty+= t.effect==='OPEN'?t.qty:-t.qty;} else {debit+=cash; openQty+= t.effect==='CLOSE'?-t.qty:t.qty;} last=t;}); return {credit,debit,net:credit-debit,openQty,last,status:openQty?'OPEN':'CLOSED'};}
-function renderAll(){renderTrades();renderChains();renderWheel();updateKpis();}
-function renderTrades(){let h='<table><tr><th>Chain ID</th><th>Date</th><th>Action</th><th>Effect</th><th>Qty</th><th>Symbol</th><th>Exp</th><th>Strike</th><th>Type</th><th>Price</th></tr>'; trades.forEach((t,i)=>h+=`<tr><td><input class="editable" data-i="${i}" value="${t.chainId}"></td><td>${t.date}</td><td>${t.action}</td><td>${t.effect}</td><td>${t.qty}</td><td>${t.symbol}</td><td>${t.exp}</td><td>${t.strike}</td><td>${t.type}</td><td class="num">${pts(t.price)}</td></tr>`);document.getElementById('tradeTable').innerHTML=h+'</table>';}
-function renderChains(){let map={};trades.filter(t=>t.type!=='STOCK').forEach(t=>(map[t.chainId]=map[t.chainId]||[]).push(t));chains=Object.entries(map).map(([id,g])=>({id,...chainCalc(g),group:g}));let h='<table><tr><th>Chain</th><th>Trades</th><th>Status</th><th>Credits</th><th>Debits</th><th>Net P/L</th><th>Points</th></tr>';chains.forEach(c=>{let lines=c.group.map(t=>`${t.date} ${t.action[0]}TO ${t.exp} ${t.strike}${t.type[0]} @ ${t.price}`).join('<br>');h+=`<tr><td>${c.id}</td><td>${lines}</td><td><span class="pill ${c.status==='OPEN'?'open':'good'}">${c.status}</span></td><td class="num">${money(c.credit)}</td><td class="num">${money(c.debit)}</td><td class="num"><b>${money(c.net)}</b></td><td class="num">${pts(c.net/(+document.getElementById('mult').value||100))}</td></tr>`});document.getElementById('chainTable').innerHTML=h+'</table>';}
-function renderWheel(){let bySym={};trades.forEach(t=>{bySym[t.symbol]=bySym[t.symbol]||{premium:0,stockQty:0,stockCost:0};let m=+document.getElementById('mult').value||100;if(t.type==='STOCK'){let cash=t.price*t.qty;if(t.action==='BUY'){bySym[t.symbol].stockQty+=t.qty;bySym[t.symbol].stockCost+=cash}else{bySym[t.symbol].stockQty-=t.qty;bySym[t.symbol].stockCost-=cash}} else {bySym[t.symbol].premium+=(t.action==='SELL'?1:-1)*t.price*t.qty*m;}});let h='<table><tr><th>Symbol</th><th>Net Option Premium</th><th>Stock Qty</th><th>Net Stock Cost</th><th>Effective Stock Basis</th></tr>';Object.entries(bySym).forEach(([s,o])=>{let basis=o.stockQty?(o.stockCost-o.premium)/o.stockQty:0;h+=`<tr><td>${s}</td><td class="num">${money(o.premium)}</td><td class="num">${o.stockQty}</td><td class="num">${money(o.stockCost)}</td><td class="num">${o.stockQty?money(basis):'-'}</td></tr>`});document.getElementById('wheelTable').innerHTML=h+'</table>';}
-function updateKpis(){let closed=0, open=0, cnt=0; chains.forEach(c=>{if(c.status==='OPEN'){open+=c.net;cnt++}else closed+=c.net});document.getElementById('kClosed').textContent=money(closed);document.getElementById('kOpen').textContent=money(open);document.getElementById('kLife').textContent=money(closed+open);document.getElementById('kChains').textContent=cnt;}
-function recalcFromTable(){document.querySelectorAll('#tradeTable input').forEach(inp=>{trades[+inp.dataset.i].chainId=inp.value.trim();});renderAll();}
-function exportCsv(kind){let rows=kind==='chains' ? [['Chain','Status','Credit','Debit','Net'],...chains.map(c=>[c.id,c.status,c.credit,c.debit,c.net])] : [['Chain','Date','Action','Effect','Qty','Symbol','Exp','Strike','Type','Price'],...trades.map(t=>[t.chainId,t.date,t.action,t.effect,t.qty,t.symbol,t.exp,t.strike,t.type,t.price])];let csv=rows.map(r=>r.map(x=>'"'+String(x).replaceAll('"','""')+'"').join(',')).join('\n');let a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download=kind+'_export.csv';a.click();}
-</script>
 </body>
 </html>
