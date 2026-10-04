@@ -60,6 +60,7 @@ table{width:100%;border-collapse:collapse;font-size:.86rem}
 th,td{text-align:right;padding:8px 6px;border-bottom:1px solid #eef2f6;white-space:nowrap}
 /* "What happens" wraps, so the result column stays in view (ATD-108 S5). */
 #scenTable td:nth-child(2){white-space:normal}
+@media(max-width:560px){#scenTable th,#scenTable td:first-child{white-space:normal}#scenTable th,#scenTable td{padding:8px 4px}}
 th:first-child,td:first-child{text-align:left}
 th{font-size:.74rem;color:var(--muted);font-weight:600}
 td.num{font-family:var(--mono)}
@@ -81,7 +82,9 @@ td.neg{color:var(--bad)}
 .explain li{margin-bottom:5px}
 footer{border-top:1px solid var(--border);padding:24px 0 40px;color:var(--muted);font-size:.82rem}
 footer .shell{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-between}
-@media(max-width:900px){.grid{grid-template-columns:1fr}}
+/* minmax(0,1fr): a plain 1fr track grows to its widest nowrap table, which
+   made the page scroll sideways on phones. Tables scroll in their card. */
+@media(max-width:900px){.grid{grid-template-columns:minmax(0,1fr)}}
 @media(max-width:560px){.fields{grid-template-columns:1fr}.cta a.ghost{margin:8px 0 0;display:block;text-align:center}}
 /* V1 Nav */
 .nav-wrap{position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)}

@@ -205,6 +205,10 @@ Tests: `scripts/test_explain_fixes.py`, `scripts/browser/explain_fixes_check.mjs
 
 **Plan gates follow-up, branch `claude/ATD-108-plan-gates`:** seven pages decided Pro from `ap_is_pro_v1`, which nothing sets (Pro users treated as Free; Pro unlockable from the console). They now use `js/plan.js`; `long-term-dashboard` loads the real SDK. Tests: `scripts/test_plan_gates.py`, `scripts/browser/plan_gates_check.mjs` (28; main fails 10).
 
+**Phone fix, branch `claude/ATD-108-mobile-fixes`:** the Wheel Calculator scrolled sideways on phones (a plain `1fr` grid track grew to its widest no-wrap table); the scenario table now fits at 375px and 320px. Checked in `scripts/browser/explain_fixes_check.mjs`.
+
+**Checked, no change needed:** Portfolio Command's "Import CSV" opens Trade Journal Pro's importer; the old wizard that wrote the retired `portfolio` table, and the old `portfolio` read, are unused code.
+
 **Next:** S6 ("Your wheel today"), blocked until the edge-function source is in Git (Q6, Codex).
 
 ### ATD-007 continuation - 2026-10-01

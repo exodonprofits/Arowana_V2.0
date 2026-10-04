@@ -115,6 +115,20 @@ async function page(path, db, explain, width) {
   await ctx.close();
 }
 
+// ── Wheel Calculator on a phone: no sideways page scroll, table fits ────
+for (const w of [375, 320]) {
+  const ctx = await browser.newContext({ viewport: { width: w, height: 800 } });
+  await ctx.route('**/*', r => new URL(r.request().url()).hostname === '127.0.0.1' ? r.continue() : r.abort());
+  const p = await ctx.newPage();
+  await p.goto(BASE + '/wheel-calculator.html');
+  await p.click('[data-leg="call"]');
+  for (const [id, v] of [['price', '50'], ['strike', '52'], ['premium', '1'], ['dte', '30'], ['contracts', '1'], ['basis', '40']]) if (await p.isVisible('#' + id)) await p.fill('#' + id, v);
+  await p.waitForTimeout(300);
+  const m = await p.evaluate(() => { const t = document.getElementById('scenTable'); return { doc: document.documentElement.scrollWidth, table: t.getBoundingClientRect().width, card: t.parentElement.getBoundingClientRect().width }; });
+  check(`calculator at ${w}px: no sideways page scroll; scenario table fits its card`, m.doc <= w + 1 && m.table <= m.card + 2, m);
+  await ctx.close();
+}
+
 // ── Scanner: plan.js decides Pro locks; ap_is_pro_v1 no longer unlocks ───
 // scanners.js unlocks every scan on localhost (devUnlocked), so this page is
 // served as http://arowana.test, mapped to the local server.
