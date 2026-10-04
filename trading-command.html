@@ -7934,6 +7934,19 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
           return;
         }
 
+        // Wheel summary (js/wheel-status.js), the same one Arowana Trader
+        // shows: open puts and calls, what needs attention, capital. Without
+        // it the coach saw only shares and answered as if no options were open.
+        const context = coachBuildContext();
+        try {
+          if (window.AP_WHEELSTATUS) {
+            const w = AP_WHEELSTATUS.coachContext((await AP_WHEELSTATUS.load()).status);
+            if (w.openPositions) context.openPositions = w.openPositions.replace(/\.+$/, '') + '. Shares: ' + context.openPositions + '.';
+            if (w.wheelCapital) context.wheelCapital = w.wheelCapital;
+            if (w.committed) context.committed = w.committed;
+          }
+        } catch (e) { console.warn('[coach] wheel summary unavailable', e); }
+
         const resp = await fetch(cfg.url + '/functions/v1/arowana-ai-coach', {
           method: 'POST',
           headers: {
@@ -7943,7 +7956,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
           },
           body: JSON.stringify({
             messages: _coachHistory.slice(-10),
-            context: coachBuildContext()
+            context: context
           })
         });
 
@@ -9609,6 +9622,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
   <script src="./js/sb.js?v=20261004a"></script>
   <!-- Market data runs on our licensed key; nobody brings their own. -->
   <script src="./js/market-data.js?v=20260918c"></script>
+  <script src="./js/wheel-status.js?v=20261004f"></script>
   <script src="./js/auth-header.js?v=20260918c"></script>
 
 <!-- Slims the site footer to a single compliance line on workspace pages.

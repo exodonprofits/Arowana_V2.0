@@ -209,7 +209,9 @@ Tests: `scripts/test_explain_fixes.py`, `scripts/browser/explain_fixes_check.mjs
 
 **Dead-code cleanup, branch `claude/ATD-108-dead-code`:** removed Portfolio Command's unused CSV wizard and old `portfolio` fetch (about 1,560 lines; Import CSV already opens Trade Journal Pro's importer) and long-term-dashboard's section locks for sections the page does not have. `scripts/test_portfolio_source.py` keeps Portfolio Command off the retired `portfolio` / `portfolio_options` tables.
 
-**Next:** S6 ("Your wheel today"), blocked until the edge-function source is in Git (Q6, Codex). Handover: [ATD-108 Codex handover](docs/ATD-108_CODEX_HANDOFF.md).
+**S6 "Your wheel today", branch `claude/ATD-108-s6-wheel-today`:** done on the frontend. `js/digest.js` is a copy of the deployed digest module, used by `js/wheel-status.js`. Arowana Trader gets the panel (above the Morning Brief; the scan stays), and both coaches get the wheel summary as context. Tests: `tests/digest.test.js`, `scripts/test_wheel_today.py`, `scripts/browser/wheel_today_check.mjs` (14).
+
+**Next:** backend Q6 (Codex): bring the edge functions and migrations into Git. Handover: [ATD-108 Codex handover](docs/ATD-108_CODEX_HANDOFF.md).
 
 ### ATD-007 continuation - 2026-10-01
 

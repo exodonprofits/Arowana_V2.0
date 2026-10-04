@@ -459,6 +459,8 @@ footer a{color:var(--dim)}.footer a:hover{color:var(--muted)}
 .coach-live .pill-label{display:none}
 .coach-live,#journalSyncPill{cursor:help}
 #journalSyncPill{padding:6px 9px}
+/* ATD-108 S6: Your wheel today */
+.wheel-sections{display:grid;gap:12px;padding:0 30px}.wheel-card{background:#fff;border:1px solid var(--border);border-radius:var(--r);padding:13px 16px;box-shadow:0 6px 20px rgba(35,61,77,.045)}.wheel-card-head{display:flex;align-items:center;gap:8px}.wheel-card h3{font-size:.8rem;font-weight:800;color:var(--ink);margin:0}.wheel-count{font-size:.62rem;font-weight:700;color:#14577f;background:#e1f0f6;border-radius:4px;padding:1px 6px}.wheel-count:empty{display:none}.wheel-stale{border-left:3px solid #dc2626}.wheel-near{border-left:3px solid #d97706}.wheel-earnings{border-left:3px solid #7c3aed}.wheel-week{border-left:3px solid #2789be}.wheel-idle{border-left:3px solid #0e9f6e}.wheel-note{font-size:.7rem;color:var(--dim);margin:4px 0 6px}.wheel-row{display:flex;justify-content:space-between;gap:12px;padding:7px 0;border-top:1px solid #eef2f6;font-size:.78rem}.wheel-what{font-weight:700;color:var(--ink)}.wheel-where{color:#334155;text-align:right;font-family:var(--mono);font-size:.72rem}.wheel-link{display:inline-block;margin-top:8px;font-size:.72rem;font-weight:700;color:#14577f;text-decoration:none}.wheel-link:hover{text-decoration:underline}.wheel-empty{background:#fff;border:1px dashed var(--border);border-radius:var(--r);padding:16px;font-size:.8rem;color:var(--muted)}.wheel-ok{border-style:solid;border-left:3px solid #0e9f6e}.wheel-foot{padding:10px 30px 24px;font-size:.66rem;color:var(--dim)}.pos-none{font-size:.75rem;color:var(--dim)}@media(max-width:540px){.wheel-sections,.wheel-foot{padding-left:14px;padding-right:14px}.wheel-row{flex-direction:column;gap:2px}.wheel-where{text-align:left}}
 </style>
 <style id="ai-coach-command-theme">
 :root{--bg:#eef3f6;--surface:#fff;--card:#fff;--card-hi:#f3f7f9;--border:#d7e0e5;--border-hi:#b9cad4;--ink:#102536;--muted:#526977;--dim:#6f818c;--brand:#176d9f;--blue:#176d9f;--green:#087a55;--red:#c9363e;--amber:#9b5d00;--cyan:#1d8dbd;--font:'Manrope',system-ui,sans-serif;--mono:'DM Mono','Courier New',monospace;--r:12px}
@@ -792,6 +794,17 @@ footer:not(.site-footer){display:none!important}.site-footer{background:#e8f0f4!
           <a class="beginner-tool" href="wheel-calculator.html"><span class="beginner-tool-top"><span class="beginner-tool-name">🧮 Wheel calculator</span></span><span class="beginner-tool-desc">Return on collateral for a single contract, before you place it.</span></a>
         </div>
       </section>
+      <!-- ATD-108 S6: Your wheel today. The daily email's checks on the page,
+           built by js/digest.js (the same module as the email) through
+           js/wheel-status.js. Added above the Morning Brief; the scan stays. -->
+      <div class="brief-header z1" id="wheelTodayHeader"><div><div class="brief-title">🛞 Your wheel today</div><div class="brief-sub">What your open puts and calls need from you today.</div></div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="btnRefreshWheel">↺ Refresh</button></div>
+      </div>
+      <div class="wheel-today" id="wheelToday">
+        <div class="brief-kpis" id="wheelKpis"></div>
+        <div class="wheel-sections" id="wheelSections"><div class="wheel-empty">Reading your journal…</div></div>
+        <div class="wheel-foot" id="wheelFoot"></div>
+      </div>
       <div class="brief-header z1" id="briefSection"><div><div class="brief-title">Morning Brief — <span id="briefDate"></span></div><div class="brief-sub">Review market context and create your own risk-defined plan.</div></div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><button class="btn btn-ghost btn-sm" id="btnRefreshScan">↺ Refresh</button><button class="btn btn-primary btn-sm" onclick="switchTab('chat')">💬 Ask the Coach</button></div>
       </div>
@@ -977,6 +990,7 @@ footer:not(.site-footer){display:none!important}.site-footer{background:#e8f0f4!
 <script src="./js/app-config.js?v=20260918c"></script>
 <!-- Market data runs on our licensed key; nobody brings their own. -->
 <script src="./js/market-data.js?v=20260918c"></script>
+<script src="./js/wheel-status.js?v=20261004f"></script>
 <script src="./js/plan.js?v=20260918c"></script>
 <script src="./js/auth-header.js?v=20260918c"></script>
 <script defer src="./js/journal-sync.js"></script>
@@ -2285,6 +2299,81 @@ window.addEventListener('journal-sync:pulled',()=>{ if(typeof window.wlRenderSug
 window.addEventListener('storage',e=>{if(e.key==='tj_stocks_v2'||e.key==='tj_options_v2')loadSharedJournalPositions()});
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)loadSharedJournalPositions()});
 migrateLegacyPositionsOnce();loadSharedJournalPositions();
+/* ── Your wheel today ──────────────────────────────────────────────────
+   The daily email's checks, on the page: positions near or through the
+   strike, earnings before an expiration, this week's expirations, and
+   cash not working. digest.js is the code that builds the email, imported
+   as-is so the two cannot drift apart. Prices are the nightly close
+   (market_snapshots), the same as the email; a live quote fills in only
+   for a symbol with no close on file. */
+let _wheelBusy=false;
+$('btnRefreshWheel')?.addEventListener('click',()=>renderWheelToday(true));
+function wEl(tag,cls,text){const e=document.createElement(tag);if(cls)e.className=cls;if(text!=null)e.textContent=text;return e}
+async function renderWheelToday(force){
+  const box=$('wheelSections'),kpis=$('wheelKpis'),foot=$('wheelFoot');
+  if(!box||_wheelBusy)return;
+  _wheelBusy=true;
+  try{
+    // Loading lives in js/wheel-status.js (shared with Trading Command's coach).
+    const c=await AP_WHEELSTATUS.load({force:!!force,quote:fetchPrice});
+    const D=c.D,st=c.status,openCount=c.legs,symbols=c.symbols;
+    window._wheelStatus=st;
+
+    // Three numbers across the top.
+    while(kpis.firstChild)kpis.removeChild(kpis.firstChild);
+    const kpi=(label,value,sub)=>{const k=wEl('div','kpi-card');k.appendChild(wEl('div','kpi-label',label));k.appendChild(wEl('div','kpi-value',value));k.appendChild(wEl('div','kpi-sub',sub));kpis.appendChild(k)};
+    kpi('Open contracts',st.puts+' put'+(st.puts===1?'':'s')+' · '+st.calls+' call'+(st.calls===1?'':'s'),
+        openCount?D.usd(st.credit)+' premium received on these':'Nothing open in your journal');
+    kpi('Put collateral',D.usd(st.collateral),
+        st.capital?Math.round(st.collateral/st.capital*100)+'% of your '+D.usd(st.capital)+' wheel capital':'Set wheel capital in Check a Trade to see this as a share');
+    kpi('Cash not working',st.free==null?'—':D.usd(st.free),
+        st.free==null?'Needs your wheel capital':'After put collateral and '+D.usd(st.shares)+' of shares at cost');
+
+    // The sections, in the email's order.
+    while(box.firstChild)box.removeChild(box.firstChild);
+    if(!openCount){
+      const e=wEl('div','wheel-empty');
+      e.appendChild(document.createTextNode('No open puts or calls in your journal. When you log one in '));
+      const a=wEl('a',null,'Trade Journal Pro');a.href='trade-journal-pro.html?from=arowana-coach';
+      e.appendChild(a);e.appendChild(document.createTextNode(', this shows what it needs from you each day.'));
+      box.appendChild(e);
+    }else if(!st.sections.length){
+      box.appendChild(wEl('div','wheel-empty wheel-ok','Nothing needs you today. No contract is within 3% of its strike, none has earnings before it expires, and none expires this week.'));
+    }
+    const links={stale:['Open Trade Journal','trade-journal-pro.html?from=arowana-coach'],week:['Roll Coach','options-hub.html?tab=roll'],near:['Roll Coach','options-hub.html?tab=roll'],earnings:['Check a Trade','options-hub.html?tab=check'],idle:['Put scanner','options-hub.html?tab=puts']};
+    st.sections.forEach(sec=>{
+      const card=wEl('section','wheel-card wheel-'+sec.id);
+      const head=wEl('div','wheel-card-head');
+      head.appendChild(wEl('h3',null,sec.title));
+      head.appendChild(wEl('span','wheel-count',String(sec.id==='idle'?'':sec.rows.length)));
+      card.appendChild(head);
+      if(sec.note)card.appendChild(wEl('p','wheel-note',sec.note));
+      sec.rows.forEach(r=>{
+        const row=wEl('div','wheel-row');
+        row.appendChild(wEl('span','wheel-what',r[0]));
+        row.appendChild(wEl('span','wheel-where',r[1]));
+        card.appendChild(row);
+      });
+      const l=links[sec.id];
+      if(l){const a=wEl('a','wheel-link',l[0]+' →');a.href=l[1];card.appendChild(a)}
+      box.appendChild(card);
+    });
+
+    // Where the numbers came from.
+    const bits=['From your trade journal'];
+    if(symbols.length){
+      bits.push(c.priceDate?'prices are the close of '+new Date(c.priceDate+'T12:00:00Z').toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',timeZone:'UTC'})+(c.live?' ('+c.live+' live quote'+(c.live===1?'':'s')+' where no close was on file)':''):(c.live?'live quotes (no close on file)':'no prices available'));
+      bits.push(c.earningsOk?'earnings dates for the next 60 days':'earnings dates unavailable right now');
+    }
+    foot.textContent=bits.join(' · ')+'. The same checks as your daily email.';
+  }catch(e){
+    console.error('[wheel] panel failed',e);
+    while(box.firstChild)box.removeChild(box.firstChild);
+    box.appendChild(wEl('div','wheel-empty','Could not build your wheel status. Refresh the page to try again.'));
+  }finally{_wheelBusy=false}
+}
+window.addEventListener('journal-sync:pulled',()=>renderWheelToday());
+window.addEventListener('storage',e=>{if(e.key==='tj_stocks_v2'||e.key==='tj_options_v2')renderWheelToday()});
 /* CHAT */
 const chatHistory=[];
 function addAgentMessage(text,isWelcome=false){const area=$('chatArea');if(!area)return;const div=document.createElement('div');div.className='chat-msg';div.innerHTML='<div class="chat-avatar agent">AP</div><div><div class="chat-bubble agent">'+formatAgentText(text)+'</div><div class="chat-ts">'+nowStr()+'</div></div>';area.appendChild(div);if(!isWelcome)area.scrollTop=area.scrollHeight;chatHistory.push({role:'assistant',content:text})}
@@ -2334,6 +2423,9 @@ try{
     market:window._lastScanData||null,positions:positions.slice(0,20),
     openOptions:optionTrades.filter(t=>String(t.status||'open').toLowerCase()==='open').slice(0,12).map(t=>({ticker:t.ticker||t.symbol,type:t.type||t.strategy,contracts:t.contracts||t.qty,strike:t.strike,expiration:t.expiration||t.expiry}))
   };
+  /* The fields arowana-ai-coach reads (openPositions, wheelCapital,
+     committed), from the wheel panel, so the coach sees what the page shows. */
+  if(window._wheelStatus&&window.AP_WHEELSTATUS)Object.assign(context,AP_WHEELSTATUS.coachContext(window._wheelStatus));
   const resp=await fetch(cfg.url+'/functions/v1/arowana-ai-coach',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token,'apikey':cfg.anonKey},body:JSON.stringify({messages:apiMessages,context})});
   removeTyping();if(!resp.ok)throw new Error('Coach service '+resp.status);
   const data=await resp.json();const reply=data?.reply||data?.message||data?.output||data?.text;
@@ -2786,6 +2878,7 @@ document.addEventListener('DOMContentLoaded',()=>{
       setTimeout(()=>location.replace('login.html?next='+encodeURIComponent(location.pathname+location.search)),700);
       return;
     }
+    renderWheelToday();
     await runScan();
   }
   /* ── Sync pill: symbol visible, wording on hover ───────────────────
