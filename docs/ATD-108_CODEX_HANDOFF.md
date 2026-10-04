@@ -102,8 +102,8 @@ Other notes:
 
 ## 5. What is blocked on this
 
-- **S6 "Your wheel today"** (`js/wheel-status.js`) imports `supabase/functions/arowana-digest/digest.js` as a static file served by the site. It needs the digest source committed and deployed to a path the site serves.
-- **Node tests for `digest`, `number-guard` and `price-guard`** run in the existing `Node Tests` workflow (`node --test tests/*.test.js`) once their sources are in the tree. Wheel's test files can be copied unchanged.
+- **S6 "Your wheel today" is done on the frontend.** `js/digest.js` is a byte-for-byte copy of the deployed `arowana-digest/digest.js`. When you commit the function source, keep `supabase/functions/arowana-digest/digest.js` identical to `js/digest.js`; `scripts/test_wheel_today.py` checks this. Alternatively, make one the source and generate the other.
+- **Node tests:** `tests/digest.test.js` already runs against `js/digest.js`. `number-guard` and `price-guard` tests run in the same `Node Tests` workflow once their sources are in the tree; Wheel's test files can be copied unchanged.
 
 ## 6. Owner and backend actions still open
 

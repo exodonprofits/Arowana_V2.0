@@ -322,3 +322,21 @@ On main, the Income checks fail because main counts only `closed` contracts, and
 - `scripts/browser/plan_gates_check.mjs` opens each page twice: as a Free account with `ap_is_pro_v1` set, and as a Pro account from the server. Result: 28 of 28. The same script on main fails 10.
 - `scripts/test_plan_gates.py` stops any page reading the key again.
 
+**S6 "Your wheel today" (branch `claude/ATD-108-s6-wheel-today`), done on the frontend instead of waiting for Q6:**
+
+- **`js/digest.js`** is a byte-for-byte copy of the deployed `arowana-digest/digest.js`. On 2026-10-04 the deployed v3 was compared against the Wheel repo's copy: the same 35 top-level declarations, with every distinctive line present.
+  - It is served from `js/` because the edge-function source is not in this repository.
+  - `scripts/test_wheel_today.py` will fail if it ever differs from `supabase/functions/arowana-digest/digest.js`, once Codex commits that file.
+- **`js/wheel-status.js`** is Wheel's version, loading `./digest.js`.
+- **`tests/digest.test.js`** is Wheel's file, with only the import path changed. It runs in the Node Tests workflow.
+- **Arowana Trader** gets a "Your wheel today" section above the Morning Brief:
+  - Three KPI cards: open contracts, put collateral, and cash not working.
+  - The daily email's checks: past expiration but still open, expiring this week, near or through the strike, earnings before expiration, and cash not working.
+  - Each check links to the place that answers it.
+  - The morning scan stays. In Wheel this panel replaced the scan; V2.0 adds it instead.
+- **Both coaches** (Arowana Trader and Trading Command) now send the wheel summary as context: open puts and calls, wheel capital and committed capital.
+- **Tested:**
+  - `scripts/browser/wheel_today_check.mjs`: 14 of 14.
+  - `tests/digest.test.js`.
+  - Pages at 1280 and 375 px, with no sideways scroll.
+
