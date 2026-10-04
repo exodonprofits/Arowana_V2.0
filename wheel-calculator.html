@@ -58,6 +58,8 @@ main{padding:28px 0 56px}
 .scenarios h3{font:800 1rem "Inter Tight",system-ui,sans-serif;margin-bottom:8px}
 table{width:100%;border-collapse:collapse;font-size:.86rem}
 th,td{text-align:right;padding:8px 6px;border-bottom:1px solid #eef2f6;white-space:nowrap}
+/* "What happens" wraps, so the result column stays in view (ATD-108 S5). */
+#scenTable td:nth-child(2){white-space:normal}
 th:first-child,td:first-child{text-align:left}
 th{font-size:.74rem;color:var(--muted);font-weight:600}
 td.num{font-family:var(--mono)}
@@ -232,6 +234,7 @@ main{flex:1}
               <thead><tr><th>Stock at expiration</th><th>What happens</th><th>Your result</th></tr></thead>
               <tbody></tbody>
             </table>
+            <p id="scenNote" style="font-size:.8rem;color:#5b6b78;margin-top:8px"></p>
           </div>
         </div>
 
@@ -437,11 +440,18 @@ main{flex:1}
           if (at >= strike) { what = 'Expires worthless'; result = credit; }
           else { what = 'Assigned at ' + money(strike); result = credit - (strike - at) * shares; }
         } else {
-          if (at <= strike) { what = 'Expires worthless, you keep the shares'; result = credit + (at - price) * shares; }
+          // Same reference as the called-away row and "Profit if called away":
+          // your cost basis. This row used to measure from today's price, so
+          // the result jumped by (price − basis) × shares at the strike.
+          if (at <= strike) { what = 'Expires worthless, you keep the shares'; result = credit + (at - basis) * shares; }
           else { what = 'Shares called away at ' + money(strike); result = credit + (strike - basis) * shares; }
         }
         return '<tr><td class="num">' + label + '</td><td>' + what + '</td><td class="num ' + (result >= 0 ? 'pos' : 'neg') + '">' + dollars(result) + '</td></tr>';
       }).join('');
+      var sn = el('scenNote');
+      if (sn) sn.textContent = leg === 'put'
+        ? 'Your result = the premium, less the loss on the shares if you are assigned (valued at the price in that row).'
+        : 'Your result = the premium plus the shares\u2019 gain or loss against your cost basis of ' + money(basis) + ' (sold at the strike if called away).';
     }
 
     F.forEach(function (id) { el(id).addEventListener('input', render); });

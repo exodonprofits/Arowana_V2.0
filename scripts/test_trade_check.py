@@ -35,10 +35,6 @@ class TradeCheckTests(unittest.TestCase):
     def test_check_is_pro_like_the_other_wheel_tabs(self):
         self.assertIn("checkTab: 'pro'", HUB)
 
-    def test_explain_not_loaded_yet(self):
-        # "Argue both sides" (js/explain.js) is slice S5.
-        self.assertNotIn("explain.js", HUB)
-
     def test_risk_uses_only_the_shared_client(self):
         self.assertNotIn("supabase.createClient", RISK)
 

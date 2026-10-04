@@ -193,7 +193,15 @@ Tests: `tests/wheel-ledger.test.js` (10), `scripts/browser/portfolio_ledger_chec
 
 Tests: `tests/trade-check.test.js`, `scripts/test_trade_check.py`, `scripts/browser/trade_check_check.mjs` (16). Follow-up: `ap_risk_settings` has no migration in this repo (Q6).
 
-**Next:** S5 (explanations, wheel calculator fix, roll-tracker ticker, Options Hub 404 script).
+**S5 explanations + fixes, branch `claude/ATD-108-s5-explain`:**
+- `js/explain.js`: "Explain in plain English" (Portfolio Command Income) and "Argue both sides" (Check a Trade), via the deployed `arowana-explain` (Pro, server-side number guard, text rendering);
+- Wheel Calculator: covered-call kept-shares row measured from cost basis; result column fits;
+- `scanners.js` plan from `plan.js` (now loaded on `scanner.html`); `ap_is_pro_v1` shortcut removed;
+- removed the dead Twelve Data ticker (`option-roll-tracker`) and the 404 script tag (`options-hub`).
+
+Tests: `scripts/test_explain_fixes.py`, `scripts/browser/explain_fixes_check.mjs` (19). Follow-ups: seven pages still read `ap_is_pro_v1`; calculator header overflows at 375px.
+
+**Next:** S6 ("Your wheel today"), blocked until the edge-function source is in Git (Q6, Codex).
 
 ### ATD-007 continuation - 2026-10-01
 
