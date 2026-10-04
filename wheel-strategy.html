@@ -1508,6 +1508,12 @@ function switchTab(name){
   });
   try{ window.scrollTo({top:0,behavior:'smooth'}); }catch(_){ }
 }
+/* ?tab=<name> opens that tab on arrival (ATD-009: the retired
+   wheel_strategy_web_tool.html redirects to ?tab=import). */
+document.addEventListener('DOMContentLoaded',function(){
+  var t=null; try{ t=new URLSearchParams(location.search).get('tab'); }catch(_){ }
+  if(t && /^[a-z]+$/.test(t) && document.querySelector('.trading-tab[data-tab="'+t+'"]')) switchTab(t);
+});
 
 /* ── Toasts ── */
 function showToast(message,type='info'){
