@@ -14,10 +14,10 @@
        contains only an outdated copy of the navigation rail (no session check,
        no redirect); loaded deferred, it re-rendered the rail after the page's own.
        The file itself is left in place for ATD-007 to retire. -->
-  <script defer src="/js/journal-sync.js"></script>
-  <script src="/js/account-registry.js?v=20260918c"></script>
-  <script defer src="/js/journal-fields.js"></script>
-  <script defer src="/js/price-fetcher.js"></script>
+  <script defer src="./js/journal-sync.js"></script>
+  <script src="./js/account-registry.js?v=20260918c"></script>
+  <script defer src="./js/journal-fields.js"></script>
+  <script defer src="./js/price-fetcher.js"></script>
 
 <!-- ====================================================================== -->
 <!-- Consolidated Styles — mirrors short-term-dashboard.html design system  -->
@@ -7127,8 +7127,8 @@ function renderAll(){
 <script src="./js/supabase_min.js?v=20260918c"></script>
 <script src="./js/sb.js?v=20261004a"></script>
 <script>
-  window.GS_CONFIG_URL  = "/js/config.json";
-  window.GS_CONFIG_PATH = "/js/config.json";
+  window.GS_CONFIG_URL  = "./js/config.json";
+  window.GS_CONFIG_PATH = "./js/config.json";
 </script>
 <!-- Site navigation rail — shared across all core pages. Its own
      account-section rendering is skipped on this page (see nav-rail.js's
@@ -7139,10 +7139,10 @@ function renderAll(){
      js/nav-loader.js chooses it by default; localStorage ap_nav_v2 = "0"
      falls back to js/nav-rail.js. -->
 <script src="./js/nav-loader.js?v=20261003e"></script>
-<script src="/js/app-config.js?v=20260918c"></script>
+<script src="./js/app-config.js?v=20260918c"></script>
 <!-- Market data runs on our licensed key; nobody brings their own. -->
-<script src="/js/market-data.js?v=20260918c"></script>
-<script src="/js/auth-header.js?v=20260918c"></script>
+<script src="./js/market-data.js?v=20260918c"></script>
+<script src="./js/auth-header.js?v=20260918c"></script>
 <script>
   window.GSAuthHeader && window.GSAuthHeader.init({
     loginUrl:       "./login.html",
