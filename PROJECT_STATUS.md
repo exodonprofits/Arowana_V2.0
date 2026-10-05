@@ -1,6 +1,10 @@
 # Project Status
 
 
+## Small fixes - 2026-10-05
+
+The home page's "Free, Pro and Pro" and "Pro and Pro are still open" now name the real plans. Retirement Planner's AI write-up works for Pro and Founding members: it takes the plan from the server and asks the managed explanation service, which writes only from the page's own numbers. That service needs the new `retirement` kind deployed before the managed write-up turns on; until then the page says so. Bring-your-own-endpoint is unchanged.
+
 ## ATD-108 Founders pricing follow-up - pending review
 
 The owner's latest instruction sets Founders to **$299/year**, superseding the earlier $229 decision. Branch `codex/ATD-108-founders-299` aligns checkout, pricing, landing, account and billing pages with the backend guard at 29900 USD cents annually. Both Founders cycle aliases remain annual; the guard rejects $229/$399. Original deployed-capture hashes are retained with an explicit pending repository-change hash.

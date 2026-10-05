@@ -58,9 +58,9 @@ const PAGES = [
   // now run after the plan is known, and must not throw.
   { path: 'long-term-dashboard.html', probe: () => ({ plan: !!window.AP_PLAN, pro: !!(window.AP_PLAN && AP_PLAN.atLeast('pro')) }),
     free: r => r.plan && !r.pro, pro: r => r.plan && r.pro },
-  // No SDK or config on this page, so no plan.js: the managed tier is never
-  // claimed from the browser, and a Pro user gets the BYOK/upgrade choice.
-  { path: 'retirement-planner.html', probe: () => ({ tier: getAccountTier() }), free: r => r.tier !== 'subscription', pro: r => r.tier !== 'subscription' }
+  // Loads plan.js since the managed write-up was wired up: Pro comes from
+  // the server, and the old ap_is_pro_v1 flag still unlocks nothing.
+  { path: 'retirement-planner.html', probe: () => ({ tier: getAccountTier() }), free: r => r.tier !== 'subscription', pro: r => r.tier === 'subscription' }
 ];
 
 for (const pg of PAGES) {

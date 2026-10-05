@@ -312,7 +312,7 @@
             <li>12 months of Pro included, then $299/year</li>
             <li>Every wheel tool as it ships: scanners, income tracker, coach</li>
             <li>A direct line to request features and report problems</li>
-            <li>Prefer to pay monthly? See <a href="pricing.html" style="color:var(--cyan);font-weight:700">Free, Pro and Pro</a></li>
+            <li>Prefer to pay monthly? See <a href="pricing.html" style="color:var(--cyan);font-weight:700">Pro at $29/month</a></li>
           </ul>
         </div>
         <form class="wd-form" id="wdWaitlistForm" novalidate>
@@ -418,7 +418,7 @@
         if (typeof d.remaining !== 'number') return;
         el.innerHTML = d.remaining > 0
           ? '<b>' + d.remaining + ' of ' + d.limit + ' seats left</b> \u2014 ' + d.taken + ' traders have joined.'
-          : '<b>All ' + d.limit + ' founding seats are taken.</b> Pro and Pro are still open.';
+          : '<b>All ' + d.limit + ' founding seats are taken.</b> Free and Pro are still open.';
       } catch (e) { /* keep the static line */ }
     }
 
