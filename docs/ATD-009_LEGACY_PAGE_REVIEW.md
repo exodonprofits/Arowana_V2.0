@@ -165,15 +165,15 @@ Groups as in section 3. "Linked from live menu pages" lists which of the 33 page
 | `short-term-dashboard.html` | D | MERGE | Merge P1 | atr-stop-planner, kelly-calculator, options-analyzer, r-multiple, tool-audit | 2 |  |
 | `tradingcommand.html` | D | MERGE | Merge P1 | — | 0 |  |
 | `whale-tracker.html` | D | MERGE | Merge P1 | — | 0 |  |
-| `iv-watchlist-module.html` | E | MERGE (data) | Merge P1 | — | 0 |  |
+| `iv-watchlist-module.html` | E | MERGE (data) | Merge P1 | — | 0 | Retired 4c → `watchlist` (imports its tickers) |
 | `long-term-portfolio.html` | E | MERGE (data) | Merge P1 | tool-audit | 1 |  |
 | `long-term-watchlist.html` | E | MERGE (data) | Merge P1 | tool-audit | 1 |  |
 | `master-journal.html` | E | MERGE (data) | Merge P1 | — | 0 |  |
-| `my-watchlist.html` | E | MERGE (data) | Merge P1 | — | 0 |  |
-| `options-journal.html` | E | MERGE (data) | Merge P1 | credit-spread-planner | 0 |  |
+| `my-watchlist.html` | E | MERGE (data) | Merge P1 | — | 0 | Retired 4c → `watchlist` (imports its save) |
+| `options-journal.html` | E | MERGE (data) | Merge P1 | credit-spread-planner | 0 | Retired 4c: user-run import into `trade-journal-pro?tab=option` |
 | `portfolio-tracker.html` | E | MERGE (data) | Merge P1 | — | 0 |  |
 | `short-term-watchlist.html` | E | MERGE (data) | Merge P1 | — | 1 |  |
-| `trade-journal.html` | E | MERGE (data) | Merge P1 | — | 0 |  |
+| `trade-journal.html` | E | MERGE (data) | Merge P1 | — | 0 | Retired 4c: user-run import into `trade-journal-pro` |
 | `base-breakout.html` | F | RETIRE→scanner | Merge P2 | — | 0 |  |
 | `bb-snapback.html` | F | RETIRE→scanner | Merge P2 | tool-audit | 1 |  |
 | `day-trade-scanner.html` | F | RETIRE→scanner | Merge P2 | — | 0 |  |

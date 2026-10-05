@@ -3725,6 +3725,54 @@ window.clearAllInDB = async function(){
   }
 };
 
+// ── One-time migration: my-watchlist.html and iv-watchlist-module.html ──
+// ATD-009 phase 4: both pages are retired to this one. They saved only in
+// the browser: my-watchlist as [{symbol, note}] (arowana_watchlist_v1), the
+// IV watchlist as a list of tickers (ap_iv_watchlist_tickers; its cached IV
+// snapshots are derived data and are not carried over). Same rules as the
+// long-term migration below: once per browser per source (flag key), skip
+// symbols already on the active list, fold into it as trade ideas, and
+// leave the old keys in place.
+const OLD_SYMBOL_LISTS = [
+  { key: 'arowana_watchlist_v1',    flag: 'arowana_watchlist_v1_migrated_v1',    source: 'My Watchlist (old)' },
+  { key: 'ap_iv_watchlist_tickers', flag: 'ap_iv_watchlist_tickers_migrated_v1', source: 'IV Watchlist (old)' }
+];
+function migrateOldSymbolListsIfNeeded(){
+  let total = 0;
+  OLD_SYMBOL_LISTS.forEach(src => {
+    try{
+      if(localStorage.getItem(src.flag)) return;
+      const old = JSON.parse(localStorage.getItem(src.key) || '[]');
+      const current = Array.isArray(window.watchlist) ? window.watchlist : [];
+      const have = new Set(current.map(r => (r.symbol||'').toUpperCase()));
+      const migrated = [];
+      (Array.isArray(old) ? old : []).forEach(o => {
+        const symbol = String((o && typeof o === 'object') ? (o.symbol || '') : (o || '')).trim().toUpperCase();
+        if(!symbol || have.has(symbol)) return;
+        have.add(symbol);
+        migrated.push({
+          id: (crypto && crypto.randomUUID) ? crypto.randomUUID() : ('row_'+Date.now()+'_'+Math.random().toString(36).slice(2,7)),
+          symbol,
+          horizon: 'trade_idea',
+          status: 'Watching',
+          signal: null,
+          currentPrice: null,
+          entryPrice: null,
+          screenerSource: src.source,
+          dateAdded: new Date().toISOString(),
+          notes: (o && typeof o === 'object' && o.note) ? String(o.note) : ''
+        });
+      });
+      if(migrated.length) window.watchlist = [...migrated, ...current];
+      localStorage.setItem(src.flag, '1');
+      total += migrated.length;
+    }catch(e){
+      console.warn('[wl] old watchlist migration failed:', src.key, e);
+    }
+  });
+  return total;
+}
+
 // ── One-time migration: long-term-watchlist.html's old data ──
 // That file used a completely separate localStorage key
 // (arowanaLongTermWatchlist) with no Supabase backing at all — real data
@@ -3849,12 +3897,16 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Step 1: localStorage — primary load, instant.
   window.watchlist = loadLS();
   const migratedCount = migrateLongTermWatchlistIfNeeded();
-  if(migratedCount > 0){
+  const migratedIdeas = migrateOldSymbolListsIfNeeded();
+  if(migratedCount > 0 || migratedIdeas > 0){
     saveLS(window.watchlist); // persist the migrated rows into the (fallback, no-list-yet) local store immediately
   }
   if(typeof window.renderWatchlist === 'function') window.renderWatchlist();
   if(migratedCount > 0){
     showToast(`Imported ${migratedCount} long-term holding${migratedCount===1?'':'s'} from your old watchlist`, 'success');
+  }
+  if(migratedIdeas > 0){
+    showToast(`Imported ${migratedIdeas} symbol${migratedIdeas===1?'':'s'} from your old watchlists`, 'success');
   }
 
   // Step 2: best-effort Supabase enhancement.
