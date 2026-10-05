@@ -1188,15 +1188,6 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
         <div class="meter-bar"><div class="meter-fill" id="meterAlertsFill"></div></div>
         <div class="meter-note" id="meterAlertsNote">Price and setup alerts you have active.</div>
       </div>
-
-      <div class="meter-card">
-        <div class="meter-top">
-          <span class="meter-label">AI analyses today</span>
-          <span class="meter-value" id="meterAiValue">&mdash;</span>
-        </div>
-        <div class="meter-bar"><div class="meter-fill" id="meterAiFill"></div></div>
-        <div class="meter-note" id="meterAiNote">Daily briefs and coach notes count toward fair use.</div>
-      </div>
     </div>
   </div>
 
@@ -1239,7 +1230,15 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
           <span class="usage-metric-value" id="usageCoach">— / —</span>
         </div>
         <div class="usage-bar"><div class="usage-bar-fill" id="usageCoachBar" style="width:0%"></div></div>
-        <div class="usage-metric-note" id="usageCoachNote">Chat with the coach about your own positions. Resets monthly.</div>
+        <div class="usage-metric-note" id="usageCoachNote">AI Coach, Trade Plan Builder drafts, and Portfolio Advisor&rsquo;s chat and stock analysis. Resets monthly.</div>
+      </div>
+      <div class="usage-metric">
+        <div class="usage-metric-header">
+          <span class="usage-metric-label">Plain-English explanations</span>
+          <span class="usage-metric-value" id="usageExplain">— / —</span>
+        </div>
+        <div class="usage-bar"><div class="usage-bar-fill" id="usageExplainBar" style="width:0%"></div></div>
+        <div class="usage-metric-note" id="usageExplainNote">Explain, Argue both sides and the Retirement Planner write-up. Resets monthly.</div>
       </div>
     </div>
   </div>
@@ -1362,7 +1361,7 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
     free: {
       label: 'Free',
       price: '$0 \u2014 no card on file',
-      trades: 25, accounts: 1, alerts: 0, ai: 0,
+      trades: 25, accounts: 1, alerts: 0,
       flag: '',
       features: {
         journal: true, csv: false, options: false, scanners: false,
@@ -1372,7 +1371,7 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
     pro: {
       label: 'Pro',
       price: '$29 / month',
-      trades: null, accounts: null, alerts: 5, ai: 50,
+      trades: null, accounts: null, alerts: 5,
       flag: '',
       features: {
         journal: true, csv: true, options: true, scanners: true,
@@ -1382,7 +1381,7 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
     elite: {
       label: 'Elite',
       price: '$79 / month',
-      trades: null, accounts: null, alerts: null, ai: 200,
+      trades: null, accounts: null, alerts: null,
       flag: '',
       features: {
         journal: true, csv: true, options: true, scanners: true,
@@ -1392,7 +1391,7 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
     founders: {
       label: 'Founding Member',
       price: '$299 / year \u2014 rate locked',
-      trades: null, accounts: null, alerts: null, ai: 200,
+      trades: null, accounts: null, alerts: null,
       flag: '\u2B50 Founding member',
       features: {
         journal: true, csv: true, options: true, scanners: true,
@@ -1639,6 +1638,9 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
       } catch (e) {}
       renderPlan();
       renderUsage();
+      // The metered-usage panel painted from the cached plan (Free on a
+      // first visit); repaint it with the plan the server returned.
+      if (typeof window.apLoadUsageMeters === 'function') window.apLoadUsageMeters();
     }
   }
 
@@ -1920,21 +1922,6 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
 
     setMeter('Alerts', readLS('ap_alerts_v1').length, p.alerts,
       p.alerts === 0 ? 'Alerts are a Pro feature.' : 'Price and setup alerts you have active.');
-
-    // AI usage metering ships with the daily brief. Until then, show the
-    // allowance rather than a fabricated count.
-    const aiValueEl = document.getElementById('meterAiValue');
-    const aiNoteEl = document.getElementById('meterAiNote');
-    const aiFillEl = document.getElementById('meterAiFill');
-    if (aiValueEl) {
-      aiValueEl.textContent = p.ai === 0 ? 'Not included' : '0 / ' + String(p.ai);
-    }
-    if (aiFillEl) { aiFillEl.style.width = '0%'; aiFillEl.className = 'meter-fill'; }
-    if (aiNoteEl) {
-      aiNoteEl.textContent = p.ai === 0
-        ? 'Daily briefs and coach notes are available on paid plans.'
-        : 'Daily briefs and coach notes count toward fair use.';
-    }
   }
 
   // Keys are gone: data and the coach run on our own licensed keys, so there
@@ -2394,10 +2381,10 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
   (function () {
     'use strict';
     var PLAN_LIMITS = {
-      free:     { research: 5,  coach: 0 },
-      pro:      { research: 25, coach: 30 },
-      elite:    { research: 25, coach: 30 },
-      founders: { research: 50, coach: 60 }
+      free:     { research: 5,  coach: 0,  explain: 0 },
+      pro:      { research: 25, coach: 30, explain: 150 },
+      elite:    { research: 25, coach: 30, explain: 150 },
+      founders: { research: 50, coach: 60, explain: 300 }
     };
 
     function client() { return window.supabaseClient || window.sbClient || null; }
@@ -2439,19 +2426,22 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
         var month = today.slice(0, 7);
         var res = await sb.from('ap_usage').select('feature, period, used')
           .eq('user_id', user.id).in('period', [today, month]);
-        var used = { research: 0, coach: 0 };
+        var used = { research: 0, coach: 0, explain: 0 };
         (res.data || []).forEach(function (r) {
           if (r.feature === 'research' && r.period === today) used.research = r.used;
           if (r.feature === 'coach' && r.period === month) used.coach = r.used;
+          if (r.feature === 'explain' && r.period === month) used.explain = r.used;
         });
 
         paint('usageResearch', 'usageResearchBar', 'usageResearchNote', used.research, limits.research, 'Resets at midnight UTC.');
         paint('usageCoach', 'usageCoachBar', 'usageCoachNote', used.coach, limits.coach, 'Resets on the 1st.');
+        paint('usageExplain', 'usageExplainBar', 'usageExplainNote', used.explain, limits.explain, 'Resets on the 1st.');
       } catch (e) {
         console.warn('[usage] load failed', e);
       }
     }
 
+    window.apLoadUsageMeters = load;
     document.addEventListener('DOMContentLoaded', function () {
       load();
       window.addEventListener('ap:plan:ready', load);
