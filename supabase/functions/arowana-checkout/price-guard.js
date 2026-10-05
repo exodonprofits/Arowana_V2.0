@@ -2,7 +2,7 @@
    price-guard.js — never charge a different amount than the page shows.
    ----------------------------------------------------------------------------
    Checkout sends whatever Stripe price ID a secret points at. When the
-   pricing pages change (Founders went from $399 to $229) and the secret
+   pricing pages change (Founders is now $299/year) and the secret
    still points at the old price, the buyer is charged the old amount. This
    checks the Stripe price against what pricing.html / checkout.html show
    before a session is created, and refuses when they disagree.
@@ -20,8 +20,8 @@
 export const EXPECTED = {
   'pro:monthly':      { amount: 2900,  interval: 'month', block: false },
   'pro:annual':       { amount: 29000, interval: 'year',  block: false },
-  'founders:annual':  { amount: 22900, interval: 'year',  block: true },
-  'founders:monthly': { amount: 22900, interval: 'year',  block: true },   // Founders is annual only
+  'founders:annual':  { amount: 29900, interval: 'year',  block: true },
+  'founders:monthly': { amount: 29900, interval: 'year',  block: true },   // Founders is annual only
 };
 
 /* A Stripe Price object against the expected amount for plan:cycle.

@@ -1,6 +1,13 @@
 # Project Status
 
 
+## ATD-108 Founders pricing follow-up - pending review
+
+The owner's latest instruction sets Founders to **$299/year**, superseding the earlier $229 decision. Branch `codex/ATD-108-founders-299` aligns checkout, pricing, landing, account and billing pages with the backend guard at 29900 USD cents annually. Both Founders cycle aliases remain annual; the guard rejects $229/$399. Original deployed-capture hashes are retained with an explicit pending repository-change hash.
+
+Verification: Node 40/40, Python 63/63, secret scan and runtime tracking pass. This is a repository change only: no Stripe configuration, existing subscription, deployment or live billing changes. Publishing requires coordinated verification of the active USD $299 yearly Stripe Price, `STRIPE_PRICE_FOUNDERS`, and backend/frontend release. Earlier $229 statements below are historical.
+
+
 ## ATD-108 Q6 backend capture - 2026-10-04
 
 Codex exported nine deployed Arowana functions and three helpers, plus a scoped catalog/migration baseline for all 33 handoff relations. The digest helper matches `js/digest.js` byte-for-byte; all seven Wheel source overlaps match after newline normalization. Guard tests are copied unchanged. See [capture report](supabase/baselines/README.md).

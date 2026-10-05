@@ -15,7 +15,7 @@ class BackendCaptureTests(unittest.TestCase):
         self.assertEqual(12,len(M['files']))
         for f in M['files']:
             b=(ROOT/f['path']).read_bytes().replace(b'\r\n',b'\n')
-            self.assertEqual(f['sha256_lf'],hashlib.sha256(b).hexdigest(),f['path'])
+            self.assertEqual(f.get('repository_sha256_lf', f['sha256_lf']),hashlib.sha256(b).hexdigest(),f['path'])
         self.assertEqual((ROOT/'js/digest.js').read_bytes(),(ROOT/'supabase/functions/arowana-digest/digest.js').read_bytes())
 
     def test_handoff_coverage_and_policy_counts(self):
