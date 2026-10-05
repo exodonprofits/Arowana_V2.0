@@ -10,7 +10,7 @@
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="Arowana Profits">
   <meta property="og:title" content="Wheel Strategy Desk — Arowana Profits">
-  <meta property="og:description" content="Track premium, find covered calls and cash-secured puts on stocks you want to own, and catch costly mistakes. Join the Founders waitlist.">
+  <meta property="og:description" content="Track premium, find covered calls and cash-secured puts on stocks you want to own, and catch costly mistakes. Founding members: $299 a year.">
   <meta property="og:url" content="https://arowanaprofits.com/">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>🐟</text></svg>">
@@ -349,10 +349,10 @@
     let currentUser=null;
     document.addEventListener('DOMContentLoaded',()=>{initAuth();initMenu();initWheel();initWaitlist();initShortcuts();loadSeats();document.getElementById('currentYear').textContent=new Date().getFullYear()});
     function initAuth(){const raw=localStorage.getItem('gs_auth_user_v1');if(raw){try{currentUser=JSON.parse(raw)}catch(e){console.warn('Unable to read saved account')}}const signIn=document.getElementById('authSignIn'),cta=document.getElementById('authStartFree'),account=document.getElementById('navMobileAccount'),mobileSignIn=document.getElementById('navMobileSignIn'),mobileCta=document.getElementById('navMobileStartFree');if(currentUser){signIn.hidden=true;cta.textContent='👤 '+(currentUser.displayName||'My Account');cta.href='account.html';account.hidden=false;account.textContent=currentUser.email||currentUser.displayName||'Signed in';mobileSignIn.hidden=true;mobileCta.textContent='My account →';mobileCta.href='account.html';
-      // Signed-in visitors go straight to their desk; the waitlist stays below.
+      // Signed-in visitors go straight to their desk; the Founders offer stays below.
       const primary=document.getElementById('wdPrimaryCta'),foot=document.getElementById('wdHeroFoot');
       if(primary){primary.textContent='Open your desk';primary.href='trading-command.html'}
-      if(foot){foot.innerHTML='You\u2019re signed in. <a href="#founders" style="color:#fff;text-decoration:underline">Join the Founders waitlist</a> for the wheel tools.'}
+      if(foot){foot.innerHTML='You\u2019re signed in. <a href="#founders" style="color:#fff;text-decoration:underline">Become a founding member</a>: every wheel tool for $299 a year.'}
       const email=document.getElementById('wdEmail');if(email&&currentUser.email)email.value=currentUser.email;
     }}
     function initMenu(){const btn=document.getElementById('navHamburger'),menu=document.getElementById('navMobileMenu');const close=()=>{menu.classList.remove('open');btn.setAttribute('aria-expanded','false');btn.textContent='☰'};btn.addEventListener('click',e=>{e.stopPropagation();const open=menu.classList.toggle('open');btn.setAttribute('aria-expanded',String(open));btn.textContent=open?'×':'☰'});document.addEventListener('click',e=>{if(!menu.contains(e.target))close()});document.addEventListener('keydown',e=>{if(e.key==='Escape')close()});menu.querySelectorAll('a').forEach(a=>a.addEventListener('click',close))}

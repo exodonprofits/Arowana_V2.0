@@ -80,6 +80,11 @@ button{font-family:inherit;cursor:pointer}
 .mobile-link:hover{background:rgba(255,255,255,.08);color:#fff}
 .mobile-div{height:1px;background:rgba(255,255,255,.12);margin:5px 0}
 @media(max-width:700px){.nav-links{display:none}.auth-cta{display:none}.nav-burger{display:inline-flex;align-items:center}}
+/* The six links need ~1600px with the brand and account buttons; below that
+   they move to the menu instead of pushing the page sideways. On phones the
+   menu also carries Sign in / Start free. */
+@media(max-width:1660px){.nav-links{display:none}.nav-burger{display:inline-flex;align-items:center}}
+@media(max-width:700px){.nav-auth{display:none}}
 
 /* HERO */
 .page-hero{
@@ -176,7 +181,8 @@ button{font-family:inherit;cursor:pointer}
 .table-header h3{font-family:"Inter Tight",sans-serif;font-size:1.4rem;font-weight:800;margin-bottom:4px}
 .table-header p{font-size:.9rem;opacity:.9}
 
-.comparison-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:0}
+/* Three columns: Feature, Free, Pro. Four left every row's cells drifting into the next row. */
+.comparison-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:0}
 .comp-row{display:contents}
 .comp-cell{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center}
 .comp-feature{font-weight:600;color:var(--ink)}
@@ -375,6 +381,8 @@ button{font-family:inherit;cursor:pointer}
         <a class="mobile-link" href="portfolio-command.html">📊 Portfolio Command</a>
         <a class="mobile-link" href="analysis-central.html">🔍 Ticker Research</a>
         <a class="mobile-link" href="options-hub.html">⚡ Options Hub</a>
+        <a class="mobile-link" href="wheel-calculator.html">🧮 Wheel calculator</a>
+        <a class="mobile-link" href="support.html">💬 Support</a>
         <div class="mobile-div"></div>
         <a class="mobile-link" href="features.html">Features</a>
         <a class="mobile-link" href="pricing.html">Pricing</a>
@@ -412,8 +420,7 @@ button{font-family:inherit;cursor:pointer}
         a premium income tracker, and a coach that reads your own history and shows what is costing you money.
       </p>
       <div class="pr-notice" role="note">
-        Paid plans aren&rsquo;t on sale yet. The buttons below add you to the <a href="index.html#founders">Founders waitlist</a>,
-        and we&rsquo;ll email you when checkout opens. Features marked <strong>Coming soon</strong> are being built now and reach Founders first.
+        Features marked <strong>Coming soon</strong> are being built now and reach Founders first.
       </div>
 
       <!-- Billing cycle -->
@@ -472,7 +479,7 @@ button{font-family:inherit;cursor:pointer}
             <li><span class="check">&#10003;</span> <span class="pf-text"><span class="feature-highlight">Covered call &amp; cash-secured put scanners</span></span></li>
             <li><span class="check">&#10003;</span> <span class="pf-text">Premium income tracker &amp; adjusted cost basis</span></li>
             <li><span class="check">&#10003;</span> <span class="pf-text">Want-to-Own list that filters every scanner</span></li>
-            <li><span class="check">&#10003;</span> <span class="pf-text">Risk guardrails &mdash; concentration &amp; earnings warnings <span class="feature-tag tag-soon">Coming soon</span></span></li>
+            <li><span class="check">&#10003;</span> <span class="pf-text">Risk guardrails &mdash; concentration &amp; earnings warnings</span></li>
             <li><span class="check">&#10003;</span> <span class="pf-text">Daily brief on your open positions <span class="feature-tag tag-soon">Coming soon</span></span></li>
             <li><span class="check">&#10003;</span> Options &amp; Greeks tracking</li>
             <li><span class="check">&#10003;</span> Watchlists</li>
@@ -483,7 +490,7 @@ button{font-family:inherit;cursor:pointer}
           </ul>
 
           <div class="plan-cta">
-            <a href="index.html#founders" class="btn btn-brand" data-checkout="pro" data-label-open="Start 14-day trial">Join the waitlist</a>
+            <a href="checkout.html?plan=pro&amp;cycle=monthly" class="btn btn-brand" data-checkout="pro" data-label-open="Start Pro">Start Pro</a>
           </div>
           <div class="plan-note">Includes market data and AI: 30 AI coach messages and 150 plain-English explanations a month, and 25 ticker research lookups a day.</div>
         </div>
@@ -516,8 +523,8 @@ button{font-family:inherit;cursor:pointer}
           <li><span class="check">&#10003;</span> Direct line to the founder</li>
           <li><span class="check">&#10003;</span> Vote on what gets built next</li>
         </ul>
-        <a href="index.html#founders" class="btn btn-brand" data-checkout="founders" data-label-open="Become a founding member">Join the Founders waitlist</a>
-        <div class="founders-seats">No payment today &mdash; we&rsquo;ll email you when checkout opens. Offer closes at 100 members or when the platform leaves beta, whichever comes first.</div>
+        <a href="checkout.html?plan=founders" class="btn btn-brand" data-checkout="founders" data-label-open="Become a founding member">Become a founding member</a>
+        <div class="founders-seats">$299 billed today, then yearly at the same rate. 30-day money-back guarantee. Offer closes at 100 members or when the platform leaves beta, whichever comes first.</div>
       </div>
     </div>
   </section>
@@ -587,15 +594,15 @@ button{font-family:inherit;cursor:pointer}
           </div>
 
           <div class="comp-row">
-            <div class="comp-cell comp-feature">Risk guardrails <em>(coming soon)</em></div>
+            <div class="comp-cell comp-feature">Risk guardrails</div>
             <div class="comp-cell comp-cross">&#10007;</div>
             <div class="comp-cell comp-check">&#10003;</div>
           </div>
 
           <div class="comp-row">
-            <div class="comp-cell comp-feature">Roll coach, AI coach &amp; pattern detection <em>(coming soon)</em></div>
+            <div class="comp-cell comp-feature">Roll coach, AI coach &amp; pattern detection</div>
             <div class="comp-cell comp-cross">&#10007;</div>
-            <div class="comp-cell comp-cross">&#10007;</div>
+            <div class="comp-cell comp-check">&#10003;</div>
           </div>
 
           <div class="comp-row">
@@ -659,16 +666,16 @@ button{font-family:inherit;cursor:pointer}
             What are the risk guardrails? <span class="faq-chevron">&#9660;</span>
           </button>
           <div class="faq-answer">
-            <p>Coming soon. You set your limits in advance, and Arowana warns you before a plan breaks them: too much of your cash tied up in one ticker, an earnings date falling before your expiration, or more time decay exposure than you said you wanted. Every warning shows the rule that triggered it. It never touches your broker.</p>
+            <p>You set your limits once (wheel capital, the most in any one ticker, total put collateral, puts per ticker), and Check a Trade warns you before a trade breaks them: too much of your capital tied up in one ticker or in puts overall, another put stacked on a stock you already hold puts on, or an earnings date before your expiration. Every warning shows the rule that triggered it. It never touches your broker.</p>
           </div>
         </div>
 
         <div class="faq-item">
           <button class="faq-question" aria-expanded="false">
-            When can I buy a paid plan? <span class="faq-chevron">&#9660;</span>
+            Is there a free trial? <span class="faq-chevron">&#9660;</span>
           </button>
           <div class="faq-answer">
-            <p>Checkout opens soon, and Founders get the first seats. Join the <a href="index.html#founders">Founders waitlist</a> and we&rsquo;ll email you once, when it&rsquo;s ready. The free journal works today.</p>
+            <p>There is no trial period: the Free plan is yours to use for as long as you like, and paid plans are charged when you subscribe. Every paid plan has a 30-day money-back guarantee, so if Pro is not useful to you in the first month, ask and you get the charge back.</p>
           </div>
         </div>
 
@@ -725,10 +732,10 @@ button{font-family:inherit;cursor:pointer}
   <div class="container">
     <div class="cta-banner">
       <div class="cta-title">Start with the free journal</div>
-      <div class="cta-sub">Log your trades for free today. When the wheel tools open, Founders get them first.</div>
+      <div class="cta-sub">Log your trades for free today, and start Pro when you want the wheel tools.</div>
       <div class="cta-btns">
         <a href="signup.html?plan=free" class="btn btn-white">Start free</a>
-        <a href="index.html#founders" class="btn btn-outline-w" data-checkout="pro" data-label-open="Try Pro for 14 days">Join the Founders waitlist</a>
+        <a href="checkout.html?plan=pro&amp;cycle=monthly" class="btn btn-outline-w" data-checkout="pro" data-label-open="Start Pro">Start Pro</a>
       </div>
     </div>
   </div>
@@ -1025,7 +1032,7 @@ button{font-family:inherit;cursor:pointer}
   (function () {
     'use strict';
     // W3.1: flip to true once the Stripe prices are set in Supabase secrets.
-    // The buttons then call the arowana-checkout function instead of the waitlist.
+    // The buttons then call the arowana-checkout function.
     var AP_CHECKOUT_OPEN = true;
     var AP_CHECKOUT_FN = 'https://pbojacnagutipfhcxltj.supabase.co/functions/v1/arowana-checkout';
 
@@ -1058,8 +1065,8 @@ button{font-family:inherit;cursor:pointer}
         if (v) { el.textContent = v; }
       });
 
-      // Checkout links carry the cycle through to Stripe — only once checkout
-      // is live. Until then every paid button stays on the Founders waitlist.
+      // Checkout links carry the cycle through to Stripe while checkout is open
+      // (AP_CHECKOUT_OPEN). Turned off, the buttons keep their checkout.html links.
       if (!AP_CHECKOUT_OPEN) return;
       var links = document.querySelectorAll('a[data-checkout]');
       Array.prototype.forEach.call(links, function (a) {
