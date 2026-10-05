@@ -144,180 +144,28 @@
   </div>
 
   <main class="container">
+    <!-- Schwab sync is not built yet (the OAuth function was never deployed).
+         This page used to show a sample "Connected" state, accounts and sync
+         history, which read as real; it now says plainly that it is coming. -->
     <section class="hero">
-      <div class="hero-grid">
-        <div class="card">
-          <div class="pill">🏦 OAuth-based broker connections</div>
-          <h1 class="title">Broker Connections</h1>
-          <p class="muted" style="margin:.35rem 0 0">
-            Connect Schwab once, sync trades automatically, and feed your Arowana journal without CSV uploads.
-          </p>
-          <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:14px">
-            <button class="btn blue"><i class="fas fa-link"></i> Connect Schwab</button>
-            <button class="btn ghost"><i class="fas fa-sync"></i> Sync All Now</button>
-            <button class="btn ghost"><i class="fas fa-history"></i> View Sync History</button>
-          </div>
-          <div class="helper" style="margin-top:14px">
-            <strong>Recommended flow:</strong> connect broker → token stored securely → scheduled sync writes to
-            <strong>raw_broker_fills</strong> → Auto Journal AI creates <strong>journal_trade_candidates</strong>.
-          </div>
+      <div class="card" style="max-width:760px">
+        <div class="pill">🏦 Coming soon</div>
+        <h1 class="title">Broker Connections</h1>
+        <p class="muted" style="margin:.35rem 0 0">
+          Connecting Charles Schwab is not available yet. When it is, you will be able to link your account once and
+          have your trades flow into your Trade Journal automatically, read-only: Arowana will never place trades.
+        </p>
+        <p class="muted" style="margin:.8rem 0 0">
+          No broker is connected to your account today, and nothing here reads from or writes to your brokerage.
+        </p>
+        <div class="helper" style="margin-top:14px">
+          <strong>Until then:</strong> export your trades from Schwab as CSV and import them into your journal.
         </div>
-
-        <div class="card">
-          <div class="section-title">Quick status</div>
-          <div class="grid-3">
-            <div class="stat">
-              <div class="muted">Connected brokers</div>
-              <div class="k">1</div>
-            </div>
-            <div class="stat">
-              <div class="muted">Linked accounts</div>
-              <div class="k">2</div>
-            </div>
-            <div class="stat">
-              <div class="muted">Last sync</div>
-              <div class="k" style="font-size:1rem">Today 6:12 AM</div>
-            </div>
-          </div>
-          <div style="margin-top:12px" class="stack">
-            <label class="pill"><input type="checkbox" checked> Auto-sync trades</label>
-            <label class="pill"><input type="checkbox" checked> Auto-run journal AI after sync</label>
-            <label class="pill"><input type="checkbox"> Auto-approve ≥95 confidence</label>
-          </div>
+        <div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:16px">
+          <a class="btn blue" href="trade-journal-pro.html?action=import"><i class="fas fa-file-import"></i> Import a CSV into your journal</a>
+          <a class="btn" style="border:1px solid var(--border);background:#fff;color:inherit" href="trade-journal-pro.html">Open the Trade Journal</a>
         </div>
       </div>
-    </section>
-
-    <section class="grid-2" style="margin:6px 0 16px">
-      <div class="card">
-        <div class="section-title">Connected brokers</div>
-
-        <div class="broker-row">
-          <div class="broker-main">
-            <div class="iconbox"><i class="fas fa-university"></i></div>
-            <div>
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <strong>Charles Schwab</strong>
-                <span class="status connected">● Connected</span>
-              </div>
-              <div class="muted" style="margin-top:4px">OAuth connection active. Tokens stored server-side only.</div>
-              <div class="meta">
-                <div class="item">
-                  <div class="muted">Accounts</div>
-                  <strong>Schwab Taxable, Schwab IRA</strong>
-                </div>
-                <div class="item">
-                  <div class="muted">Last sync</div>
-                  <strong>2026-03-16 06:12 AM</strong>
-                </div>
-                <div class="item">
-                  <div class="muted">Auto-sync</div>
-                  <strong>Every 15 minutes</strong>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div style="display:flex;gap:8px;flex-wrap:wrap">
-            <button class="btn blue"><i class="fas fa-sync"></i> Sync now</button>
-            <button class="btn ghost"><i class="fas fa-cog"></i> Manage</button>
-            <button class="btn danger"><i class="fas fa-unlink"></i> Disconnect</button>
-          </div>
-        </div>
-
-        <div class="broker-row">
-          <div class="broker-main">
-            <div class="iconbox" style="background:#f8fafc;color:#475569"><i class="fas fa-plug"></i></div>
-            <div>
-              <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
-                <strong>Tradier</strong>
-                <span class="status disconnected">● Not connected</span>
-              </div>
-              <div class="muted" style="margin-top:4px">Optional future broker integration.</div>
-            </div>
-          </div>
-          <div><button class="btn ghost"><i class="fas fa-plus-circle"></i> Connect</button></div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="section-title">Linked accounts</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Broker</th>
-                <th>Masked account</th>
-                <th>Label</th>
-                <th>Type</th>
-                <th>Sync status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Schwab</td>
-                <td>****1234</td>
-                <td>Schwab Taxable</td>
-                <td>Margin / Taxable</td>
-                <td><span class="status connected">Healthy</span></td>
-              </tr>
-              <tr>
-                <td>Schwab</td>
-                <td>****7788</td>
-                <td>Schwab IRA</td>
-                <td>IRA</td>
-                <td><span class="status connected">Healthy</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <div class="section-title" style="margin-top:14px">Latest sync events</div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>Started</th>
-                <th>Broker</th>
-                <th>Type</th>
-                <th>Records</th>
-                <th>Status</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>2026-03-16 06:12</td>
-                <td>Schwab</td>
-                <td>fills_sync</td>
-                <td>18</td>
-                <td><span class="status connected">Completed</span></td>
-              </tr>
-              <tr>
-                <td>2026-03-16 06:13</td>
-                <td>Schwab</td>
-                <td>auto_journal_ai</td>
-                <td>5 candidates</td>
-                <td><span class="status connected">Completed</span></td>
-              </tr>
-              <tr>
-                <td>2026-03-16 05:57</td>
-                <td>Schwab</td>
-                <td>token_refresh</td>
-                <td>1</td>
-                <td><span class="status pending">Refreshed</span></td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-    <section class="card" style="margin-bottom:16px">
-      <div class="section-title">Backend endpoints to wire</div>
-      <div class="codebox"><pre style="margin:0;white-space:pre-wrap">GET  /webhook/arowana/connect-schwab
-GET  /webhook/arowana/schwab-callback
-POST /webhook/arowana/sync-broker-now
-CRON /workflow/arowana-scheduled-schwab-sync
-CRON /workflow/arowana-auto-journal-ai</pre></div>
     </section>
   </main>
 

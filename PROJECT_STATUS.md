@@ -1,11 +1,24 @@
 # Project Status
 
 
+## Where things stand - 2026-10-05
+
+**Done:** the Wheel port (ATD-108 S1–S6 and follow-ups, PRs #33–#43) and the legacy page review (ATD-009, through PR #52). The deployed backend is in Git (Q6, PR #44). Founders is $299/year on every page (PR #48). Broker Connections and the Schwab return page now say Schwab is coming soon; they used to show a sample "Connected" state.
+
+**Not live yet (owner/Codex):**
+1. **Founders checkout:** the deployed `arowana-checkout` (v14) still expects $229 while the site says $299. Point `STRIPE_PRICE_FOUNDERS` at an active $299/year price and redeploy the function from `main`.
+2. **Retirement write-up:** redeploy `arowana-explain` from `main` (adds the `retirement` kind).
+3. **Baseline migration:** guard the 16 `CREATE OR REPLACE` functions (for example `public.set_updated_at()`, used by Salon tables) before it is ever applied anywhere.
+4. Rotate the n8n token left in Git history by `stock-checker`; add the `stock_analyzer` and `quality_screener` webhooks to `AP_WEBHOOKS`.
+5. A live sign-in check: every frontend test so far ran on synthetic data. First real use: import the 12 holdings missing from the journal on `long-term-portfolio.html`.
+
+**Next planned work:** ATD-101–107 wait on the data-hub contract, provider and licensing decisions and ATD-007.
+
 ## Small fixes - 2026-10-05
 
 The home page's "Free, Pro and Pro" and "Pro and Pro are still open" now name the real plans. Retirement Planner's AI write-up works for Pro and Founding members: it takes the plan from the server and asks the managed explanation service, which writes only from the page's own numbers. That service needs the new `retirement` kind deployed before the managed write-up turns on; until then the page says so. Bring-your-own-endpoint is unchanged.
 
-## ATD-108 Founders pricing follow-up - pending review
+## ATD-108 Founders pricing follow-up - merged (PR #48), not deployed
 
 The owner's latest instruction sets Founders to **$299/year**, superseding the earlier $229 decision. Branch `codex/ATD-108-founders-299` aligns checkout, pricing, landing, account and billing pages with the backend guard at 29900 USD cents annually. Both Founders cycle aliases remain annual; the guard rejects $229/$399. Original deployed-capture hashes are retained with an explicit pending repository-change hash.
 
@@ -16,7 +29,7 @@ Verification: Node 40/40, Python 63/63, secret scan and runtime tracking pass. T
 
 Codex exported nine deployed Arowana functions and three helpers, plus a scoped catalog/migration baseline for all 33 handoff relations. The digest helper matches `js/digest.js` byte-for-byte; all seven Wheel source overlaps match after newline normalization. Guard tests are copied unchanged. See [capture report](supabase/baselines/README.md).
 
-Merged (PR #44) and reviewed by Claude Code. Founders pricing resolved at **$229/year** (owner decision): the frontend pages now match the deployed checkout, and Node Tests pass 39/39. The migration preserves current policies and requires documented shared dependencies; it has not been applied or runtime-tested. Schwab's absent, site-relative callback is flagged only. No production changes, deploys or live calls; ATD-007 containment/RLS remediation remains open.
+Merged (PR #44) and reviewed by Claude Code. Founders pricing was first resolved at **$229/year** (PR #45), then changed to $299 (PR #48): the frontend pages now match the deployed checkout, and Node Tests pass 39/39. The migration preserves current policies and requires documented shared dependencies; it has not been applied or runtime-tested. Schwab's absent, site-relative callback is flagged only. No production changes, deploys or live calls; ATD-007 containment/RLS remediation remains open.
 
 ## ATD-108 Wheel port specification - 2026-10-04
 
