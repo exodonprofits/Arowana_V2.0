@@ -280,10 +280,14 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Branch:** `codex/ATD-108-q6-backend`
 
-**Status:** Capture prepared for review; no deploys. [Report and limitations](supabase/baselines/README.md).
+**Status:** Merged (PR #44) and reviewed by Claude Code after merge on 2026-10-05. No deploys. [Report and limitations](supabase/baselines/README.md).
 
 **Result:** Nine deployed functions, three helpers, version/hash manifest, exact frontend digest parity, scoped baseline for 28 tables/five views with RLS/grants/RPCs, unchanged Wheel guard tests, expanded backend secret scan. Schwab callback defect flagged without changing the page.
 
 **Verification:** Python 59/59; TypeScript syntax checks 9/9; secret scan, tracking and whitespace pass. Node 38/39; existing backend/frontend Founders-price disagreement newly exposed by copied tests. No live endpoints, rows, production writes, migration replay or deployment.
 
-**Next:** Claude Code reviews the one PR. Resolve the pricing decision separately; dependency baselines and ATD-007 security work remain open. Do not merge or deploy automatically.
+**Review (Claude Code, 2026-10-05):** no keys, tokens or table rows in the capture (the only address is the public digest sender); `js/digest.js` identity check passes; the baseline migration is a non-applying snapshot that refuses to overwrite existing relations. The `verify_jwt: false` functions spot-checked (`arowana-research`, `arowana-coach`, `arowana-billing-portal`) authenticate the caller themselves; `arowana-research` also allowlists paths and meters usage.
+
+**Founders price:** the owner chose **$229/year**, matching the deployed checkout and the live site. Branch `claude/ATD-108-founders-229` updates `checkout.html`, `pricing.html`, `index.html`, `account.html` and `billing.html`, which turns the Node Tests check green (39/39).
+
+**Next:** dependency baselines and ATD-007 security work remain open. Do not apply the baseline migration or deploy automatically.

@@ -5,7 +5,7 @@
 
 Codex exported nine deployed Arowana functions and three helpers, plus a scoped catalog/migration baseline for all 33 handoff relations. The digest helper matches `js/digest.js` byte-for-byte; all seven Wheel source overlaps match after newline normalization. Guard tests are copied unchanged. See [capture report](supabase/baselines/README.md).
 
-Awaiting Claude Code PR review. Python 59/59; Node 38/39: the new price parity test exposes deployed Founders $229/year versus frontend $399/year. No pricing changes made. The migration preserves current policies and requires documented shared dependencies; it has not been applied or runtime-tested. Schwab's absent, site-relative callback is flagged only. No production changes, deploys or live calls; ATD-007 containment/RLS remediation remains open.
+Merged (PR #44) and reviewed by Claude Code. Founders pricing resolved at **$229/year** (owner decision): the frontend pages now match the deployed checkout, and Node Tests pass 39/39. The migration preserves current policies and requires documented shared dependencies; it has not been applied or runtime-tested. Schwab's absent, site-relative callback is flagged only. No production changes, deploys or live calls; ATD-007 containment/RLS remediation remains open.
 
 ## ATD-108 Wheel port specification - 2026-10-04
 
