@@ -1915,29 +1915,45 @@ window.removeHolding=function(i){
    ANALYZE
 ══════════════════════════════════════ */
 function buildAnalysisSkeleton(){const wrap=$('analysisResult');if(!wrap)return;wrap.innerHTML='<div class="skel" style="margin-bottom:12px"><div class="skel-line w35"></div><div class="skel-line w75"></div><div class="skel-line w50"></div></div><div class="analysis-grid"><div class="skel"><div class="skel-line w50"></div><div class="skel-line w75"></div><div class="skel-line w90"></div><div class="skel-line w60"></div></div><div class="skel"><div class="skel-line w50"></div><div class="skel-line w75"></div><div class="skel-line w90"></div><div class="skel-line w60"></div></div><div class="skel"><div class="skel-line w50"></div><div class="skel-line w75"></div><div class="skel-line w90"></div></div><div class="skel"><div class="skel-line w50"></div><div class="skel-line w75"></div><div class="skel-line w90"></div></div></div>'}
-async function analyzeStock(sym){
-  const s=sym.toUpperCase();advisorSet('Analyzing '+s+'...','thinking');buildAnalysisSkeleton();
-  /* Call AI for deep analysis */
-  const riskProfile=getRiskProfile();
-  /* The model is no longer asked for P/E, margins, growth or debt figures. It
-     has no data source for them, so anything it returned was recalled or
-     invented and then rendered in a metrics grid that looked authoritative.
-     Numbers now come from the market-data key, or the row says so.
-     The BUY/HOLD/AVOID verdict is likewise gone: a per-security instruction
-     tuned to the user's stated risk profile is advice, and a disclaimer at the
-     bottom of the page does not change that. What replaces it is more useful
-     anyway — the conditions the thesis depends on, and what would break it. */
-  const systemPrompt='You are the research assistant inside Arowana Profits, an educational platform. You explain what a company or fund IS and what would have to be true for an investment case to work. You never tell anyone to buy, sell, hold or avoid anything, and you never state a confidence level in an outcome. Return ONLY valid JSON, no markdown, no extra text.\n\nDo NOT output financial figures such as P/E, margins, growth rates or debt ratios — you have no live data and must not recall them.\n\nJSON schema:\n{\n  "ticker": "string",\n  "name": "Full company or fund name",\n  "profile": "5-9 word neutral descriptor, e.g. Profitable, slow-growing, priced for stability",\n  "business": "2-3 plain-English sentences on how it actually makes money",\n  "moat_score": 0-10,\n  "moat_description": "brief description of competitive advantage",\n  "growth_score": 0-10,\n  "growth_description": "brief description of growth drivers",\n  "value_score": 0-10,\n  "value_description": "qualitative valuation note, no multiples",\n  "dividend_score": 0-10,\n  "dividend_description": "brief dividend note",\n  "thesis_requires": ["condition that must hold for the investment case to work", "another", "another"],\n  "thesis_breaks_if": ["what would invalidate it", "another", "another"],\n  "checks": ["a specific thing the investor should verify in the filings or fund page themselves", "another", "another"],\n  "risks": ["risk 1", "risk 2", "risk 3"],\n  "time_horizon": "short/medium/long",\n  "suitable_for": ["growth investor", "value investor", "dividend investor", "beginner"]\n}';
-  const userMsg='Explain '+s+' for someone learning to evaluate investments. Describe the business, what the investment case depends on, what would break it, and what they should verify themselves. Do not recommend an action and do not state financial figures. Return only JSON.';
-  try{
-    const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:800,system:systemPrompt,messages:[{role:'user',content:userMsg}]})});
-    if(!resp.ok)throw new Error('API '+resp.status);
-    const data=await resp.json();const raw=(data?.content?.[0]?.text||'').replace(/```json|```/g,'').trim();
-    let analysis;try{analysis=JSON.parse(raw)}catch(_){throw new Error('parse')}
-    renderAnalysis(analysis,s);advisorSet('Analysis complete','active');
-    chatHistory.push({role:'assistant',content:'I just analyzed '+s+': '+analysis.verdict+' with '+analysis.confidence+'% confidence. '+analysis.summary});
-  }catch(err){const wrap=$('analysisResult');if(wrap)wrap.innerHTML='<div style="padding:20px;color:var(--muted);font-size:.85rem;">Unable to analyze '+s+' right now. Please try again or ask me in the chat tab.</div>';advisorSet('Ready','active')}
+/* Portfolio Advisor's AI goes through the arowana-ai-coach edge function
+   (mode 'company' for Analyze, 'investor' for the chat). It used to call
+   api.anthropic.com from the browser with no key, so it never worked; the
+   key now stays on the server, the call is the signed-in user's, and the
+   plan and monthly allowance are checked there. The prompts live on the
+   server too, with the coach's number guard: an analysis may not contain a
+   figure at all, and a chat reply may only quote the user's own numbers. */
+const COACH_FN='https://pbojacnagutipfhcxltj.supabase.co/functions/v1/arowana-ai-coach';
+const TICKER_RE=/^[A-Z][A-Z0-9.\-]{0,9}$/;
+async function coachCall(body){
+  const getToken=o=>typeof window.apGetAccessToken==='function'?window.apGetAccessToken(o):Promise.resolve(null);
+  let token=await getToken();
+  if(!token)return {status:401,body:{error:'Sign in to use the AI features on this page.'}};
+  const post=t=>fetch(COACH_FN,{method:'POST',headers:{'content-type':'application/json',Authorization:'Bearer '+t},body:JSON.stringify(body)});
+  let res=await post(token);
+  if(res.status===401){token=await getToken({forceRefresh:true});if(token)res=await post(token);}
+  return {status:res.status,body:await res.json().catch(()=>({}))};
 }
+function coachProblem(r,what){
+  if(r.status===402){if(window.openUpgradeModal)openUpgradeModal('AI analysis and the advisor chat are part of Pro.');return 'AI '+what+' is part of Pro. Your holdings, goals and the figures from your market-data key stay free.';}
+  return (r.body&&r.body.error)||('The AI '+what+' is unavailable right now. Please try again in a moment.');
+}
+function analysisMessage(text){const wrap=$('analysisResult');if(!wrap)return;wrap.textContent='';const d=document.createElement('div');d.style.cssText='padding:20px;color:var(--muted);font-size:.85rem;';d.textContent=text;wrap.appendChild(d)}
+async function analyzeStock(sym){
+  const s=String(sym||'').trim().toUpperCase();
+  if(!TICKER_RE.test(s)){analysisMessage('Enter a ticker symbol, for example AAPL, VTI or BRK.B.');return}
+  advisorSet('Analyzing '+s+'...','thinking');buildAnalysisSkeleton();
+  try{
+    const r=await coachCall({mode:'company',ticker:s});
+    if(r.status!==200)throw new Error(coachProblem(r,'analysis'));
+    const analysis=r.body.analysis;
+    if(!analysis){analysisMessage(r.body.reason==='numbers'
+      ?'No analysis this time: the AI kept adding figures it has no source for, so nothing is shown. Try again, or use the figures from your market-data key.'
+      :'No analysis this time. Please try again.');advisorSet('Ready','active');return}
+    renderAnalysis(analysis,s);advisorSet('Analysis complete','active');
+    chatHistory.push({role:'assistant',content:'I just described '+s+(analysis.profile?': '+analysis.profile:'')+'.'});
+  }catch(err){analysisMessage(err&&err.message?err.message:'Unable to analyze '+s+' right now.');advisorSet('Ready','active')}
+}
+window.analyzeStock=analyzeStock;   /* the quick-pick buttons and ?analyze= call it */
 /* ═══════════════════════════════════════════════════════════════════════════
    FUNDAMENTALS — real numbers or an honest gap
    The model used to supply P/E, margins, growth and debt from memory. Those
@@ -1995,12 +2011,13 @@ async function loadFundamentals(sym){
 function renderAnalysis(a,sym){
   const wrap=$('analysisResult');if(!wrap)return;
   const scoreColor=n=>n>=7?'good':n>=5?'ok':'bad';
+  const scoreText=n=>typeof n==='number'?n+'/10':'&mdash;';
   const list=(arr,cls)=>(arr&&arr.length)
     ? '<ul class="thesis-list '+cls+'">'+arr.map(x=>'<li>'+escHtml(x)+'</li>').join('')+'</ul>'
     : '<div class="thesis-empty">Not returned for this ticker.</div>';
   /* Figures come from the market-data key or not at all — see fundamentalRows(). */
   const fundRows=fundamentalRows(sym);
-  wrap.innerHTML='<div class="overall-verdict neutral"><div class="ov-top"><span class="ov-sym">'+sym+'</span>'+(a.name?'<span style="color:var(--muted);font-size:.82rem">'+escHtml(a.name)+'</span>':'')+'<span class="ov-badge neutral">'+escHtml(a.profile||'Profile unavailable')+'</span></div><div class="ov-text">'+formatText(a.business||a.summary||'')+'</div><div class="ov-note">This is a description, not a recommendation. Arowana does not tell you whether to buy or sell &mdash; the point of the two lists below is that you decide.</div></div><div class="thesis-grid"><div class="thesis-card requires"><div class="thesis-title">What has to be true</div>'+list(a.thesis_requires,'req')+'</div><div class="thesis-card breaks"><div class="thesis-title">What would break it</div>'+list(a.thesis_breaks_if,'brk')+'</div><div class="thesis-card checks"><div class="thesis-title">Check these yourself</div>'+list(a.checks,'chk')+'</div></div><div class="analysis-grid"><div class="analysis-card '+(a.moat_score>=7?'positive':a.moat_score>=5?'caution':'negative')+'"><div class="ac-title">Economic Moat</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.moat_score)+'">'+a.moat_score+'/10</span><div><div class="ac-verdict">'+(['Narrow','Narrow','Narrow','Narrow','Narrow','Moderate','Moderate','Wide','Wide','Wide'][Math.min(9,Math.floor(a.moat_score)-1)]||'Moderate')+' Moat</div><div class="ac-verdict-sub">'+escHtml(a.moat_description||'')+'</div></div></div></div><div class="analysis-card '+(a.growth_score>=7?'positive':a.growth_score>=5?'caution':'negative')+'"><div class="ac-title">Growth Potential</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.growth_score)+'">'+a.growth_score+'/10</span><div><div class="ac-verdict">'+escHtml(a.growth_description||'')+'</div></div></div></div><div class="analysis-card '+(a.value_score>=7?'positive':a.value_score>=5?'caution':'negative')+'"><div class="ac-title">Valuation (Value Investor View)</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.value_score)+'">'+a.value_score+'/10</span><div><div class="ac-verdict">'+escHtml(a.value_description||'')+'</div></div></div><div class="ac-metrics">'+fundRows+'</div></div><div class="analysis-card '+(a.dividend_score>=7?'positive':a.dividend_score>=5?'caution':'negative')+'"><div class="ac-title">Dividend Quality</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.dividend_score)+'">'+a.dividend_score+'/10</span><div><div class="ac-verdict">'+escHtml(a.dividend_description||'')+'</div></div></div>'+(a.risks?.length?'<div style="margin-top:10px"><div style="font-size:.62rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Key risks</div>'+a.risks.map(r=>'<div style="font-size:.75rem;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--border)">&#9656; '+escHtml(r)+'</div>').join('')+'</div>':'')+'</div></div>';
+  wrap.innerHTML='<div class="overall-verdict neutral"><div class="ov-top"><span class="ov-sym">'+sym+'</span>'+(a.name?'<span style="color:var(--muted);font-size:.82rem">'+escHtml(a.name)+'</span>':'')+'<span class="ov-badge neutral">'+escHtml(a.profile||'Profile unavailable')+'</span></div><div class="ov-text">'+formatText(a.business||a.summary||'')+'</div><div class="ov-note">This is a description, not a recommendation. Arowana does not tell you whether to buy or sell &mdash; the point of the two lists below is that you decide.</div></div><div class="thesis-grid"><div class="thesis-card requires"><div class="thesis-title">What has to be true</div>'+list(a.thesis_requires,'req')+'</div><div class="thesis-card breaks"><div class="thesis-title">What would break it</div>'+list(a.thesis_breaks_if,'brk')+'</div><div class="thesis-card checks"><div class="thesis-title">Check these yourself</div>'+list(a.checks,'chk')+'</div></div><div class="analysis-grid"><div class="analysis-card '+(a.moat_score>=7?'positive':a.moat_score>=5?'caution':'negative')+'"><div class="ac-title">Economic Moat</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.moat_score)+'">'+scoreText(a.moat_score)+'</span><div><div class="ac-verdict">'+(['Narrow','Narrow','Narrow','Narrow','Narrow','Moderate','Moderate','Wide','Wide','Wide'][Math.min(9,Math.floor(a.moat_score)-1)]||'Moderate')+' Moat</div><div class="ac-verdict-sub">'+escHtml(a.moat_description||'')+'</div></div></div></div><div class="analysis-card '+(a.growth_score>=7?'positive':a.growth_score>=5?'caution':'negative')+'"><div class="ac-title">Growth Potential</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.growth_score)+'">'+scoreText(a.growth_score)+'</span><div><div class="ac-verdict">'+escHtml(a.growth_description||'')+'</div></div></div></div><div class="analysis-card '+(a.value_score>=7?'positive':a.value_score>=5?'caution':'negative')+'"><div class="ac-title">Valuation (Value Investor View)</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.value_score)+'">'+scoreText(a.value_score)+'</span><div><div class="ac-verdict">'+escHtml(a.value_description||'')+'</div></div></div><div class="ac-metrics">'+fundRows+'</div></div><div class="analysis-card '+(a.dividend_score>=7?'positive':a.dividend_score>=5?'caution':'negative')+'"><div class="ac-title">Dividend Quality</div><div class="ac-score-row"><span class="ac-score '+scoreColor(a.dividend_score)+'">'+scoreText(a.dividend_score)+'</span><div><div class="ac-verdict">'+escHtml(a.dividend_description||'')+'</div></div></div>'+(a.risks?.length?'<div style="margin-top:10px"><div style="font-size:.62rem;font-weight:700;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Key risks</div>'+a.risks.map(r=>'<div style="font-size:.75rem;color:var(--muted);padding:4px 0;border-bottom:1px solid var(--border)">&#9656; '+escHtml(r)+'</div>').join('')+'</div>':'')+'</div></div>';
   loadFundamentals(sym);
 }
 $('btnAnalyze')?.addEventListener('click',()=>analyzeStock($('analyzeInput')?.value?.trim()));
@@ -2130,39 +2147,24 @@ function getUID(){try{return JSON.parse(localStorage.getItem('gs_auth_user_v1')|
 function isPro(){return !!(window.AP_PLAN && AP_PLAN.atLeast('pro'));}
 window.addEventListener('ap:plan:ready',function(){renderUpgradeBanner();updateAnalysisCounterBadge();});
 
-/* Analysis usage counter (5/day free) */
-const FREE_LIMIT=5;
-function getAnalysisCount(){
-  try{
-    const today=new Date().toISOString().split('T')[0];
-    if(localStorage.getItem('ap_analysis_date')!==today){localStorage.setItem('ap_analysis_date',today);localStorage.setItem('ap_analysis_count','0');return 0;}
-    return parseInt(localStorage.getItem('ap_analysis_count')||'0',10);
-  }catch{return 0;}
-}
-function incrementAnalysisCount(){try{const n=getAnalysisCount()+1;localStorage.setItem('ap_analysis_count',String(n));localStorage.setItem('ap_analysis_date',new Date().toISOString().split('T')[0]);return n;}catch{return 1;}}
-function analysesLeft(){return Math.max(0,FREE_LIMIT-getAnalysisCount());}
-
+/* AI analysis and chat are Pro, counted against the coach's monthly allowance
+   on the server (arowana-ai-coach). The old 5-a-day free counter lived in
+   localStorage and gated a call that never worked, so it is gone. */
+let planKnown=false;
+if(window.AP_PLAN)AP_PLAN.ready().then(function(){planKnown=true;renderUpgradeBanner();});
 function renderUpgradeBanner(){
-  const el=document.getElementById('upgradeBanner');if(!el||isPro()){if(el)el.style.display='none';return;}
-  const left=analysesLeft();const isLimit=left===0;
+  const el=document.getElementById('upgradeBanner');if(!el)return;
+  if(!planKnown||isPro()){el.style.display='none';return;}
   el.style.display='block';
-  el.innerHTML='<div class="upgrade-banner'+(isLimit?' limit-reached':'')+'">'+
-    '<div class="upgrade-banner-icon">'+(isLimit?'⚠️':'📊')+'</div>'+
+  el.innerHTML='<div class="upgrade-banner">'+
+    '<div class="upgrade-banner-icon">📊</div>'+
     '<div class="upgrade-banner-text">'+
-      '<div class="upgrade-banner-title">'+(isLimit?'Daily limit reached':'Free plan - analyses remaining today')+'</div>'+
-      '<div class="upgrade-banner-sub">'+(isLimit?'Upgrade to Pro for unlimited portfolio analyses.':'Free plan includes '+FREE_LIMIT+' AI analyses per day.')+'</div>'+
+      '<div class="upgrade-banner-title">AI analysis and chat are part of Pro</div>'+
+      '<div class="upgrade-banner-sub">Your holdings, goals and the figures from your market-data key work on every plan.</div>'+
     '</div>'+
-    '<div class="upgrade-banner-right">'+
-      '<div><div class="upgrade-banner-count">'+left+'</div><div class="upgrade-banner-label">/ '+FREE_LIMIT+'<br>today</div></div>'+
-      '<a href="pricing.html" class="upgrade-banner-btn">Upgrade →</a>'+
-    '</div></div>';
+    '<div class="upgrade-banner-right"><a href="pricing.html" class="upgrade-banner-btn">See plans →</a></div></div>';
 }
-
-function updateAnalysisCounterBadge(){
-  const el=document.getElementById('analysisCounterBadge');if(!el||isPro()){if(el)el.innerHTML='';return;}
-  const left=analysesLeft();
-  el.innerHTML='<span class="analysis-counter'+(left===0?' empty':left<=2?' low':'')+'">'+left+' / '+FREE_LIMIT+' analyses today</span>';
-}
+function updateAnalysisCounterBadge(){const el=document.getElementById('analysisCounterBadge');if(el)el.textContent='';}
 
 /* ── BYOK: Finnhub key ── */
 function getFinnhubKey(){
@@ -2347,21 +2349,6 @@ renderHoldings=function(){
   scorePortfolio(holdings);
   renderSectors(holdings,totalVal);
 };
-/* Wire analysis limit into analyzeStock */
-const _origAnalyzeStock=analyzeStock;
-window.analyzeStock=analyzeStock=async function(sym){
-  if(!sym||!sym.trim())return;
-  updateAnalysisCounterBadge();
-  if(!isPro()&&getAnalysisCount()>=FREE_LIMIT){
-    renderUpgradeBanner();
-    if(window.openUpgradeModal)openUpgradeModal('You have used all '+FREE_LIMIT+' free analyses today. Upgrade to Pro for unlimited stock analyses.');
-    return;
-  }
-  if(!isPro())incrementAnalysisCount();
-  renderUpgradeBanner();updateAnalysisCounterBadge();
-  return _origAnalyzeStock(sym);
-};
-
 /* Upgrade modal JS */
 (function(){
   const backdrop=document.getElementById('upgBackdrop');
@@ -2412,17 +2399,16 @@ const goalsSummary=goals.length?goals.map(g=>{
   return g.name+': target '+toUSD(g.targetAmount)+' in '+g.years+'yrs'+(monthly>0?', contributing '+toUSD(monthly)+'/mo':'');
 }).join('; '):'No goals set';
 const riskProfile=getRiskProfile();
-/* Detect user experience level from message length and vocabulary */
 const isSimple=/what is|how does|can you explain|i dont|i don't|beginner|new to|just started/i.test(msg);
-/* Reframed to match the Analyze Stock tab. This prompt previously said
-     "acting like a private wealth manager" and "Give clear, confident,
-     actionable advice: BUY, HOLD, SELL, REBALANCE, or WAIT" — the exact
-     instruction-style output we removed from the analyser, on the surface
-     where it carries most weight because it is conversational and personal.
-     What it does instead is explain the trade-offs and hand the decision back,
-     which is also what teaches someone to make the next one alone. */
-  const systemPrompt='You are the coaching assistant inside Arowana Profits, an educational platform for retail investors. You are NOT a financial advisor and you must never act like one.\n\nUser context (their own entries, for relevance only):\n- Portfolio: '+portfolioValueStr+'\n- Risk profile they selected: '+riskProfile+'\n- Holdings: '+portfolioSummary+'\n- Goals: '+goalsSummary+'\n- Explain at this level: '+(isSimple?'complete beginner — define every term, no jargon':'intermediate — some technical vocabulary is fine')+'\n\nHard rules:\n- NEVER tell them to buy, sell, hold, avoid, rebalance or wait. Not as a suggestion, not as "you might consider", not as a ranked list of what you would do.\n- If they ask "should I buy X" or "what should I do", do not answer with an action. Lay out what the decision depends on, what each path costs them, and what they would need to believe for each to be right. Then say the choice is theirs.\n- Never predict a price or promise a return.\n\nWhat to do instead:\n- Explain the mechanics plainly, using their own numbers when it makes the explanation concrete.\n- Surface the trade-off they may not have considered — tax treatment, the cost of being wrong, what it does to their concentration, whether the money has a job before it has a ticker.\n- If high-interest debt, a missing emergency fund or an uncaptured employer match is relevant to what they asked, say so plainly: those are arithmetic, not opinions.\n- Prefer questions that sharpen their thinking over answers that replace it.\n- Under 200 words. Use **bold** for figures. Educational only — never a recommendation.';
-try{const apiMsgs=chatHistory.slice(-10).map(m=>({role:m.role,content:m.content}));if(!apiMsgs.length||apiMsgs[apiMsgs.length-1].role!=='user')apiMsgs.push({role:'user',content:msg});const resp=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-5',max_tokens:400,system:systemPrompt,messages:apiMsgs})});removeTyping();if(!resp.ok)throw new Error('API '+resp.status);const data=await resp.json();const reply=data?.content?.[0]?.text||'I had trouble with that. Please try again.';addAdvisorMessage(reply);advisorSet('Ready','active')}catch(err){removeTyping();addAdvisorMessage('I am having trouble connecting right now. Please try again in a moment.');advisorSet('Connection error','idle');console.error(err)}finally{$('chatSend').disabled=false}}
+/* The prompt (education, never an instruction to buy, sell, hold or
+   rebalance) is on the server now; the page sends the user's own figures. */
+try{
+  const r=await coachCall({mode:'investor',messages:chatHistory.slice(-10).map(m=>({role:m.role,content:m.content})),
+    context:{portfolioValue:portfolioValueStr,holdings:portfolioSummary,goals:goalsSummary,riskProfile:riskProfile,level:isSimple?'beginner':'intermediate'}});
+  removeTyping();
+  if(r.status!==200||!r.body.reply){addAdvisorMessage(r.status===200?'I had trouble with that. Please try again.':coachProblem(r,'chat'));advisorSet('Ready','idle');return}
+  addAdvisorMessage(r.body.reply);advisorSet('Ready','active')
+}catch(err){removeTyping();addAdvisorMessage('I am having trouble connecting right now. Please try again in a moment.');advisorSet('Connection error','idle');console.error(err)}finally{$('chatSend').disabled=false}}
 window.sendSuggestion=function(btn){btn.disabled=true;sendMessage(btn.textContent)};
 $('chatSend')?.addEventListener('click',()=>sendMessage($('chatInput')?.value));
 $('chatInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMessage(e.target.value)}setTimeout(()=>{if(e.target){e.target.style.height='auto';e.target.style.height=Math.min(e.target.scrollHeight,120)+'px'}},0)});

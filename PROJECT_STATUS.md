@@ -10,6 +10,7 @@
 **Not live yet (owner/Codex):**
 1. **Founders price — do not redeploy `arowana-checkout` before cutover.** The live site (Wheel Desk) shows $229 and the deployed function expects $229, so live checkout is consistent today. The $299 guard in `main` belongs to V2.0: deploying it while arowanaprofits.com still serves the Wheel Desk would refuse every Founders checkout there. Switch the Stripe price and redeploy the function in the same window as the domain cutover (ATD-109).
 2. **Retirement write-up:** redeploy `arowana-explain` from `main` (adds the `retirement` kind). Safe at any time: additive, and the Wheel Desk does not use it.
+   **Portfolio Advisor AI:** redeploy `arowana-ai-coach` from `main` (adds the `investor` and `company` modes). Safe at any time: additive, and the Wheel Desk uses the unchanged default mode.
 3. **Baseline migration:** guard the 16 `CREATE OR REPLACE` functions (for example `public.set_updated_at()`, used by Salon tables) before it is ever applied anywhere.
 4. Rotate the n8n token left in Git history by `stock-checker`; add the `stock_analyzer` and `quality_screener` webhooks to `AP_WEBHOOKS`.
 5. A live sign-in check: every frontend test so far ran on synthetic data. First real use: import the 12 holdings missing from the journal on `long-term-portfolio.html`.
