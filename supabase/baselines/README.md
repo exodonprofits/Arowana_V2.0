@@ -72,3 +72,9 @@ The other five entrypoints have no Wheel source copy at that commit. `tests/numb
 - All nine TypeScript entrypoints pass `node --experimental-strip-types --check` on Node 22.15.1. This is syntax-only: no Deno type checking, dependency fetching or Edge runtime invocation.
 - `scripts/check-secrets.py` passes with `.ts`, `.sql`, `.toml` added to its scope. Runtime tracking guard and Git whitespace checks pass. Secret scan is pattern-based, not a guarantee about history or deployed secrets.
 - Catalog/source export only: no production writes, function invocations, data rows, provider credentials, migration application, secret retrieval or deployment. SQL has not been runtime-replayed; external prerequisites and local containment remain unresolved.
+
+## Subsequent repository change: Founders $299/year
+
+The owner's latest instruction supersedes the earlier $229 pricing decision. The pending ATD-108 pricing follow-up aligns checkout, pricing, landing, account and billing labels with the backend guard at 29900 USD cents per year. Both Founders cycle aliases remain annual. Old $229 and $399 Stripe prices are blocked by the updated guard; Pro prices and existing subscription records are unchanged.
+
+The original capture and Wheel-comparison statements above describe the export date. `ATD108_functions.json` retains `sha256_lf` as captured and records `repository_sha256_lf` plus a reason for the changed guard only. This is not evidence of deployment. Before publishing the price change, verify an active USD $299 yearly Stripe Price and coordinate its `STRIPE_PRICE_FOUNDERS` reference with the updated backend/frontend release. No Stripe or deployment changes were made here; existing subscriptions are not migrated.

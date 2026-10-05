@@ -291,3 +291,18 @@ Runtime credential containment took priority after generated secrets were found 
 **Founders price:** the owner chose **$229/year**, matching the deployed checkout and the live site. Branch `claude/ATD-108-founders-229` updates `checkout.html`, `pricing.html`, `index.html`, `account.html` and `billing.html`, which turns the Node Tests check green (39/39).
 
 **Next:** dependency baselines and ATD-007 security work remain open. Do not apply the baseline migration or deploy automatically.
+
+
+### ATD-108 - Founders $299 pricing follow-up
+
+**Owner:** Codex. **Reviewer:** Claude Code.
+
+**Branch:** `codex/ATD-108-founders-299`
+
+**Status:** Repository implementation complete; awaiting PR review. The latest owner instruction is $299/year and supersedes the earlier $229 decision.
+
+**Result:** Five frontend pages and both Founders backend guard aliases aligned to $299 annually. Tests cover acceptance, legacy-price rejection and displayed-price consistency. Captured deployed hashes remain intact; the changed guard has separate repository provenance.
+
+**Verification:** Node 40/40; Python 63/63; secret scan, runtime tracking and whitespace checks pass. No live browser checkout, Stripe or deployment tests. No production changes.
+
+**Next:** Claude Code reviews the pricing PR. Verify Stripe's active USD $299 yearly price and coordinate backend/frontend publication separately. Do not migrate existing subscriptions or deploy automatically. ATD-007 security work remains open.

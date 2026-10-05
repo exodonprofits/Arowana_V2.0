@@ -104,7 +104,9 @@
     },
     {
       "path": "supabase/functions/arowana-checkout/price-guard.js",
-      "sha256_lf": "aac82d05fde8a92513e400b47acd3603045496768a8a3d699df7dec4c9b0ac1c"
+      "sha256_lf": "aac82d05fde8a92513e400b47acd3603045496768a8a3d699df7dec4c9b0ac1c",
+      "repository_sha256_lf": "c64dc5baa28fa9d85bde75487ce74b1ba7cbc704ecd974cf67ae140560d4569e",
+      "repository_change": "ATD-108 owner-approved $299/year Founders price; pending deployment. sha256_lf retains the original deployed capture."
     },
     {
       "path": "supabase/functions/arowana-coach/index.ts",

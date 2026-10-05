@@ -2,15 +2,19 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const load = () => import('../supabase/functions/arowana-checkout/price-guard.js');
-const price = (o) => Object.assign({ active: true, currency: 'usd', unit_amount: 22900, recurring: { interval: 'year', interval_count: 1 } }, o);
+const price = (o) => Object.assign({ active: true, currency: 'usd', unit_amount: 29900, recurring: { interval: 'year', interval_count: 1 } }, o);
 
-test('founders at $229/year passes; the old $399 price is refused', async () => {
+test('founders at $299/year passes for both aliases; old prices are blocked', async () => {
   const G = await load();
-  assert.deepEqual(G.checkPrice('founders:annual', price({})), { ok: true });
-  const r = G.checkPrice('founders:annual', price({ unit_amount: 39900 }));
-  assert.equal(r.ok, false);
-  assert.equal(r.block, true);
-  assert.match(r.reason, /39900, page shows 22900/);
+  for (const key of ['founders:annual', 'founders:monthly']) {
+    assert.deepEqual(G.checkPrice(key, price({})), { ok: true });
+    for (const amount of [22900, 39900]) {
+      const r = G.checkPrice(key, price({ unit_amount: amount }));
+      assert.equal(r.ok, false);
+      assert.equal(r.block, true);
+      assert.equal(r.reason, 'amount ' + amount + ', page shows 29900');
+    }
+  }
 });
 
 test('refuses archived, wrong currency, wrong interval, missing price', async () => {
@@ -40,4 +44,14 @@ test('EXPECTED matches the amounts checkout.html shows', async () => {
   assert.equal(G.EXPECTED['pro:monthly'].amount, Number(pro[1]));
   assert.equal(G.EXPECTED['pro:annual'].amount, Number(pro[2]));
   assert.equal(G.EXPECTED['founders:annual'].amount, Number(fnd[2]));
+});
+
+// Cover the public offer and signed-in labels, not only the checkout table.
+test('Founders offer is $299 across marketing and account pages', () => {
+  const fs = require('fs'), path = require('path');
+  for (const file of ['pricing.html', 'index.html', 'account.html', 'billing.html']) {
+    const html = fs.readFileSync(path.join(__dirname, '..', file), 'utf8');
+    assert.match(html, /\$299/, file);
+    assert.doesNotMatch(html, /\$(?:229|399)\b/, file);
+  }
 });
