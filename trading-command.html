@@ -7006,7 +7006,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
     // job). One fetch drives all three sub-sections instead of two
     // separate Supabase queries that each showed their own copy of "not
     // configured" / "hasn't generated yet". RLS on daily_setups allows
-    // public SELECT (only service_role can write), so this works for
+    // public SELECT (only the server-side role can write), so this works for
     // anonymous/logged-out visitors too — no auth required.
     function renderMovers(bullishEl, bearishEl, movers) {
       if (!bullishEl || !bearishEl) return;

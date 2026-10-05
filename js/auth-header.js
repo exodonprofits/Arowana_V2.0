@@ -127,7 +127,7 @@
     if (nameEl) nameEl.textContent = displayNameFromUser(user);
     if (loginBtn) {
       loginBtn.textContent = "Account";
-      loginBtn.onclick = () => { location.href = "/account.html"; };
+      loginBtn.onclick = () => { location.href = "account.html"; };
     }
     if (logoutBtn) {
       logoutBtn.style.display = "block";

@@ -1,0 +1,35 @@
+# Server-side redirects. The deploy workflow turns these into .htaccess RedirectMatch rules (Bluehost/Apache).
+# ATD-109: old Wheel Desk URLs that V2.0 does not serve under the same path.
+/market-intelligence  /trading-command.html  301
+# Wheel's owner-only /lab/ pages; each has a page of the same name at the root.
+/lab/admin-usage.html  /admin-usage.html  301
+/lab/admin.html  /admin.html  301
+/lab/ai-moat-finder.html  /ai-moat-finder.html  301
+/lab/ai-morning-brief.html  /ai-morning-brief.html  301
+/lab/api-diagnostics.html  /api-diagnostics.html  301
+/lab/atr-stop-planner.html  /atr-stop-planner.html  301
+/lab/chart-analysis-form.html  /chart-analysis-form.html  301
+/lab/dcf-analyzer.html  /dcf-analyzer.html  301
+/lab/discipline-scorecard.html  /discipline-scorecard.html  301
+/lab/dividend-tracker.html  /dividend-tracker.html  301
+/lab/expectancy-matrix.html  /expectancy-matrix.html  301
+/lab/kelly-calculator.html  /kelly-calculator.html  301
+/lab/money-flow-alert.html  /money-flow-alert.html  301
+/lab/option-roll-tracker.html  /option-roll-tracker.html  301
+/lab/options-analyzer.html  /options-analyzer.html  301
+/lab/position-sizer.html  /position-sizer.html  301
+/lab/r-multiple.html  /r-multiple.html  301
+/lab/risk-comfort.html  /risk-comfort.html  301
+/lab/scanner.html  /scanner.html  301
+/lab/short-term-watchlist.html  /short-term-watchlist.html  301
+/lab/stock-analyzer.html  /stock-analyzer.html  301
+/lab/strategy-backtesting.html  /strategy-backtesting.html  301
+/lab/technical-analysis.html  /technical-analysis.html  301
+/lab/tool-audit.html  /tool-audit.html  301
+/lab/trade-plan-builder.html  /trade-plan-builder.html  301
+/lab/trading-journal-analysis.html  /trading-journal-analysis.html  301
+/lab/volatility-guardrails.html  /volatility-guardrails.html  301
+/lab/watchlist.html  /watchlist.html  301
+/lab/whale-tracker.html  /whale-tracker.html  301
+/lab/  /tools.html  301
+/lab  /tools.html  301
