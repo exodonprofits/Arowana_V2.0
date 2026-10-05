@@ -167,7 +167,7 @@ Groups as in section 3. "Linked from live menu pages" lists which of the 33 page
 | `tradingcommand.html` | D | MERGE | Merge P1 | — | 0 |  |
 | `whale-tracker.html` | D | MERGE | Merge P1 | — | 0 |  |
 | `iv-watchlist-module.html` | E | MERGE (data) | Merge P1 | — | 0 | Retired 4c → `watchlist` (imports its tickers) |
-| `long-term-portfolio.html` | E | MERGE (data) | Merge P1 | tool-audit | 1 |  |
+| `long-term-portfolio.html` | E | MERGE (data) | Merge P1 | tool-audit | 1 | Retired 4b: user-run import of saved `portfolio` rows into the journal, then `portfolio-command` |
 | `long-term-watchlist.html` | E | MERGE (data) | Merge P1 | tool-audit | 1 | Retired 4a → `watchlist` |
 | `master-journal.html` | E | MERGE (data) | Merge P1 | — | 0 | Retired 4a → `trade-journal-pro` |
 | `my-watchlist.html` | E | MERGE (data) | Merge P1 | — | 0 | Retired 4c → `watchlist` (imports its save) |
