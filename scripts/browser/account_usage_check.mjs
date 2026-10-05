@@ -45,6 +45,8 @@ for (const [plan, coach, explain, research] of [['pro', '12 / 30', '40 / 150', '
   check(`${plan}: explanations meter reads this month's ap_usage`, await until(async () => (await txt(p, 'usageExplain')) === explain), await txt(p, 'usageExplain'));
   check(`${plan}: coach and research meters`, (await txt(p, 'usageCoach')) === coach && (await txt(p, 'usageResearch')) === research, [await txt(p, 'usageCoach'), await txt(p, 'usageResearch')]);
   check(`${plan}: notes say what counts`, /Portfolio Advisor/.test(await txt(p, 'usageCoachNote') || '') || /left/.test(await txt(p, 'usageCoachNote') || ''), await txt(p, 'usageCoachNote'));
+  const ent = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll('#entGrid .ent-row')].map(r => [r.textContent.replace(/^[\u2713\u2717]/, '').replace(/Upgrade.*$/, '').trim(), r.classList.contains('on')])));
+  check(`${plan}: plan includes roll coach & pattern detection, and CC/CSP screens`, ent['Roll coach & pattern detection'] === true && ent['Covered call & CSP screens'] === true, ent);
   check(`${plan}: no placeholder AI meter`, !(await p.evaluate(() => /AI analyses today/.test(document.body.textContent) || !!document.getElementById('meterAiValue'))));
   check(`${plan}: no page errors`, errors.length === 0, errors);
   await ctx.close();
@@ -52,6 +54,8 @@ for (const [plan, coach, explain, research] of [['pro', '12 / 30', '40 / 150', '
 {
   const { ctx, p, errors } = await open('free');
   check('free: coach and explanations not included', await until(async () => (await txt(p, 'usageExplain')) === 'Not included') && (await txt(p, 'usageCoach')) === 'Not included', [await txt(p, 'usageExplain'), await txt(p, 'usageCoach')]);
+  const fent = await p.evaluate(() => [...document.querySelectorAll('#entGrid .ent-row')].filter(r => /Roll coach|CSP screens/.test(r.textContent)).map(r => r.classList.contains('on')));
+  check('free: roll coach and screens not included', fent.length === 2 && fent.every(x => x === false), fent);
   check('free: no page errors', errors.length === 0, errors);
   await ctx.close();
 }

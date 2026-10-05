@@ -1374,8 +1374,10 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
       trades: null, accounts: null, alerts: 5,
       flag: '',
       features: {
+        // Roll coach, pattern detection and the covered call / CSP screens are
+        // Pro (pricing.html); these two were left off from the retired Elite tier.
         journal: true, csv: true, options: true, scanners: true,
-        brief: true, lockout: true, coach: false, screens: false, export: true
+        brief: true, lockout: true, coach: true, screens: true, export: true
       }
     },
     elite: {
