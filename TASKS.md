@@ -305,7 +305,7 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Branch:** `codex/ATD-108-founders-299`
 
-**Status:** Merged (PR #48) 2026-10-05. **Not deployed:** `arowana-checkout` v14 in production still checks Founders against 22900, so until the Stripe price and the function are updated the site shows $299 while checkout charges $229 or refuses, depending on `STRIPE_PRICE_FOUNDERS`.
+**Status:** Merged (PR #48) 2026-10-05. **Not deployed, on purpose:** `arowana-checkout` v14 in production checks Founders against 22900, which matches the live site (the Wheel Desk on arowanaprofits.com, $229). V2.0 is not public yet. Deploy the $299 guard and switch `STRIPE_PRICE_FOUNDERS` only in the ATD-109 cutover window; deploying earlier would refuse Founders checkouts on the live Wheel Desk.
 
 **Result:** Five frontend pages and both Founders backend guard aliases aligned to $299 annually. Tests cover acceptance, legacy-price rejection and displayed-price consistency. Captured deployed hashes remain intact; the changed guard has separate repository provenance.
 
@@ -334,3 +334,13 @@ Runtime credential containment took priority after generated secrets were found 
 - Check: `scripts/test_schwab_coming_soon.py`, `scripts/browser/schwab_coming_soon_check.mjs`.
 
 **When Schwab is built:** decide where the OAuth exchange runs (a Supabase function, or the n8n flow the old Broker Connections page described) and replace both pages.
+
+### ATD-109 — Launch V2.0 on arowanaprofits.com
+
+**Owner:** Claude Code (site changes, deploy workflow, drafts); owner (decisions D1–D5, legal wording, staging test, cutover window).
+
+**Status:** Planned 2026-10-05. Nothing deployed. **Branch:** `claude/ATD-109-cutover`.
+
+**Result:** [Cutover plan](docs/ATD-109_CUTOVER_PLAN.md) and [gap inventory](docs/ATD-109_CUTOVER_INVENTORY.md). arowanaprofits.com serves the Wheel Desk from Bluehost (FTPS workflow in `exodonprofits/arowanaprofits`, with a `staging` target at `/staging/`); both sites share one Supabase project and its functions. All 33 public Wheel pages exist in V2.0. Before staging: a V2.0 deploy workflow with an allowlist (never `documents/`), `_redirects` for `/lab/*`, a root `robots.txt`, relative asset paths on six pages, the Account email-preferences section the digest links to, and updated Privacy/Terms/Disclosures. Should: sign-up `next` carry-over and same-site check (open redirect today), onboarding fixes, dead `docs.html` link.
+
+**Correction:** the Founders `$299` guard must be deployed in the cutover window, not before (see the Founders entry above).
