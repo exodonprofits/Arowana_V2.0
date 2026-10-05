@@ -42,7 +42,7 @@ class Phase4cTests(unittest.TestCase):
         self.assertIn("const migratedIdeas = migrateOldSymbolListsIfNeeded();", src)
 
     def test_no_links_to_the_option_journal_page(self):
-        for page in ("long-term-dashboard.html", "short-term-template.html", "credit-spread-planner.html"):
+        for page in ("long-term-dashboard.html", "credit-spread-planner.html"):
             self.assertNotIn('href="options-journal.html"', read(page), page)
 
 

@@ -73,6 +73,8 @@ The owner approved the recommendation for each question on 2026-10-03; the right
 | Q4 | Redirect style for retired pages: a stub page (works on any static host, like `options-recommender.html`) or a Cloudflare `_redirects` file (server-side 301)? | Stub pages for now: consistent with what exists and independent of host configuration. |
 | Q5 | Are pricing, billing and checkout (groups A/B) in the private beta? | Per ATD-001: defer public commercial expansion; keep the pages, no new links. |
 
+**Q3 outcome (owner-approved 2026-10-05):** group M was deleted from `main` rather than moved to `archive/`. The repository has no build step or build configuration (no `package.json`, `wrangler.toml` or `_redirects`), so Cloudflare Pages most likely publishes the repository root as is and an `archive/` folder would still be served. Git history keeps every page; restore one with `git checkout b5fc057b1309d7d855cbd0f84598811eb213d665 -- "<page>.html"`.
+
 The three items parked during ATD-008 stay parked here: `whale-tracker.html` (now in group D, merge into Wheel Coach), `tradingcommand.html` (group D), and Wheel Coach's desktop top bar.
 
 ## 5. Recommended order
@@ -242,24 +244,24 @@ Groups as in section 3. "Linked from live menu pages" lists which of the 33 page
 | `feature_body.html` | L | RETIRE→tools | Merge P3 | — | 0 |  |
 | `feature_new.html` | L | RETIRE→tools | Merge P3 | — | 0 |  |
 | `features-tools-directory.html` | L | RETIRE→tools | Merge P3 | tool-audit, watchlist | 0 |  |
-| `ai_valuation.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `arowana-template.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `base-breakout .html` | M | ARCHIVE | Merge P2 | — | 0 |  |
-| `cover-call-option-recommentor.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `daily-trading-post.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `dashboard.html` | M | ARCHIVE | Archive P0 | — | 0 |  |
-| `options-hub-creator.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `overview.html` | M | ARCHIVE | Archive P0 | — | 0 |  |
-| `pricing-revolutionary.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `settings.html` | M | ARCHIVE | Archive P0 | — | 0 |  |
-| `short-term-template.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `task-template.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `template.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `template_new.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `test_webhook.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `trade-ideas-ai.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `updated-navigation.html` | M | ARCHIVE | Archive P3 | — | 0 |  |
-| `weekly-swing-trade-post.html` | M | ARCHIVE | Archive P3 | tool-audit | 1 |  |
+| `ai_valuation.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `arowana-template.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `base-breakout .html` | M | ARCHIVE | Merge P2 | — | 0 || Deleted from main (M) |
+| `cover-call-option-recommentor.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `daily-trading-post.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `dashboard.html` | M | ARCHIVE | Archive P0 | — | 0 || Deleted from main (M) |
+| `options-hub-creator.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `overview.html` | M | ARCHIVE | Archive P0 | — | 0 || Deleted from main (M) |
+| `pricing-revolutionary.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `settings.html` | M | ARCHIVE | Archive P0 | — | 0 || Deleted from main (M) |
+| `short-term-template.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `task-template.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `template.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `template_new.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `test_webhook.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `trade-ideas-ai.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `updated-navigation.html` | M | ARCHIVE | Archive P3 | — | 0 || Deleted from main (M) |
+| `weekly-swing-trade-post.html` | M | ARCHIVE | Archive P3 | tool-audit | 1 || Deleted from main (M) |
 | `market-intelligence.html` | N | KEEP redirect | Modify P1 | money-flow-alert, tool-audit | 1 |  |
 | `options-recommender.html` | N | KEEP redirect | Keep P3 | options-hub | 0 |  |
 | `options-strategies.html` | N | KEEP redirect | Keep P3 | — | 0 |  |
