@@ -95,7 +95,8 @@ export async function installFakeSupabase(ctx, db, opts = {}) {
     return r.continue();
   });
   await ctx.addInitScript(([s, ref, u, extra]) => {
-    if (sessionStorage.getItem('seeded')) return;
+    // Sandboxed frames (e.g. an email preview iframe) have no storage.
+    try { if (sessionStorage.getItem('seeded')) return; } catch (e) { return; }
     sessionStorage.setItem('seeded', '1');
     localStorage.setItem(`sb-${ref}-auth-token`, JSON.stringify(s));
     localStorage.setItem('gs_auth_user_v1', JSON.stringify({ id: u.id, email: u.email }));

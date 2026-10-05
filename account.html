@@ -920,6 +920,8 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
 .data-row-text { flex: 1 1 320px; }
 .data-row-title { font-weight: 700; font-size: .92rem; margin-bottom: 3px; }
 .data-row-desc { font-size: .83rem; color: var(--text-muted); line-height: 1.45; }
+.em-toggle { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+.em-toggle input { width: 18px; height: 18px; accent-color: var(--brand, #0b4f8a); }
 
 
 /* ── Mobile header ─────────────────────────────────────────────────────
@@ -1263,6 +1265,46 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
           <div class="status-value" id="aiValue">Included with your plan</div>
         </div>
       </div>
+    </div>
+  </div>
+
+  <!-- EMAIL — the three Arowana emails (supabase/functions/arowana-digest).
+       Preferences live in ap_email_prefs; every email is opt-in. -->
+  <div class="usage-section" id="email">
+    <div class="section-header">
+      <h2 class="section-title">✉️ Email</h2>
+      <span class="text-muted" style="font-size:.82rem" id="emailPlanNote">Built from your own journal. Nothing is sent on a quiet day.</span>
+    </div>
+    <div id="emailRows">
+      <div class="data-row">
+        <div class="data-row-text">
+          <label class="data-row-title em-toggle"><input type="checkbox" data-email-pref="morning" disabled> Weekday morning</label>
+          <div class="data-row-desc">Positions within 3% of the strike or through it, earnings before an expiration, contracts expiring in the next two days, and cash not working. Around 7:15 am Central, only when there is something to say.</div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" data-email-preview="daily">Preview</button>
+      </div>
+      <div class="data-row">
+        <div class="data-row-text">
+          <label class="data-row-title em-toggle"><input type="checkbox" data-email-pref="expiry_week" disabled> Expiration week (Mondays)</label>
+          <div class="data-row-desc">Everything expiring by Friday: in or out of the money, premium, and the Roll Coach choices with their numbers. Replaces that Monday's morning email.</div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" data-email-preview="expiry">Preview</button>
+      </div>
+      <div class="data-row">
+        <div class="data-row-text">
+          <label class="data-row-title em-toggle"><input type="checkbox" data-email-pref="monthly" disabled> Monthly income statement</label>
+          <div class="data-row-desc">Last month's realized options income by ticker, compared with the month before and the year to date. On the 1st.</div>
+        </div>
+        <button type="button" class="btn btn-outline btn-sm" data-email-preview="monthly">Preview</button>
+      </div>
+    </div>
+    <div class="data-row-desc" id="emailMsg" role="status" style="min-height:1.2em;margin-top:6px"></div>
+    <div id="emailPreview" hidden style="margin-top:12px;border:1px solid var(--border);border-radius:12px;overflow:hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 14px;background:var(--bg-secondary,#f8fafc);border-bottom:1px solid var(--border)">
+        <strong id="emailPreviewSubject" style="font-size:.88rem"></strong>
+        <button type="button" class="btn btn-outline btn-sm" id="emailPreviewClose">Close</button>
+      </div>
+      <iframe id="emailPreviewFrame" title="Email preview" sandbox="" style="width:100%;height:560px;border:0;background:#f4f7fa"></iframe>
     </div>
   </div>
 
@@ -2429,6 +2471,92 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
         console.info('[account] cleared stored API keys — no longer needed');
       }
     } catch (e) {}
+  })();
+  </script>
+  <script>
+  /* Email settings: three opt-in toggles saved to ap_email_prefs, and a
+     preview of each email built from the signed-in user's own journal by
+     the arowana-digest function (returned, never sent). */
+  (function () {
+    'use strict';
+    var FN = 'https://pbojacnagutipfhcxltj.supabase.co/functions/v1/arowana-digest';
+    var KEYS = ['morning', 'expiry_week', 'monthly'];
+    var S = { sb: null, uid: null, prefs: null };
+    function $(id) { return document.getElementById(id); }
+    function say(text, bad) { var m = $('emailMsg'); if (!m) return; m.textContent = text; m.style.color = bad ? 'var(--danger, #dc2626)' : 'var(--text-muted)'; }
+    function boxes() { return Array.prototype.slice.call(document.querySelectorAll('[data-email-pref]')); }
+    function client() { var c = window.supabaseClient || window.sbClient; return c && c.auth ? c : null; }
+    function waitForClient(ms) {
+      return new Promise(function (resolve) {
+        var t0 = Date.now();
+        (function tick() { var c = client(); if (c) return resolve(c); if (Date.now() - t0 > ms) return resolve(null); setTimeout(tick, 150); })();
+      });
+    }
+
+    async function load() {
+      var sb = await waitForClient(8000);
+      if (!sb) return say('Email settings could not load. Reload the page to try again.', true);
+      var sess = await sb.auth.getSession();
+      var user = sess && sess.data && sess.data.session && sess.data.session.user;
+      if (!user) return say('Sign in to choose your emails.');
+      S.sb = sb; S.uid = user.id;
+      var r = await sb.from('ap_email_prefs').select('morning,expiry_week,monthly').eq('user_id', user.id).maybeSingle();
+      if (r.error) { console.warn('[email] prefs', r.error); return say('Email settings are not available yet.', true); }
+      S.prefs = r.data || { morning: false, expiry_week: false, monthly: false };
+      boxes().forEach(function (b) { b.checked = !!S.prefs[b.getAttribute('data-email-pref')]; b.disabled = false; });
+      try {
+        var p = await sb.from('profiles').select('arowana_plan,arowana_plan_status').eq('id', user.id).maybeSingle();
+        var plan = p.data && p.data.arowana_plan;
+        if (plan && ['pro', 'founders'].indexOf(plan) === -1) {
+          $('emailPlanNote').textContent = 'Emails are sent on Pro. You can set them up and preview them now.';
+        }
+      } catch (e) {}
+    }
+
+    async function save(box) {
+      if (!S.sb || !S.uid) return;
+      var row = { user_id: S.uid, updated_at: new Date().toISOString() };
+      KEYS.forEach(function (k) { var b = document.querySelector('[data-email-pref="' + k + '"]'); row[k] = !!(b && b.checked); });
+      box.disabled = true;
+      var r = await S.sb.from('ap_email_prefs').upsert(row, { onConflict: 'user_id' });
+      box.disabled = false;
+      if (r.error) { box.checked = !box.checked; console.warn('[email] save', r.error); return say('That change was not saved. Try again in a moment.', true); }
+      say('Saved.');
+    }
+
+    async function preview(kind, btn) {
+      var token = typeof window.apGetAccessToken === 'function' ? await window.apGetAccessToken() : null;
+      if (!token) return say('Sign in to preview.', true);
+      btn.disabled = true; var label = btn.textContent; btn.textContent = 'Building…';
+      try {
+        var res = await fetch(FN, { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + token },
+          body: JSON.stringify({ preview: kind }) });
+        var body = await res.json().catch(function () { return {}; });
+        if (!res.ok) throw new Error(body.error || ('HTTP ' + res.status));
+        if (body.empty) {
+          $('emailPreview').hidden = true;
+          return say(kind === 'monthly' ? 'Nothing settled last month and nothing open, so no statement would be sent.'
+                                        : 'Nothing to report right now, so this email would not be sent today.');
+        }
+        $('emailPreviewSubject').textContent = 'Subject: ' + body.subject;
+        $('emailPreviewFrame').srcdoc = body.html;
+        $('emailPreview').hidden = false;
+        say('');
+      } catch (e) {
+        console.warn('[email] preview', e);
+        say('The preview could not be built right now.', true);
+      } finally { btn.disabled = false; btn.textContent = label; }
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+      if (!$('emailRows')) return;
+      boxes().forEach(function (b) { b.addEventListener('change', function () { save(b); }); });
+      document.querySelectorAll('[data-email-preview]').forEach(function (b) {
+        b.addEventListener('click', function () { preview(b.getAttribute('data-email-preview'), b); });
+      });
+      $('emailPreviewClose').addEventListener('click', function () { $('emailPreview').hidden = true; });
+      load();
+    });
   })();
   </script>
 </body>
