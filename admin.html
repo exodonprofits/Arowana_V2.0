@@ -551,7 +551,7 @@ button{cursor:pointer;font-family:inherit}
     document.head.appendChild(s);
   }
   // Try local /js/supabase.min.js first
-  loadScript('/js/supabase.min.js',
+  loadScript('./js/supabase.min.js',
     function(){ window.__sb_loaded = true; },
     function(){
       // Local failed — load from CDN

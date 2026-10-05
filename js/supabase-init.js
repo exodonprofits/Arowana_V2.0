@@ -99,7 +99,7 @@ export async function getUser() {
 }
 
 /** Require auth (redirects if not logged in). */
-export async function requireAuth(redirect = "/login.html") {
+export async function requireAuth(redirect = "login.html") {
   const user = await getUser();
   if (user) return user;
   const next = encodeURIComponent(location.pathname + location.search);

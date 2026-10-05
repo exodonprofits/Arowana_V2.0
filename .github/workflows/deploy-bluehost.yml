@@ -1,0 +1,166 @@
+# Deploy Arowana V2.0 to Bluehost over FTPS (ATD-109). Adapted from the Wheel Strategy
+# Desk's workflow in exodonprofits/arowanaprofits, which deploys the same domain today.
+#
+# Run it from the Actions tab ("Deploy to Bluehost" → Run workflow) and pick a target:
+#   staging     → <remote dir>/staging/   (https://arowanaprofits.com/staging/, test before going live)
+#   production  → <remote dir>/
+# Pushes to main also deploy to production once the repository variable DEPLOY_ON_PUSH is "true".
+# Until the cutover (docs/ATD-109_CUTOVER_PLAN.md) only run staging: production is the Wheel Desk.
+#
+# Repository secrets (Settings → Secrets and variables → Actions), the same values as the
+# Wheel repo's:
+#   BLUEHOST_FTP_SERVER    e.g. ftp.arowanaprofits.com
+#   BLUEHOST_FTP_USERNAME  an FTP account limited to the site's folder (cPanel → FTP Accounts)
+#   BLUEHOST_FTP_PASSWORD
+#   BLUEHOST_REMOTE_DIR    arowanaprofits.com's document root as that FTP account sees it, ending in "/".
+# Repository variables:
+#   DEPLOY_ON_PUSH         "true" to deploy production on every push to main (leave off until cutover)
+#   MANAGE_HTACCESS        "true" to upload .htaccess to production as well (staging always gets it).
+#                          It REPLACES the .htaccess in the document root: copy any server rules
+#                          into the "Kept from the server" block below first.
+#
+# Every deploy writes ap-version.txt (the commit SHA) and then fetches it back from
+# https://arowanaprofits.com[/staging]/ap-version.txt; the run fails if the site doesn't serve it.
+#
+# Only the site goes up, from an explicit allowlist: top-level .html pages, robots.txt, sitemap.xml,
+# css/, js/ and images/. Never documents/, docs/, supabase/, scripts/, tests/, .github/ or markdown.
+#
+# The upload state file keeps the Wheel workflow's name (.ap-deploy-state.json) on purpose: the
+# action deletes files it uploaded earlier that are not in this upload, so the first production
+# deploy also removes Wheel-only files (lab/, disc-ai.png). _redirects sends /lab/* to the root pages.
+name: Deploy to Bluehost
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Where to deploy"
+        type: choice
+        options: [staging, production]
+        default: staging
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-bluehost-${{ github.event.inputs.target || 'production' }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    if: github.event_name == 'workflow_dispatch' || vars.DEPLOY_ON_PUSH == 'true'
+    runs-on: ubuntu-latest
+    env:
+      TARGET: ${{ github.event.inputs.target || 'production' }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Assemble the site
+        run: |
+          set -euo pipefail
+          mkdir -p site
+          cp ./*.html robots.txt sitemap.xml site/
+          cp -r css js images site/
+          # Never publish these, even if they end up next to the pages.
+          find site \( -name '*.md' -o -name '*.psd' -o -name '*.docx' -o -name '.DS_Store' \) -delete
+          echo "$GITHUB_SHA" > site/ap-version.txt
+          echo "Files to deploy: $(find site -type f | wc -l) ($(du -sh site | cut -f1))"
+
+      - name: Refuse anything secret-looking
+        run: |
+          set -euo pipefail
+          if grep -rlE 'service_role|SUPABASE_SERVICE_ROLE|sk-ant-|sk-proj-|sk_live_|rk_live_|whsec_|re_[A-Za-z0-9]{8,}_' site; then
+            echo "Refusing to deploy: a file above contains a secret-looking string." >&2
+            exit 1
+          fi
+          # Supabase keys are JWTs; the role is base64-encoded, so read it. Only "anon" may ship.
+          python3 - <<'PY'
+          import base64, json, pathlib, re, sys
+          bad = []
+          for f in pathlib.Path('site').rglob('*'):
+              if not f.is_file() or f.suffix not in ('.html', '.js', '.json', '.css', '.txt', '.xml'):
+                  continue
+              for tok in re.findall(r'eyJ[A-Za-z0-9_-]{10,}\.(eyJ[A-Za-z0-9_-]{10,})\.[A-Za-z0-9_-]+', f.read_text(errors='ignore')):
+                  try:
+                      role = json.loads(base64.urlsafe_b64decode(tok + '=' * (-len(tok) % 4))).get('role')
+                  except Exception:
+                      continue
+                  if role != 'anon':
+                      bad.append(f'{f}: JWT with role {role!r}')
+          if bad:
+              print('Refusing to deploy:', *bad, sep='\n  ', file=sys.stderr)
+              sys.exit(1)
+          print('Keys found are anon only.')
+          PY
+
+      - name: Build .htaccess from _redirects
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import re
+          out = [
+              '# Generated from _redirects by .github/workflows/deploy-bluehost.yml. Edit _redirects, not this.',
+              '# --- Kept from the server (copy any rules from the old .htaccess here) ---',
+              '',
+              '# --- Retired pages ---',
+          ]
+          n = 0
+          for line in open('_redirects'):
+              line = line.split('#', 1)[0].strip()
+              if not line:
+                  continue
+              parts = line.split()
+              if len(parts) < 2:
+                  continue
+              src, dst = parts[0], parts[1]
+              code = parts[2] if len(parts) > 2 else '301'
+              out.append(f'RedirectMatch {code} ^{re.escape(src)}$ {dst}')
+              n += 1
+          out += ['', 'ErrorDocument 404 /404.html', '']
+          open('site/.htaccess', 'w').write('\n'.join(out))
+          print(f'{n} redirects written')
+          print('\n'.join(out))
+          PY
+          if [ "$TARGET" = "production" ] && [ "${{ vars.MANAGE_HTACCESS }}" != "true" ]; then
+            rm site/.htaccess
+            echo "Production: .htaccess not uploaded (MANAGE_HTACCESS is not \"true\")."
+          fi
+
+      - name: Pick the remote folder
+        id: dir
+        env:
+          BASE: ${{ secrets.BLUEHOST_REMOTE_DIR }}
+        run: |
+          set -euo pipefail
+          if [ -z "$BASE" ]; then echo "BLUEHOST_REMOTE_DIR is not set" >&2; exit 1; fi
+          case "$BASE" in */) ;; *) BASE="$BASE/";; esac
+          if [ "$TARGET" = "staging" ]; then DIR="${BASE}staging/"; URL="https://arowanaprofits.com/staging/"; else DIR="$BASE"; URL="https://arowanaprofits.com/"; fi
+          echo "dir=$DIR" >> "$GITHUB_OUTPUT"
+          echo "url=$URL" >> "$GITHUB_OUTPUT"
+          echo "Deploying to: $DIR ($TARGET) → $URL"
+
+      - name: Upload over FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.BLUEHOST_FTP_SERVER }}
+          username: ${{ secrets.BLUEHOST_FTP_USERNAME }}
+          password: ${{ secrets.BLUEHOST_FTP_PASSWORD }}
+          protocol: ftps
+          local-dir: ./site/
+          server-dir: ${{ steps.dir.outputs.dir }}
+          state-name: .ap-deploy-state.json
+
+      - name: Check the site serves this commit
+        env:
+          URL: ${{ steps.dir.outputs.url }}
+        run: |
+          set -euo pipefail
+          for i in 1 2 3 4 5 6; do
+            got=$(curl -fsS -H 'Cache-Control: no-cache' "${URL}ap-version.txt?t=$(date +%s)" | tr -d '[:space:]' || true)
+            if [ "$got" = "$GITHUB_SHA" ]; then echo "OK: ${URL} serves $GITHUB_SHA"; exit 0; fi
+            echo "Attempt $i: ${URL}ap-version.txt returned '${got:-nothing}'"; sleep 10
+          done
+          echo "The upload finished but ${URL} doesn't serve it. BLUEHOST_REMOTE_DIR points at the wrong folder, or arowanaprofits.com isn't served from Bluehost." >&2
+          exit 1

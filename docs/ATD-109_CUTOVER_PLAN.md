@@ -12,6 +12,8 @@ What carries over by itself: all 33 public Wheel pages exist in V2.0 under the s
 
 ## Owner decisions
 
+**Decided 2026-10-05: all five as recommended.** Founders $299 at launch; the Free plan change stands and is stated on pricing and support before launch; V2.0's pages keep the old Wheel paths; `/lab/*` redirects to the root pages; `documents/` leaves the repository (its files stay in Git history).
+
 | # | Decision | Recommendation |
 |---|---|---|
 | D1 | Founders price at launch. Live today: $229. V2.0: $299 (#48). | Keep $299 if that is still the intent; it switches in the cutover window (C3). |
@@ -22,7 +24,7 @@ What carries over by itself: all 33 public Wheel pages exist in V2.0 under the s
 
 ## Work before staging (Claude Code unless noted)
 
-**Must (blockers in the inventory):**
+**Must (blockers in the inventory):** items 1–4 and the `docs.html` link (item 9) are done in `claude/ATD-109-deploy`.
 1. **Deploy workflow for V2.0**, adapted from Wheel's: same `staging`/`production` targets and secrets, an explicit allowlist (top-level pages, `robots.txt`, `sitemap.xml`, `css/`, `js/`, `images/`), never `documents/`, `docs/`, `supabase/`, `scripts/`, `tests/`; `_redirects` → `.htaccess`, `ErrorDocument 404 /404.html`.
 2. **`_redirects`** for `/lab/*` (D4) and the extensionless `/market-intelligence`.
 3. **Root `robots.txt`** (V2.0 only has `documents/robots.txt`).
@@ -37,7 +39,7 @@ What carries over by itself: all 33 public Wheel pages exist in V2.0 under the s
 
 ## Staging test (owner, about an hour)
 
-Run the V2.0 workflow with target `staging`, then at `https://arowanaprofits.com/staging/`: sign in; journal loads and an edit syncs (it is the real journal); Portfolio Command holdings; import the holdings on `long-term-portfolio.html`; Options Hub tabs, Check a Trade and Roll Coach; Arowana Trader "Your wheel today"; Account email toggles and a preview; password reset email; Pro checkout to the Stripe page (cancel there). Do not test Founders checkout until C3.
+Run the V2.0 workflow with target `staging`, then at `https://arowanaprofits.com/staging/`: sign in; journal loads and an edit syncs (it is the real journal); Portfolio Command holdings; import the holdings on `long-term-portfolio.html`; Options Hub tabs, Check a Trade and Roll Coach; Arowana Trader "Your wheel today"; Account email toggles and a preview; password reset email; Pro checkout to the Stripe page (cancel there). Do not test Founders checkout until C3. Known before staging: `watchlist.html` throws on an account with no saved watchlist (same on `main`; check a brand-new account on staging).
 
 Same origin as production, so no Supabase Auth or CORS change is needed. Staging and the live site share data: anything saved on staging is saved for real.
 

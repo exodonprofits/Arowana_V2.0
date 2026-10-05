@@ -25,4 +25,11 @@ Disallow: /signup.html
 # Config and scripts
 Disallow: /js/
 
+# Owner-only Lab (old Wheel URLs, now redirected), admin pages and staging
+Disallow: /lab/
+Disallow: /admin.html
+Disallow: /admin-usage.html
+Disallow: /api-diagnostics.html
+Disallow: /staging/
+
 Sitemap: https://arowanaprofits.com/sitemap.xml
