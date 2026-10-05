@@ -149,9 +149,9 @@
 
 **Owner:** Claude Code (frontend); backend pieces in the Codex lane
 
-**Status:** Specification drafted 2026-10-04 for owner review. Documentation only; nothing ported yet.
+**Status:** COMPLETE 2026-10-05 (frontend). S1 #33, S2 #34, S3 #35, S4 #36, S5 #37, S6 #43; follow-ups: plan gates #38, option max risk #39, Wheel Calculator on phones #40, dead-code removal #41, Codex handover #42. Backend source in Git through Q6 (#44, Codex). Not yet checked against a live account.
 
-**Branch:** `claude/ATD-108-wheel-port-spec`
+**Branch:** `claude/ATD-108-wheel-port-spec` (spec); one `claude/ATD-108-*` branch per slice
 
 **Result:** [Wheel port specification](docs/ATD-108_WHEEL_PORT_SPEC.md). Source is `exodonprofits/arowanaprofits` at `219e61f` (the Wheel Strategy Desk). The spec ports selected pieces in six slices and replaces no page wholesale:
 1. single Supabase client and live access token (fixes the multi-client sign-out race and stale-token RLS reads);
@@ -247,7 +247,7 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Owner:** Claude Code
 
-**Status:** Owner-approved 2026-10-03, including Q1–Q5 as recommended. Documentation only; phases are implemented in separate PRs.
+**Status:** COMPLETE 2026-10-05. Every group is done: phases 1–3c (including `option-roll-tracker`, #46), group E in 4a/4b/4c (#47, #49, #50) and group M deleted from `main` (#52). Review approved 2026-10-03 with Q1–Q5; Q3 changed to deletion on 2026-10-05.
 
 **Branch:** `claude/ATD-009-legacy-page-review`
 
@@ -294,9 +294,9 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Review (Claude Code, 2026-10-05):** no keys, tokens or table rows in the capture (the only address is the public digest sender); `js/digest.js` identity check passes; the baseline migration is a non-applying snapshot that refuses to overwrite existing relations. The `verify_jwt: false` functions spot-checked (`arowana-research`, `arowana-coach`, `arowana-billing-portal`) authenticate the caller themselves; `arowana-research` also allowlists paths and meters usage.
 
-**Founders price:** the owner chose **$229/year**, matching the deployed checkout and the live site. Branch `claude/ATD-108-founders-229` updates `checkout.html`, `pricing.html`, `index.html`, `account.html` and `billing.html`, which turns the Node Tests check green (39/39).
+**Founders price (superseded):** the owner first chose **$229/year** (#45), matching the deployed checkout; the later instruction is $299/year (#48, below). Branch `claude/ATD-108-founders-229` updates `checkout.html`, `pricing.html`, `index.html`, `account.html` and `billing.html`, which turns the Node Tests check green (39/39).
 
-**Next:** dependency baselines and ATD-007 security work remain open. Do not apply the baseline migration or deploy automatically.
+**Next:** dependency baselines and ATD-007 security work remain open. Before the baseline migration is ever applied, its preflight must also refuse (or match) the 16 functions it creates with `CREATE OR REPLACE`; several are shared outside Arowana (`public.set_updated_at()` runs 44 triggers, including Salon tables). Do not apply the baseline migration or deploy automatically.
 
 
 ### ATD-108 - Founders $299 pricing follow-up
@@ -305,7 +305,7 @@ Runtime credential containment took priority after generated secrets were found 
 
 **Branch:** `codex/ATD-108-founders-299`
 
-**Status:** Repository implementation complete; awaiting PR review. The latest owner instruction is $299/year and supersedes the earlier $229 decision.
+**Status:** Merged (PR #48) 2026-10-05. **Not deployed:** `arowana-checkout` v14 in production still checks Founders against 22900, so until the Stripe price and the function are updated the site shows $299 while checkout charges $229 or refuses, depending on `STRIPE_PRICE_FOUNDERS`.
 
 **Result:** Five frontend pages and both Founders backend guard aliases aligned to $299 annually. Tests cover acceptance, legacy-price rejection and displayed-price consistency. Captured deployed hashes remain intact; the changed guard has separate repository provenance.
 
@@ -315,7 +315,7 @@ Runtime credential containment took priority after generated secrets were found 
 
 ### Small fixes - 2026-10-05
 
-**Owner:** Claude Code; **Branch:** `claude/ATD-009-typo-retirement-ai`.
+**Owner:** Claude Code; **Branch:** `claude/ATD-009-typo-retirement-ai`; merged (PR #51).
 
 - `index.html`: "Free, Pro and Pro" → "Pro at $29/month" (link to pricing); "Pro and Pro are still open" → "Free and Pro are still open". The plans are Free, Pro and Founding Member.
 - `retirement-planner.html`: the managed AI write-up was a `null` webhook placeholder, and the page never loaded `plan.js`, so Pro users never reached it. It now loads `app-config.js`, `sb.js`, `plan.js` and `explain.js`, re-renders once the plan is known, and sends the computed roadmap as label/value facts (≤40; inputs, and each scenario's savings, income and gap; never the free-text location) to `arowana-explain` with kind `retirement`. Metered with the other explanations. A deployment without that kind answers "Nothing to explain.", which the page shows as "not switched on yet". BYOK is unchanged. "Pro, Elite, and Founders" → "Pro and Founding Member".
@@ -323,3 +323,14 @@ Runtime credential containment took priority after generated secrets were found 
 - Checks: `scripts/browser/retirement_ai_check.mjs` (21), `scripts/test_retirement_ai.py`; `plan_gates_check.mjs` now expects a Pro account to get the managed tier here (28).
 
 **Owner/Codex action:** deploy `arowana-explain` from main to turn the managed write-up on.
+
+### Schwab connection: coming soon - 2026-10-05
+
+**Owner:** Claude Code; **Branch:** `claude/ATD-009-status-schwab`.
+
+- `broker-connections.html` (in the navigation as "Broker Connections") showed a sample state as if real: "Connected", "Schwab Taxable, Schwab IRA", "Last sync Today 6:12 AM", a sync history table and a "Connect Schwab" button that did nothing. Its main section now says Schwab is coming soon, that nothing is connected or read, and links to the journal's CSV import (`trade-journal-pro.html?action=import`). Header, menu, sign-in and footer are unchanged.
+- `schwab-callback.html` posted to `schwab-auth-callback`, which was never deployed, at a site-relative URL, and imported `../js/supabase-init.js` from outside the site root, so no connection could complete. It is now a static notice: its only script removes any `code`/`state` from the address bar, and it sets `no-referrer`.
+- The status files are brought up to date (ATD-108 and ATD-009 complete, the Founders price history, the open owner/Codex actions).
+- Check: `scripts/test_schwab_coming_soon.py`, `scripts/browser/schwab_coming_soon_check.mjs`.
+
+**When Schwab is built:** decide where the OAuth exchange runs (a Supabase function, or the n8n flow the old Broker Connections page described) and replace both pages.

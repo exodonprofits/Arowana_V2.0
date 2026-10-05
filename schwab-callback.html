@@ -3,91 +3,37 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
-  <title>Schwab Callback — Arowana Profits</title>
+  <meta name="robots" content="noindex">
+  <!-- An OAuth return URL can carry a code; never send it on as a referrer. -->
+  <meta name="referrer" content="no-referrer">
+  <title>Schwab connection coming soon — Arowana Profits</title>
+  <!-- Schwab OAuth return page. The schwab-auth-callback function it posted to
+       was never deployed, and the old script imported a path outside the site
+       root, so no connection could complete. Until Schwab sync is built this
+       page only says so: it reads nothing, sends nothing, and removes any
+       code/state from the address bar. -->
+  <script>
+    if (location.search) history.replaceState(null, '', location.pathname);
+  </script>
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Inter,Arial,sans-serif;margin:0;padding:24px;background:#f9fafb;color:#111827}
-    .card{max-width:760px;margin:0 auto;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:18px}
-    .muted{color:#667085}
-    .ok{background:#ecfdf5;border-left:4px solid #22c55e;padding:12px 14px;border-radius:12px;color:#065f46;margin-top:12px}
-    .err{background:#fee2e2;border-left:4px solid #ef4444;padding:12px 14px;border-radius:12px;color:#991b1b;margin-top:12px}
-    .spin{display:inline-block;width:18px;height:18px;border:3px solid #e5e7eb;border-top-color:#2563eb;border-radius:999px;animation:spin 1s linear infinite;vertical-align:-3px;margin-right:8px}
-    @keyframes spin{to{transform:rotate(360deg)}}
+    body{font-family:system-ui,-apple-system,Segoe UI,Inter,Arial,sans-serif;margin:0;padding:24px 16px;background:#f9fafb;color:#111827}
+    .card{max-width:620px;margin:40px auto 0;background:#fff;border:1px solid #e5e7eb;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.08);padding:24px}
+    h1{margin:0 0 10px;font-size:1.4rem}
+    p{color:#475569;line-height:1.6;margin:0 0 12px}
+    a{color:#1d4ed8;font-weight:700;text-decoration:none}
+    a:hover{text-decoration:underline}
+    .links{display:flex;flex-wrap:wrap;gap:10px 18px;margin-top:6px}
   </style>
 </head>
 <body>
   <div class="card">
-    <h1 style="margin:0 0 6px;">🏦 Connecting Schwab…</h1>
-    <p class="muted" style="margin:0 0 10px;">
-      <span class="spin"></span>Finishing secure connection. Please don’t close this page.
-    </p>
-
-    <div id="msg"></div>
+    <h1>🏦 Schwab connection is coming soon</h1>
+    <p>Connecting a Charles Schwab account is not available yet, so nothing was connected and no account details were stored.</p>
+    <p>Until then, export your trades from Schwab as CSV and import them into your Trade Journal.</p>
+    <div class="links">
+      <a href="trade-journal-pro.html?action=import">Import a CSV into your journal</a>
+      <a href="broker-connections.html">Broker Connections</a>
+    </div>
   </div>
-
-  <script type="module">
-    import { supabase as sbClient } from "../js/supabase-init.js";
-
-    const msg = document.getElementById("msg");
-    const qs = new URLSearchParams(location.search);
-    const code = qs.get("code");
-    const state = qs.get("state");
-    const err = qs.get("error");
-    const errDesc = qs.get("error_description");
-
-    function showOk(text){
-      msg.className = "ok";
-      msg.textContent = text;
-    }
-    function showErr(text){
-      msg.className = "err";
-      msg.textContent = text;
-    }
-
-    async function run(){
-      try{
-        if (err) throw new Error(`${err}${errDesc ? ": " + errDesc : ""}`);
-        if (!code) throw new Error("Missing OAuth code.");
-        if (!state) throw new Error("Missing OAuth state.");
-
-        // Require login (user identity for storing tokens)
-        const { data: { user } } = await sbClient.auth.getUser();
-        if (!user){
-          const next = encodeURIComponent(location.pathname + location.search);
-          location.href = `../login.html?next=${next}`;
-          return;
-        }
-
-        // Call Edge Function to exchange code -> tokens and store them
-        const { data: sess } = await sbClient.auth.getSession();
-        const jwt = sess?.session?.access_token;
-        if (!jwt) throw new Error("Session missing. Please sign in again.");
-
-        const resp = await fetch(`/functions/v1/schwab-auth-callback`, {
-          method: "POST",
-          headers: {
-            "Content-Type":"application/json",
-            "Authorization": `Bearer ${jwt}`
-          },
-          body: JSON.stringify({ code, state })
-        });
-
-        const out = await resp.json().catch(()=> ({}));
-        if (!resp.ok) throw new Error(out?.error || "Callback exchange failed.");
-
-        showOk("✅ Schwab connected! Redirecting…");
-
-        // Return the user to account page (Edge Function stored return_to cookie)
-        setTimeout(() => {
-          location.href = out?.return_to || "../account.html";
-        }, 900);
-
-      }catch(e){
-        console.error(e);
-        showErr(e.message || String(e));
-      }
-    }
-
-    run();
-  </script>
 </body>
 </html>
