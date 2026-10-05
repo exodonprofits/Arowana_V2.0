@@ -1,235 +1,34 @@
-# Write out watchlist.html so you can download it
-watchlist_html = r"""<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>My Watchlist — Arowana Profits</title>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"/>
-<style>
-  :root{
-    --brand:#1a3c5e;
-    --ink:#222;
-    --muted:#667085;
-    --bg:#f6f8fb;
-    --panel:#fff;
-    --ring:rgba(26,60,94,0.22);
-    --ok:#138a36;
-    --bad:#b00020;
-  }
-  html,body{margin:0;padding:0;font-family:Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Noto Sans;color:var(--ink);background:#fff}
-  *{box-sizing:border-box}
-  a{color:var(--brand);text-decoration:none}
-  a:focus-visible,button:focus-visible,input:focus-visible,textarea:focus-visible{outline:none; box-shadow:0 0 0 4px var(--ring)}
-  .container{max-width:980px;margin:0 auto;padding:0 16px}
-  header{background:var(--brand); color:#fff; padding:14px 0 16px}
-  header .title{display:flex; align-items:center; gap:10px; font-weight:800; font-size:clamp(18px, 4vw, 28px)}
-  .hint{color:#d7e7fb; font-size:13px}
-  .toolbar{display:grid; grid-template-columns:2fr 1fr 1fr; gap:8px; margin-top:12px}
-  .toolbar input, .toolbar textarea, .toolbar button{min-height:44px; border-radius:12px; border:1px solid #dbe3ee; padding:10px 12px}
-  .toolbar textarea{min-height:44px; height:44px; resize:vertical}
-  .toolbar button{border:0; background:#fff; color:var(--brand); cursor:pointer}
-  .toolbar button.primary{background:#fff; border:2px solid #fff; color:var(--brand);}
-  main{padding:18px 0 24px}
-  .cards{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
-  .card{background:var(--panel); border:1px solid #e4ebf4; border-radius:14px; padding:12px; display:flex; flex-direction:column; gap:8px}
-  .row{display:flex; align-items:center; justify-content:space-between; gap:8px; flex-wrap:wrap}
-  .sym{font-weight:800; letter-spacing:.5px}
-  .price{font-variant-numeric: tabular-nums}
-  .chg.up{color:var(--ok)} .chg.down{color:var(--bad)}
-  .note{font-size:13px; color:#3a4756; background:#f7fbff; border:1px dashed #d6e4f4; padding:8px; border-radius:10px}
-  .actions{display:flex; gap:6px; flex-wrap:wrap}
-  .actions button{border:0; background:#f2f6fb; border:1px solid #e0e8f2; color:#18334f; padding:8px 10px; border-radius:10px; cursor:pointer; min-height:36px}
-  .subtle{color:var(--muted); font-size:12px}
-  footer{padding:16px 0; text-align:center; color:#7b8798; font-size:12px}
-  .importexport{display:flex; gap:8px; justify-content:flex-end; margin:8px 0 0}
-  .importexport button{border:0; background:#f2f6fb; border:1px solid #e0e8f2; color:#18334f; padding:10px 12px; border-radius:10px; cursor:pointer; min-height:40px}
-  @media (max-width: 860px){ .cards{grid-template-columns:1fr 1fr} .toolbar{grid-template-columns:1.2fr 1fr 1fr} }
-  @media (max-width: 600px){
-    .cards{grid-template-columns:1fr}
-    .toolbar{grid-template-columns:1fr}
-    .toolbar textarea{height:64px}
-  }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Redirecting to Watchlist — Arowana Profits</title>
+  <meta name="robots" content="noindex">
+  <meta http-equiv="refresh" content="0; url=watchlist.html">
+  <!-- ATD-009 phase 4: watchlist.html imports this page's browser save (arowana_watchlist_v1) once, as trade ideas. Its Twelve Data key prompt is gone with it. Keeps the old URL working;
+       any query string and hash are carried over. -->
+  <script>
+    var target = 'watchlist.html';
+    var q = window.location.search ? window.location.search.slice(1) : '';
+    if (q) target += (target.indexOf('?') === -1 ? '?' : '&') + q;
+    window.location.replace(target + window.location.hash);
+  </script>
+  <style>
+    body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: #f8fafc; color: #1e293b; padding: 60px 20px; text-align: center; margin: 0; }
+    .redirect-card { max-width: 480px; margin: 0 auto; background: white; padding: 32px; border-radius: 14px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; }
+    h1 { color: #0b4f8a; margin-bottom: 12px; font-size: 1.4rem; }
+    p { color: #64748b; line-height: 1.6; margin-bottom: 16px; }
+    a { color: #0b4f8a; font-weight: 700; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+  </style>
 </head>
 <body>
-<header>
-  <div class="container">
-    <div class="title">📈 My Watchlist</div>
-    <div class="hint">Quickly add tickers (e.g., AAPL, MSFT). Quotes update automatically when an API key is configured.</div>
-    <div class="toolbar">
-      <input id="symInput" placeholder="Add ticker (AAPL)" inputmode="latin-name" autocapitalize="characters">
-      <textarea id="noteInput" placeholder="Optional note (e.g., breakout level 190 / earnings 10-24)"></textarea>
-      <button id="addBtn" class="primary"><i class="fas fa-plus"></i> Add</button>
-    </div>
-    <div class="importexport">
-      <button id="exportBtn"><i class="fas fa-file-export"></i> Export</button>
-      <button id="importBtn"><i class="fas fa-file-import"></i> Import</button>
-      <input id="importFile" type="file" accept="application/json" style="display:none">
-    </div>
+  <div class="redirect-card">
+    <h1>My Watchlist Has Moved</h1>
+    <p>Your symbols are in <strong>Watchlist</strong>.</p>
+    <p>Redirecting you now…</p>
+    <p><a href="watchlist.html">Click here if you're not redirected automatically</a></p>
   </div>
-</header>
-
-<main class="container">
-  <div id="status" class="subtle">Loading…</div>
-  <div id="cards" class="cards" aria-live="polite"></div>
-</main>
-
-<footer>
-  <div class="container">Pro tip: tap a card’s price to refresh just that symbol.</div>
-</footer>
-
-<script>
-  // ===== Config (detect Twelve Data key if present on parent pages) =====
-  const TD_KEY = window.TWELVE_DATA_KEY || localStorage.getItem("TWELVE_DATA_KEY") || "";
-  const STORAGE_KEY = "arowana_watchlist_v1";
-
-  // ===== State =====
-  let items = [];
-
-  function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(items)); }
-  function load(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      items = raw ? JSON.parse(raw) : [];
-      if(!Array.isArray(items)) items = [];
-    }catch{ items = []; }
-  }
-
-  function normalizeSym(s){
-    return String(s||"").trim().toUpperCase().replace(/[^A-Z0-9\.\-]/g, "");
-  }
-
-  function templateCard(it, idx){
-    const chgClass = (it.change||0) >= 0 ? "up" : "down";
-    const chgStr = (it.change == null) ? "" : ` <span class="chg ${chgClass}">${it.change>=0?"▲":"▼"} ${Number(it.change).toFixed(2)}</span>`;
-    return `<div class="card" data-idx="${idx}" data-sym="${it.symbol}">
-      <div class="row">
-        <div class="sym">${it.symbol}</div>
-        <div class="price" title="Tap to refresh" role="button" tabindex="0">${
-          (it.price!=null)?Number(it.price).toFixed(2):"--"
-        }${chgStr}</div>
-      </div>
-      ${it.note?`<div class="note">${escapeHtml(it.note)}</div>`:""}
-      <div class="actions">
-        <button data-act="quote"><i class="fas fa-sync"></i> Refresh</button>
-        <button data-act="edit"><i class="fas fa-pen"></i> Edit</button>
-        <button data-act="delete"><i class="fas fa-trash"></i> Remove</button>
-      </div>
-    </div>`;
-  }
-
-  function escapeHtml(s){ return String(s).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
-
-  function render(){
-    const wrap = document.getElementById("cards");
-    if(!items.length){
-      wrap.innerHTML = '<div class="subtle" style="padding:8px">No symbols yet. Add your first ticker above.</div>';
-    } else {
-      wrap.innerHTML = items.map((it, idx) => templateCard(it, idx)).join("");
-    }
-    document.getElementById("status").textContent = TD_KEY ? "Live quotes enabled." : "Add an API key to enable live quotes (local only).";
-    if(!items.length){ document.getElementById("symInput").focus(); }
-  }
-
-  async function fetchQuote(sym){
-    if(!TD_KEY) return null;
-    try{
-      const url = `https://api.twelvedata.com/quote?symbol=${encodeURIComponent(sym)}&apikey=${encodeURIComponent(TD_KEY)}`;
-      const res = await fetch(url, { cache: "no-store" });
-      const data = await res.json();
-      if(!res.ok) throw new Error("HTTP "+res.status);
-      const price = parseFloat(data.price ?? data.last ?? data.close);
-      let change = parseFloat(data.change ?? data.change_amount);
-      if(isNaN(change)){
-        const prev = parseFloat(data.previous_close ?? data.open);
-        if(isFinite(prev) && isFinite(price)) change = price - prev;
-      }
-      return { price: isFinite(price)?price:null, change: isFinite(change)?change:0 };
-    }catch(e){ return null; }
-  }
-
-  async function refreshOne(idx){
-    const it = items[idx]; if(!it) return;
-    const q = await fetchQuote(it.symbol);
-    if(q){ items[idx] = {...it, price:q.price, change:q.change}; save(); render(); }
-  }
-
-  async function refreshAll(){
-    if(!TD_KEY || !items.length) return;
-    document.getElementById("status").textContent = "Refreshing quotes…";
-    for(let i=0;i<items.length;i++){ await refreshOne(i); }
-    document.getElementById("status").textContent = "Up to date.";
-  }
-
-  // ===== Handlers =====
-  document.getElementById("addBtn").addEventListener("click", ()=>{
-    const s = normalizeSym(document.getElementById("symInput").value);
-    const n = document.getElementById("noteInput").value.trim();
-    if(!s) return;
-    if(items.some(it=>it.symbol===s)){ alert("That symbol is already on your list."); return; }
-    items.unshift({ symbol: s, note: n, price: null, change: 0 });
-    save(); render();
-    document.getElementById("symInput").value="";
-    document.getElementById("noteInput").value="";
-    refreshAll();
-  });
-
-  document.getElementById("cards").addEventListener("click", (e)=>{
-    const btn = e.target.closest("button"); if(!btn) return;
-    const card = e.target.closest(".card"); if(!card) return;
-    const idx = parseInt(card.getAttribute("data-idx"));
-    const act = btn.getAttribute("data-act");
-    if(act==="delete"){
-      if(confirm("Remove this symbol?")){ items.splice(idx,1); save(); render(); }
-    } else if(act==="edit"){
-      const cur = items[idx];
-      const sym = prompt("Edit symbol:", cur.symbol) || cur.symbol;
-      const note = prompt("Edit note:", cur.note||"") || cur.note||"";
-      items[idx] = { ...cur, symbol: normalizeSym(sym), note };
-      save(); render();
-    } else if(act==="quote"){
-      refreshOne(idx);
-    }
-  });
-
-  document.getElementById("cards").addEventListener("keydown", (e)=>{
-    if(e.key === "Enter" && e.target.classList.contains("price")){
-      const card = e.target.closest(".card");
-      const idx = parseInt(card.getAttribute("data-idx"));
-      refreshOne(idx);
-    }
-  });
-
-  // Import / Export
-  document.getElementById("exportBtn").addEventListener("click", ()=>{
-    const blob = new Blob([JSON.stringify(items,null,2)], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url; a.download = "watchlist.json"; a.click();
-    setTimeout(()=>URL.revokeObjectURL(url), 1000);
-  });
-  document.getElementById("importBtn").addEventListener("click", ()=>{
-    document.getElementById("importFile").click();
-  });
-  document.getElementById("importFile").addEventListener("change", async (e)=>{
-    const f = e.target.files?.[0]; if(!f) return;
-    const txt = await f.text();
-    try{
-      const arr = JSON.parse(txt);
-      if(!Array.isArray(arr)) throw new Error("Bad file");
-      items = arr.map(x=>({ symbol: normalizeSym(x.symbol), note: x.note||"", price: null, change: 0 })).filter(x=>x.symbol);
-      save(); render(); refreshAll();
-    }catch{ alert("Could not import this file."); }
-    e.target.value = "";
-  });
-
-  // Init
-  load(); render(); refreshAll();
-</script>
 </body>
 </html>
-"""
-with open("/mnt/data/watchlist.html","w",encoding="utf-8") as f:
-    f.write(watchlist_html)
-"/mnt/data/watchlist.html"

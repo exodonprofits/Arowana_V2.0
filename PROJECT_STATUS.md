@@ -28,6 +28,8 @@ Phase 2 (part) on `claude/ATD-009-phase-2`: the 26 standalone scanner pages redi
 
 Long-Term Portfolio (owner-approved import, `claude/ATD-009-ltp-import`): the old page could no longer load or save its holdings. It now lists the holdings a user saved there and adds the ones they tick to their Trade Journal, so they appear in Portfolio Command; ones already in the journal are not added twice, and the saved rows are never changed.
 
+Old browser-only journals and watchlists (`claude/ATD-009-phase-4c`): the old Trade Journal and Options Journal show what was saved in that browser and add the ticked trades to Trade Journal Pro; the old My Watchlist and IV Watchlist go to Watchlist, which brings their symbols across once.
+
 ## ATD-008 navigation - 2026-10-03
 
 **ATD-008 complete.** Specification and slice 1 through wave 6 are merged (PRs #14–#20); the close-out adds section highlighting for the 14 tool pages. Owner-parked items keep their defaults: `whale-tracker.html` (pending the coaching merge), `arowana-trader.html`'s desktop top link bar, `tradingcommand.html` (D5). Handed to ATD-007: delete the unused `js/auth-guard.js` and the unreachable `?expired=1` banner in `login.html`. Signed-in browser testing still waits on ATD-007's DEV frontend configuration.
