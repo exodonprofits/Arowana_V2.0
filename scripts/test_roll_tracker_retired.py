@@ -29,7 +29,7 @@ class RollTrackerRetiredTests(unittest.TestCase):
         self.assertIn("'option'", re.search(r"const TJ_TABS = \[[^\]]*\]", read("trade-journal-pro.html")).group(0))
 
     def test_no_page_links_to_the_old_tracker(self):
-        for page in ("long-term-dashboard.html", "master-journal.html", "short-term-template.html"):
+        for page in ("long-term-dashboard.html", "master-journal.html"):
             self.assertNotIn('href="option-roll-tracker.html"', read(page), page)
 
 

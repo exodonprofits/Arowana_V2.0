@@ -34,6 +34,8 @@ Long-Term Portfolio (owner-approved import, `claude/ATD-009-ltp-import`): the ol
 
 Old browser-only journals and watchlists (`claude/ATD-009-phase-4c`): the old Trade Journal and Options Journal show what was saved in that browser and add the ticked trades to Trade Journal Pro; the old My Watchlist and IV Watchlist go to Watchlist, which brings their symbols across once.
 
+Group M (`claude/ATD-009-group-m`): the 18 leftover templates, prototypes and Salon pages, including a public webhook test form, are removed from the site. Git history keeps them. With this, the legacy page review (ATD-009) is complete.
+
 ## ATD-008 navigation - 2026-10-03
 
 **ATD-008 complete.** Specification and slice 1 through wave 6 are merged (PRs #14–#20); the close-out adds section highlighting for the 14 tool pages. Owner-parked items keep their defaults: `whale-tracker.html` (pending the coaching merge), `arowana-trader.html`'s desktop top link bar, `tradingcommand.html` (D5). Handed to ATD-007: delete the unused `js/auth-guard.js` and the unreachable `?expired=1` banner in `login.html`. Signed-in browser testing still waits on ATD-007's DEV frontend configuration.
