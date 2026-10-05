@@ -30,7 +30,7 @@ What carries over by itself: all 33 public Wheel pages exist in V2.0 under the s
 3. **Root `robots.txt`** (V2.0 only has `documents/robots.txt`).
 4. **Relative asset paths on six pages** (`learn-investing`, `long-term-dashboard`, `portfolio-advisor`, `scanner`, `trade-journal-pro`, `watchlist`) that load `/js/...` from the site root. Under `/staging/` they would run the live Wheel scripts, including Wheel's `journal-sync.js`.
 5. **Done in `claude/ATD-109-email-prefs`.** **Email preferences on Account** (`account.html#email`): port Wheel's section (three opt-in toggles saved to `ap_email_prefs`, preview through `arowana-digest`). The digest's "Email settings" link lands there; without it nobody can opt in, or back in.
-6. **Drafted in `claude/ATD-109-legal` (owner to approve).** **Legal pages:** bring Privacy (Resend as processor), Terms (Founders annual only; real cancellation route) and Disclosures (Explain and Argue both sides) up to date from Wheel's newer text. **Claude drafts, owner approves the wording.**
+6. **Done in `claude/ATD-109-legal` (wording approved by owner).** **Legal pages:** bring Privacy (Resend as processor), Terms (Founders annual only; real cancellation route) and Disclosures (Explain and Argue both sides) up to date from Wheel's newer text. **Claude drafts, owner approves the wording.**
 
 **Should:**
 7. **Done in `claude/ATD-109-signup-next`.** Sign-up during checkout: carry `next` from login to signup and restore Wheel's same-site check on it (V2.0's signup currently follows any `next`, an open redirect); fix the "$19/mo" banner.

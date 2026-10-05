@@ -1,6 +1,6 @@
 """ATD-109: legal pages name what V2.0 actually does (processors, AI features, billing).
 
-Drafted from the Wheel Desk's newer text; the owner approves the wording.
+Drafted from the Wheel Desk's newer text; wording approved by the owner.
 """
 
 import unittest
@@ -17,6 +17,8 @@ class LegalPagesTests(unittest.TestCase):
             self.assertIn(name, src, name)
         self.assertIn("Retirement Planner", src)
         self.assertNotIn("one of the three AI features", src)
+        self.assertIn("n8n workflows, which send them to OpenAI", src)
+        self.assertNotIn("which use an AI model", src)
 
     def test_disclosures_list_the_ai_features(self):
         src = read("disclosures.html")
