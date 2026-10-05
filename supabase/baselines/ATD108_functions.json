@@ -92,7 +92,9 @@
     },
     {
       "path": "supabase/functions/arowana-ai-coach/index.ts",
-      "sha256_lf": "fb038242d9485f7e666a3d23b1ee75a4d860e37908289aec0540c0c55b51de86"
+      "sha256_lf": "fb038242d9485f7e666a3d23b1ee75a4d860e37908289aec0540c0c55b51de86",
+      "repository_sha256_lf": "8fbe940f3aee1ab347a9ee696b5fde0c9e7091aaa5cedb651df2b406e8701067",
+      "repository_change": "Owner-requested Portfolio Advisor fix: additive 'investor' and 'company' modes (default wheel mode unchanged); pending deployment. sha256_lf retains the original deployed capture."
     },
     {
       "path": "supabase/functions/arowana-billing-portal/index.ts",
