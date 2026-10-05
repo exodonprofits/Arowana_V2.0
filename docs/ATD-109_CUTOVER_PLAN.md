@@ -33,7 +33,7 @@ What carries over by itself: all 33 public Wheel pages exist in V2.0 under the s
 6. **Legal pages:** bring Privacy (Resend as processor), Terms (Founders annual only; real cancellation route) and Disclosures (Explain and Argue both sides) up to date from Wheel's newer text. **Claude drafts, owner approves the wording.**
 
 **Should:**
-7. Sign-up during checkout: carry `next` from login to signup and restore Wheel's same-site check on it (V2.0's signup currently follows any `next`, an open redirect); fix the "$19/mo" banner.
+7. **Done in `claude/ATD-109-signup-next`.** Sign-up during checkout: carry `next` from login to signup and restore Wheel's same-site check on it (V2.0's signup currently follows any `next`, an open redirect); fix the "$19/mo" banner.
 8. Onboarding: allow re-running setup, stop resetting two risk settings, fix the CSV import link (`?action=import`).
 9. Remove the dead `docs.html` link (sitemap and home footer); remove or wire the "Keep me signed in" box.
 

@@ -591,8 +591,8 @@
       
       <!-- Pro Banner -->
       <div class="pro-banner" id="proBanner">
-        <div class="pro-banner-title">⭐ You selected Pro — $19/mo</div>
-        <div class="pro-banner-sub">Create your free account first. You can upgrade to Pro in your account settings.</div>
+        <div class="pro-banner-title">⭐ One step before checkout</div>
+        <div class="pro-banner-sub">Create your account and you&rsquo;ll go straight on to checkout. If you confirm by email, the link takes you there too.</div>
       </div>
 
       <div class="auth-header">
@@ -701,9 +701,24 @@
     // Set current year
     document.getElementById('yearNow').textContent = new Date().getFullYear();
 
-    // Pro plan banner (reinforces Pro selection if arriving from pricing.html?plan=pro)
+    // Same rule as login.html: a same-origin .html page, or the dashboard.
+    function apSafeNext(raw) {
+      const fallback = 'trading-command.html';
+      if (!raw || typeof raw !== 'string') return fallback;
+      try {
+        const target = new URL(raw, location.origin);
+        if (target.origin !== location.origin) return fallback;
+        if (!/\.html(?:$|[?#])/.test(target.pathname + target.search + target.hash)) return fallback;
+        return target.pathname.replace(/^\//, '') + target.search + target.hash;
+      } catch (_) {
+        return fallback;
+      }
+    }
+
+    // Arriving from checkout (pricing → checkout → sign in → "Create one"):
+    // say where the new account goes next.
     const params = new URLSearchParams(location.search);
-    if (params.get('plan') === 'pro') {
+    if (/^checkout\.html/.test(apSafeNext(params.get('next')))) {
       const banner = document.getElementById('proBanner');
       if (banner) banner.classList.add('visible');
     }
@@ -831,7 +846,8 @@
 
         // Get redirect destination
         const params = new URLSearchParams(location.search);
-        const next = params.get('next') || 'trading-command.html'; // Default to main dashboard
+        // Only a same-origin .html page (apSafeNext above); anything else goes to the dashboard.
+        const next = apSafeNext(params.get('next'));
 
         // Check if already signed in
         try {

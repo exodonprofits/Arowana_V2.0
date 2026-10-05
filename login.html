@@ -679,7 +679,7 @@
         <button class="btn-secondary is-hidden" id="btnSignOut" type="button">Sign Out</button>
       </div>
 
-      <p class="auth-footer">No account yet? <a href="signup.html">Create one free →</a></p>
+      <p class="auth-footer">No account yet? <a href="signup.html" id="signupLink">Create one free →</a></p>
 
       <!-- Trust Indicators -->
       <div class="trust-strip">
@@ -848,6 +848,12 @@
         }
       }
       let next = safeNext(params.get('next'));
+      /* Carry the destination to sign-up, so someone sent here by checkout
+         who needs an account still ends up at checkout. */
+      (function () {
+        const link = document.getElementById('signupLink');
+        if (link && params.get('next')) link.href = 'signup.html?next=' + encodeURIComponent(next);
+      })();
   /* Pages send ?next=index.html when they bounce an unauthenticated visitor,
      which after a successful sign-in means "back to the homepage" — not what
      anyone wants at that moment. Treat it as no preference. */
