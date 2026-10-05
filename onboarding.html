@@ -91,6 +91,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
 
         <p class="hint">Or start from these commonly wheeled names:</p>
         <div class="chips" id="suggestChips"></div>
+        <p class="hint" id="alreadyHint" hidden></p>
 
         <div class="picked" id="picked" aria-live="polite"></div>
         <p class="hint" id="pickedHint">Pick at least one. Three to eight is a sensible start.</p>
@@ -124,7 +125,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
           </div>
         </div>
 
-        <div class="note">You can change these any time on the Puts tab, and leave capital blank if you'd rather not say — you'll just see exposure in dollars instead of percentages.</div>
+        <div class="note">You can change these any time in Options Hub (the Puts tab or Check a Trade's rules), and leave capital blank if you'd rather not say — you'll just see exposure in dollars instead of percentages.</div>
 
         <div class="actions">
           <button class="btn" type="button" id="next2">Continue</button>
@@ -145,7 +146,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
         </ul>
 
         <div class="actions">
-          <a class="btn" href="trade-journal-pro.html?import=1">Import a CSV</a>
+          <a class="btn" href="trade-journal-pro.html?action=import">Import a CSV</a>
           <a class="btn ghost" href="trade-journal-pro.html">Add a trade by hand</a>
           <button class="btn ghost" type="button" id="finish">Skip for now</button>
         </div>
@@ -175,11 +176,13 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
   <script src="./js/app-config.js?v=20260918c"></script>
   <script src="./js/supabase_min.js?v=20260918c"></script>
   <script src="./js/sb.js?v=20261004a"></script>
+  <script src="./js/risk.js?v=20261004c"></script>
   <script>
   (function () {
     'use strict';
     var SUGGESTIONS = ['AAPL', 'MSFT', 'NVDA', 'AMD', 'GOOGL', 'AMZN', 'KO', 'JPM', 'XOM', 'SPY', 'QQQ', 'SCHD'];
     var picked = [];
+    var already = [];   // Want-to-Own tickers saved before (setup re-run from Account)
     var step = 1;
 
     function el(id) { return document.getElementById(id); }
@@ -230,7 +233,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
       el('picked').innerHTML = picked.map(function (s) {
         return '<span class="pill">' + s + '<button type="button" data-remove="' + s + '" aria-label="Remove ' + s + '">×</button></span>';
       }).join('');
-      el('next1').disabled = picked.length === 0;
+      el('next1').disabled = picked.length === 0 && already.length === 0;
       el('pickedHint').textContent = picked.length
         ? picked.length + ' ticker' + (picked.length === 1 ? '' : 's') + ' chosen. Three to eight is a sensible start.'
         : 'Pick at least one. Three to eight is a sensible start.';
@@ -276,6 +279,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
       try {
         var ctx = await requireUser();
         if (!ctx) return;
+        if (!picked.length) { goto(2); return; }   // nothing new; the saved list stands
         var lists = await ctx.sb.from('watchlists').select('id').eq('user_id', ctx.user.id).limit(1);
         if (lists.error) throw lists.error;
         var listId = lists.data && lists.data[0] && lists.data[0].id;
@@ -295,7 +299,7 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
         msg.textContent = 'Those didn\u2019t save. Check your connection and try again.';
         msg.className = 'msg err';
       } finally {
-        btn.disabled = picked.length === 0; btn.textContent = 'Continue';
+        btn.disabled = picked.length === 0 && already.length === 0; btn.textContent = 'Continue';
       }
     });
 
@@ -310,14 +314,11 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
       try {
         var ctx = await requireUser();
         if (!ctx) return;
-        var res = await ctx.sb.from('ap_risk_settings').upsert({
-          user_id: ctx.user.id,
-          wheel_capital: capital === '' ? null : Number(capital),
-          max_ticker_pct: ticker, max_total_pct: total,
-          max_puts_per_ticker: 2, warn_earnings: true,
-          updated_at: new Date().toISOString()
-        }, { onConflict: 'user_id' });
-        if (res.error) throw res.error;
+        // Through AP_RISK so the settings this page does not ask about
+        // (puts per ticker, earnings warning, Check a Trade rules) are kept
+        // when someone re-runs setup from their account page.
+        await AP_RISK.load(true);
+        await AP_RISK.save({ wheelCapital: capital === '' ? null : Number(capital), maxTickerPct: ticker, maxTotalPct: total });
         goto(3);
       } catch (err) {
         console.warn('[onboarding] limits save failed', err);
@@ -335,7 +336,36 @@ input:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,
     });
 
     renderPicked();
-    requireUser();   // bounce to login early rather than after typing everything
+    function renderAlready() {
+      var h = el('alreadyHint');
+      h.hidden = !already.length;
+      h.textContent = already.length ? 'Already on your Want-to-Own list: ' + already.join(', ') + '. Add more, or continue.' : '';
+      el('next1').disabled = picked.length === 0 && already.length === 0;
+    }
+    async function prefill() {
+      var ctx = await requireUser();   // bounce to login early rather than after typing everything
+      if (!ctx) return;
+      try {
+        var w = await ctx.sb.from('watchlist_items').select('symbol').eq('user_id', ctx.user.id).eq('want_to_own', true);
+        if (!w.error && w.data) {
+          already = w.data.map(function (r) { return clean(r.symbol); })
+            .filter(function (x, i, a) { return x && a.indexOf(x) === i; }).sort();
+          renderAlready();
+        }
+      } catch (e) { /* the list is optional here */ }
+      try {
+        var r = await AP_RISK.load(true);
+        var st = r && r.settings;
+        if (st) {
+          if (st.wheelCapital != null) el('capital').value = st.wheelCapital;
+          if (st.maxTickerPct != null) el('maxTicker').value = st.maxTickerPct;
+          if (st.maxTotalPct != null) el('maxTotal').value = st.maxTotalPct;
+        }
+      } catch (e) { /* defaults stay */ }
+    }
+
+    renderPicked();
+    prefill();
   })();
   </script>
 </body>
