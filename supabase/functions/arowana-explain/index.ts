@@ -39,6 +39,8 @@ const KINDS: Record<string, string> = {
   "income": "These are the trader's realized options income figures for a period, from their own trade journal.",
   "campaign": "These are the figures for one wheel campaign on one stock: puts sold, shares assigned, calls sold, and the result so far.",
   "trade-case": "These are the facts about one proposed option trade, already sorted by the app into points for taking it and points against, plus the trader's own rule results.",
+  // Retirement Planner's managed write-up (ATD-009). Not trading figures.
+  "retirement": "These are not trading figures. They are a retirement projection the app calculated from the person's own inputs: three growth scenarios, each with projected savings at retirement, monthly income in retirement and any monthly shortfall or surplus, all in today's dollars. Say what the scenarios show and what drives the difference between them.",
 };
 
 // Case for / case against (Check a Trade). Structured output, so the two

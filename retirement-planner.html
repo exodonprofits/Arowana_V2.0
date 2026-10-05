@@ -709,6 +709,14 @@
   </div>
 </main>
 
+<!-- Managed AI write-up: plan.js says whether the account is on a paid plan
+     (from the server), explain.js calls the arowana-explain edge function
+     with the user's token from app-config.js. Same order as options-hub. -->
+<script src="./js/app-config.js?v=20260918c"></script>
+<script src="./js/supabase_min.js?v=20260918c"></script>
+<script src="./js/sb.js?v=20261004a"></script>
+<script src="./js/plan.js?v=20260918c"></script>
+<script src="./js/explain.js?v=20261004d"></script>
 <script>
 /* =========================================================================
    STORAGE — follows the ap_* localStorage convention. Supabase secondary
@@ -1913,13 +1921,36 @@ function applyLockState(){
    pattern the other 7 panels use.
      - anonymous / free (signed in, no key, no plan): upsell choice
      - byok: calls the user's own webhook (ap_retirement_ai_key)
-     - subscription: calls Arowana's managed webhook (window.AP_WEBHOOKS)
+     - subscription: the arowana-explain edge function (js/explain.js), kind
+       'retirement', with the projection as label/value facts. It writes
+       only from those numbers and is metered with the other explanations.
    ========================================================================= */
-window.AP_WEBHOOKS = window.AP_WEBHOOKS || {
-  // TODO: replace with your real managed n8n webhook URL, e.g.
-  // retirementNarrative: 'https://exodonprofits.app.n8n.cloud/webhook/retirement-narrative'
-  retirementNarrative: null
-};
+function fmtWhole(n){ return '$' + Math.round(Number(n) || 0).toLocaleString('en-US'); }
+
+// The roadmap's computed figures, as arowana-explain facts (max 40).
+function retirementFacts(d, proj){
+  const facts = [
+    { label: 'Current age', value: String(d.age) },
+    { label: 'Target retirement age', value: String(d.retireAge) },
+    { label: 'Years until retirement', value: String(proj.years) },
+    { label: 'Years in retirement (to life expectancy ' + d.lifeExpectancy + ')', value: String(proj.retirementYears) },
+    { label: 'Current retirement savings', value: fmtWhole(d.currentSavings) },
+    { label: 'Monthly saving including employer match', value: fmtWhole(proj.monthlyIn) },
+    { label: 'Desired monthly spending in retirement', value: fmtWhole(d.desiredSpending) },
+    { label: 'Social Security and pension per month', value: fmtWhole(d.ssPension) },
+    { label: 'Risk preference', value: String(d.risk || '') },
+    { label: 'Basis', value: "All figures in today's dollars, after " + (INFLATION * 100) + '% inflation' }
+  ];
+  if (d.debtBalance > 0) facts.push({ label: 'Debt balance', value: fmtWhole(d.debtBalance) + ' at ' + d.debtRate + '%' });
+  proj.results.forEach(r => {
+    const name = r.label + ' scenario (' + Math.round(r.nominalReturn * 100) + '% yearly return)';
+    facts.push({ label: name + ': savings at retirement', value: fmtWhole(r.fv) });
+    facts.push({ label: name + ': monthly income in retirement', value: fmtWhole(r.totalMonthlyIncome) });
+    facts.push({ label: name + ': monthly ' + (r.gapMonthly > 0 ? 'shortfall' : 'surplus'), value: fmtWhole(Math.abs(r.gapMonthly)) });
+    if (r.additionalMonthlyNeeded > 0) facts.push({ label: name + ': extra monthly saving to close the gap', value: fmtWhole(r.additionalMonthlyNeeded) });
+  });
+  return facts;
+}
 
 function renderAINarrativeGate(){
   const tier = getAccountTier();
@@ -1945,7 +1976,7 @@ function renderAINarrativeGate(){
         </div>
         <div class="choice-card">
           <h4>Use Arowana's managed AI</h4>
-          <p>No key to manage — included on Pro, Elite, and Founders plans.</p>
+          <p>No key to manage — included on Pro and Founding Member plans.</p>
           <button type="button" class="secondary" onclick="location.href='pricing.html'">Upgrade plan</button>
         </div>
       </div>`;
@@ -1969,14 +2000,30 @@ function renderAINarrativeGate(){
       box.innerHTML = '<span class="placeholder">Build your roadmap first.</span>';
       return;
     }
-    const webhookUrl = tier === 'byok'
-      ? localStorage.getItem('ap_retirement_ai_key')
-      : (window.AP_WEBHOOKS && window.AP_WEBHOOKS.retirementNarrative);
+    if (tier === 'subscription'){
+      if (!window.AP_EXPLAIN){
+        box.innerHTML = '<span class="placeholder">The write-up could not load. Reload the page and try again.</span>';
+        return;
+      }
+      box.innerHTML = '<span class="placeholder">Generating…</span>';
+      try{
+        const p = window.__lastProjection;
+        const out = await AP_EXPLAIN.request('retirement', retirementFacts(p.inputs, p.proj));
+        box.textContent = out.text || 'No write-up returned.';
+      }catch(err){
+        // An arowana-explain deployment without the 'retirement' kind
+        // answers "Nothing to explain."
+        const msg = err && err.message ? err.message : '';
+        box.textContent = msg === 'Nothing to explain.'
+          ? "The managed write-up isn't switched on yet. Every number above is already calculated; this only adds the plain-English summary."
+          : (msg || 'The write-up could not be written right now.');
+      }
+      return;
+    }
 
+    const webhookUrl = localStorage.getItem('ap_retirement_ai_key');
     if (!webhookUrl){
-      box.innerHTML = tier === 'byok'
-        ? '<span class="placeholder">No key saved.</span>'
-        : '<span class="placeholder">Managed AI isn\'t configured yet — set window.AP_WEBHOOKS.retirementNarrative to your n8n endpoint. Numbers above are already fully computed client-side; this only adds the write-up.</span>';
+      box.innerHTML = '<span class="placeholder">No key saved.</span>';
       return;
     }
     box.innerHTML = '<span class="placeholder">Generating…</span>';
@@ -2003,6 +2050,9 @@ function renderAINarrativeGate(){
 }
 
 applyLockState(); // initial paint on page load
+if (window.AP_PLAN && typeof AP_PLAN.ready === 'function'){
+  AP_PLAN.ready().then(applyLockState, applyLockState);
+}
 </script>
 </body>
 </html>

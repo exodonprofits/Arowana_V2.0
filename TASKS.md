@@ -306,3 +306,14 @@ Runtime credential containment took priority after generated secrets were found 
 **Verification:** Node 40/40; Python 63/63; secret scan, runtime tracking and whitespace checks pass. No live browser checkout, Stripe or deployment tests. No production changes.
 
 **Next:** Claude Code reviews the pricing PR. Verify Stripe's active USD $299 yearly price and coordinate backend/frontend publication separately. Do not migrate existing subscriptions or deploy automatically. ATD-007 security work remains open.
+
+### Small fixes - 2026-10-05
+
+**Owner:** Claude Code; **Branch:** `claude/ATD-009-typo-retirement-ai`.
+
+- `index.html`: "Free, Pro and Pro" → "Pro at $29/month" (link to pricing); "Pro and Pro are still open" → "Free and Pro are still open". The plans are Free, Pro and Founding Member.
+- `retirement-planner.html`: the managed AI write-up was a `null` webhook placeholder, and the page never loaded `plan.js`, so Pro users never reached it. It now loads `app-config.js`, `sb.js`, `plan.js` and `explain.js`, re-renders once the plan is known, and sends the computed roadmap as label/value facts (≤40; inputs, and each scenario's savings, income and gap; never the free-text location) to `arowana-explain` with kind `retirement`. Metered with the other explanations. A deployment without that kind answers "Nothing to explain.", which the page shows as "not switched on yet". BYOK is unchanged. "Pro, Elite, and Founders" → "Pro and Founding Member".
+- `supabase/functions/arowana-explain/index.ts`: additive `retirement` entry in `KINDS` (the system prompt is written for traders, so the kind text says these are not trading figures). **Not deployed.** `ATD108_functions.json` records its `repository_sha256_lf` with the reason, as for the Founders guard.
+- Checks: `scripts/browser/retirement_ai_check.mjs` (21), `scripts/test_retirement_ai.py`; `plan_gates_check.mjs` now expects a Pro account to get the managed tier here (28).
+
+**Owner/Codex action:** deploy `arowana-explain` from main to turn the managed write-up on.
