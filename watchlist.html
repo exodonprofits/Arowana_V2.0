@@ -806,13 +806,13 @@ html,body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',san
 .workspace-bar{min-height:82px;margin:0 -30px 0;padding:14px 30px;display:flex;align-items:center;justify-content:space-between;gap:20px;background:rgba(255,255,255,.94);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:85;backdrop-filter:blur(14px);}
 .workspace-identity,.workspace-heading{display:flex;align-items:center;gap:12px;min-width:0;}
 .workspace-icon,.workspace-mark{width:42px;height:42px;display:grid;place-items:center;border-radius:12px;background:#e6f1f8;border:1px solid #bdd6e6;font-size:21px;flex:0 0 auto;}
-.workspace-kicker{font-family:var(--mono);font-size:9px;line-height:1.2;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#436274;margin-bottom:3px;}
+.workspace-kicker{font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:10px;line-height:1.2;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:#436274;margin-bottom:3px;}
 .workspace-title{font-size:20px;line-height:1.15;font-weight:800;color:var(--ink);margin:0;letter-spacing:-.02em;}
 .workspace-subtitle{font-size:11.5px;color:var(--muted);margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .workspace-actions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex-wrap:wrap;}
 .experience-switch{width:185px;min-height:32px;padding:0 32px 0 12px;border:1px solid #b9cad5;border-radius:8px;background:#fff;color:#294b60;font:700 10.5px/1.2 'Plus Jakarta Sans',sans-serif;cursor:pointer;box-shadow:none;}
 .experience-switch:focus-visible{outline:3px solid var(--ring);outline-offset:2px;}
-.session-pill,.sync-pill{display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:6px 10px;border:1px solid #c7d7e1;border-radius:9px;background:#f7fafc;color:#355468;font-size:10px;font-family:var(--mono);font-weight:700;white-space:nowrap;}
+.session-pill,.sync-pill{display:inline-flex;align-items:center;gap:7px;min-height:32px;padding:6px 10px;border:1px solid #c7d7e1;border-radius:9px;background:#f7fafc;color:#355468;font-size:10px;font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-weight:700;white-space:nowrap;}
 .sync-pill{color:#355468;}
 .workspace-toolbar{display:flex;align-items:center;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--border);position:sticky;top:82px;z-index:80;background:rgba(237,243,247,.96);backdrop-filter:blur(12px);}
 .toolbar-context{min-width:0;}
@@ -828,15 +828,15 @@ html,body{font-family:'Plus Jakarta Sans',system-ui,-apple-system,'Segoe UI',san
 .btn.ghost{background:#fff;color:#294b60;border-color:#bdced9;}
 .btn.ghost:hover{background:#edf5fa;color:#064c84;border-color:#8db4ca;}
 .btn:disabled{color:#718491;background:#eef2f4;border-color:#d2dce2;opacity:.78;}
-label,.field label{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.065em;text-transform:uppercase;color:#405f72;}
+label,.field label{font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.065em;text-transform:uppercase;color:#405f72;}
 .input,input,select,textarea{font-family:'Plus Jakarta Sans',sans-serif;font-size:12px;color:var(--ink);border-color:#b9cad5;background:#fff;}
 .input::placeholder,input::placeholder,textarea::placeholder{color:#6b7f8d;opacity:1;}
 .stat{padding:14px 15px;border-radius:11px;background:#fff;}
-.stat .k{font-family:var(--mono);font-size:8.5px;letter-spacing:.08em;color:#4d6879;}
+.stat .k{font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#4d6879;}
 .stat .v{font-size:20px;line-height:1.15;color:var(--ink);}
 .stat .sub{font-size:10px;color:#5b7180;}
 table{font-size:11.5px;}
-th{font-family:var(--mono);font-size:8.5px;letter-spacing:.065em;color:#3f5f72;background:#f0f5f8;}
+th{font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:10px;letter-spacing:.065em;color:#3f5f72;background:#f0f5f8;}
 td{color:#29495d;}
 .muted{color:var(--muted)!important;}
 
@@ -844,7 +844,7 @@ td{color:#29495d;}
 .rail-top{min-height:52px;padding:4px 3px 13px;margin-bottom:7px;overflow:visible;}
 .rail-brand{font-size:14px;color:var(--ink);}
 .rail-item{font-size:11.5px;padding:8px 7px;}
-.rail-section-label{font-family:var(--mono);font-size:8px!important;letter-spacing:.08em;color:#526b7c!important;}
+.rail-section-label{font-family:'Plus Jakarta Sans',system-ui,sans-serif;font-size:8px!important;letter-spacing:.08em;color:#526b7c!important;}
 
 /* ── Header + rail alignment with trading-command.html ─────────────────────
    Literal values throughout: this file defines no --font, --font-mono,
@@ -1113,7 +1113,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
   #listSection>.card{padding:14px 12px!important}
   #kpiSection .row.four{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px}
   #kpiSection .stat{padding:8px 6px;text-align:center}
-  #kpiSection .stat .k{font-size:9.5px;letter-spacing:0;line-height:1.2;margin-bottom:2px}
+  #kpiSection .stat .k{font-size:9.5px;letter-spacing:.02em;line-height:1.2;margin-bottom:2px}
+  #listSwitcher,.filter-bar select{font-weight:600}
   #kpiSection .stat .v{font-size:1.1rem}
   #kpiSection .stat .sub{display:none}
   #listSection .sec-head>div{flex-wrap:nowrap!important;overflow-x:auto;width:100%;scrollbar-width:none;padding-bottom:2px}
@@ -1213,7 +1214,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
     </div>
     <div class="workspace-actions">
       <button class="btn ghost sm" id="btnBack" type="button" title="Back to trading command">← Back</button>
-      <select class="experience-switch" id="experienceSwitch" aria-label="Choose trading experience level" title="Choose your Arowana workspace">
+      <select class="experience-switch" id="experienceSwitch" hidden aria-hidden="true" tabindex="-1" aria-label="Choose trading experience level" title="Choose your Arowana workspace">
         <option value="beginner">Beginner Mode</option>
         <option value="guided">Guided Trade Desk</option>
         <option value="advanced">Full Trade Desk</option>

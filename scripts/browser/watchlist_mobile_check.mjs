@@ -69,7 +69,25 @@ const box = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); i
     await until(() => p.evaluate(() => /MSFT/.test(document.getElementById('watchlistMobile').textContent))) && (await box(p, '#addSection')).shown);
   await p.click('#btnQuickAdd');
   check('phone: Done closes the form', !(await box(p, '#addSection')).shown && (await p.textContent('#btnQuickAdd')).includes('Add'));
+  check('phone: no mode switch in the header (core pages have none)', !(await box(p, '#experienceSwitch')).shown);
+  const mono = await p.evaluate(() => [...document.querySelectorAll('body *')].filter(e => {
+    const r = e.getBoundingClientRect();
+    if (!r.width || !r.height || ![...e.childNodes].some(n => n.nodeType === 3 && n.textContent.trim())) return false;
+    return /mono|Menlo|Consolas/i.test(getComputedStyle(e).fontFamily.split(',')[0]) && !/\$|\d/.test(e.textContent) && !e.classList.contains('workspace-kicker') && !e.classList.contains('cell-mono');
+  }).map(e => e.className || e.tagName));
+  check('phone: labels in the site font (monospace only for numbers and the Trading Command kicker)', mono.length === 0, mono);
   check('phone: no page errors', errors.length === 0, errors);
+  await ctx.close();
+}
+{
+  // The switch is gone, but the saved mode still shapes the page.
+  const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
+  await installFakeSupabase(ctx, DATA(), { localStorage: { ap_onboarded_v1: '1', ap_interface_mode_v1: 'guided' } });
+  const p = await ctx.newPage();
+  await p.goto(BASE + '/watchlist.html', { waitUntil: 'load' });
+  check('phone, saved Guided mode: still applied without the switch',
+    await until(() => p.evaluate(() => /Review Evidence/.test(document.getElementById('watchlistMobile').textContent))) &&
+    await p.evaluate(() => document.body.dataset.experienceMode === 'guided'));
   await ctx.close();
 }
 {
@@ -91,6 +109,7 @@ const box = (p, sel) => p.evaluate(s => { const e = document.querySelector(s); i
   check('desktop: add form shown inline as before', (await box(p, '#addSection')).shown);
   check('desktop: sync pill keeps its words', (await box(p, '#syncPill')).w > 60);
   check('desktop: Back still in the header', (await box(p, '#btnBack')).shown);
+  check('desktop: no mode switch either', !(await box(p, '#experienceSwitch')).shown);
   check('desktop: no page errors', errors.length === 0, errors);
   await ctx.close();
 }

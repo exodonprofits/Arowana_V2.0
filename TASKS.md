@@ -432,3 +432,9 @@ Now, on phones only:
 Desktop is unchanged.
 
 Check: `scripts/browser/watchlist_mobile_check.mjs` (18; 10 fail on `main`).
+
+**Watchlist mode switch and fonts, branch `claude/ATD-109-watchlist-mode-font`:** the owner saw the Beginner/Guided/Full switch still on Watchlist and asked for its fonts to match.
+- **Mode switch:** removed from Watchlist's header at every width. Trading Command, Portfolio, Journal and Options Hub have no switch either. The control stays in the page, hidden, so `js/interface-mode.js` still applies the saved mode (Guided shows "Review Evidence", and so on).
+- **Fonts:** Watchlist's labels moved from JetBrains Mono to Plus Jakarta Sans: form labels, the four count labels (now uppercase, like Trading Command's), table headers and the sync pill. Sizes went up to 10–10.5px, because 8.5–9px was tuned for monospace. Monospace stays for prices and for the header kicker, which matches Trading Command's.
+- **Not changed:** the mode switch on the 22 other tool pages that still carry one.
+- **Check:** `scripts/browser/watchlist_mobile_check.mjs`, now 22 checks. New checks: no switch on phone or desktop; labels in the site font; saved Guided mode still applied.
