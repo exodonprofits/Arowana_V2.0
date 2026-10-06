@@ -714,10 +714,13 @@
       const fallback = 'trading-command.html';
       if (!raw || typeof raw !== 'string') return fallback;
       try {
-        const target = new URL(raw, location.origin);
+        // Relative to this page's folder, so /staging/ works (see login.html).
+        const target = new URL(raw, location.href);
         if (target.origin !== location.origin) return fallback;
         if (!/\.html(?:$|[?#])/.test(target.pathname + target.search + target.hash)) return fallback;
-        return target.pathname.replace(/^\//, '') + target.search + target.hash;
+        const dir = location.pathname.replace(/[^/]*$/, '');
+        const path = target.pathname.indexOf(dir) === 0 ? target.pathname.slice(dir.length) : target.pathname;
+        return path + target.search + target.hash;
       } catch (_) {
         return fallback;
       }
@@ -897,7 +900,7 @@
                   full_name: fullName, 
                   marketing_opt_in: marketing 
                 },
-                emailRedirectTo: new URL(next, location.origin).toString()
+                emailRedirectTo: new URL(next, location.href).toString()
               }
             });
 
@@ -950,7 +953,7 @@
             const { error } = await client.auth.signInWithOAuth({
               provider: 'google',
               options: { 
-                redirectTo: new URL('signup.html?next=' + encodeURIComponent(next), location.origin).toString() 
+                redirectTo: new URL('signup.html?next=' + encodeURIComponent(next), location.href).toString() 
               }
             });
             

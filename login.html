@@ -847,10 +847,15 @@
     const fallback = DEFAULT_AFTER_LOGIN;
         if (!raw || typeof raw !== 'string') return fallback;
         try {
-          const target = new URL(raw, location.origin);
+          // Resolve against this page, and answer relative to this page's folder,
+          // so the site also works under a subfolder (/staging/). Stripping only
+          // the leading "/" sent /staging/x.html to /staging/staging/x.html.
+          const target = new URL(raw, location.href);
           if (target.origin !== location.origin) return fallback;
           if (!/\.html(?:$|[?#])/.test(target.pathname + target.search + target.hash)) return fallback;
-          return target.pathname.replace(/^\//, '') + target.search + target.hash;
+          const dir = location.pathname.replace(/[^/]*$/, '');
+          const path = target.pathname.indexOf(dir) === 0 ? target.pathname.slice(dir.length) : target.pathname;
+          return path + target.search + target.hash;
         } catch (_) {
           return fallback;
         }
@@ -1196,7 +1201,7 @@
             
             try {
               const { error } = await client.auth.resetPasswordForEmail(email, {
-                redirectTo: new URL('reset-password.html', location.origin).toString()
+                redirectTo: new URL('reset-password.html', location.href).toString()
               });
               
               if (error) return showErr(friendlyAuthError(error));
@@ -1232,7 +1237,7 @@
         const { error } = await client.auth.signInWithOAuth({
           provider: 'google',
           options: {
-            redirectTo: new URL(`login.html?next=${encodeURIComponent(next)}`, location.origin).toString()
+            redirectTo: new URL(`login.html?next=${encodeURIComponent(next)}`, location.href).toString()
           }
         });
         if (error) { try { sessionStorage.removeItem(OAUTH_PENDING_KEY); } catch (_) {} }
