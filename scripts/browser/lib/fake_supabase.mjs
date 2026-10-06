@@ -59,8 +59,10 @@ export async function installFakeSupabase(ctx, db, opts = {}) {
       const key = url.searchParams.get('on_conflict') || 'id';
       const body = JSON.parse(req.postData() || '[]');
       const list = Array.isArray(body) ? body : [body];
-      list.forEach(r => { const i = rows.findIndex(x => x[key] === r[key]); if (i >= 0) rows[i] = { ...rows[i], ...r }; else rows.push({ ...r }); });
-      return /return=representation/.test(req.headers()['prefer'] || '') ? json(201, list) : json(201, null);
+      // Like PostgREST: a column default fills a missing id, and the stored row is what comes back.
+      const stored = list.map(r => { if (key === 'id' && r.id == null) r = { id: 'fake-' + Math.random().toString(36).slice(2, 10), ...r }; const i = rows.findIndex(x => x[key] === r[key]); if (i >= 0) { rows[i] = { ...rows[i], ...r }; return rows[i]; } rows.push({ ...r }); return rows[rows.length - 1]; });
+      if (!/return=representation/.test(req.headers()['prefer'] || '')) return json(201, null);
+      return one ? (stored.length === 1 ? json(201, stored[0]) : json(406, { code: 'PGRST116', message: 'JSON object requested, multiple (or no) rows returned' })) : json(201, stored);
     }
     if (method === 'PATCH') {
       const body = JSON.parse(req.postData() || '{}');
