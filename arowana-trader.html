@@ -643,6 +643,14 @@ footer:not(.site-footer){display:none!important}.site-footer{background:#e8f0f4!
 <!-- Keeps one account's local data out of another's session, and restores
      gs_auth_user_v1.id when the shared cache loses it. -->
 <script src="./js/session-user.js"></script>
+  <!-- Home-screen app (ATD-109): installable from the browser's share menu; opens full screen, without the address bar. -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#071a2f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Arowana">
+  <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
 <body>
 <!-- NAV -->

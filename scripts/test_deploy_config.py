@@ -16,7 +16,7 @@ WF = ".github/workflows/deploy-bluehost.yml"
 class DeployConfigTests(unittest.TestCase):
     def test_upload_is_an_allowlist(self):
         src = read(WF)
-        self.assertIn("cp ./*.html robots.txt sitemap.xml site/", src)
+        self.assertIn("cp ./*.html robots.txt sitemap.xml manifest.json site/", src)
         self.assertIn("cp -r css js images site/", src)
         for never in ("documents", "docs", "supabase", "scripts", "tests"):
             self.assertNotRegex(src, r"cp [^\n]*\b%s\b" % never, never)

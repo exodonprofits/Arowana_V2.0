@@ -26,6 +26,14 @@ a.btn{display:inline-block;background:var(--brand);color:#fff;border-radius:11px
 a.ghost{display:inline-block;border:1px solid var(--border);color:var(--ink);border-radius:11px;padding:11px 20px;font-weight:700;font-size:.92rem;text-decoration:none}
 .small{font-size:.8rem;color:var(--muted);margin-top:16px}
 </style>
+  <!-- Home-screen app (ATD-109): installable from the browser's share menu; opens full screen, without the address bar. -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#071a2f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Arowana">
+  <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
 <body>
   <div class="card">
