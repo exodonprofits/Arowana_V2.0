@@ -69,6 +69,19 @@ for (const width of [1024, 1280, 1440, 1920]) {
   const og = await p.evaluate(() => document.querySelector('meta[property="og:description"]').content);
   check('index: share description gives the Founders price, not a waitlist', /Founding members: \$299 a year\.$/.test(og) && !/waitlist/i.test(og), og);
   check('index: Founders button goes to checkout', await p.evaluate(() => [...document.querySelectorAll('#founders a')].some(a => a.getAttribute('href') === 'checkout.html?plan=founders' && /Become a founding member/.test(a.textContent))));
+  const feats = await p.evaluate(() => Object.fromEntries([...document.querySelectorAll('#inside .wd-feature')].map(f => [f.querySelector('h3').textContent.trim(), f.querySelector('.wd-status').textContent.trim()])));
+  check('index: every wheel tool marked available with V2 plan labels', JSON.stringify(feats) === JSON.stringify({
+    'Premium income tracker': 'Available now \u00b7 Pro', 'Covered call and put scanners': 'Available now \u00b7 Pro',
+    'Roll and risk coach': 'Available now \u00b7 Pro', 'Check a trade before you place it': 'Available now \u00b7 Pro',
+    'Your wheel, each morning': 'Available now', 'Trade journal': 'Available now \u00b7 Free' }), feats);
+  const inside = await p.evaluate(() => document.getElementById('inside').innerText);
+  check('index: no "being built" / "Founders first" wording; CSV import said to be Pro', !/being built now|Founders first/.test(inside) && /On Pro, import your broker's CSV/.test(inside), inside.slice(0, 300));
+  const links = await p.evaluate(() => [...document.querySelectorAll('#wdNowLinks a')].map(a => a.getAttribute('href')));
+  check('index: tool links include Wheel Coach, Check a trade and Income', ['arowana-trader.html', 'options-hub.html?tab=check', 'portfolio-command.html?tab=income'].every(h => links.includes(h)), links);
+  const status = [];
+  for (const h of links) { const r = await p.request.get(BASE + '/' + h.split('?')[0]); status.push([h, r.status()]); }
+  check('index: every tool link resolves', status.every(([, c]) => c === 200), status);
+  check('index: form messages offer updates, not "when checkout opens"', await p.evaluate(() => !/checkout opens|Join the waitlist/.test([...document.scripts].map(s => s.textContent).join('\n'))));
   check('index: no page errors', errors.length === 0, errors);
   await ctx.close();
 }

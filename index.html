@@ -240,19 +240,23 @@
       <div class="shell">
         <div class="wd-head">
           <h2 id="insideTitle">Built for income, not for the next hot tip</h2>
-          <p>Some of this works today. The wheel-specific tools are being built now, and Founders get each one first.</p>
+          <p>All of this works today. The daily and monthly emails are next, and Founders get each new tool first.</p>
         </div>
         <div class="wd-features">
-          <div class="wd-feature"><h3>Premium income tracker</h3><p>Premium by month, yield on the cash you tied up, and your real cost basis after every assignment. No more spreadsheet.</p><span class="wd-status soon">Founders first</span></div>
-          <div class="wd-feature"><h3>Covered call and put scanners</h3><p>Candidates for the shares you hold and the stocks you want to own, with earnings dates flagged before you pick an expiration.</p><span class="wd-status soon">Founders first</span></div>
-          <div class="wd-feature"><h3>Roll and risk coach</h3><p>When a position is tested, see your choices (roll, take assignment, or close) and the rule behind each one. Get warned about concentration and earnings risk.</p><span class="wd-status soon">Founders first</span></div>
-          <div class="wd-feature"><h3>Trade journal</h3><p>Stock and options trades in one log, with mistake tags and notes. Import your broker's CSV instead of typing trades by hand.</p><span class="wd-status live">Available now</span></div>
+          <div class="wd-feature"><h3>Premium income tracker</h3><p>Premium by month, yield on the cash you tied up, and your real cost basis after every assignment. No more spreadsheet.</p><span class="wd-status live">Available now &middot; Pro</span></div>
+          <div class="wd-feature"><h3>Covered call and put scanners</h3><p>Candidates for the shares you hold and the stocks you want to own, with earnings dates flagged before you pick an expiration.</p><span class="wd-status live">Available now &middot; Pro</span></div>
+          <div class="wd-feature"><h3>Roll and risk coach</h3><p>When a position is tested, see your choices (roll, take assignment, or close) and the rule behind each one. Get warned about concentration and earnings risk.</p><span class="wd-status live">Available now &middot; Pro</span></div>
+          <div class="wd-feature"><h3>Check a trade before you place it</h3><p>Enter the put or call you're about to sell. See the yield, the cash it ties up, and which of your own rules it passes or breaks, then the case for and against it side by side.</p><span class="wd-status live">Available now &middot; Pro</span></div>
+          <div class="wd-feature"><h3>Your wheel, each morning</h3><p>One screen with what needs you today: contracts near or through the strike, earnings before expiration, what expires this week, and cash sitting idle.</p><span class="wd-status live">Available now</span></div>
+          <div class="wd-feature"><h3>Trade journal</h3><p>Stock and options trades in one log, with mistake tags and notes. On Pro, import your broker's CSV instead of typing trades by hand.</p><span class="wd-status live">Available now &middot; Free</span></div>
         </div>
         <div class="wd-now" id="wdNowLinks">
-          <span>Try what's live today:</span>
+          <span>Open a tool:</span>
           <a href="trade-journal-pro.html">Trade journal</a>
+          <a href="arowana-trader.html">Wheel Coach</a>
+          <a href="options-hub.html?tab=check">Check a trade</a>
+          <a href="portfolio-command.html?tab=income">Income</a>
           <a href="options-hub.html">Options Hub</a>
-          <a href="portfolio-command.html">Portfolio</a>
           <a href="wheel-calculator.html">Free wheel calculator</a>
           <a href="assignment-risk.html">Assignment risk checker</a>
           <a href="tools.html">All tools</a>
@@ -396,13 +400,13 @@
           const row={email:value,source:'landing'};if(exp.value)row.experience=exp.value;
           const {error}=await client.from('ap_founders_waitlist').insert(row);
           if(error&&error.code!=='23505')throw error;
-          say(error?'You\u2019re already on the list. We\u2019ll email you when checkout opens.':'You\u2019re on the list. We\u2019ll email you when Founders checkout opens.','ok');
+          say(error?'You\u2019re already on the list. We\u2019ll keep you posted.':'Thanks, you\u2019re on the list. We\u2019ll email you if Founders seats run low or a tool you\u2019re waiting on ships.','ok');
           btn.textContent='Saved';
           try{localStorage.setItem('ap_founders_waitlist_joined_v1','1')}catch(_){}
         }catch(err){
           console.warn('[waitlist] save failed',err);
           say('Your spot wasn\u2019t saved. Try again in a minute, or reach us through the Support page.','err');
-          btn.disabled=false;btn.textContent='Join the waitlist';
+          btn.disabled=false;btn.textContent='Keep me posted';
         }
       });
     }
