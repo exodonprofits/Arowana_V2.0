@@ -48,8 +48,8 @@ Same origin as production, so no Supabase Auth or CORS change is needed. Staging
 - C1. Look at the production `.htaccess` in cPanel and copy any existing rules into the workflow's "kept" block before enabling `MANAGE_HTACCESS`.
 - C2. Run the V2.0 workflow with target `production`. Check `ap-version.txt` shows the V2.0 commit.
 - C3. Founders (D1): create the $299/year Stripe price, set `STRIPE_PRICE_FOUNDERS`, deploy `arowana-checkout` from `main`. Not before C2: the live Wheel page would show $229 against a $299 check and refuse every Founders checkout.
-- C4. Deploy `arowana-explain` from `main` (can also go earlier; it is additive).
-- C4b. Deploy `arowana-ai-coach` from `main` (Portfolio Advisor's AI; additive, the Wheel Desk uses the unchanged default mode, so it can also go earlier).
+- C4. **Done 2026-10-06 (v3).** Deploy `arowana-explain` from `main` (can also go earlier; it is additive).
+- C4b. **Done 2026-10-06 (v19).** Deploy `arowana-ai-coach` from `main` (Portfolio Advisor's AI; additive, the Wheel Desk uses the unchanged default mode, so it can also go earlier).
 - C5. Smoke test on production: home, sign-in, journal, checkout page loads, a digest preview from Account, `/lab/watchlist.html` redirects, `robots.txt`.
 - C6. Turn off the Wheel repo's `DEPLOY_ON_PUSH` so a Wheel push cannot overwrite V2.0. Remove Wheel-only leftovers on the server that V2.0's deploy did not upload (`lab/`, `ap-version.txt` is rewritten).
 
