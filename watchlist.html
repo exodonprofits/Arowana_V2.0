@@ -13,7 +13,7 @@
   <title>Watchlist — Arowana Profits</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap" rel="stylesheet">
 
 <!-- ====================================================================== -->
 <!-- Consolidated Styles — mirrors trade-journal-pro.html design system    -->
@@ -48,7 +48,7 @@
   --content-max:100%;
 }
 *{box-sizing:border-box}
-html,body{margin:0;padding:0;font-family:Inter,'Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
+html,body{margin:0;padding:0;font-family:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--text);min-height:100vh;display:flex;flex-direction:column;}
 a{color:var(--brand);text-decoration:none}
 a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring)}
 .container{width:100%;max-width:var(--page-width);margin:0 auto;padding:0 16px}
@@ -1237,7 +1237,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
         <span class="muted" style="font-size:.82rem">Add a ticker — that's all you need. Everything else is optional.</span>
       </div>
       <form id="addForm">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.65rem;align-items:end;margin-bottom:.65rem;">
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:.65rem;align-items:end;margin-bottom:.65rem;">
           <div class="field">
             <label for="addSymbol">Ticker</label>
             <input class="input" type="text" id="addSymbol" placeholder="NVDA" required maxlength="6" autocapitalize="characters" spellcheck="false" style="text-transform:uppercase">
@@ -1245,8 +1245,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
           <div class="field">
             <label for="addHorizon">How long do you plan to hold it?</label>
             <select class="input" id="addHorizon" required>
-              <option value="trade_idea">📈 Short-Term Trade (days to weeks)</option>
-              <option value="long_term_hold">🏛 Long-Term Hold (months to years)</option>
+              <option value="trade_idea">📈 Days to weeks (trade)</option>
+              <option value="long_term_hold">🏛 Months to years (hold)</option>
             </select>
           </div>
         </div>

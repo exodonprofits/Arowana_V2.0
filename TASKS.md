@@ -398,3 +398,17 @@ Not changed:
 - Fonts still differ by page family (Inter, Plus Jakarta Sans, Manrope, Segoe UI on the Long-Term tools).
 - Trading Command's floating AI Coach button still covers content on phones.
 - `whale-tracker.html` and `tradingcommand.html` (owner decisions).
+
+**AI Coach button and one site font, branch `claude/ATD-109-coach-button-fonts`:** follow-up to the layout audit.
+- **AI Coach button (Trading Command, phones).** It was a wide pill fixed at `bottom:82px`. It covered text, showed on the Coach tab that already links to the coach, and ignored the iPhone home-indicator inset, so in the home-screen app it could sit on the bottom bar. It is now a 52px round button placed at `calc(72px + env(safe-area-inset-bottom))`, with an accessible name. It hides on the Coach tab (`:has(#coachTab.active)`), tucks away while you scroll down or type, and comes back when you scroll up. The page keeps 132px plus the inset below its last row.
+- **One site font: Plus Jakarta Sans,** already used by Trading Command, Home, Account and sign-in. 66 pages set Inter, Inter Tight, Manrope, DM Sans or Segoe UI as their first font. Most never loaded Inter, so phones showed the system font. Those declarations now name Plus Jakarta Sans. Every live page loads it from Google Fonts (27 pages had no font link), and unused Inter/Manrope downloads are dropped. Monospace number fonts are unchanged. The shell rail uses the same font.
+- **Dropdowns cut off on phones** (a side effect of the 16px rule in #72):
+  - The desk-level switch (20 pages) sizes to its label via `js/arowana-nav.js`.
+  - Trading Command's POC period field is wider.
+  - Portfolio Advisor's risk select sizes to its label.
+  - Watchlist's add form stacks on phones, and its horizon options are shorter ("📈 Days to weeks (trade)" / "🏛 Months to years (hold)"; values unchanged).
+- **Checks:**
+  - `scripts/browser/coach_button_check.mjs` (14).
+  - `scripts/browser/mobile_controls_check.mjs` (48).
+  - `scripts/test_brand_font.py` (3; fails on `main`).
+  - Before/after audit of all 85 pages with the real font loaded: no new sideways scroll, page errors or clipped labels.

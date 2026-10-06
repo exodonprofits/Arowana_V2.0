@@ -9,7 +9,7 @@
   <meta property="og:title" content="Wheel Strategy Calculator — free put and call math"/>
   <meta property="og:description" content="Cash required, yield, annualised return, breakeven and assignment cost for the wheel. No signup."/>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@700;800;900&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   --brand:#0b4f8a;--brand-dark:#083c69;--cyan:#35c3dc;
@@ -20,13 +20,13 @@
   --mono:"JetBrains Mono",ui-monospace,monospace;
 }
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-body{font-family:"Inter",system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%}
+body{font-family:'Plus Jakarta Sans',system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.6;-webkit-text-size-adjust:100%}
 a{color:var(--brand);text-decoration:none}
 a:hover{text-decoration:underline}
 .shell{max-width:1060px;margin:0 auto;padding:0 20px}
 header.top{background:var(--navy-950);color:#fff;padding:14px 0}
 header.top .shell{display:flex;align-items:center;justify-content:space-between;gap:16px}
-header.top strong{font:800 1.05rem "Inter Tight",system-ui,sans-serif;letter-spacing:-.02em}
+header.top strong{font:800 1.05rem 'Plus Jakarta Sans',system-ui,sans-serif;letter-spacing:-.02em}
 header.top a{color:#cfe3f5;font-size:.9rem;font-weight:600}
 .hero{background:linear-gradient(140deg,var(--navy-950),#0b3151);color:#fff;padding:44px 0 38px}
 .hero h1{font:800 clamp(30px,4.4vw,44px)/1.1 "Inter Tight",system-ui,sans-serif;letter-spacing:-.035em;margin-bottom:12px;max-width:20ch}
@@ -34,7 +34,7 @@ header.top a{color:#cfe3f5;font-size:.9rem;font-weight:600}
 main{padding:28px 0 56px}
 .grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(320px,.85fr);gap:22px;align-items:start}
 .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);padding:22px}
-.card h2{font:800 1.15rem "Inter Tight",system-ui,sans-serif;margin-bottom:4px}
+.card h2{font:800 1.15rem 'Plus Jakarta Sans',system-ui,sans-serif;margin-bottom:4px}
 .card .sub{color:var(--muted);font-size:.86rem;margin-bottom:16px}
 .legs{display:inline-flex;background:#eef3f8;border-radius:999px;padding:4px;margin-bottom:18px}
 .legs button{border:0;background:none;border-radius:999px;padding:8px 16px;font:700 .88rem inherit;color:var(--muted);cursor:pointer}
@@ -55,7 +55,7 @@ main{padding:28px 0 56px}
 .out .good b{color:var(--good)}
 .note{background:var(--warn);color:var(--warn-ink);border-radius:10px;padding:10px 12px;font-size:.83rem;line-height:1.5;margin-top:12px}
 .scenarios{margin-top:22px}
-.scenarios h3{font:800 1rem "Inter Tight",system-ui,sans-serif;margin-bottom:8px}
+.scenarios h3{font:800 1rem 'Plus Jakarta Sans',system-ui,sans-serif;margin-bottom:8px}
 table{width:100%;border-collapse:collapse;font-size:.86rem}
 th,td{text-align:right;padding:8px 6px;border-bottom:1px solid #eef2f6;white-space:nowrap}
 /* "What happens" wraps, so the result column stays in view (ATD-108 S5). */
@@ -70,13 +70,13 @@ td.neg{color:var(--bad)}
 .rules summary{cursor:pointer;padding:12px 15px;font-weight:700;font-size:.9rem}
 .rules ul{margin:0;padding:0 16px 14px 34px;font-size:.85rem;color:#243b4f;line-height:1.6}
 .cta{background:var(--navy-900);color:#fff;border-radius:var(--radius);padding:22px;margin-top:22px}
-.cta h2{font:800 1.25rem "Inter Tight",system-ui,sans-serif;margin-bottom:8px}
+.cta h2{font:800 1.25rem 'Plus Jakarta Sans',system-ui,sans-serif;margin-bottom:8px}
 .cta p{color:#b7cbd8;font-size:.92rem;margin-bottom:14px;max-width:60ch}
 .cta a.btn{display:inline-block;background:var(--cyan);color:#04202c;border-radius:11px;padding:11px 20px;font-weight:700;font-size:.92rem}
 .cta a.ghost{display:inline-block;border:1px solid rgba(255,255,255,.25);color:#fff;border-radius:11px;padding:11px 20px;font-weight:700;font-size:.92rem;margin-left:8px}
 .explain{margin-top:26px;background:#fff;border:1px solid var(--border);border-radius:var(--radius);padding:22px}
-.explain h2{font:800 1.2rem "Inter Tight",system-ui,sans-serif;margin-bottom:10px}
-.explain h3{font:700 1rem "Inter Tight",system-ui,sans-serif;margin:16px 0 6px}
+.explain h2{font:800 1.2rem 'Plus Jakarta Sans',system-ui,sans-serif;margin-bottom:10px}
+.explain h3{font:700 1rem 'Plus Jakarta Sans',system-ui,sans-serif;margin:16px 0 6px}
 .explain p{font-size:.92rem;color:#243b4f;margin-bottom:8px;max-width:75ch}
 .explain ol{margin:6px 0 6px 20px;font-size:.92rem;color:#243b4f}
 .explain li{margin-bottom:5px}
@@ -89,7 +89,7 @@ footer .shell{display:flex;flex-wrap:wrap;gap:10px 20px;justify-content:space-be
 /* V1 Nav */
 .nav-wrap{position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)}
 .nav{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto}
-.logo{display:flex;align-items:center;gap:10px;font-family:"Inter Tight",sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;text-decoration:none}
+.logo{display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;text-decoration:none}
 .logo img{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.12);padding:2px}
 .nav-links{display:flex;align-items:center;gap:3px;flex:1;justify-content:center}
 .nav-links a{color:rgba(255,255,255,.85);font-size:.76rem;font-weight:600;padding:6px 11px;border-radius:8px;white-space:nowrap;text-decoration:none;transition:background .15s}
@@ -127,7 +127,7 @@ main{flex:1}
 /* Footer */
 .site-footer{background:var(--brand-dark);color:#94a3b8;padding:36px 0 22px;margin-top:auto}
 .footer-grid{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:24px;padding-bottom:22px;border-bottom:1px solid rgba(255,255,255,.08);margin-bottom:16px}
-.footer-brand{font-family:"Inter Tight",sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:4px}
+.footer-brand{font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:1.05rem;color:#fff;margin-bottom:4px}
 .footer-tag{font-size:.78rem;color:rgba(255,255,255,.45);line-height:1.6}
 .fc-title{font-weight:700;color:rgba(255,255,255,.7);font-size:.76rem;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
 .fl{display:block;padding:2px 0;color:rgba(255,255,255,.45);font-size:.8rem;text-decoration:none}

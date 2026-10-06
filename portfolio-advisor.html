@@ -9,7 +9,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Portfolio Advisor — Arowana Profits</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
   <!-- Shared design tokens (js/theme.css). Loaded BEFORE this page's own
        inline styles, so the page still wins on anything it declares
        itself — adding this link changes nothing until that page's own
@@ -25,8 +25,8 @@
   --red:#f85149;--red-pale:rgba(248,81,73,.1);
   --blue:#58a6ff;--blue-pale:rgba(88,166,255,.1);
   --purple:#bc8cff;
-  --font:'Inter',system-ui,sans-serif;
-  --sans:'Inter',system-ui,sans-serif;
+  --font:'Plus Jakarta Sans',system-ui,sans-serif;
+  --sans:'Plus Jakarta Sans',system-ui,sans-serif;
   --mono:'JetBrains Mono','Courier New',monospace;
   --r:14px;
 }
@@ -437,6 +437,7 @@ body{display:flex;flex-direction:column;min-height:100vh}
 .wb-field{display:flex;align-items:center;gap:6px;padding:5px 9px;border:1px solid #cedbe3;border-radius:9px;background:#fff}
 .wb-field>span{color:#7b8f9b;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em}
 .wb-field input,.wb-field select{width:92px;border:0;background:none;color:#18384b;font:inherit;font-size:11px;font-weight:700;outline:none}
+.wb-field select{width:auto;min-width:92px}
 .wb-field input:focus-visible,.wb-field select:focus-visible{outline:2px solid #9ec8dd;outline-offset:2px}
 
 /* Horizontal tab strip (was a sidebar list) */
