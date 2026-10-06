@@ -3344,7 +3344,8 @@ async function loadWatchlists(userId){
     // create one default list rather than showing an empty switcher.
     const { data: created, error: createErr } = await SB.from('watchlists').insert({ user_id: userId, name: 'My Watchlist' }).select('id, name').single();
     if(createErr){ console.warn('[wl] failed to create default watchlist:', createErr.message); return []; }
-    return [created];
+    // No row back (e.g. RLS hides it): show "No lists yet" rather than throw.
+    return created && created.id ? [created] : [];
   }catch(e){
     console.warn('[wl] loadWatchlists threw:', e);
     return [];

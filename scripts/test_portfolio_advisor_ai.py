@@ -10,12 +10,7 @@ read = lambda p: (ROOT / p).read_text(encoding="utf-8")
 
 class PortfolioAdvisorAiTests(unittest.TestCase):
     def test_no_browser_calls_to_ai_providers(self):
-        # js/invest-helper-logic.js is loaded by no page (its call is dead code);
-        # it is listed for removal separately.
-        unused = {"invest-helper-logic.js"}
         for path in sorted(list(ROOT.glob("*.html")) + list((ROOT / "js").glob("*.js"))):
-            if path.name in unused:
-                continue
             src = path.read_text(encoding="utf-8", errors="ignore")
             for host in ("api.anthropic.com", "api.openai.com"):
                 self.assertNotRegex(src, r"fetch\(\s*['\"]https://" + re.escape(host), f"{path.name} calls {host}")
