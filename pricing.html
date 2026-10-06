@@ -286,6 +286,14 @@ button{font-family:inherit;cursor:pointer}
 .trust-pill{display:inline-flex;align-items:center;gap:7px;background:#fff;border:1px solid var(--border);border-radius:999px;padding:8px 16px;font-size:.8rem;font-weight:600;color:var(--muted)}
 
 </style>
+  <!-- Home-screen app (ATD-109): installable from the browser's share menu; opens full screen, without the address bar. -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#071a2f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Arowana">
+  <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
 <body>
   <!-- NAVIGATION -->

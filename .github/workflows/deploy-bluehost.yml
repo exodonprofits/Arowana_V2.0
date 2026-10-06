@@ -22,7 +22,7 @@
 # Every deploy writes ap-version.txt (the commit SHA) and then fetches it back from
 # https://arowanaprofits.com[/staging]/ap-version.txt; the run fails if the site doesn't serve it.
 #
-# Only the site goes up, from an explicit allowlist: top-level .html pages, robots.txt, sitemap.xml,
+# Only the site goes up, from an explicit allowlist: top-level .html pages, robots.txt, sitemap.xml, manifest.json,
 # css/, js/ and images/. Never documents/, docs/, supabase/, scripts/, tests/, .github/ or markdown.
 #
 # The upload state file keeps the Wheel workflow's name (.ap-deploy-state.json) on purpose: the
@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p site
-          cp ./*.html robots.txt sitemap.xml site/
+          cp ./*.html robots.txt sitemap.xml manifest.json site/
           cp -r css js images site/
           # Never publish these, even if they end up next to the pages.
           find site \( -name '*.md' -o -name '*.psd' -o -name '*.docx' -o -name '.DS_Store' \) -delete
