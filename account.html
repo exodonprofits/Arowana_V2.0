@@ -1010,6 +1010,14 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
+<style>
+/* Experience level rows (ATD-109): the whole row is the tap target. */
+.mode-row{cursor:pointer}
+.mode-row .data-row-title{display:flex;align-items:center;gap:8px}
+.mode-row input[type=radio]{width:18px;height:18px;margin:0;accent-color:var(--brand,#0b4f8a)}
+.mode-row:has(input:checked){background:rgba(11,79,138,.05);border-radius:10px}
+</style>
+<script src="./js/interface-mode.js"></script>
 </head>
 <body data-nav-shell="member">
 
@@ -1273,6 +1281,38 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- EXPERIENCE LEVEL (ATD-109) — the one place to choose Beginner / Guided /
+       Full. Tool pages no longer carry their own switch; js/interface-mode.js
+       stores the choice (ap_interface_mode_v1) and every page applies it. -->
+  <div class="usage-section" id="experience">
+    <div class="section-header">
+      <h2 class="section-title">🎚️ Experience level</h2>
+      <span class="text-muted" style="font-size:.82rem">How much each tool shows. Applies to every page on this device.</span>
+    </div>
+    <div role="radiogroup" aria-labelledby="experienceTitle" id="modeRows">
+      <span id="experienceTitle" hidden>Experience level</span>
+      <label class="data-row mode-row">
+        <div class="data-row-text">
+          <span class="data-row-title"><input type="radio" name="apMode" value="beginner"> Beginner</span>
+          <div class="data-row-desc">Plain-language guides and fewer columns. Each tool walks you through one step at a time.</div>
+        </div>
+      </label>
+      <label class="data-row mode-row">
+        <div class="data-row-text">
+          <span class="data-row-title"><input type="radio" name="apMode" value="guided"> Guided</span>
+          <div class="data-row-desc">The full tools, laid out in the order you work: check, plan, size, then log.</div>
+        </div>
+      </label>
+      <label class="data-row mode-row">
+        <div class="data-row-text">
+          <span class="data-row-title"><input type="radio" name="apMode" value="advanced"> Full</span>
+          <div class="data-row-desc">Every column, filter and setting, with nothing hidden.</div>
+        </div>
+      </label>
+    </div>
+    <div class="data-row-desc" id="modeMsg" role="status" style="min-height:1.2em;margin-top:6px"></div>
   </div>
 
   <!-- EMAIL — the three Arowana emails (supabase/functions/arowana-digest).
@@ -2562,6 +2602,25 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
 
 <!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
      elements marked data-nav-legacy are the old site links it replaces. -->
+<script>
+/* Experience level (ATD-109): radio rows bound to js/interface-mode.js. */
+(function () {
+  var rows = document.getElementById('modeRows');
+  var msg = document.getElementById('modeMsg');
+  if (!rows || !window.AP_MODE) return;
+  var NAMES = { beginner: 'Beginner', guided: 'Guided', advanced: 'Full' };
+  function paint(mode) {
+    var r = rows.querySelector('input[value="' + mode + '"]');
+    if (r) r.checked = true;
+  }
+  AP_MODE.onChange(function (d) { paint(d.mode); });
+  rows.addEventListener('change', function (e) {
+    if (!e.target || e.target.name !== 'apMode') return;
+    AP_MODE.set(e.target.value);
+    if (msg) msg.textContent = 'Saved. Every tool now uses ' + NAMES[AP_MODE.get()] + '.';
+  });
+})();
+</script>
 <script src="./js/nav-loader.js"></script>
 </body>
 </html>

@@ -438,3 +438,12 @@ Check: `scripts/browser/watchlist_mobile_check.mjs` (18; 10 fail on `main`).
 - **Fonts:** Watchlist's labels moved from JetBrains Mono to Plus Jakarta Sans: form labels, the four count labels (now uppercase, like Trading Command's), table headers and the sync pill. Sizes went up to 10–10.5px, because 8.5–9px was tuned for monospace. Monospace stays for prices and for the header kicker, which matches Trading Command's.
 - **Not changed:** the mode switch on the 22 other tool pages that still carry one.
 - **Check:** `scripts/browser/watchlist_mobile_check.mjs`, now 22 checks. New checks: no switch on phone or desktop; labels in the site font; saved Guided mode still applied.
+
+**Experience level chosen once, in Account, branch `claude/ATD-109-mode-in-account`:** the owner asked for the Beginner/Guided/Full switch to come off every tool page.
+- **Tool pages:** the switch is hidden on the 22 remaining pages, plus Watchlist (#75), using `hidden`, `aria-hidden`, `tabindex=-1` and `display:none`. The control stays in each page, so the page's own mode script and `js/interface-mode.js` still apply the saved level.
+- **Account:** a new "🎚️ Experience level" section with three radio rows (Beginner, Guided, Full). Each row has a one-line description and is a full-width tap target. The choice saves through `AP_MODE.set` and shows a "Saved" confirmation. Account now loads `js/interface-mode.js`. The level is stored per device (`ap_interface_mode_v1`), as before.
+- **Shared nav:** `js/arowana-nav.js` drops the width rule for the switch, which no longer shows anywhere.
+- **Check:** `scripts/browser/mode_setting_check.mjs` (98):
+  - 23 pages at 375 and 1280px with no switch shown;
+  - the saved Guided level still applied on each page, with no page errors;
+  - in Account, the saved level is preselected, choosing Full saves it, and the next page applies it.
