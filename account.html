@@ -1011,7 +1011,7 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
 
   <script>
     // ===============================================
@@ -1045,16 +1045,16 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
       <span>Arowana Profits</span>
     </a>
     
-    <div class="nav-links">
+    <div data-nav-legacy class="nav-links">
       <a href="trading-command.html" class="nav-link">⚡ Trading Command</a>
       <a href="portfolio-command.html" class="nav-link">🏦 Portfolio Command</a>
       <a href="analysis-central.html" class="nav-link">🔍 Ticker Research</a>
       <a href="options-hub.html" class="nav-link">📈 Options Hub</a>
     </div>
     
-    <button class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false" aria-controls="mobileMenu">&#9776;</button>
+    <button data-nav-legacy class="nav-burger" id="navBurger" aria-label="Menu" aria-expanded="false" aria-controls="mobileMenu">&#9776;</button>
 
-    <div class="nav-auth">
+    <div data-nav-legacy class="nav-auth">
       <!-- When not logged in -->
       <a href="login.html" class="auth-link" id="authSignIn">Sign In</a>
       <a href="pricing.html" class="auth-link auth-cta" id="authStartFree">🚀 Start Free</a>
@@ -1109,7 +1109,7 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
   <!-- On a phone this is the only menu: the user dropdown is hidden below
        860px, so account actions belong here too. -->
   <div class="mobile-backdrop" id="mobileBackdrop" data-open="false" aria-hidden="true"></div>
-  <div class="mobile-menu" id="mobileMenu" data-open="false">
+  <div data-nav-legacy class="mobile-menu" id="mobileMenu" data-open="false">
     <div class="mobile-panel">
       <div class="mobile-account" id="mobileAccount" hidden>
         <div class="mobile-account-email" id="mobileUserEmail">&nbsp;</div>
@@ -2559,5 +2559,9 @@ details.adv[open] > summary::after { transform: rotate(180deg); }
     });
   })();
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

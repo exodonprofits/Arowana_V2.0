@@ -83,30 +83,30 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <!-- Header -->
   <header class="header">
     <div class="container">
       <div class="header-top">
         <div class="logo">
-          <span><img src="../shared/images/arowanalogo.png" class="logo-img" alt="Arowana Profits logo"/></span>
-          <a href="../index.html" style="color:#fff;text-decoration:none;">Arowana Profits</a>
+          <span><img src="images/arowanalogo.png?v=20260117" class="logo-img" alt="Arowana Profits logo"/></span>
+          <a href="index.html" style="color:#fff;text-decoration:none;">Arowana Profits</a>
         </div>
-        <nav class="nav" id="nav">
-          <a href="../index.html">Home</a>
-          <a href="../short-term-dashboard.html">Short-Term</a>
-          <a href="../long-term-dashboard.html" aria-current="page">Long-Term</a>
-          <a href="../learn-investing.html">Learn</a>
+        <nav data-nav-legacy class="nav" id="nav">
+          <a href="index.html">Home</a>
+          <a href="short-term-dashboard.html">Short-Term</a>
+          <a href="long-term-dashboard.html" aria-current="page">Long-Term</a>
+          <a href="learn-investing.html">Learn</a>
         </nav>
-        <div class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
+        <div data-nav-legacy class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
       </div>
     </div>
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div data-nav-legacy class="mobile-menu" id="mobileMenu" aria-hidden="true">
       <div class="grid">
-        <a href="../index.html"><i class="fas fa-home"></i> Home</a>
-        <a href="../short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
-        <a href="../long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
-        <a href="../learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+        <a href="long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+        <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
       </div>
     </div>
   </header>
@@ -120,7 +120,7 @@
         <p class="muted" style="margin:.25rem 0 0">Plan automated, recurring contributions. Generate a schedule, optionally split by your allocation / ETF plan, and export to CSV.</p>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <a class="btn ghost" href="../long-term-dashboard.html">← Dashboard</a>
+        <a class="btn ghost" href="long-term-dashboard.html">← Dashboard</a>
         <button class="btn ghost" id="btnExportTop"><i class="fas fa-file-csv"></i> Export CSV</button>
       </div>
     </div>
@@ -449,5 +449,9 @@
     function addMonths(date, n){ const d=new Date(date.getTime()); d.setMonth(d.getMonth()+n); return d; }
     function setDaysAhead(date, days){ const d=new Date(date.getTime()); d.setDate(d.getDate()+days); return d; }
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

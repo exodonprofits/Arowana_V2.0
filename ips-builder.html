@@ -57,7 +57,7 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <header>
     <h1>📝 Investment Policy Statement (IPS) Builder</h1>
     <p>Create a clear, printable policy you can stick to. Import your target allocation from the Allocation Builder and define rules for contributions, rebalancing, and behavior.</p>
@@ -247,5 +247,9 @@
     // Optional convenience: auto-fill today
     document.getElementById('date').valueAsDate = new Date();
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

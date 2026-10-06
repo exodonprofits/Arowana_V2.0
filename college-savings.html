@@ -86,29 +86,29 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <header class="header">
     <div class="container">
       <div class="header-top">
         <div class="logo">
-          <span><img src="../shared/images/arowanalogo.png" class="logo-img"/></span>
-          <a href="../index.html" style="color:#fff;text-decoration:none;">Arowana Profits</a>
+          <span><img src="images/arowanalogo.png?v=20260117" class="logo-img"/></span>
+          <a href="index.html" style="color:#fff;text-decoration:none;">Arowana Profits</a>
         </div>
-        <nav class="nav" id="nav">
-          <a href="../index.html">Home</a>
-          <a href="../short-term-dashboard.html">Short-Term</a>
-          <a href="../long-term-dashboard.html" aria-current="page">Long-Term</a>
-          <a href="../learn-investing.html">Learn</a>
+        <nav data-nav-legacy class="nav" id="nav">
+          <a href="index.html">Home</a>
+          <a href="short-term-dashboard.html">Short-Term</a>
+          <a href="long-term-dashboard.html" aria-current="page">Long-Term</a>
+          <a href="learn-investing.html">Learn</a>
         </nav>
-        <div class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
+        <div data-nav-legacy class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
       </div>
     </div>
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div data-nav-legacy class="mobile-menu" id="mobileMenu" aria-hidden="true">
       <div class="grid">
-        <a href="../index.html"><i class="fas fa-home"></i> Home</a>
-        <a href="../short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
-        <a href="../long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
-        <a href="../learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
+        <a href="index.html"><i class="fas fa-home"></i> Home</a>
+        <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
+        <a href="long-term-dashboard.html"><i class="fas fa-chart-line"></i> Long-Term</a>
+        <a href="learn-investing.html"><i class="fas fa-book-open"></i> Learn</a>
       </div>
     </div>
   </header>
@@ -120,7 +120,7 @@
         <p class="muted" style="margin:.25rem 0 0">Help me plan for college in ___ years, with 529 basics and a simple savings plan.</p>
       </div>
       <div style="display:flex;gap:.5rem;flex-wrap:wrap">
-        <a class="btn ghost" href="../long-term-dashboard.html">← Dashboard</a>
+        <a class="btn ghost" href="long-term-dashboard.html">← Dashboard</a>
         <a class="btn ghost" id="btnCsv"><i class="fas fa-file-csv"></i> Export CSV</a>
       </div>
     </div>
@@ -187,8 +187,8 @@
     <div class="container">
       <div class="cols">
         <div><h4>Arowana Profits</h4><p>AI-powered tools for traders and investors.</p></div>
-        <div><h4>Solutions</h4><ul><li><a href="../short-term-dashboard.html">Trading Dashboard</a></li><li><a href="../long-term-dashboard.html">Long-Term</a></li><li><a href="../learn-investing.html">Learning Center</a></li></ul></div>
-        <div><h4>Company</h4><ul><li><a href="../about.html">About</a></li><li><a href="../contact.html">Contact</a></li></ul></div>
+        <div><h4>Solutions</h4><ul><li><a href="short-term-dashboard.html">Trading Dashboard</a></li><li><a href="long-term-dashboard.html">Long-Term</a></li><li><a href="learn-investing.html">Learning Center</a></li></ul></div>
+        <div><h4>Company</h4><ul><li><a href="about.html">About</a></li><li><a href="contact.html">Contact</a></li></ul></div>
         <div><h4>Legal</h4><p><strong>Disclaimer:</strong> This planner is for education only and not tax or investment advice.</p></div>
       </div>
       <div class="foot-bottom">© 2025 Arowana Profit LLC. All rights reserved.</div>
@@ -303,5 +303,9 @@
       calculate();
     });
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

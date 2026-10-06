@@ -59,7 +59,7 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <header>
     <h1>🧺 ETF Core Screener</h1>
     <p>Filter low‑fee, broad‑market ETFs and build a core lineup. Optional: map from your saved <b>Asset Allocation Builder</b> to turn targets into specific tickers.</p>
@@ -169,5 +169,9 @@
   <script>
     // existing JS unchanged...
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

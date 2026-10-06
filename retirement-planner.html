@@ -306,11 +306,11 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
 
 <header class="topbar">
   <div class="brand">Arowana <span>Profits</span></div>
-  <nav>
+  <nav data-nav-legacy>
     <a href="index.html">← Arowana Profits</a>
     <a href="tools.html">All Tools</a>
     <span style="opacity:.5; margin: 0 4px;">|</span>
@@ -2062,5 +2062,9 @@ if (window.AP_PLAN && typeof AP_PLAN.ready === 'function'){
   AP_PLAN.ready().then(applyLockState, applyLockState);
 }
 </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

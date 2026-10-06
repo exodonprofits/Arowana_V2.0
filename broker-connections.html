@@ -117,7 +117,7 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <header class="header-bar ap-header">
     <div class="ap-nav">
       <div class="ap-left">
@@ -125,21 +125,21 @@
           <img src="images/arowanalogo.png" alt="Arowana Profits" class="ap-logo">
           <span class="ap-title">Arowana Profits</span>
         </a>
-        <nav class="ap-nav-main" aria-label="Primary">
+        <nav data-nav-legacy class="ap-nav-main" aria-label="Primary">
           <a href="short-term-dashboard.html" class="ap-tab" data-icon="⚡">Short-Term</a>
           <a href="long-term-dashboard.html" class="ap-tab" data-icon="📈">Long-Term</a>
           <a href="trade-journal-pro.html" class="ap-tab" data-icon="📒">Journal</a>
           <a href="broker-connections.html" class="ap-tab is-active" data-icon="🏦">Broker Connections</a>
         </nav>
       </div>
-      <div class="ap-right">
+      <div data-nav-legacy class="ap-right">
         <nav class="ap-nav-top" id="navTop" aria-label="Account actions"></nav>
         <button class="ap-burger" id="burgerBtn" aria-label="Open menu"><i class="fas fa-bars"></i></button>
       </div>
     </div>
   </header>
 
-  <div id="mobileMenu" data-open="false">
+  <div data-nav-legacy id="mobileMenu" data-open="false">
     <div class="mobile-menu-panel">
       <div class="grid mobile-main-links">
         <a href="short-term-dashboard.html">⚡ Short-Term</a>
@@ -262,5 +262,9 @@
     document.getElementById("year").textContent = new Date().getFullYear();
     renderAuthLinks();
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>
