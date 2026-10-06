@@ -1084,6 +1084,45 @@ html,body{font-size:13px!important;line-height:1.45!important}
   <meta name="apple-mobile-web-app-status-bar-style" content="black">
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
+<style>
+/* Phone layout (ATD-109): matches Trading Command on phones. White top
+   bar; a compact header (title, mode switch, sync dot); the list itself
+   right under a full-width Add button, with the add form opening from
+   that button instead of sitting above the list; one row of counts; the
+   list toolbar scrolls sideways instead of wrapping onto three lines. */
+@media(max-width:768px){
+  .mobile-topbar{background:#fff!important;border-bottom:1px solid #d7e0e5!important;box-shadow:none!important}
+  .mobile-topbar-brand{color:#174e71!important}
+  .mobile-icon-btn{color:#174e71!important;background:#eef4f7!important;border-color:#d8e2e7!important}
+  main.main-content{display:flex;flex-direction:column}
+  .workspace-bar{order:0;display:flex!important;align-items:center!important;justify-content:space-between;gap:10px;background:#fff}
+  .workspace-mark,.workspace-subtitle,#btnBack,#btnAllTools,.workspace-actions .session-pill{display:none!important}
+  .workspace-title{font-size:15px!important}
+  .workspace-actions{margin-top:0!important;flex-wrap:nowrap!important;gap:8px;align-items:center}
+  #syncPill{display:inline-block!important;flex:0 0 12px;width:12px!important;height:12px!important;min-height:0!important;padding:0!important;border-radius:50%;border-width:2px;font-size:0!important;line-height:0!important;overflow:hidden;align-self:center}
+  .workspace-toolbar{order:1;flex-direction:row!important;align-items:center!important;border-bottom:0;padding:12px 0 4px}
+  .toolbar-context,#btnImport,#btnExport{display:none!important}
+  .toolbar-actions{width:100%}
+  #btnQuickAdd{flex:1 1 100%;min-height:44px!important;font-size:15px!important;justify-content:center}
+  #addSection{order:2;display:none}
+  body.wl-adding #addSection{display:block}
+  #listSwitcherSection{order:3}
+  #kpiSection{order:4}
+  #listSection{order:5}
+  #listSwitcherSection .card{padding:.6rem .75rem!important}
+  #listSection>.card{padding:14px 12px!important}
+  #kpiSection .row.four{grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:6px}
+  #kpiSection .stat{padding:8px 6px;text-align:center}
+  #kpiSection .stat .k{font-size:9.5px;letter-spacing:0;line-height:1.2;margin-bottom:2px}
+  #kpiSection .stat .v{font-size:1.1rem}
+  #kpiSection .stat .sub{display:none}
+  #listSection .sec-head>div{flex-wrap:nowrap!important;overflow-x:auto;width:100%;scrollbar-width:none;padding-bottom:2px}
+  #listSection .sec-head>div::-webkit-scrollbar{display:none}
+  #listSection .sec-head .btn,#priceStatus{flex:0 0 auto;white-space:nowrap}
+  #priceStatus{font-size:.75rem}
+  .filter-bar #wlSearch{max-width:none!important;min-width:0!important;flex:1 1 100%!important}
+}
+</style>
 </head>
 <body>
 
@@ -1193,7 +1232,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
     <div class="toolbar-actions">
       <button class="btn ghost sm" id="btnImport" disabled title="Coming in Phase 5">📥 Import CSV</button>
       <button class="btn ghost sm" id="btnExport" disabled title="Coming in Phase 5">⬇ Export CSV</button>
-      <button class="btn blue sm" id="btnQuickAdd" type="button" title="Jump to Add form below">＋ Add</button>
+      <button class="btn blue sm" id="btnQuickAdd" type="button" title="Add a ticker" aria-controls="addSection" aria-expanded="false">＋ Add</button>
     </div>
   </div>
 
@@ -1452,7 +1491,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
       <div class="empty-state" id="emptyNote" style="display:none">
         <div class="es-icon">📭</div>
         <div class="es-title">Your watchlist is empty</div>
-        <div>Add tickers above to get started.</div>
+        <div>Tap <strong>＋ Add</strong> to add your first ticker.</div>
       </div>
     </div>
   </section>
@@ -1853,6 +1892,16 @@ $('btnBack')?.addEventListener('click', () => {
 
 // Quick Add scrolls to inline add form (Phase 2 will turn this into modal)
 $('btnQuickAdd')?.addEventListener('click', () => {
+  // Phones: the add form opens from this button (it sits under it) and
+  // closes with it; it stays open after an add so several can go in a row.
+  if (window.matchMedia && window.matchMedia('(max-width: 768px)').matches) {
+    const open = !document.body.classList.contains('wl-adding');
+    document.body.classList.toggle('wl-adding', open);
+    $('btnQuickAdd').textContent = open ? '✓ Done' : '＋ Add';
+    $('btnQuickAdd').setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) $('addSymbol')?.focus();
+    return;
+  }
   $('addSymbol')?.focus();
   $('addSection')?.scrollIntoView({behavior:'smooth', block:'start'});
 });
@@ -2160,7 +2209,10 @@ function renderMobileCards(rows){
         <button class="btn ghost sm" onclick="openConvertToTradeModal('${escapeHtml(s.id)}')">📓 Add to Journal</button>
       </div>
     </div>`;
-  }).join('') || '<div class="empty-state"><div class="es-icon">🔍</div><div class="es-title">No matches</div><div>Try adjusting filters.</div></div>';
+  }).join('') || ((window.watchlist || []).length
+    // An empty list has its own empty state (#emptyNote); "No matches" is for filters.
+    ? '<div class="empty-state"><div class="es-icon">🔍</div><div class="es-title">No matches</div><div>Try adjusting filters.</div></div>'
+    : '');
 }
 
 // Compute KPIs from the FULL list (not filtered) — these should reflect overall state.
@@ -3180,7 +3232,9 @@ function setSyncPill(state, detail){
   el.style.color = s.fg;
   el.style.borderColor = s.bd;
   el.textContent = detail ? `${s.text} · ${detail}` : s.text;
-  el.title = detail || s.text;
+  // On phones the pill shows as a coloured dot; the words stay for screen
+  // readers and as a tooltip.
+  el.title = el.textContent;
 }
 
 // ── localStorage helpers ──

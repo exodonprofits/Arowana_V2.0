@@ -412,3 +412,23 @@ Not changed:
   - `scripts/browser/mobile_controls_check.mjs` (48).
   - `scripts/test_brand_font.py` (3; fails on `main`).
   - Before/after audit of all 85 pages with the real font loaded: no new sideways scroll, page errors or clipped labels.
+
+**Watchlist on phones, branch `claude/ATD-109-watchlist-mobile`:** the owner reported Watchlist still looked like the old site on a phone.
+
+Before:
+- dark-blue top bar
+- a header crowded with Back, the mode switch and a "✓ Synced · 3 from server" pill
+- the list came after the Add button, list picker, four tall count tiles and the whole add form, about 1.5 screens down
+- the list toolbar wrapped onto three lines
+- an empty list showed both "No matches" and "Your watchlist is empty"
+
+Now, on phones only:
+- white top bar and compact header, as on Trading Command; sync status is a coloured dot with the words kept as a tooltip and for screen readers
+- a full-width 44px "＋ Add" button opens the add form right under it; the form stays open after an add so several tickers can go in a row, and "✓ Done" closes it
+- the list sits right after the list picker and one row of four counts
+- the toolbar scrolls sideways, and search is full width
+- an empty list shows a single empty state
+
+Desktop is unchanged.
+
+Check: `scripts/browser/watchlist_mobile_check.mjs` (18; 10 fail on `main`).
