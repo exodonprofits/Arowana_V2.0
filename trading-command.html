@@ -2059,7 +2059,7 @@ body.drawer-open {
 body.guided-mode .poc-profile { display:none; }
 body.guided-mode .poc-results { grid-template-columns:1fr; }
 @media(max-width:760px){
-  .poc-card{padding:15px}.poc-controls{width:100%}.poc-field{flex:1 1 110px}.poc-input,.poc-select{width:100%}
+  .poc-card{padding:15px}.poc-controls{width:100%}.poc-field{flex:1 1 150px}.poc-input,.poc-select{width:100%}
   .poc-run,.poc-import{flex:1 1 auto;justify-content:center}.poc-results{grid-template-columns:1fr}.poc-profile{min-height:190px}
 }
 
@@ -4609,7 +4609,15 @@ html,body{font-size:13px!important;line-height:1.45!important}
 body.guided-mode #railMount .rail-group:not(.expanded) .rail-submenu{display:none!important}
 body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768px){.desk-level-select{max-width:126px}.guided-desk{padding:14px}.guided-head{display:block}.guided-more{display:inline-block;margin-top:8px}.guided-flow{grid-template-columns:1fr 1fr}.guided-step:last-child{grid-column:1/-1}}
 @media(max-width:768px){
-  .mobile-ai-coach-shortcut{display:inline-flex;position:fixed;right:14px;bottom:82px;z-index:980;align-items:center;gap:7px;min-height:42px;padding:0 14px;border:1px solid #0f547f;border-radius:999px;background:#175f8f;color:#fff;text-decoration:none;font-size:11px;font-weight:800;box-shadow:0 10px 24px rgba(18,72,106,.28)}
+  /* Round icon button above the bottom bar (clear of the iPhone home
+     indicator). Hidden on the Coach tab, which already links to the coach,
+     while scrolling down or typing; the page keeps room below its last row
+     so the button never sits on content you need. */
+  .mobile-ai-coach-shortcut{display:inline-flex;position:fixed;right:16px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:980;align-items:center;justify-content:center;width:52px;height:52px;padding:0;border:1px solid #0f547f;border-radius:50%;background:#175f8f;color:#fff;text-decoration:none;font-size:22px;line-height:1;box-shadow:0 10px 24px rgba(18,72,106,.28);transition:transform .2s ease,opacity .2s ease}
+  .mobile-ai-coach-shortcut .mobile-ai-coach-label{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+  .mobile-ai-coach-shortcut.is-tucked{transform:translateY(90px);opacity:0;pointer-events:none}
+  body:has(#coachTab.active) .mobile-ai-coach-shortcut{display:none}
+  html body.anv-has-mobile-bar{padding-bottom:calc(132px + env(safe-area-inset-bottom))}
   .mobile-ai-coach-shortcut:hover,.mobile-ai-coach-shortcut:focus{background:#104f79;color:#fff}
   .mobile-ai-coach-shortcut:focus-visible{outline:3px solid rgba(38,134,189,.35);outline-offset:3px}
 }
@@ -5367,9 +5375,37 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
     </main>
   </div>
 
-  <a class="mobile-ai-coach-shortcut" href="arowana-trader.html?from=trading-command" aria-label="Open the Wheel Coach">
-    <span aria-hidden="true">🧭</span><span>AI Coach</span>
+  <a class="mobile-ai-coach-shortcut" id="mobileCoachShortcut" href="arowana-trader.html?from=trading-command" aria-label="Open the Wheel Coach" title="AI Coach">
+    <span aria-hidden="true">🧭</span><span class="mobile-ai-coach-label">AI Coach</span>
   </a>
+  <script>
+  // Tuck the coach button away while scrolling down or typing; bring it back
+  // on any scroll up and at the top of the page.
+  (function () {
+    var btn = document.getElementById('mobileCoachShortcut');
+    if (!btn) return;
+    var lastY = window.scrollY, ticking = false;
+    function typing() {
+      var a = document.activeElement;
+      return !!a && (a.tagName === 'INPUT' || a.tagName === 'TEXTAREA' || a.tagName === 'SELECT' || a.isContentEditable);
+    }
+    function update() {
+      var y = window.scrollY;
+      var down = y > lastY + 4, up = y < lastY - 4;
+      if (typing() || (down && y > 80)) btn.classList.add('is-tucked');
+      else if (up || y <= 80) btn.classList.remove('is-tucked');
+      if (down || up) lastY = y;
+      ticking = false;
+    }
+    window.addEventListener('scroll', function () {
+      if (!ticking) { ticking = true; window.requestAnimationFrame(update); }
+    }, { passive: true });
+    document.addEventListener('focusin', update);
+    document.addEventListener('focusout', function () {
+      setTimeout(function () { if (!typing()) btn.classList.remove('is-tucked'); }, 0);
+    });
+  })();
+  </script>
 
   <!-- Footer -->
   <footer class="site-footer compact-footer">

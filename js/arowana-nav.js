@@ -734,6 +734,8 @@
         // leaves it zoomed; 16px on phones keeps the page still on focus.
         'body.anv-v2 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]):not([type=submit]),' +
           'body.anv-v2 select,body.anv-v2 textarea{font-size:16px!important}' +
+        // The desk-level switch was sized for 10px text; let it fit its label.
+        'body.anv-v2 select.desk-level-select,body.anv-v2 select#deskLevelSelect,body.anv-v2 select.experience-switch{width:auto!important;max-width:100%!important;flex-shrink:0}' +
         // The More sheet replaces page hamburgers (D9). #sidebarTrigger is the
         // common id; pages with another trigger mark it data-nav-drawer-trigger.
         'body.anv-v2 #sidebarTrigger,body.anv-v2 [data-nav-drawer-trigger]{display:none}' +
@@ -769,7 +771,7 @@
         'body.anv-shell-on.rail-collapsed{padding-left:68px}' +
         '.anv-shell{display:flex;flex-direction:column;position:fixed;top:0;left:0;bottom:0;width:248px;z-index:900;box-sizing:border-box;' +
           'padding:14px 10px;background:var(--card,#fff);border-right:1px solid var(--border,#e2e8f0);' +
-          'color:var(--text,#0f172a);font-family:system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.35;text-align:left}' +
+          'color:var(--text,#0f172a);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;line-height:1.35;text-align:left}' +
         '.anv-shell.rail-collapsed{width:68px}' +
       '}' +
       '.anv-shell *{box-sizing:border-box}' +
