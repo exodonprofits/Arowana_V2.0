@@ -5,15 +5,13 @@
 
 **Where V2.0 runs:** nowhere public yet; it is tested locally. arowanaprofits.com is served by the Wheel Strategy Desk (`exodonprofits/arowanaprofits`), which shares this Supabase project and its edge functions. Launching V2.0 on that domain is ATD-109: [cutover plan](docs/ATD-109_CUTOVER_PLAN.md). The live host is Bluehost, deployed from the Wheel repo, with a `/staging/` target on the same domain.
 
-**Done:** the Wheel port (ATD-108 S1–S6 and follow-ups, PRs #33–#43) and the legacy page review (ATD-009, through PR #52). The deployed backend is in Git (Q6, PR #44). Founders is $299/year on every page (PR #48). Explanations work again in production: `ap_usage_feature_check` now allows `explain` (PR #63, applied to Exodon Profits 2026-10-05 as migration `20261005165812`, constraint verified). Broker Connections and the Schwab return page now say Schwab is coming soon; they used to show a sample "Connected" state.
+**Done:** the Wheel port (ATD-108 S1–S6 and follow-ups, PRs #33–#43) and the legacy page review (ATD-009, through PR #52). The deployed backend is in Git (Q6, PR #44). Founders is $299/year on every page (PR #48). `arowana-explain` v3 (adds the Retirement Planner's `retirement` kind) and `arowana-ai-coach` v19 (Portfolio Advisor's `investor` and `company` modes) were deployed from `main` (`52e60e5`) on 2026-10-06. Explanations work again in production: `ap_usage_feature_check` now allows `explain` (PR #63, applied to Exodon Profits 2026-10-05 as migration `20261005165812`, constraint verified). Broker Connections and the Schwab return page now say Schwab is coming soon; they used to show a sample "Connected" state.
 
 **Not live yet (owner/Codex):**
 1. **Founders price — do not redeploy `arowana-checkout` before cutover.** The live site (Wheel Desk) shows $229 and the deployed function expects $229, so live checkout is consistent today. The $299 guard in `main` belongs to V2.0: deploying it while arowanaprofits.com still serves the Wheel Desk would refuse every Founders checkout there. Switch the Stripe price and redeploy the function in the same window as the domain cutover (ATD-109).
-2. **Retirement write-up:** redeploy `arowana-explain` from `main` (adds the `retirement` kind). Safe at any time: additive, and the Wheel Desk does not use it.
-   **Portfolio Advisor AI:** redeploy `arowana-ai-coach` from `main` (adds the `investor` and `company` modes). Safe at any time: additive, and the Wheel Desk uses the unchanged default mode.
-3. **Baseline migration:** guard the 16 `CREATE OR REPLACE` functions (for example `public.set_updated_at()`, used by Salon tables) before it is ever applied anywhere.
-4. Rotate the n8n token left in Git history by `stock-checker`; add the `stock_analyzer` and `quality_screener` webhooks to `AP_WEBHOOKS`.
-5. A live sign-in check: every frontend test so far ran on synthetic data. First real use: import the 12 holdings missing from the journal on `long-term-portfolio.html`.
+2. **Baseline migration:** guard the 16 `CREATE OR REPLACE` functions (for example `public.set_updated_at()`, used by Salon tables) before it is ever applied anywhere.
+3. Rotate the n8n token left in Git history by `stock-checker`; add the `stock_analyzer` and `quality_screener` webhooks to `AP_WEBHOOKS`.
+4. A live sign-in check: every frontend test so far ran on synthetic data. First real use: import the 12 holdings missing from the journal on `long-term-portfolio.html`.
 
 **Next planned work:** ATD-101–107 wait on the data-hub contract, provider and licensing decisions and ATD-007.
 

@@ -94,7 +94,7 @@
       "path": "supabase/functions/arowana-ai-coach/index.ts",
       "sha256_lf": "fb038242d9485f7e666a3d23b1ee75a4d860e37908289aec0540c0c55b51de86",
       "repository_sha256_lf": "8fbe940f3aee1ab347a9ee696b5fde0c9e7091aaa5cedb651df2b406e8701067",
-      "repository_change": "Owner-requested Portfolio Advisor fix: additive 'investor' and 'company' modes (default wheel mode unchanged); pending deployment. sha256_lf retains the original deployed capture."
+      "repository_change": "Owner-requested Portfolio Advisor fix: additive 'investor' and 'company' modes (default wheel mode unchanged); deployed 2026-10-06 as v19. sha256_lf retains the original deployed capture."
     },
     {
       "path": "supabase/functions/arowana-billing-portal/index.ts",
@@ -126,7 +126,7 @@
       "path": "supabase/functions/arowana-explain/index.ts",
       "sha256_lf": "8a810175acfc6cd34e6edd1aafefd2bc40c9f20e3d7d8009641c55f950c64dd9",
       "repository_sha256_lf": "7d9658e11e56fed126716606bc3c50d57406e66d4baba6dd8a1832451eb10c4b",
-      "repository_change": "ATD-009 owner-requested 'retirement' explanation kind for the Retirement Planner's managed write-up (additive); pending deployment. sha256_lf retains the original deployed capture."
+      "repository_change": "ATD-009 owner-requested 'retirement' explanation kind for the Retirement Planner's managed write-up (additive); deployed 2026-10-06 as v3. sha256_lf retains the original deployed capture."
     },
     {
       "path": "supabase/functions/arowana-founders-count/index.ts",
