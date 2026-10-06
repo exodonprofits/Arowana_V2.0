@@ -274,7 +274,7 @@ button{font-family:inherit;cursor:pointer}
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <script>
   // ───────────────────────────────────────────────────────────────
   // AUTH GATE — runs before any markup paints.
@@ -305,7 +305,7 @@ button{font-family:inherit;cursor:pointer}
         <span>Arowana Profits</span>
       </a>
       
-      <div class="nav-links">
+      <div data-nav-legacy class="nav-links">
         <a href="trading-command.html" class="nav-link">⚡ Trading Command</a>
         <a href="portfolio-command.html" class="nav-link">🏦 Portfolio Command</a>
         <a href="analysis-central.html" class="nav-link">📊 Analysis Central</a>
@@ -315,7 +315,7 @@ button{font-family:inherit;cursor:pointer}
         <a href="pricing.html" class="nav-link">Pricing</a>
       </div>
       
-      <div class="nav-auth">
+      <div data-nav-legacy class="nav-auth">
         <!-- When not logged in -->
         <a href="login.html" class="auth-link" id="navSignIn">Sign In</a>
         <a href="pricing.html" class="auth-link auth-cta" id="navSignUp">🚀 Start Free</a>
@@ -385,10 +385,10 @@ button{font-family:inherit;cursor:pointer}
         </div>
       </div>
       
-      <button class="nav-burger" id="navBurger">&#9776;</button>
+      <button data-nav-legacy class="nav-burger" id="navBurger">&#9776;</button>
     </nav>
     
-    <div class="mobile-menu" id="mobileMenu" data-open="false">
+    <div data-nav-legacy class="mobile-menu" id="mobileMenu" data-open="false">
       <div class="mobile-panel">
         <a class="mobile-link" href="trading-command.html">🎯 Trading Command</a>
         <a class="mobile-link" href="portfolio-command.html">📊 Portfolio Command</a>
@@ -987,5 +987,9 @@ document.addEventListener('DOMContentLoaded', function() {
   <script src="./js/sb.js?v=20261004a"></script>
   <script src="./js/auth-header.js"></script>
 
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

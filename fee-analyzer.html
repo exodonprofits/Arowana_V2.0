@@ -68,7 +68,7 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <header>
     <h1>💳 Fee Impact Analyzer</h1>
     <p>See how expense ratios compound over time. Compare multiple funds, visualize total fees paid, and estimate portfolio value drag.</p>
@@ -296,5 +296,9 @@
       run();
     });
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

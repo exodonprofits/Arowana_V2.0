@@ -66,7 +66,8 @@ button{font-family:inherit;cursor:pointer}
 
 /* ── LAYOUT ── */
 main{flex:1;padding:24px 0 56px}
-.tool-grid{display:grid;grid-template-columns:380px 1fr;gap:20px;align-items:start}
+.tool-grid{display:grid;grid-template-columns:380px minmax(0,1fr);gap:20px;align-items:start}
+canvas{max-width:100%}
 @media(max-width:860px){.tool-grid{grid-template-columns:1fr}}
 
 /* ── CARDS ── */
@@ -160,13 +161,13 @@ main{flex:1;padding:24px 0 56px}
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
 
 <!-- NAV -->
 <div class="nav-wrap">
 <nav class="nav">
   <a href="index.html" class="logo"><img src="images/arowanalogo.png?v=20260117" alt="" onerror="this.style.display='none'">Arowana Profits</a>
-  <div class="nav-links" id="navLinks">
+  <div data-nav-legacy class="nav-links" id="navLinks">
     <a href="arowana-trader.html" class="agent">&#9889; Arowana Trader</a>
     <a href="portfolio-advisor.html" class="agent">&#127974; Portfolio Advisor</a>
     <div class="nav-div"></div>
@@ -176,8 +177,8 @@ main{flex:1;padding:24px 0 56px}
     <a href="features.html">&#128296; Features</a>
     <a href="pricing.html">&#128179; Plans</a>
   </div>
-  <button class="nav-burger" id="navBurger">&#9776;</button>
-  <div class="nav-auth">
+  <button data-nav-legacy class="nav-burger" id="navBurger">&#9776;</button>
+  <div data-nav-legacy class="nav-auth">
     <a href="login.html" id="navSignIn" class="nbtn nbtn-g">Sign In</a>
     <a href="signup.html" id="navSignUp" class="nbtn nbtn-s">&#128640; Start Free</a>
     <div class="nav-user" id="navUserDrop">
@@ -197,7 +198,7 @@ main{flex:1;padding:24px 0 56px}
   </div>
 </nav>
 </div>
-<div class="mob-menu" id="mobMenu" data-open="false">
+<div data-nav-legacy class="mob-menu" id="mobMenu" data-open="false">
   <div class="mob-panel">
     <a class="mob-link" href="arowana-trader.html">&#9889; Arowana Trader</a>
     <a class="mob-link" href="portfolio-advisor.html">&#127974; Portfolio Advisor</a>
@@ -346,7 +347,7 @@ main{flex:1;padding:24px 0 56px}
   <div>
 
     <!-- Pie chart + projection side by side on wide -->
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;margin-bottom:16px">
       <div class="card" style="margin-bottom:0">
         <div class="card-title" style="margin-bottom:12px">&#129395; Allocation</div>
         <canvas id="pieChart" style="max-height:200px"></canvas>
@@ -577,5 +578,9 @@ document.addEventListener('DOMContentLoaded',()=>{
 })();
 </script>
 
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

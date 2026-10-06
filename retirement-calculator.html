@@ -92,7 +92,7 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <!-- Header -->
   <header class="header">
     <div class="container">
@@ -101,16 +101,16 @@
           <img src="images/arowanalogo.png" class="logo-img" alt="Arowana Profits logo"/>
           <a href="index.html" style="color:#fff;text-decoration:none">Arowana Profits</a>
         </div>
-        <nav class="nav" id="nav">
+        <nav data-nav-legacy class="nav" id="nav">
           <a href="index.html">Home</a>
           <a href="short-term-dashboard.html">Short-Term</a>
           <a href="long-term-dashboard.html" aria-current="page">Long-Term</a>
           <a href="learn-investing.html">Learn</a>
         </nav>
-        <div class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
+        <div data-nav-legacy class="hamburger" id="hamburger" aria-label="Open menu" aria-expanded="false"><i class="fas fa-bars"></i></div>
       </div>
     </div>
-    <div class="mobile-menu" id="mobileMenu" aria-hidden="true">
+    <div data-nav-legacy class="mobile-menu" id="mobileMenu" aria-hidden="true">
       <div class="grid">
         <a href="index.html"><i class="fas fa-home"></i> Home</a>
         <a href="short-term-dashboard.html"><i class="fas fa-bolt"></i> Short-Term</a>
@@ -523,5 +523,9 @@
     // Auto-run once for preview
     run();
   </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

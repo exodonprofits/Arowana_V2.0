@@ -335,11 +335,43 @@
       el('span', { text: 'Sign Out' })
     ]);
     // Parity with js/nav-rail.js: sign-out is page-owned (auth is ATD-007
-    // scope). Where the page defines no signOut(), this button does nothing,
-    // exactly as the old rail's did.
-    out.addEventListener('click', function () { callIfDefined('signOut'); });
+    // scope). Where the page defines no signOut(), the nav signs out itself
+    // (fallbackSignOut) so the button works on every page.
+    out.addEventListener('click', function () { if (!callIfDefined('signOut')) fallbackSignOut(); });
     items.push(out);
     return items;
+  }
+
+  // Sign-out for pages that define no signOut() of their own: end the
+  // session on the page's shared Supabase client when it has one, then drop
+  // the stored session and user caches on this browser and go to sign-in.
+  function fallbackSignOut() {
+    if (!window.confirm('Sign out of Arowana Profits?')) return;
+    var client = window.supabaseClient || window.sbClient;
+    var done = false;
+    function finish() {
+      if (done) return;
+      done = true;
+      try {
+        var drop = [];
+        for (var i = 0; i < window.localStorage.length; i++) {
+          var k = window.localStorage.key(i);
+          if (k && (/^sb-.+-auth-token$/.test(k) || k === 'gs_auth_user_v1' || k === 'ap_plan_v1' ||
+              k === 'ap_user_api_keys' || k.indexOf('ap_cache_') === 0)) drop.push(k);
+        }
+        drop.forEach(function (k) { window.localStorage.removeItem(k); });
+        window.sessionStorage.removeItem('gs_auth_user_v1');
+      } catch (_) { /* storage blocked */ }
+      window.location.replace('login.html');
+    }
+    try {
+      if (client && client.auth && typeof client.auth.signOut === 'function') {
+        Promise.resolve(client.auth.signOut()).then(finish, finish);
+        setTimeout(finish, 3000);   // never strand the user on a slow network
+        return;
+      }
+    } catch (_) { /* fall through */ }
+    finish();
   }
 
   function accountSection() {
@@ -698,6 +730,10 @@
           'background:var(--card,#fff);border-top:1px solid var(--border,#e2e8f0);' +
           'padding:4px 4px calc(4px + env(safe-area-inset-bottom));box-shadow:0 -2px 12px rgba(0,0,0,.06)}' +
         'body.anv-has-mobile-bar{padding-bottom:calc(60px + env(safe-area-inset-bottom))}' +
+        // iPhone Safari zooms the page into any form field under 16px and
+        // leaves it zoomed; 16px on phones keeps the page still on focus.
+        'body.anv-v2 input:not([type=checkbox]):not([type=radio]):not([type=range]):not([type=button]):not([type=submit]),' +
+          'body.anv-v2 select,body.anv-v2 textarea{font-size:16px!important}' +
         // The More sheet replaces page hamburgers (D9). #sidebarTrigger is the
         // common id; pages with another trigger mark it data-nav-drawer-trigger.
         'body.anv-v2 #sidebarTrigger,body.anv-v2 [data-nav-drawer-trigger]{display:none}' +
@@ -782,6 +818,11 @@
       return;
     }
     if (document.body.classList.contains('anv-v2')) return;   // idempotent
+    // data-nav-shell="member": a page that is also open to visitors (a public
+    // calculator) shows the app navigation only to signed-in members; anyone
+    // else keeps the page's own site header.
+    if (document.body.getAttribute('data-nav-shell') === 'member' &&
+        !(cachedUser() && (cachedUser().id || cachedUser().email))) return;
     document.body.classList.add('anv-v2');
     injectStyles();
 

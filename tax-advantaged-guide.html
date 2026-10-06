@@ -102,7 +102,7 @@
   <meta name="apple-mobile-web-app-title" content="Arowana">
   <link rel="apple-touch-icon" href="images/app-icon-180.png">
 </head>
-<body>
+<body data-nav-shell="member">
   <div class="wrap">
     <header>
       <div class="title" role="group" aria-label="Page Title">
@@ -449,5 +449,9 @@ $('reset').addEventListener('click', ()=>{ document.querySelectorAll('input,sele
 // Init
 setStatus('Ready');
 </script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
 </body>
 </html>

@@ -13,14 +13,15 @@
  * <script src="./js/nav-rail.js"></script> tag.
  *
  * Load it as a plain script at the end of <body>, where nav-rail.js was.
- * Pages without a sidebar mark <body data-nav-shell>; js/arowana-nav.js then
+ * Pages without a sidebar mark <body data-nav-shell> (or data-nav-shell="member"
+ * to show it to signed-in members only); js/arowana-nav.js then
  * builds the rail itself, and opting out loads nothing on them (ATD-009).
  */
 (function () {
   'use strict';
 
   var USE_NEW_NAV_BY_DEFAULT = true;
-  var VERSION = '20261003g';
+  var VERSION = '20261006a';
 
   var pref = null;
   try { pref = window.localStorage.getItem('ap_nav_v2'); } catch (_) { /* storage blocked */ }

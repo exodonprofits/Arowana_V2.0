@@ -36,7 +36,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-03.3",
+    "version": "2026-10-06.1",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -166,7 +166,23 @@
       { "path": "discipline-scorecard.html", "entry": "journal" },
       { "path": "r-multiple.html", "entry": "journal" },
       { "path": "trading-journal-analysis.html", "entry": "journal" },
-      { "path": "trade-plan-builder.html", "entry": "command" }
+      { "path": "trade-plan-builder.html", "entry": "command" },
+      { "path": "retirement-planner.html", "entry": "desk-longterm" },
+      { "path": "retirement-calculator.html", "entry": "desk-longterm" },
+      { "path": "withdrawal-planner.html", "entry": "desk-longterm" },
+      { "path": "tax-advantaged-guide.html", "entry": "desk-longterm" },
+      { "path": "asset-allocation-builder.html", "entry": "desk-longterm" },
+      { "path": "etf-core-screener.html", "entry": "desk-longterm" },
+      { "path": "fee-analyzer.html", "entry": "desk-longterm" },
+      { "path": "ips-builder.html", "entry": "desk-longterm" },
+      { "path": "dca-planner.html", "entry": "desk-longterm" },
+      { "path": "factor-tilt-planner.html", "entry": "desk-longterm" },
+      { "path": "pick-my-mix.html", "entry": "desk-longterm" },
+      { "path": "risk-quiz.html", "entry": "desk-longterm" },
+      { "path": "buy-a-home.html", "entry": "desk-longterm" },
+      { "path": "college-savings.html", "entry": "desk-longterm" },
+      { "path": "education-529-planner.html", "entry": "desk-longterm" },
+      { "path": "real-estate-analyzer.html", "entry": "desk-longterm" }
     ],
     "brand": { "signedIn": "trading-command.html", "signedOut": "index.html" },
     "support": { "path": "support.html" },

@@ -144,7 +144,7 @@ class NavRegistryTests(unittest.TestCase):
                          "trade-plan-builder.html", "wheel-strategy.html", "ai-morning-brief.html",
                          "trade-journal-pro.html"):
             self.assertIn(required, migrated)
-        self.assertEqual(len(migrated), 37, migrated)
+        self.assertEqual(len(migrated), 56, migrated)
         # arowana-trader.html's sidebar is the coach panel: the nav renders only
         # the mobile bar and More sheet there, by design.
         no_rail_mount = {"arowana-trader.html"}
@@ -152,6 +152,15 @@ class NavRegistryTests(unittest.TestCase):
         # to build one (<body data-nav-shell>) instead of adding a #railMount.
         shell_pages = {"swing-trader.html", "long-term-dashboard.html", "my-rules.html",
                        "data-hygiene-audit.html"}
+        # ATD-109: account pages and the Long-Term tools show the shell to
+        # signed-in members only (data-nav-shell="member").
+        member_pages = {"account.html", "billing.html", "broker-connections.html", "retirement-planner.html",
+                        "retirement-calculator.html", "withdrawal-planner.html", "tax-advantaged-guide.html",
+                        "asset-allocation-builder.html", "etf-core-screener.html", "fee-analyzer.html",
+                        "ips-builder.html", "dca-planner.html", "factor-tilt-planner.html", "pick-my-mix.html",
+                        "risk-quiz.html", "buy-a-home.html", "college-savings.html", "education-529-planner.html",
+                        "real-estate-analyzer.html"}
+        shell_pages |= member_pages
         direct = re.compile(r'<script[^>]+src="[^"]*(nav-rail|arowana-nav[a-z-]*)\.js')
         for name in migrated:
             html = (ROOT / name).read_text(encoding="utf-8", errors="replace")
@@ -159,6 +168,8 @@ class NavRegistryTests(unittest.TestCase):
             self.assertIsNone(direct.search(html), "%s loads a nav script directly" % name)
             if name in shell_pages:
                 self.assertRegex(html, r"<body[^>]*\bdata-nav-shell\b", name)
+                if name in member_pages:
+                    self.assertRegex(html, r'<body[^>]*\bdata-nav-shell="member"', name)
                 self.assertNotIn('id="railMount"', html, name)
             elif name not in no_rail_mount:
                 self.assertIn('id="railMount"', html, name)
@@ -172,6 +183,8 @@ class NavRegistryTests(unittest.TestCase):
                 registered.add(e["route"]["path"])
             for rule in e.get("activeWhen", []):
                 registered.add(rule["path"])
+        # Utilities (account menu) are menu items too.
+        registered |= {u["route"]["path"] for u in self.reg["utilities"]}
         migrated = {p.name for p in ROOT.glob("*.html")
                     if 'src="./js/nav-loader.js' in p.read_text(encoding="utf-8", errors="replace")}
         homes = self.reg["homes"]

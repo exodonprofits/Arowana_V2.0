@@ -374,3 +374,27 @@ Runtime credential containment took priority after generated secrets were found 
 **Home-screen app, branch `claude/ATD-109-home-screen-app`:** a website cannot hide the browser's address bar, but added to the home screen it can open full screen like an app. Added `manifest.json` (standalone, opens Trading Command, relative paths so `/staging/` works), app icons (`images/app-icon-180/192/512.png` and a maskable 512, the logo on the header navy), and on every page the manifest link, theme colour and iOS tags (`apple-mobile-web-app-capable`, title "Arowana", touch icon). The deploy allowlist now ships `manifest.json`. A home-screen app keeps its own storage on iPhone, so users sign in once inside it. Checks: `scripts/browser/home_screen_app_check.mjs` (12: Chromium reports it installable from index, pricing and login), `scripts/test_home_screen_app.py`.
 
 **Sign-in returns inside /staging/, branch `claude/ATD-109-login-next-subfolder`:** owner hit a 404 after signing in on staging. Trading Command bounces to `login.html?next=/staging/trading-command.html`; `login.html` and `signup.html` cleaned `next` by stripping the leading "/", leaving `staging/trading-command.html`, which the browser resolved from `/staging/` to `/staging/staging/trading-command.html`. At the site root the same strip happens to work, so it only broke in a subfolder. `next` is now resolved against the page and returned relative to the page's folder; the Google sign-in, password-reset and email-confirmation return addresses use the page's address instead of the bare domain. Root behaviour is unchanged. Check: `scripts/browser/subfolder_login_check.mjs` (12, serves the repo under `/staging/`; 5 fail on `main`, reproducing `/staging/staging/…`).
+
+**One navigation on every signed-in page, branch `claude/ATD-109-layout-consistency`:** owner asked for the same layout on core and sub-pages. A signed-in audit of all 85 live pages at 375px and 1280px found:
+- 19 signed-in pages had no app navigation, so the bottom bar disappeared when you opened them: Account, Billing, Broker Connections, Retirement Planner and 15 Long-Term tools.
+- Sign Out did nothing on 21 app pages (Tools, Trade Journal, Long-Term, My Rules and others), because the shared menu only called a page's own `signOut()`.
+- iPhone zoomed into form fields on over 40 pages (fields under 16px).
+- Four Long-Term tools loaded the logo from `../shared/images` (broken) and linked to `../*.html`, which on `/staging/` leaves for the old site. `risk-comfort` and `volatility-guardrails` each had one `../` link.
+
+What changed:
+- Those 19 pages load `js/nav-loader.js` with `<body data-nav-shell="member">`. This is a new shell mode: the shared rail and bottom bar show to signed-in members, and visitors to the public calculators keep the page's own header. Old site links are marked `data-nav-legacy`.
+- Registry: Long-Term tools have `desk-longterm` as their home.
+- `js/arowana-nav.js` signs out by itself where a page has no `signOut()`. It confirms first, ends the session on the page's shared client if there is one, clears the stored session and caches, then goes to `login.html`.
+- `js/arowana-nav.js` sets form fields to 16px on phones.
+- `../` paths are fixed.
+- Asset Allocation Builder's grid uses `minmax(0,1fr)`, so it fits beside the rail.
+
+Checks:
+- `scripts/browser/app_shell_check.mjs` (90).
+- `scripts/test_nav_registry.py` (14).
+- Full before/after audit: no new sideways scroll or page errors on any page.
+
+Not changed:
+- Fonts still differ by page family (Inter, Plus Jakarta Sans, Manrope, Segoe UI on the Long-Term tools).
+- Trading Command's floating AI Coach button still covers content on phones.
+- `whale-tracker.html` and `tradingcommand.html` (owner decisions).
