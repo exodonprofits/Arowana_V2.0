@@ -69,8 +69,11 @@ const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch
   // ATD-109 launch menu: planned and hidden desks are not rendered.
   ok('B launch desks: Wheel, Options and Long-Term', deskLabels.map(s=>s.split('\n')[0].trim()).join(',') === 'Wheel,Options,Long-Term', deskLabels.join(','));
   ok('B planned and hidden entries are not rendered, and no Legacy/Planned badges', await p.evaluate(() =>
-    ['desk-growth','desk-swing','command-brief','command-whatchanged','command-queue','research-technical','research-scanners','research-backtesting','portfolio-accounts','journal-decisions']
+    ['desk-growth','desk-swing','command-brief','command-whatchanged','command-queue','research-technical','research-scanners','research-backtesting','portfolio-accounts']
       .every(id => !document.querySelector('[data-nav-id="' + id + '"]')) && !document.querySelector('#railMount .anv-badge, #anvMoreSheet .anv-badge')));
+  ok('B Thesis Builder and Decision history are in the menu', await p.evaluate(() =>
+    document.querySelector('#railMount a[data-nav-id="research-thesis"]')?.getAttribute('href') === 'thesis-builder.html' &&
+    document.querySelector('#railMount a[data-nav-id="journal-decisions"]')?.getAttribute('href') === 'thesis-builder.html?view=history'));
   ok('B no hrefs outside registry-safe pattern', await p.evaluate(() => [...document.querySelectorAll('#railMount a[href], .anv-mobile-bar a[href], #anvMoreSheet a[href]')].every(a => /^[a-z0-9][a-z0-9_\-]*\.html(\?[a-z0-9_\-=&]+)?$/i.test(a.getAttribute('href')))));
   // collapse
   await p.click('#railCollapseBtn');

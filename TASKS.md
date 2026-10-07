@@ -539,3 +539,30 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
 - **Checks:**
   - New: `scripts/browser/dividend_tracker_check.mjs` (24). Its phone check also fails on clipped elements, not just page scroll.
   - Updated: `launch_menu_check.mjs` (63) and `nav_v2_check.mjs` (487).
+
+**Thesis Builder and Decision history (owner-approved, next after PR C), branch `claude/ATD-109-thesis-builder`:** `thesis-builder.html` is a research workflow for long-term buyers, built on the rule "AI analyzes, you check, you decide".
+
+- **Steps:**
+  1. **The numbers.** A company's reported figures through arowana-research: `/quote` (free), plus `/stock/profile2`, `/stock/metric` and `/stock/recommendation`, which use up to 3 lookups. Figures are grouped into growth, profitability, valuation, balance sheet, dividend, price and risk, and analysts.
+  2. **The member's own note** (optional, 200 characters).
+  3. **Bear case first, then base and bull** (Pro). Each scenario says what would have to happen. It's one arowana-explain call (new kind `thesis`, structured fields) under the number guard: no number of its own, no fair value or price target, no recommendation.
+  4. **The member's decision:** buy or add / wait / pass, why, what would change their mind, and a review date (default 90 days). It's saved in this browser (`ap_thesis_log_v1`) with a snapshot of the figures and the scenarios.
+- **Decision history** (also Journal → Decision history, `?view=history`):
+  - "Review due" flags.
+  - **What changed** reloads price and metrics and sets them beside the saved snapshot, with arrows (lower P/E and debt shown as good). It uses no AI.
+  - Saved scenarios reopen.
+  - Export and import as JSON, plus delete.
+- **Data plan:** price targets are not loaded, on purpose. They cost a lookup and pull toward price prediction.
+- **Menu and links:**
+  - Registry: Research → Thesis Builder, and the planned Journal → Decision history is now live. Registry `2026-10-07.4`, nav loader `20261007e`.
+  - Links from Ticker Research ("Build a thesis", carrying the ticker), the Long-Term desk and the Tool Directory.
+- **`arowana-explain`:**
+  - Adds the `thesis` kind. `trade-case` and `thesis` now share one structured-output path; text kinds are unchanged.
+  - `supabase/baselines/ATD108_functions.json` records the new repository checksum, marked pending deployment.
+  - **Needs a deploy of `arowana-explain`.** Until then the page says the scenarios are not switched on, and everything else works.
+- **Legal pages:** Privacy and Disclosures name the Thesis Builder, and Privacy says the member's note is sent to Anthropic. Disclosures' "figures come from your market-data key" now says "our market-data provider".
+- **Not done (owner decision):** decisions sync across devices only with a new table (e.g. `ap_theses`, user-owned with RLS). This change adds no schema.
+- **Checks:**
+  - `tests/explain-thesis.test.js` (8): runs the function with the SDK and Supabase faked. It covers the fields, the schema order, the guard retry and drop, the missing-fields retry, the Free refusal, and that trade-case and text kinds are unchanged.
+  - `scripts/browser/thesis_builder_check.mjs` (32).
+  - Updated: `nav_v2_check.mjs` (488), `launch_menu_check.mjs` (65), `long_term_desk_check.mjs` (32), `test_nav_registry.py`, `test_legal_pages.py`.

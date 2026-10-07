@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <title>Thesis Builder — Arowana Profits</title>
+  <meta name="description" content="Load a company's reported numbers, read the bear case first, then write down your own decision and what would change your mind."/>
+  <script src="./js/market-data.js?v=20261007a"></script>
+  <meta name="theme-color" content="#071a2f">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black">
+  <meta name="apple-mobile-web-app-title" content="Arowana">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="images/app-icon-180.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --brand:#174e71; --brand-2:#1a3c5e; --ink:#0f172a; --muted:#5b6474; --bg:#f5f7fa; --card:#fff; --border:#e3e8ef;
+      --bear:#b42318; --bear-bg:#fef3f2; --base:#475467; --base-bg:#f2f4f7; --bull:#067647; --bull-bg:#ecfdf3;
+      --ring:rgba(23,78,113,.25);
+    }
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0}
+    body{font-family:'Plus Jakarta Sans','Segoe UI',system-ui,-apple-system,Arial,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;line-height:1.5}
+    a{color:var(--brand)}
+    :focus-visible{outline:none;box-shadow:0 0 0 4px var(--ring);border-radius:10px}
+
+    .topbar{background:var(--brand-2);color:#fff}
+    .topbar .in{max-width:1080px;margin:0 auto;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .topbar .brand{display:flex;align-items:center;gap:10px;color:#fff;text-decoration:none;font-weight:800;font-size:18px}
+    .topbar .brand img{width:36px;height:36px;border-radius:6px}
+    .topbar nav{display:flex;gap:6px}
+    .topbar nav a{color:#eaf1f9;text-decoration:none;padding:7px 10px;border-radius:9px;font-weight:600;font-size:14px}
+
+    main{max-width:1080px;margin:0 auto;padding:22px 16px 110px}
+    h1{margin:0;font-size:clamp(24px,4.5vw,32px);letter-spacing:-.01em}
+    .lead{margin:6px 0 0;color:var(--muted);max-width:760px}
+    .rule{display:inline-block;margin-top:10px;font-size:13px;font-weight:700;color:var(--brand);background:#e8f1f7;border-radius:999px;padding:4px 12px}
+
+    .card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;margin-top:18px;min-width:0}
+    .card h2{margin:0 0 4px;font-size:18px;display:flex;align-items:center;gap:8px}
+    .card .sub{margin:0 0 12px;color:var(--muted);font-size:14px}
+    .step-n{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;border-radius:50%;background:var(--brand);color:#fff;font-size:13px;font-weight:800;flex:0 0 auto}
+
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    input[type=text],input[type=date],textarea{font:inherit;font-size:16px;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);min-width:0}
+    #symbol{width:150px;text-transform:uppercase;font-weight:700}
+    textarea{width:100%;min-height:76px;resize:vertical}
+    button{font:inherit;font-weight:700;font-size:15px;border-radius:10px;padding:10px 16px;border:1px solid var(--border);background:#fff;color:var(--ink);cursor:pointer;min-height:44px}
+    button.primary{background:var(--brand);border-color:var(--brand);color:#fff}
+    button:disabled{opacity:.55;cursor:default}
+    .status{font-size:14px;color:var(--muted);margin-top:10px;min-height:1.2em}
+    .status.err{color:var(--bear)}
+
+    .co{font-weight:800;font-size:17px;margin:4px 0 10px}
+    .facts{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+    .fgroup{border:1px solid var(--border);border-radius:12px;padding:10px 12px;background:#fbfcfe;min-width:0}
+    .fgroup h3{margin:0 0 6px;font-size:13px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+    .fgroup dl{margin:0;display:grid;grid-template-columns:1fr auto;gap:4px 10px;font-size:14px}
+    .fgroup dt{color:var(--ink)}
+    .fgroup dd{margin:0;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+    .src{font-size:12.5px;color:var(--muted);margin-top:10px}
+
+    .scen{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+    .sc{border-radius:12px;padding:12px 14px;border:1px solid var(--border)}
+    .sc h3{margin:0 0 6px;font-size:15px}
+    .sc p{margin:0 0 8px;font-size:14.5px}
+    .sc .if{font-size:13.5px;color:var(--muted)}
+    .sc .if b{color:var(--ink)}
+    .sc.bear{background:var(--bear-bg);border-color:#fecdca}.sc.bear h3{color:var(--bear)}
+    .sc.base{background:var(--base-bg)}.sc.base h3{color:var(--base)}
+    .sc.bull{background:var(--bull-bg);border-color:#abefc6}.sc.bull h3{color:var(--bull)}
+    .note{font-size:13px;color:var(--muted);margin-top:10px}
+    .upsell{background:#f6f9fb;border:1px dashed #b9cfe0;border-radius:12px;padding:12px 14px;font-size:14.5px}
+
+    .choices{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+    .choice{display:flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:10px;padding:10px 14px;min-height:44px;cursor:pointer;font-weight:700}
+    .choice input{width:18px;height:18px}
+    label.f{display:block;font-weight:700;font-size:14px;margin:10px 0 4px}
+
+    .hist{display:flex;flex-direction:column;gap:10px}
+    .entry{border:1px solid var(--border);border-radius:12px;padding:12px 14px;min-width:0}
+    .entry .top{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:baseline}
+    .entry .t{font-weight:800}
+    .tag{font-size:12px;font-weight:800;border-radius:999px;padding:2px 9px;margin-left:6px}
+    .tag.buy{background:var(--bull-bg);color:var(--bull)}.tag.wait{background:var(--base-bg);color:var(--base)}.tag.pass{background:var(--bear-bg);color:var(--bear)}
+    .tag.due{background:#fff7ed;color:#92400e}
+    .entry .why{font-size:14px;margin:6px 0 0;overflow-wrap:anywhere}
+    .entry .acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .entry .acts button{font-size:14px;padding:8px 12px}
+    .detail{margin-top:10px;overflow-x:auto}
+    table.cmp{border-collapse:collapse;width:100%;font-size:14px;min-width:420px}
+    table.cmp th,table.cmp td{padding:6px 8px;border-bottom:1px solid var(--border);text-align:right}
+    table.cmp th:first-child,table.cmp td:first-child{text-align:left}
+    .up{color:var(--bull)}.down{color:var(--bear)}
+    .empty{color:var(--muted);font-size:14px}
+
+    @media (max-width:760px){ .scen{grid-template-columns:minmax(0,1fr)} }
+    @media (max-width:640px){ .topbar nav{display:none} #symbol{flex:1 1 120px} }
+  </style>
+</head>
+<body data-nav-shell="member">
+
+<header data-nav-topbar class="topbar">
+  <div class="in">
+    <a class="brand" href="index.html"><img src="images/arowanalogo.png?v=20260117" alt=""/><span>Arowana Profits</span></a>
+    <nav data-nav-legacy aria-label="Site">
+      <a href="index.html">Home</a>
+      <a href="long-term-dashboard.html">Long-Term</a>
+      <a href="login.html">Sign in</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <h1>🧭 Thesis Builder</h1>
+  <p class="lead">Before you buy a stock, write down why. Load the company's reported numbers, read the strongest case against it first, then make your own call and say what would change your mind. Come back later to see what changed.</p>
+  <span class="rule">AI analyzes · you check · you decide</span>
+
+  <section class="card" aria-labelledby="s1">
+    <h2 id="s1"><span class="step-n">1</span> The numbers</h2>
+    <p class="sub">Reported figures for one company. Uses up to 3 of your daily ticker lookups.</p>
+    <form class="row" id="symForm" autocomplete="off">
+      <input type="text" id="symbol" maxlength="10" placeholder="Ticker" aria-label="Ticker" inputmode="latin" autocapitalize="characters"/>
+      <button type="submit" class="primary" id="loadBtn">Load the numbers</button>
+    </form>
+    <div class="status" id="loadStatus" role="status" aria-live="polite"></div>
+    <div id="factsBox" hidden>
+      <div class="co" id="coName"></div>
+      <div class="facts" id="facts"></div>
+      <p class="src">From our market-data provider's latest reported figures; the last 12 months unless the label says otherwise. Check anything important in the company's own filings.</p>
+    </div>
+  </section>
+
+  <section class="card" aria-labelledby="s2" id="notesCard" hidden>
+    <h2 id="s2"><span class="step-n">2</span> What you know that the numbers don't</h2>
+    <p class="sub">Optional. A new product, a lawsuit, a management change, why you're looking at it now. The scenarios take it into account.</p>
+    <textarea id="myNote" maxlength="200" placeholder="e.g. New CEO from March; biggest customer renewing next year"></textarea>
+  </section>
+
+  <section class="card" aria-labelledby="s3" id="scenCard" hidden>
+    <h2 id="s3"><span class="step-n">3</span> Bear case first, then base and bull</h2>
+    <p class="sub">The strongest case against owning it, a middle case, and the case for, each with what would have to happen. No price targets and no recommendation.</p>
+    <div id="scenGate"></div>
+    <div id="scenOut"></div>
+  </section>
+
+  <section class="card" aria-labelledby="s4" id="decCard" hidden>
+    <h2 id="s4"><span class="step-n">4</span> Your decision</h2>
+    <p class="sub">Yours, not the AI's. Saved with today's numbers so you can check later what changed.</p>
+    <div class="choices" role="radiogroup" aria-label="Decision">
+      <label class="choice"><input type="radio" name="dec" value="buy"/> Buy or add</label>
+      <label class="choice"><input type="radio" name="dec" value="wait"/> Wait</label>
+      <label class="choice"><input type="radio" name="dec" value="pass"/> Pass</label>
+    </div>
+    <label class="f" for="why">Why, in a sentence or two</label>
+    <textarea id="why" maxlength="500"></textarea>
+    <label class="f" for="change">What would change your mind</label>
+    <textarea id="change" maxlength="500" placeholder="e.g. Two quarters of falling revenue, or debt to equity above 1"></textarea>
+    <label class="f" for="review">Look at it again on</label>
+    <input type="date" id="review"/>
+    <div class="row" style="margin-top:12px">
+      <button type="button" class="primary" id="saveBtn">Save to my decision history</button>
+    </div>
+    <div class="status" id="saveStatus" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="card" aria-labelledby="hTitle" id="history">
+    <h2 id="hTitle">🗃️ Decision history</h2>
+    <p class="sub">Your saved theses, newest first. <b>What changed</b> reloads the numbers and sets them beside the ones you decided on. Saved in this browser; use Export to keep a copy.</p>
+    <div class="hist" id="hist"></div>
+    <div class="row" style="margin-top:12px">
+      <button type="button" id="exportBtn">Export</button>
+      <button type="button" id="importBtn">Import</button>
+      <input type="file" id="importFile" accept="application/json,.json" hidden/>
+    </div>
+    <div class="status" id="histStatus" role="status" aria-live="polite"></div>
+  </section>
+</main>
+
+<script src="./js/app-config.js?v=20260918c"></script>
+<script src="./js/supabase_min.js?v=20260918c"></script>
+<script src="./js/sb.js?v=20261004a"></script>
+<script src="./js/plan.js?v=20261004e"></script>
+<script src="./js/explain.js?v=20261004d"></script>
+<script>
+/* Thesis Builder (ATD-109).
+   1. Numbers: /stock/profile2, /stock/metric and /stock/recommendation (each
+      one ticker lookup) plus /quote (free), through arowana-research
+      (js/market-data.js answers finnhub.io URLs; no key in the browser).
+   2. The member's own note.
+   3. arowana-explain kind 'thesis': bear, base and bull cases with the
+      conditions for each, written only from these facts (number guard).
+   4. The member's decision, saved in this browser (ap_thesis_log_v1) with a
+      snapshot of the raw figures, so "What changed" can compare later
+      without AI. */
+(function () {
+  'use strict';
+  var LOG_KEY = 'ap_thesis_log_v1';
+  var API = 'https://finnhub.io/api/v1';
+  var $ = function (id) { return document.getElementById(id); };
+  function el(tag, cls, text) { var n = document.createElement(tag); if (cls) n.className = cls; if (text != null) n.textContent = text; return n; }
+  function num(v) { if (v === null || v === undefined || v === '') return null; var n = Number(v); return isFinite(n) ? n : null; }
+  function setStatus(id, msg, err) { var n = $(id); n.textContent = msg || ''; n.className = 'status' + (err ? ' err' : ''); }
+
+  /* Figures, grouped. Each: label, metric keys (first present wins), format. */
+  var pct = function (v) { return v.toFixed(1) + '%'; };
+  var x1 = function (v) { return v.toFixed(1); };
+  var x2 = function (v) { return v.toFixed(2); };
+  var money = function (v) { return '$' + v.toFixed(2); };
+  var GROUPS = [
+    { h: 'Growth', rows: [
+      ['Revenue growth, last 12 months vs year before', ['revenueGrowthTTMYoy'], pct],
+      ['Revenue growth, 3-year average', ['revenueGrowth3Y'], pct],
+      ['Revenue growth, 5-year average', ['revenueGrowth5Y'], pct],
+      ['Earnings per share growth, last 12 months vs year before', ['epsGrowthTTMYoy'], pct],
+      ['Earnings per share growth, 5-year average', ['epsGrowth5Y'], pct] ] },
+    { h: 'Profitability', rows: [
+      ['Gross margin', ['grossMarginTTM', 'grossMarginAnnual'], pct],
+      ['Operating margin', ['operatingMarginTTM', 'operatingMarginAnnual'], pct],
+      ['Net margin', ['netProfitMarginTTM', 'netProfitMarginAnnual'], pct],
+      ['Return on equity', ['roeTTM', 'roeAnnual'], pct],
+      ['Return on equity, 5-year average', ['roe5Y'], pct],
+      ['Earnings per share', ['epsTTM', 'epsAnnual'], money] ] },
+    { h: 'Valuation', rows: [
+      ['Price to earnings', ['peTTM', 'peBasicExclExtraTTM', 'peAnnual'], x1],
+      ['Price to sales', ['psTTM', 'priceToSalesRatioTTM', 'psAnnual'], x1],
+      ['Price to book', ['pbQuarterly', 'pbAnnual'], x1],
+      ['Enterprise value to EBITDA', ['evEbitdaTTM', 'currentEv/ebitdaTTM'], x1] ] },
+    { h: 'Balance sheet', rows: [
+      ['Debt to equity', ['totalDebt/totalEquityQuarterly', 'totalDebt/totalEquityAnnual'], x2],
+      ['Current ratio', ['currentRatioQuarterly', 'currentRatioAnnual'], x2],
+      ['Interest coverage', ['interestCoverageTTM', 'interestCoverageAnnual'], x1] ] },
+    { h: 'Dividend', rows: [
+      ['Dividend yield', ['currentDividendYieldTTM', 'dividendYieldIndicatedAnnual'], pct],
+      ['Payout ratio', ['payoutRatioTTM', 'payoutRatioAnnual'], pct],
+      ['Dividend growth, 5-year average', ['dividendGrowthRate5Y'], pct] ] },
+    { h: 'Price and risk', rows: [
+      ['52-week high', ['52WeekHigh'], money],
+      ['52-week low', ['52WeekLow'], money],
+      ['Price change over 52 weeks', ['52WeekPriceReturnDaily'], pct],
+      ['Beta (swing vs the market)', ['beta'], x2] ] }
+  ];
+  // Compared by "What changed".
+  var TRACK = [
+    ['Price', 'price', money],
+    ['Revenue growth, last 12 months', 'revenueGrowthTTMYoy', pct],
+    ['EPS growth, last 12 months', 'epsGrowthTTMYoy', pct],
+    ['Net margin', 'netProfitMarginTTM', pct],
+    ['Return on equity', 'roeTTM', pct],
+    ['Price to earnings', 'peTTM', x1],
+    ['Debt to equity', 'totalDebt/totalEquityQuarterly', x2],
+    ['Dividend yield', 'currentDividendYieldTTM', pct]
+  ];
+
+  var cur = null;   // { symbol, name, industry, price, metric: {key: value}, raw: {...}, facts: [{label,value}], rec }
+
+  function pick(m, keys) { for (var i = 0; i < keys.length; i++) { var v = num(m[keys[i]]); if (v !== null) return v; } return null; }
+
+  async function getJSON(path) {
+    var res = await fetch(API + path + (path.indexOf('?') < 0 ? '?' : '&') + 'token=arowana-server');
+    var body = await res.json().catch(function () { return {}; });
+    if (res.status === 429 || res.status === 402) { var e = new Error(body.message || 'Today’s ticker lookups are used up.'); e.limit = true; throw e; }
+    if (!res.ok) throw new Error(body.error || 'Market data is not available right now. Sign in, or try again in a minute.');
+    return body;
+  }
+
+  // Raw figures kept for "What changed" (snapshot), normalised to TRACK keys.
+  function snapshot(m, price) {
+    var s = { price: price };
+    TRACK.forEach(function (t) {
+      if (t[1] === 'price') return;
+      var keys = t[1] === 'peTTM' ? ['peTTM', 'peBasicExclExtraTTM'] : t[1] === 'totalDebt/totalEquityQuarterly' ? ['totalDebt/totalEquityQuarterly', 'totalDebt/totalEquityAnnual'] : [t[1]];
+      s[t[1]] = pick(m, keys);
+    });
+    return s;
+  }
+
+  async function loadNumbers(sym) {
+    var q = await getJSON('/quote?symbol=' + encodeURIComponent(sym));
+    var price = num(q && q.c);
+    var prof = await getJSON('/stock/profile2?symbol=' + encodeURIComponent(sym));
+    var met = await getJSON('/stock/metric?symbol=' + encodeURIComponent(sym) + '&metric=all');
+    var rec = null;
+    try { var r = await getJSON('/stock/recommendation?symbol=' + encodeURIComponent(sym)); if (Array.isArray(r) && r.length) rec = r[0]; }
+    catch (e) { rec = null; }   // ratings are optional; a refused lookup just leaves them out
+    var m = (met && met.metric) || {};
+    if (!price && !prof.name && !Object.keys(m).length) throw new Error('No data for ' + sym + '. Check the ticker.');
+    return { symbol: sym, name: prof.name || sym, industry: prof.finnhubIndustry || '', price: price, m: m, rec: rec };
+  }
+
+  function buildFacts(d) {
+    var facts = [{ label: 'Company', value: d.name + ' (' + d.symbol + ')' + (d.industry ? ', ' + d.industry : '') }];
+    if (d.price) facts.push({ label: 'Share price', value: money(d.price) });
+    var groups = GROUPS.map(function (g) {
+      var rows = [];
+      g.rows.forEach(function (r) {
+        var v = pick(d.m, r[1]);
+        if (v === null) return;
+        var shown = r[2](v);
+        rows.push([r[0], shown]);
+        facts.push({ label: r[0], value: shown });
+      });
+      return { h: g.h, rows: rows };
+    });
+    if (d.price) {
+      var hi = pick(d.m, ['52WeekHigh']);
+      if (hi) { var off = (d.price / hi - 1) * 100; var s = pct(off); groups[5].rows.push(['Price vs 52-week high', s]); facts.push({ label: 'Share price vs 52-week high', value: s }); }
+    }
+    if (d.rec) {
+      var buy = (d.rec.strongBuy || 0) + (d.rec.buy || 0), hold = d.rec.hold || 0, sell = (d.rec.sell || 0) + (d.rec.strongSell || 0);
+      var txt = buy + ' buy, ' + hold + ' hold, ' + sell + ' sell';
+      groups.push({ h: 'Analysts' + (d.rec.period ? ' (' + d.rec.period + ')' : ''), rows: [['Ratings', txt]] });
+      facts.push({ label: 'Analyst ratings' + (d.rec.period ? ' as of ' + d.rec.period : ''), value: txt });
+    }
+    return { facts: facts, groups: groups.filter(function (g) { return g.rows.length; }) };
+  }
+
+  function renderFacts(d, built) {
+    $('coName').textContent = d.name + ' (' + d.symbol + ')' + (d.industry ? ' · ' + d.industry : '') + (d.price ? ' · ' + money(d.price) : '');
+    var host = $('facts'); host.textContent = '';
+    built.groups.forEach(function (g) {
+      var box = el('div', 'fgroup'); box.appendChild(el('h3', null, g.h));
+      var dl = el('dl');
+      g.rows.forEach(function (r) { dl.appendChild(el('dt', null, r[0])); dl.appendChild(el('dd', null, r[1])); });
+      box.appendChild(dl); host.appendChild(box);
+    });
+    $('factsBox').hidden = false;
+    ['notesCard', 'scenCard', 'decCard'].forEach(function (id) { $(id).hidden = false; });
+  }
+
+  async function onLoad(ev) {
+    if (ev) ev.preventDefault();
+    var sym = String($('symbol').value || '').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g, '');
+    if (!sym) { setStatus('loadStatus', 'Enter a ticker.', true); return; }
+    $('symbol').value = sym;
+    $('loadBtn').disabled = true; setStatus('loadStatus', 'Loading ' + sym + '…');
+    try {
+      var d = await loadNumbers(sym);
+      var built = buildFacts(d);
+      cur = { symbol: d.symbol, name: d.name, industry: d.industry, price: d.price, facts: built.facts, snap: snapshot(d.m, d.price), scen: null };
+      renderFacts(d, built);
+      $('scenOut').textContent = '';
+      setStatus('loadStatus', built.facts.length > 3 ? '' : 'Only a few figures are reported for ' + sym + '; the scenarios will be thin.');
+      paintGate();
+      try { history.replaceState(null, '', '?symbol=' + encodeURIComponent(sym)); } catch (e) {}
+    } catch (e) {
+      setStatus('loadStatus', e.message, true);
+    } finally { $('loadBtn').disabled = false; }
+  }
+
+  /* Step 3 */
+  function isPro() { return !!(window.AP_PLAN && AP_PLAN.atLeast('pro')); }
+  function paintGate() {
+    var g = $('scenGate'); g.textContent = '';
+    if (!isPro()) {
+      var u = el('div', 'upsell');
+      u.appendChild(document.createTextNode('The written scenarios are part of Pro and Founding Member. The numbers above and your decision history stay free. '));
+      var a = el('a', null, 'See plans'); a.href = 'pricing.html'; u.appendChild(a);
+      g.appendChild(u); return;
+    }
+    var b = el('button', 'primary', 'Write the bear, base and bull cases'); b.type = 'button'; b.id = 'scenBtn';
+    b.addEventListener('click', writeScenarios);
+    g.appendChild(b);
+  }
+
+  function renderScenarios(t, host) {
+    host.textContent = '';
+    var grid = el('div', 'scen');
+    [['bear', '🐻 Bear case'], ['base', '⚖️ Base case'], ['bull', '🐂 Bull case']].forEach(function (s) {
+      var c = el('div', 'sc ' + s[0]);
+      c.appendChild(el('h3', null, s[1]));
+      c.appendChild(el('p', null, t[s[0]]));
+      var i = el('p', 'if'); i.appendChild(el('b', null, 'What would have to happen: ')); i.appendChild(document.createTextNode(t[s[0] + '_if']));
+      c.appendChild(i); grid.appendChild(c);
+    });
+    host.appendChild(grid);
+    host.appendChild(el('p', 'note', 'Written by AI from the numbers above (and your note). It may not add a number of its own; a reply that does is thrown away. It does not say which case is likely. The decision is yours.'));
+  }
+
+  async function writeScenarios() {
+    if (!cur) return;
+    var b = $('scenBtn'), out = $('scenOut');
+    if (!window.AP_EXPLAIN) { out.textContent = 'The write-up could not load. Reload the page and try again.'; return; }
+    var facts = cur.facts.slice();
+    var note = String($('myNote').value || '').trim();
+    if (note) facts.push({ label: "Investor's own note", value: note.slice(0, 200) });
+    b.disabled = true; b.textContent = 'Writing…';
+    out.textContent = ''; out.appendChild(el('p', 'note', 'Writing the three cases from these numbers…'));
+    try {
+      var r = await AP_EXPLAIN.request('thesis', facts);
+      if (r.thesis) { cur.scen = r.thesis; renderScenarios(r.thesis, out); }
+      else {
+        out.textContent = '';
+        out.appendChild(el('p', 'note', r.reason === 'refusal' ? 'No write-up this time. The numbers above are the full picture.'
+          : 'No write-up this time: the AI kept adding numbers that are not in the data, so nothing is shown. The numbers above are the full picture.'));
+      }
+    } catch (e) {
+      out.textContent = '';
+      var msg = e && e.message ? e.message : 'The write-up could not be written right now.';
+      if (msg === 'Nothing to explain.') msg = 'The written scenarios are not switched on yet. Everything else on this page works.';
+      out.appendChild(el('p', 'note', msg));
+    } finally { b.disabled = false; b.textContent = 'Write the bear, base and bull cases'; }
+  }
+
+  /* Step 4 + history */
+  function readLog() { try { var l = JSON.parse(localStorage.getItem(LOG_KEY) || '[]'); return Array.isArray(l) ? l : []; } catch (e) { return []; } }
+  function writeLog(l) { try { localStorage.setItem(LOG_KEY, JSON.stringify(l)); return true; } catch (e) { return false; } }
+  function today() { return new Date().toISOString().slice(0, 10); }
+  function plusDays(n) { var d = new Date(); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); }
+
+  function save() {
+    if (!cur) { setStatus('saveStatus', 'Load a ticker first.', true); return; }
+    var dec = (document.querySelector('input[name=dec]:checked') || {}).value;
+    if (!dec) { setStatus('saveStatus', 'Pick Buy or add, Wait, or Pass.', true); return; }
+    var why = String($('why').value || '').trim();
+    if (!why) { setStatus('saveStatus', 'Write a line on why. Future you will want it.', true); return; }
+    var entry = { id: Date.now().toString(36), symbol: cur.symbol, name: cur.name, date: today(), decision: dec, why: why,
+      change: String($('change').value || '').trim(), review: $('review').value || '', note: String($('myNote').value || '').trim(),
+      snap: cur.snap, scen: cur.scen || null };
+    var log = readLog(); log.unshift(entry);
+    if (!writeLog(log)) { setStatus('saveStatus', 'Could not save in this browser (storage is full or blocked).', true); return; }
+    setStatus('saveStatus', 'Saved. It’s at the top of your decision history.');
+    renderHistory();
+  }
+
+  var DEC = { buy: 'Buy or add', wait: 'Wait', pass: 'Pass' };
+  function renderHistory() {
+    var host = $('hist'); host.textContent = '';
+    var log = readLog();
+    if (!log.length) { host.appendChild(el('p', 'empty', 'Nothing saved yet. Your decisions show up here.')); return; }
+    log.forEach(function (e) {
+      var box = el('div', 'entry');
+      var top = el('div', 'top');
+      var t = el('span', 't', e.symbol);
+      t.appendChild(el('span', 'tag ' + e.decision, DEC[e.decision] || e.decision));
+      if (e.review && e.review <= today()) t.appendChild(el('span', 'tag due', 'Review due'));
+      top.appendChild(t);
+      top.appendChild(el('span', 'note', e.date + (e.snap && e.snap.price ? ' · at ' + money(e.snap.price) : '') + (e.review ? ' · review ' + e.review : '')));
+      box.appendChild(top);
+      box.appendChild(el('p', 'why', e.why));
+      if (e.change) box.appendChild(el('p', 'why', 'Would change my mind: ' + e.change));
+      var acts = el('div', 'acts'), detail = el('div', 'detail');
+      var wc = el('button', null, 'What changed'); wc.type = 'button';
+      wc.addEventListener('click', function () { whatChanged(e, detail, wc); });
+      acts.appendChild(wc);
+      if (e.scen) {
+        var sb = el('button', null, 'Scenarios'); sb.type = 'button';
+        sb.addEventListener('click', function () { if (detail.dataset.v === 's') { detail.textContent = ''; detail.dataset.v = ''; } else { renderScenarios(e.scen, detail); detail.dataset.v = 's'; } });
+        acts.appendChild(sb);
+      }
+      var del = el('button', null, 'Delete'); del.type = 'button';
+      del.addEventListener('click', function () {
+        if (!confirm('Delete the ' + e.symbol + ' thesis from ' + e.date + '?')) return;
+        writeLog(readLog().filter(function (x) { return x.id !== e.id; })); renderHistory();
+      });
+      acts.appendChild(del);
+      box.appendChild(acts); box.appendChild(detail);
+      host.appendChild(box);
+    });
+  }
+
+  async function whatChanged(e, host, btn) {
+    btn.disabled = true; host.textContent = ''; host.dataset.v = 'c';
+    host.appendChild(el('p', 'note', 'Loading today’s numbers for ' + e.symbol + '…'));
+    try {
+      var q = await getJSON('/quote?symbol=' + encodeURIComponent(e.symbol));
+      var met = await getJSON('/stock/metric?symbol=' + encodeURIComponent(e.symbol) + '&metric=all');
+      var now = snapshot((met && met.metric) || {}, num(q && q.c));
+      host.textContent = '';
+      var tbl = el('table', 'cmp'), hd = el('tr');
+      ['', 'When you decided (' + e.date + ')', 'Today', ''].forEach(function (h) { hd.appendChild(el('th', null, h)); });
+      var thead = el('thead'); thead.appendChild(hd); tbl.appendChild(thead);
+      var tb = el('tbody'), shown = 0;
+      TRACK.forEach(function (t) {
+        var a = e.snap ? num(e.snap[t[1]]) : null, b = num(now[t[1]]);
+        if (a === null && b === null) return;
+        var tr = el('tr'); tr.appendChild(el('td', null, t[0]));
+        tr.appendChild(el('td', null, a === null ? '—' : t[2](a)));
+        tr.appendChild(el('td', null, b === null ? '—' : t[2](b)));
+        var dir = (a === null || b === null) ? '' : b > a ? '↑' : b < a ? '↓' : '=';
+        var cell = el('td', dir === '↑' ? 'up' : dir === '↓' ? 'down' : '', dir);
+        // Higher is worse for valuation and debt.
+        if ((t[1] === 'peTTM' || t[1].indexOf('Debt') > -1) && dir) cell.className = dir === '↑' ? 'down' : dir === '↓' ? 'up' : '';
+        tr.appendChild(cell); tb.appendChild(tr); shown++;
+      });
+      tbl.appendChild(tb); host.appendChild(tbl);
+      if (e.change) host.appendChild(el('p', 'note', 'You said this would change your mind: ' + e.change));
+      if (!shown) host.appendChild(el('p', 'note', 'No figures to compare for ' + e.symbol + '.'));
+    } catch (err) {
+      host.textContent = ''; host.appendChild(el('p', 'note', err.message));
+    } finally { btn.disabled = false; }
+  }
+
+  function doExport() {
+    var log = readLog();
+    if (!log.length) { setStatus('histStatus', 'Nothing to export yet.'); return; }
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([JSON.stringify({ kind: 'arowana-theses', version: 1, theses: log }, null, 2)], { type: 'application/json' }));
+    a.download = 'arowana-theses-' + today() + '.json'; document.body.appendChild(a); a.click(); a.remove();
+  }
+  function doImport(ev) {
+    var f = ev.target.files && ev.target.files[0]; if (!f) return;
+    var rd = new FileReader();
+    rd.onload = function () {
+      try {
+        var data = JSON.parse(String(rd.result || '')), list = Array.isArray(data) ? data : data.theses;
+        if (!Array.isArray(list)) throw new Error('bad');
+        var have = readLog(), ids = {}; have.forEach(function (x) { ids[x.id] = 1; });
+        var added = 0;
+        list.forEach(function (x) {
+          if (!x || !x.id || ids[x.id] || !/^[A-Z0-9.\-]{1,10}$/.test(String(x.symbol || '')) || !DEC[x.decision]) return;
+          have.push({ id: String(x.id), symbol: x.symbol, name: String(x.name || x.symbol), date: String(x.date || ''), decision: x.decision,
+            why: String(x.why || ''), change: String(x.change || ''), review: String(x.review || ''), note: String(x.note || ''),
+            snap: x.snap && typeof x.snap === 'object' ? x.snap : null, scen: x.scen && typeof x.scen === 'object' ? x.scen : null });
+          added++;
+        });
+        have.sort(function (a, b) { return String(b.date).localeCompare(String(a.date)); });
+        writeLog(have); renderHistory();
+        setStatus('histStatus', 'Imported ' + added + ' thesis' + (added === 1 ? '' : 'es') + '.');
+      } catch (e) { setStatus('histStatus', 'That file is not a thesis export.', true); }
+    };
+    rd.readAsText(f); ev.target.value = '';
+  }
+
+  $('symForm').addEventListener('submit', onLoad);
+  $('saveBtn').addEventListener('click', save);
+  $('exportBtn').addEventListener('click', doExport);
+  $('importBtn').addEventListener('click', function () { $('importFile').click(); });
+  $('importFile').addEventListener('change', doImport);
+  $('review').value = plusDays(90);
+  window.addEventListener('ap:plan:ready', function () { if (cur) paintGate(); });
+  renderHistory();
+
+  var params = new URLSearchParams(location.search);
+  var qs = (params.get('symbol') || '').toUpperCase().replace(/[^A-Z0-9.\-]/g, '').slice(0, 10);
+  if (params.get('view') === 'history') { var h = $('history'); if (h && h.scrollIntoView) setTimeout(function () { h.scrollIntoView(); }, 300); }
+  else if (qs) { $('symbol').value = qs; onLoad(); }
+})();
+</script>
+
+<!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");
+     elements marked data-nav-legacy are the old site links it replaces. -->
+<script src="./js/nav-loader.js"></script>
+</body>
+</html>

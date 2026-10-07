@@ -43,7 +43,7 @@ async function open(path, { width = 1280, ls = {}, signedIn = true } = {}) {
 {
   const { ctx, p, errors, missing } = await open('long-term-dashboard.html');
   const links = await p.evaluate(() => [...document.querySelectorAll('main a[href]')].map(a => a.getAttribute('href')));
-  check('hub: 6 steps and 19 tool cards', await p.evaluate(() => document.querySelectorAll('#steps .step').length === 6 && document.querySelectorAll('#groups a.tool').length === 19));
+  check('hub: 6 steps and 20 tool cards', await p.evaluate(() => document.querySelectorAll('#steps .step').length === 6 && document.querySelectorAll('#groups a.tool').length === 20));
   const bad = [];
   for (const href of [...new Set(links)]) {
     const r = await p.request.get(BASE + '/' + href.split('?')[0]);
@@ -78,7 +78,7 @@ async function open(path, { width = 1280, ls = {}, signedIn = true } = {}) {
 }
 {
   const { ctx, p, errors } = await open('long-term-dashboard.html', { signedIn: false });
-  check('hub visitor: tools listed, no page errors', await p.evaluate(() => document.querySelectorAll('#groups a.tool').length === 19) && errors.length === 0, errors);
+  check('hub visitor: tools listed, no page errors', await p.evaluate(() => document.querySelectorAll('#groups a.tool').length === 20) && errors.length === 0, errors);
   await ctx.close();
 }
 
