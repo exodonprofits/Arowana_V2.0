@@ -21,7 +21,7 @@
   'use strict';
 
   var USE_NEW_NAV_BY_DEFAULT = true;
-  var VERSION = '20261006b';
+  var VERSION = '20261007a';
 
   var pref = null;
   try { pref = window.localStorage.getItem('ap_nav_v2'); } catch (_) { /* storage blocked */ }
