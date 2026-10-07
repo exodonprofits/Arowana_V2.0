@@ -210,6 +210,8 @@ button{font-family:inherit;cursor:pointer}
   .billing-grid{grid-template-columns:1fr}
   .usage-summary{grid-template-columns:1fr;gap:12px}
   .subscription-status{flex-direction:column;align-items:flex-start;gap:16px}
+  /* In a column, the 260px flex-basis became a 260px-tall empty block. */
+  .subscription-status .plan-summary-main{flex:0 0 auto}
   .payment-method{flex-direction:column;align-items:flex-start;gap:16px}
   .payment-actions{margin-left:0;width:100%;justify-content:center}
   .billing-table{font-size:.8rem}
@@ -298,7 +300,7 @@ button{font-family:inherit;cursor:pointer}
 
 
   <!-- NAVIGATION -->
-  <div class="nav-wrap">
+  <div data-nav-topbar class="nav-wrap">
     <nav class="nav">
       <a class="nav-brand" href="index.html" aria-label="Arowana Profits Home">
         <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" class="nav-logo" onerror="this.style.display='none'">
@@ -625,7 +627,7 @@ function openSupport() {
    PLAN
    Labels and prices mirror pricing.html and account.html. If a price
    changes on the pricing page it changes here too.
-   Plan slugs match profiles.plan: free | pro | elite | founders
+   Plan slugs match profiles.arowana_plan: free | pro | elite | founders
    ──────────────────────────────────────────────────────────────── */
 var PLANS = {
   free:     { label: 'Free',             monthly: '$0 \u2014 no card on file', annual: '$0 \u2014 no card on file', badge: 'free' },
@@ -686,8 +688,12 @@ async function loadBillingState() {
 
 function renderPlan(profile) {
   var slug = currentPlan;
-  if (profile && profile.plan && PLANS[String(profile.plan).toLowerCase()]) {
-    slug = String(profile.plan).toLowerCase();
+  // Arowana's plan lives in the arowana_* columns (written by the Stripe
+  // webhook; js/plan.js reads the same). profiles is shared with other
+  // products, so a bare "plan" column is not Arowana's.
+  var planCol = profile && profile.arowana_plan;
+  if (planCol && PLANS[String(planCol).toLowerCase()]) {
+    slug = String(planCol).toLowerCase();
     currentPlan = slug;
     try { localStorage.setItem('ap_plan_v1', slug); } catch (e) {}
   }
@@ -704,7 +710,7 @@ function renderPlan(profile) {
   if (priceEl) priceEl.textContent = (billingCycle === 'annual') ? p.annual : p.monthly;
   if (menuPlanEl) menuPlanEl.textContent = p.label + ' plan';
 
-  var status = profile && profile.plan_status ? String(profile.plan_status) : (slug === 'free' ? 'active' : null);
+  var status = profile && profile.arowana_plan_status ? String(profile.arowana_plan_status) : (slug === 'free' ? 'active' : null);
   if (badgeEl) {
     badgeEl.className = 'status-badge ' + p.badge;
     badgeEl.textContent = status ? status.replace(/_/g, ' ') : 'Active';
@@ -719,7 +725,7 @@ function renderPlan(profile) {
 
   setText('metaStatus', status ? status.replace(/_/g, ' ') : null);
   setText('metaCycle', billingCycle ? (billingCycle === 'annual' ? 'Annual' : 'Monthly') : (slug === 'free' ? 'Not billed' : null));
-  setText('metaRenews', profile ? fmtDate(profile.current_period_end || profile.renews_at) : null);
+  setText('metaRenews', profile ? fmtDate(profile.arowana_plan_renews_at) : null);
   setText('metaSince', profile ? fmtDate(profile.created_at) : null);
 
   renderUpgradeTiles(slug);
@@ -742,9 +748,11 @@ function renderUpgradeTiles(slug) {
   if (!grid) return;
   while (grid.firstChild) grid.removeChild(grid.firstChild);
 
-  ['free', 'pro', 'elite'].forEach(function (key) {
+  // The plans on sale (pricing.html). Elite was folded into Pro; accounts
+  // that still carry it are shown on the Pro tile.
+  ['free', 'pro', 'founders'].forEach(function (key) {
     var p = PLANS[key];
-    var isCurrent = (key === slug) || (slug === 'founders' && key === 'elite');
+    var isCurrent = (key === slug) || (slug === 'elite' && key === 'pro');
 
     var tile = document.createElement('div');
     tile.className = 'upgrade-tile' + (isCurrent ? ' current' : '');
@@ -761,7 +769,7 @@ function renderUpgradeTiles(slug) {
     if (isCurrent) {
       var tag = document.createElement('span');
       tag.className = 'ut-current';
-      tag.textContent = slug === 'founders' ? 'Included in Founding' : 'Current plan';
+      tag.textContent = 'Current plan';
       tile.appendChild(tag);
     } else if (key === 'free') {
       var down = document.createElement('button');
@@ -773,7 +781,8 @@ function renderUpgradeTiles(slug) {
     } else {
       var a = document.createElement('a');
       a.className = 'btn btn-brand btn-sm';
-      a.setAttribute('href', 'checkout.html?plan=' + key + '&cycle=' + (billingCycle || 'monthly'));
+      a.setAttribute('href', key === 'founders' ? 'checkout.html?plan=founders'
+        : 'checkout.html?plan=' + key + '&cycle=' + (billingCycle || 'monthly'));
       a.textContent = 'Switch to ' + p.label;
       tile.appendChild(a);
     }

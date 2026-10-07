@@ -447,3 +447,10 @@ Check: `scripts/browser/watchlist_mobile_check.mjs` (18; 10 fail on `main`).
   - 23 pages at 375 and 1280px with no switch shown;
   - the saved Guided level still applied on each page, with no page errors;
   - in Account, the saved level is preselected, choosing Full saves it, and the next page applies it.
+
+**Account-area top bar and Billing plan, branch `claude/ATD-109-account-topbar`:** the owner asked for Account's top bar to match.
+- **Top bar.** For signed-in members, the old dark header on 12 shell pages becomes the white Trading Command bar on phones and is hidden on desktop, where the rail already carries the brand. The 12 pages are Account, Billing, Broker Connections, Long-Term Dashboard, My Rules, Retirement Planner and six Long-Term tools. Pages mark their header `data-nav-topbar`, and `js/arowana-nav.js` styles it only under `body.anv-shell-on`, so visitors keep the original. Long-Term Dashboard's own header user menu is now marked legacy, since the rail has the account menu.
+- **Billing showed every paying member as Free.** It read `profiles.plan` / `plan_status` / `current_period_end`, but Arowana's plan is in `arowana_plan` / `arowana_plan_status` / `arowana_plan_renews_at` (what `js/plan.js` and Account read). A bare `plan` column belongs to another product on the shared table. Billing now reads the `arowana_*` columns.
+- **Billing tiles.** The upgrade tiles offered "Elite $79"; they are now the plans on sale: Free, Pro and Founding Member, with Founders linking to `checkout.html?plan=founders`. Legacy Elite accounts show on the Pro tile.
+- **Billing phone layout.** The plan card was about 360px of empty space on phones (a flex-basis turning into height); it now fits its content.
+- **Check:** `scripts/browser/topbar_billing_check.mjs` (47; 34 fail on `main`).

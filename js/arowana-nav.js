@@ -806,6 +806,14 @@
       '.anv-shell .menu-item.danger{color:#b91c1c}' +
       '.anv-shell.rail-collapsed .rail-brand-text,.anv-shell.rail-collapsed .rail-item-label,.anv-shell.rail-collapsed .rail-group-toggle,' +
         '.anv-shell.rail-collapsed .rail-submenu,.anv-shell.rail-collapsed .anv-inline-arrow{display:none}' +
+      // Shell pages' own site header (marked data-nav-topbar): the white bar
+      // Trading Command uses on phones; on desktop the rail carries the brand,
+      // so the bar is hidden there.
+      'body.anv-shell-on [data-nav-topbar]{background:#fff!important;background-image:none!important;color:#174e71!important;' +
+        'box-shadow:none!important;border-bottom:1px solid #d7e0e5!important;backdrop-filter:none!important}' +
+      'body.anv-shell-on [data-nav-topbar] a,body.anv-shell-on [data-nav-topbar] span,body.anv-shell-on [data-nav-topbar] strong,' +
+        'body.anv-shell-on [data-nav-topbar] .brand{color:#174e71!important}' +
+      '@media (min-width:' + (MOBILE_MAX + 1) + 'px){body.anv-shell-on [data-nav-topbar]{display:none!important}}' +
       'body.anv-sheet-open{overflow:hidden}';
     document.head.appendChild(el('style', { id: 'anv-styles', text: css }));
   }

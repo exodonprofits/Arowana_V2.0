@@ -1807,7 +1807,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
   </div>
 </div><!-- /apOnboardOverlay -->
   <!-- ═══ V1 NAV ═══ -->
-<div class="nav-wrap" style="position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)">
+<div data-nav-topbar class="nav-wrap" style="position:sticky;top:0;z-index:90;background:var(--brand);box-shadow:0 2px 20px rgba(0,0,0,.2)">
 <nav style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 20px;max-width:1200px;margin:0 auto">
   <a href="index.html" style="display:flex;align-items:center;gap:10px;font-family:'Plus Jakarta Sans',sans-serif;font-weight:800;font-size:18px;color:#fff;white-space:nowrap;flex:0 0 auto;text-decoration:none">
     <img src="images/arowanalogo.png?v=20260117" alt="Arowana Profits" style="width:40px;height:40px;border-radius:50%;object-fit:contain;background:rgba(255,255,255,.12);padding:2px" onerror="this.style.display='none'">
@@ -1861,7 +1861,7 @@ dialog::backdrop{background:rgba(0,0,0,.35)}
     
   </div>
   <button id="v1Burger" data-nav-legacy style="display:none;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.08);color:#fff;border-radius:8px;padding:6px 10px;font-size:1rem;cursor:pointer">&#9776;</button>
-  <div style="display:flex;align-items:center;gap:7px;flex:0 0 auto">
+  <div data-nav-legacy style="display:flex;align-items:center;gap:7px;flex:0 0 auto">
     <a href="login.html" id="v1SignIn" style="padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:600;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);text-decoration:none">Sign In</a>
     <a href="signup.html" id="ltSignUp" style="padding:6px 14px;border-radius:8px;font-size:.76rem;font-weight:700;background:#fff;color:#0b4f8a;text-decoration:none">&#128640; Start Free</a>
     <div id="v1UserDrop" style="position:relative;display:none">
