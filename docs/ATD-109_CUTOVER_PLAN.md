@@ -45,6 +45,8 @@ Same origin as production, so no Supabase Auth or CORS change is needed. Staging
 
 ## Cutover window (owner, with Claude on hand)
 
+**Superseded for launch day by the [launch-day runbook](ATD-109_CUTOVER_RUNBOOK.md)** (2026-10-07). It has exact steps, checks and rollback. The list below is kept for history.
+
 - C1. Look at the production `.htaccess` in cPanel and copy any existing rules into the workflow's "kept" block before enabling `MANAGE_HTACCESS`.
 - C2. Run the V2.0 workflow with target `production`. Check `ap-version.txt` shows the V2.0 commit.
 - C3. Founders (D1): create the $299/year Stripe price, set `STRIPE_PRICE_FOUNDERS`, deploy `arowana-checkout` from `main`. Not before C2: the live Wheel page would show $229 against a $299 check and refuse every Founders checkout.

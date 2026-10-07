@@ -803,9 +803,12 @@ async function openBillingPortal() {
   var btn = document.getElementById('portalBtn');
   var note = document.getElementById('portalNote');
 
+  // Falls back to the deployed arowana-billing-portal function, the same one
+  // Account's "Manage billing" calls; nothing ever set stripePortal, so the
+  // button only ever said the portal was not connected.
   var endpoint = (window.AP_WEBHOOKS && window.AP_WEBHOOKS.stripePortal)
               || (window.AP_CONFIG && window.AP_CONFIG.stripePortal)
-              || null;
+              || 'https://pbojacnagutipfhcxltj.supabase.co/functions/v1/arowana-billing-portal';
 
   if (!endpoint) {
     if (note) {
