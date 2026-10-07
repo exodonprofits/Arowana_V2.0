@@ -454,3 +454,13 @@ Check: `scripts/browser/watchlist_mobile_check.mjs` (18; 10 fail on `main`).
 - **Billing tiles.** The upgrade tiles offered "Elite $79"; they are now the plans on sale: Free, Pro and Founding Member, with Founders linking to `checkout.html?plan=founders`. Legacy Elite accounts show on the Pro tile.
 - **Billing phone layout.** The plan card was about 360px of empty space on phones (a flex-basis turning into height); it now fits its content.
 - **Check:** `scripts/browser/topbar_billing_check.mjs` (47; 34 fail on `main`).
+
+**Launch-day runbook, branch `claude/ATD-109-cutover-runbook`:** [docs/ATD-109_CUTOVER_RUNBOOK.md](docs/ATD-109_CUTOVER_RUNBOOK.md). It covers before-the-day steps, launch steps L1–L5 with done/fail checks, a 12-row smoke test, the first 48 hours, and rollback. It was checked against `main` and the live functions: checkout v14 still checks $229, Explain is v3, AI Coach is v19.
+
+Findings that changed the plan:
+- Supabase Redirect URLs must include `https://arowanaprofits.com/**`, because #71 returns sign-in to the exact page.
+- The Wheel deploy workflow stays enabled until after a clean week, because it is the rollback. Its push-deploy is already off.
+- The webhook takes the plan from checkout metadata, so the new Founders price needs no webhook change.
+- Founders checkout is refused between L1 and L3, so those steps run back to back.
+
+Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set and only ever said "not connected yet". It now calls the deployed `arowana-billing-portal` function, the one Account uses. Check: `topbar_billing_check.mjs` (48).

@@ -109,6 +109,24 @@ const prof = plan => ({ id: UID, arowana_plan: plan, arowana_plan_status: 'activ
   await ctx.close();
 }
 
+{
+  // "Open billing portal" calls the deployed arowana-billing-portal function
+  // with the user's token and goes to the URL it returns.
+  const ctx = await browser.newContext({ viewport: { width: 375, height: 812 }, isMobile: true, hasTouch: true });
+  let seen = null;
+  await installFakeSupabase(ctx, { profiles: [prof('pro')] }, { localStorage: { ap_onboarded_v1: '1' }, functions: {
+    'arowana-billing-portal': async ({ body, headers }) => { seen = { body, auth: headers.authorization || headers.Authorization || '' };
+      return { status: 200, json: { url: BASE + '/support.html?portal=1' } }; } } });
+  const p = await ctx.newPage();
+  await p.goto(BASE + '/billing.html', { waitUntil: 'load' });
+  await sleep(800);
+  await p.click('#portalBtn');
+  const went = await p.waitForURL(/support\.html\?portal=1/, { timeout: 6000 }).then(() => true).catch(() => false);
+  check('billing: "Open billing portal" calls arowana-billing-portal with the session and opens the portal', went && !!seen &&
+    /^Bearer /.test(seen.auth) && /billing\.html/.test(JSON.stringify(seen.body)), seen);
+  await ctx.close();
+}
+
 await browser.close();
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
