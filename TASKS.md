@@ -519,3 +519,23 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
     - `retirement_ai_check.mjs` (21) covers no BYOK.
     - `topbar_billing_check.mjs` (48) and `plan_gates_check.mjs` (24).
     - `test_plan_gates.py`.
+
+**Dividend Tracker without developer controls (PR C), branch `claude/ATD-109-dividend-tracker`:** the tracker asked for an "n8n Webhook URL" and offered "Mock Mode", and its card on a phone was about 1,160px wide, cut off on both sides. It's back in the menu as Portfolio → Dividend Income, and back in the Tool Directory.
+
+- **Developer controls removed:** the webhook field and Mock Mode are gone. A webhook URL saved by the old field is deleted from storage and never called.
+- **Refresh:**
+  - Prices come through arowana-research `/quote`, which doesn't count against lookups.
+  - The yearly dividend comes from `/stock/metric`, which counts as one ticker lookup (Free 5/day). It's only asked for holdings without a dividend, so a second Refresh costs nothing.
+  - On a 429 it stops asking and says the lookups are used up. Prices still update, and missing dividends stay blank, never zero.
+- **Journal import:** positions imported from the journal came in with a dividend of 0, so nothing would ever fill them. They now come in blank, and Refresh looks them up.
+- **Calendar:**
+  - The 12-month forecast anchored holdings without an ex-dividend date on today, which printed exact pay dates nobody confirmed. Those holdings now stay off the dated calendar, with a note to add the date from a broker; their yearly income still counts in the summary.
+  - An old ex-date rolls forward on its cadence.
+  - With nothing dated, it shows the note instead of twelve $0.00 months.
+- **Phone layout:** grid and row children get `min-width:0`, so the form and cards fit the screen. The holdings table scrolls in its own box.
+- **Copy:** the intro and import notes no longer mention Finnhub keys or "the free tier".
+- **Tool Directory:** the Research blurb is rewritten.
+- **Versions:** registry `2026-10-07.3`, nav loader `20261007d`.
+- **Checks:**
+  - New: `scripts/browser/dividend_tracker_check.mjs` (24). Its phone check also fails on clipped elements, not just page scroll.
+  - Updated: `launch_menu_check.mjs` (63) and `nav_v2_check.mjs` (487).

@@ -38,7 +38,7 @@ const MENU = ['trading-command.html', 'analysis-central.html', 'intrinsic-value.
   'long-term-dashboard.html', 'retirement-planner.html', 'retirement-calculator.html', 'withdrawal-planner.html', 'tax-advantaged-guide.html',
   'pick-my-mix.html', 'asset-allocation-builder.html', 'etf-core-screener.html', 'fee-analyzer.html', 'factor-tilt-planner.html',
   'dca-planner.html', 'college-savings.html', 'education-529-planner.html', 'buy-a-home.html', 'risk-quiz.html', 'ips-builder.html',
-  'my-rules.html?tab=longterm', 'real-estate-analyzer.html', 'learn-investing.html'];
+  'my-rules.html?tab=longterm', 'real-estate-analyzer.html', 'learn-investing.html', 'dividend-tracker.html'];
 const KEY_TALK = /api key|finnhub key|add one free|add your[^.]{0,20}key|key rejected|alpha vantage key|twelve data key|fmp key/i;
 
 const browser = await chromium.launch();
@@ -119,8 +119,8 @@ for (const path of MENU) {
 }
 {
   const { ctx, p } = await open('tools.html');
-  check('tools: no Dividend Tracker or dead Dividend Screener card', await p.evaluate(() =>
-    !document.querySelector('a.tool-card[href="dividend-tracker.html"], a.tool-card[href*="dividend_safety"]')));
+  check('tools: Dividend Tracker card back (PR C), no dead Dividend Screener card', await p.evaluate(() =>
+    !!document.querySelector('a.tool-card[href="dividend-tracker.html"]') && !document.querySelector('a.tool-card[href*="dividend_safety"], a.tool-card[href="dividend-screener.html"]')));
   await ctx.close();
 }
 
