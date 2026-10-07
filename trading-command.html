@@ -5154,7 +5154,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
                 <a class="poc-import" href="account.html#byokPanel">API Settings</a>
               </div>
             </div>
-            <div class="poc-status" id="pocStatus" role="status" aria-live="polite">Enter a ticker and calculate. Requires an FMP key with intraday history access.</div>
+            <div class="poc-status" id="pocStatus" role="status" aria-live="polite">Import an intraday CSV from your broker (time, open, high, low, close, volume) to map the levels.</div>
             <div class="poc-results">
               <div class="poc-summary">
                 <div class="poc-stat poc-main"><div class="poc-stat-k">Point of Control</div><div class="poc-stat-v" id="pocValue">—</div></div>
@@ -5983,7 +5983,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
       // keys-ready event on a new browser/device.
       tryAutoStart();
       if (!pocAutoStarted) {
-        pocSetStatus('Waiting for saved API keys… You can also import an intraday CSV.');
+        pocSetStatus('Import an intraday CSV from your broker (time, open, high, low, close, volume) to map the levels.');
         window.addEventListener('ap:keys:ready', tryAutoStart, { once:true });
       }
     }
@@ -6212,7 +6212,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
         }
 
         case 'unknown':
-          return 'SPY quote unavailable. Check your Finnhub key or try again in a moment.';
+          return 'SPY quote unavailable. Try again in a moment.';
 
         case 'risk-on': {
           // Broad participation (IWM also leading)?
@@ -6653,7 +6653,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
         const gotAny = Object.values(quotes).some(q => q != null);
         if (!gotAny) {
           mrRender({
-            error: 'Could not reach Finnhub. Check your API key and network.',
+            error: 'Could not reach market data. Check your connection and try again.',
           });
           return;
         }
@@ -7168,7 +7168,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
           if (!usedWebhook) {
             renderMovers(moversBullishEl, moversBearishEl, data.watch);
             const meta = document.getElementById('topMoversMeta');
-            if (meta) meta.textContent = 'Add your Finnhub key in Account Settings for live prices — showing a saved snapshot.';
+            if (meta) meta.textContent = 'Live prices are not available right now — showing a saved snapshot.';
           }
         }
       }

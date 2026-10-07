@@ -5263,11 +5263,11 @@ async function fetchPrice(){
 
   var key = getFinnhubKey();
   $('priceBar').style.display = 'flex';
-  $('priceStatus').textContent = key ? 'Fetching live price…' : 'No Finnhub key — add in Account → API Keys';
+  $('priceStatus').textContent = key ? 'Fetching live price…' : 'Live price not available right now. Type the price in.';
   $('priceLive').textContent = '';
 
   if(!key){
-    $('priceStatus').innerHTML = 'No Finnhub key. <a href="account.html#apiKeysCard" style="color:#0369a1;font-weight:700">Add free key →</a>';
+    $('priceStatus').innerHTML = 'Live price not available right now. Type the price in.';
     return;
   }
 

@@ -3710,7 +3710,7 @@ window.stwRefreshPrices = async function(force){
   const list = window.watchlist || [];
 
   if(!key){
-    if(statusEl) statusEl.innerHTML = 'No Finnhub key — <a href="account.html#apiKeysCard" style="color:var(--blue);font-weight:600">add one free →</a>';
+    if(statusEl) statusEl.innerHTML = 'Live prices are not available right now.';
     return;
   }
   if(!list.length){

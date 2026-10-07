@@ -5043,8 +5043,7 @@ window.fetchFromFinnhub = async function (tickers) {
   var k = {};
   try { k = JSON.parse(localStorage.getItem('ap_user_api_keys') || '{}'); } catch (_) {}
   if (!k.finnhub) {
-    throw new Error('No Finnhub key saved on this device. Add one under Account \u2192 API Keys, ' +
-                    'or tick Mock Mode to see sample values.');
+    throw new Error('Market data is not available right now. Sign in, or try again in a minute.');
   }
 
   var prices = {}, dividends = {}, failed = [];

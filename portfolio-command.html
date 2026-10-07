@@ -9631,7 +9631,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
 
       const key = await pcEnsureFinnhubKey();
       if (!key) {
-        listEl.innerHTML = '<div class="qs-error">Finnhub API key not set. Add it under Account → API Keys to enable the scan.</div>';
+        listEl.innerHTML = '<div class="qs-error">Market data is not available right now. Sign in, or try again in a minute.</div>';
         _qsRunInProgress = false;
         return;
       }

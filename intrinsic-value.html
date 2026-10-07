@@ -7118,7 +7118,7 @@ window.addEventListener('ap:config:ready', updateFinnhubBar);
 async function fetchFinnhubFundamentals(sym){
   var key = getFinnhubKey();
   if(!key){
-    throw new Error('No Finnhub key found. Add it in Account → API Keys (free, 60 seconds).');
+    throw new Error('Market data is not available right now. Sign in, or try again in a minute.');
   }
 
   var base = 'https://finnhub.io/api/v1';

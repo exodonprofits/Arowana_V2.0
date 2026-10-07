@@ -161,13 +161,13 @@ textarea.inp{min-height:120px;resize:vertical}
 <div class="page-hero">
   <div class="kicker">Your Data is Safe</div>
   <h1>Security</h1>
-  <p class="sub">How we protect your account, your API keys, and your trading data.</p>
+  <p class="sub">How we protect your account and your trading data.</p>
 </div>
 
 <div class="cards">
   <div class="info-card"><div class="ic-icon">&#128272;</div><h3>Authentication</h3><p>Powered by Supabase Auth with Google OAuth and email/password. Sessions use secure JWTs with automatic expiry.</p></div>
   <div class="info-card"><div class="ic-icon">&#128202;</div><h3>Row-Level Security</h3><p>Every database table uses Postgres RLS policies. Your data is only accessible to your account — not to other users or even our support staff without audit logging.</p></div>
-  <div class="info-card"><div class="ic-icon">&#128273;</div><h3>API Key Storage</h3><p>Your Finnhub API key is stored encrypted at rest in Supabase and cached in localStorage. It is never logged, never sent to our servers unencrypted, and never shared.</p></div>
+  <div class="info-card"><div class="ic-icon">&#128273;</div><h3>No keys to hand over</h3><p>Market data comes from our own licensed feeds on our servers. You never paste an API key or a broker password into Arowana.</p></div>
   <div class="info-card"><div class="ic-icon">&#9749;</div><h3>HTTPS Only</h3><p>All connections to Arowana Profits are encrypted via TLS. We enforce HTTPS site-wide with no fallback to HTTP.</p></div>
   <div class="info-card"><div class="ic-icon">&#127760;</div><h3>No Third-Party Ads</h3><p>We use zero advertising pixels, trackers, or analytics that share your data with third parties. No Google Ads, no Facebook Pixel, no data brokers.</p></div>
   <div class="info-card"><div class="ic-icon">&#128203;</div><h3>Responsible Disclosure</h3><p>Found a security vulnerability? Please contact us through the <a href="contact.html">contact page</a> before public disclosure. We take all reports seriously.</p></div>
@@ -178,7 +178,6 @@ textarea.inp{min-height:120px;resize:vertical}
   <div class="prose-card">
     <ul>
       <li><strong>Account data</strong> — Email, name, Pro status. Stored in Supabase with RLS.</li>
-      <li><strong>API keys</strong> — Your Finnhub key, encrypted at rest, scoped to your account only.</li>
       <li><strong>Tool data</strong> — Watchlists, journal entries, wheel cycles. Stored locally (localStorage) or optionally synced to Supabase.</li>
       <li><strong>AI chat history</strong> — Not stored server-side. Arowana Trader and Portfolio Advisor have no memory between sessions unless you explicitly paste prior context.</li>
     </ul>
@@ -200,7 +199,7 @@ textarea.inp{min-height:120px;resize:vertical}
 <div class="section">
   <h2>Your responsibilities</h2>
   <div class="prose-card">
-    <p>Keep your password strong and unique. Do not share your account. Your Finnhub API key is free-tier (read-only market data) — it cannot execute trades — but treat it like any API credential. If you suspect your account is compromised, change your password immediately and contact us.</p>
+    <p>Keep your password strong and unique. Do not share your account. Arowana is read-only and cannot place trades in your brokerage account. If you suspect your account is compromised, change your password immediately and contact us.</p>
   </div>
 </div>
 

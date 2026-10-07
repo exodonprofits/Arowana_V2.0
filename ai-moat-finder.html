@@ -4995,8 +4995,7 @@ window.amfScreen = async function (payload) {
   }
   var k = keys();
   if (!k.finnhub) {
-    throw new Error('No Finnhub key saved on this device. Add one under Account \u2192 API Keys, ' +
-                    'or tick Demo Mode to see sample rows.');
+    throw new Error('Market data is not available right now. Sign in, or try again in a minute.');
   }
 
   var syms = (payload.ticker || '').trim()

@@ -3956,11 +3956,11 @@ const OH_STRATEGIES = [
               recApplyTickerData(symbol, data);
               recSetTickerStatus('success', '✓ LIVE');
             } else if (!finnhubKey) {
-              recSetTickerStatus('notfound', 'Add your Finnhub key to look up tickers');
+              recSetTickerStatus('notfound', 'Sign in to look up tickers');
               document.getElementById('rec-ticker-info-card').classList.remove('visible');
             } else {
               const msg = {
-                'invalid-key': 'Finnhub key rejected — check it in Account settings',
+                'invalid-key': 'Market data refused the request. Try again in a minute.',
                 'rate-limited': 'Finnhub rate limit hit — try again shortly',
                 'network': 'Network error — check your connection',
                 'not-found': 'Not found',
@@ -8667,7 +8667,7 @@ const OH_STRATEGIES = [
             // Get API key — uses Recommender's exposed function
             const apiKey = (typeof window.recGetFinnhubKey === 'function') ? window.recGetFinnhubKey() : null;
             if (!apiKey) {
-              resultZone.innerHTML = '<div class="qual-error">Finnhub API key not set. Add it under Account → API Keys to enable scans.</div>';
+              resultZone.innerHTML = '<div class="qual-error">Market data is not available right now. Sign in, or try again in a minute.</div>';
               return;
             }
 

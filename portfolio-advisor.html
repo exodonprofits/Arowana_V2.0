@@ -1992,7 +1992,7 @@ async function loadFundamentals(sym){
   const key=(typeof getFinnhubKey==='function')?getFinnhubKey():'';
   if(!key){
     setAll('—');
-    if(src)src.innerHTML='No market-data key, so no figures are shown. <a href="account.html#apiKeysCard">Add a free Finnhub key</a> to fill these in. Nothing here is estimated.';
+    if(src)src.innerHTML='Market data is not available right now, so no figures are shown. Sign in, or try again in a minute. Nothing here is estimated.';
     return;
   }
   try{

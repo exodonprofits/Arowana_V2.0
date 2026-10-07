@@ -664,7 +664,7 @@ function aiShowProposal(p){
   if(p.quote){
     src.textContent='Based on a live quote: '+quoteLine(p.quote)+'.';
   }else{
-    var why={'no-key':'no Finnhub key is set','rate-limited':'Finnhub is rate limited right now',
+    var why={'no-key':'live prices are not available right now','rate-limited':'Finnhub is rate limited right now',
              'empty':'no quote came back for this symbol','blocked':'the quote request failed'}[p.quoteReason]
              ||'live price data was unavailable';
     src.textContent='No price data \u2014 '+why+'. Levels are left blank on purpose; add them yourself from a chart.';

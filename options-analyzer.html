@@ -5317,10 +5317,10 @@ async function fetchPrice(){
   if(!sym){toast('Enter a ticker first','warn');return;}
   var key=getFinnhubKey();
   $('priceBar').style.display='flex';
-  $('priceStatus').textContent=key?'Fetching…':'No Finnhub key';
+  $('priceStatus').textContent=key?'Fetching…':'Live price not available right now';
   $('priceLive').textContent='';
   if(!key){
-    $('priceStatus').innerHTML='No Finnhub key. <a href="account.html#apiKeysCard" style="color:#0369a1;font-weight:700">Add free key &#8594;</a>';
+    $('priceStatus').innerHTML='Live price not available right now. Type the price in.';
     return;
   }
   try{

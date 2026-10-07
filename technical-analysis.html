@@ -4938,7 +4938,7 @@ label{display:block;font-size:.8rem;font-weight:600;color:var(--muted);margin-bo
     </div>
     
     <div class="alert alert-warning" id="apiKeyNotice" style="display:none">
-      <strong>🔑 Finnhub API key required</strong> - This tool runs live technical analysis on real price history. Add your Finnhub API key in <a href="account.html" style="color:inherit;text-decoration:underline;font-weight:600">Account Settings</a> to get started.
+      <strong>Price history needed</strong> - This tool runs technical analysis on daily price history, which is not available on the current data plan yet.
     </div>
 
     <div class="ticker-row">
@@ -5407,7 +5407,7 @@ async function runAnalysis() {
 async function callFinnhubAnalysis(ticker) {
   const apiKey = apiKeys.finnhub;
   if (!apiKey) {
-    throw new Error('Finnhub API key required for live analysis');
+    throw new Error('Market data is not available right now. Sign in, or try again in a minute.');
   }
 
   const quote = await fetchFinnhubQuote(ticker, apiKey);
@@ -5491,7 +5491,7 @@ async function fetchCandlesWithFallback(ticker, resolution, lookbackDays) {
   }
 
   if (errors.length === 0) {
-    throw new Error('No candle data provider configured (add a Finnhub or Alpha Vantage key in Account Settings)');
+    throw new Error('Daily price history is not available on the current data plan yet.');
   }
   throw new Error(errors.join('; '));
 }
