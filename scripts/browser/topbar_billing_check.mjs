@@ -70,8 +70,8 @@ for (const file of ['retirement-calculator.html', 'dca-planner.html']) {
 }
 {
   const { ctx, p } = await open('long-term-dashboard.html');
-  check('long-term-dashboard member: old header user menu hidden (the rail has the account menu)',
-    await p.evaluate(() => { const u = document.getElementById('v1UserDrop'); return !u || !u.closest('[data-nav-legacy]') ? false : u.getBoundingClientRect().height === 0; }));
+  check('long-term-dashboard member: old header site links hidden (the rail has the menu)',
+    await p.evaluate(() => { const n = document.querySelector('.topbar nav[data-nav-legacy]'); return !!n && n.getBoundingClientRect().height === 0; }));
   await ctx.close();
 }
 

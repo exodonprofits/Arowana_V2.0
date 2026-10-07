@@ -11,7 +11,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 GETTER = re.compile(r"""getItem\(\s*['"]ap_is_pro_v1['"]\s*\)""")
-PAGES = ["long-term-dashboard.html", "arowana-trader.html", "portfolio-advisor.html", "analysis-central.html",
+PAGES = ["arowana-trader.html", "portfolio-advisor.html", "analysis-central.html",
          "options-analyzer.html", "whale-tracker.html"]
 
 
@@ -25,10 +25,12 @@ class PlanGateTests(unittest.TestCase):
         for page in PAGES:
             self.assertRegex((ROOT / page).read_text(encoding="utf-8"), r'src="\./js/plan\.js', page)
 
-    def test_long_term_dashboard_loads_the_real_sdk(self):
+    def test_long_term_dashboard_has_no_gated_content(self):
+        # ATD-109: the Long-Term desk is a hub of links; it reads no plan
+        # and calls no webhook.
         html = (ROOT / "long-term-dashboard.html").read_text(encoding="utf-8")
-        self.assertNotIn('src="/js/supabase.min.js"', html)
-        self.assertIn('src="./js/supabase_min.js', html)
+        self.assertNotIn("webhook", html.lower())
+        self.assertNotIn("ap_is_pro_v1", html)
 
 
 if __name__ == "__main__":

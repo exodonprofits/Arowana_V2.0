@@ -34,7 +34,11 @@ const MENU = ['trading-command.html', 'analysis-central.html', 'intrinsic-value.
   'my-rules.html', 'position-sizer.html', 'tax-loss-harvester.html', 'watchlist.html', 'trade-journal-pro.html',
   'expectancy-matrix.html', 'data-hygiene-audit.html', 'kelly-calculator.html', 'atr-stop-planner.html', 'dcf-analyzer.html',
   'ai-moat-finder.html', 'options-analyzer.html', 'trade-plan-builder.html', 'r-multiple.html', 'risk-comfort.html',
-  'volatility-guardrails.html', 'discipline-scorecard.html', 'trading-journal-analysis.html', 'support.html', 'security.html'];
+  'volatility-guardrails.html', 'discipline-scorecard.html', 'trading-journal-analysis.html', 'support.html', 'security.html',
+  'long-term-dashboard.html', 'retirement-planner.html', 'retirement-calculator.html', 'withdrawal-planner.html', 'tax-advantaged-guide.html',
+  'pick-my-mix.html', 'asset-allocation-builder.html', 'etf-core-screener.html', 'fee-analyzer.html', 'factor-tilt-planner.html',
+  'dca-planner.html', 'college-savings.html', 'education-529-planner.html', 'buy-a-home.html', 'risk-quiz.html', 'ips-builder.html',
+  'my-rules.html?tab=longterm', 'real-estate-analyzer.html', 'learn-investing.html'];
 const KEY_TALK = /api key|finnhub key|add one free|add your[^.]{0,20}key|key rejected|alpha vantage key|twelve data key|fmp key/i;
 
 const browser = await chromium.launch();
@@ -62,9 +66,11 @@ const keyTalk = p => p.evaluate(src => {
 
 for (const path of MENU) {
   const { ctx, p, errors, outbound } = await open(path);
+  // Chart.js comes from a CDN this test blocks; that error is the test's, not the page's.
+  const pageErrors = errors.filter(e => !/Chart is not defined/.test(e));
   const talk = (await keyTalk(p)).filter(t => !/never paste an API key|Do I need my own API key|No market data, no API key/i.test(t));
-  check(`${path}: no API-key wording, no page errors, nothing sent to finnhub.io directly`, talk.length === 0 && errors.length === 0 && outbound.length === 0,
-    { talk, errors: errors.slice(0, 2), outbound: outbound.slice(0, 2) });
+  check(`${path}: no API-key wording, no page errors, nothing sent to finnhub.io directly`, talk.length === 0 && pageErrors.length === 0 && outbound.length === 0,
+    { talk, errors: pageErrors.slice(0, 2), outbound: outbound.slice(0, 2) });
   await ctx.close();
 }
 

@@ -53,7 +53,7 @@ const out = p => p.evaluate(() => document.getElementById('aiNarrative').textCon
 // ── Pro: managed write-up through arowana-explain ────────────────────────
 {
   const { ctx, p, errors, calls } = await open('pro', () => ({ json: { text: 'Synthetic write-up of the three scenarios.' } }));
-  check('Pro account (from the server) gets the managed button', await until(async () => /Generate narrative \(managed\)/.test(await gate(p))), await gate(p));
+  check('Pro account (from the server) gets the managed button', await until(async () => /Write my plan/.test(await gate(p))), await gate(p));
   check('tier is subscription', await p.evaluate(() => getAccountTier() === 'subscription'));
   await buildRoadmap(p);
   await p.click('#aiNarrativeBtn');
@@ -74,7 +74,7 @@ const out = p => p.evaluate(() => document.getElementById('aiNarrative').textCon
 // ── Deployed function without the 'retirement' kind ──────────────────────
 {
   const { ctx, p } = await open('pro', () => ({ status: 400, json: { error: 'Nothing to explain.' } }));
-  await until(async () => /managed/.test(await gate(p)));
+  await until(async () => /Write my plan/.test(await gate(p)));
   await buildRoadmap(p);
   await p.click('#aiNarrativeBtn');
   check('kind not deployed yet: says the write-up is not switched on', await until(async () => /isn't switched on yet/.test(await out(p))), await out(p));
@@ -82,7 +82,7 @@ const out = p => p.evaluate(() => document.getElementById('aiNarrative').textCon
 }
 {
   const { ctx, p } = await open('pro', () => ({ status: 429, json: { error: "You have used this month's 50 explanations. The counter resets on the 1st." } }));
-  await until(async () => /managed/.test(await gate(p)));
+  await until(async () => /Write my plan/.test(await gate(p)));
   await buildRoadmap(p);
   await p.click('#aiNarrativeBtn');
   check('quota error passed through', await until(async () => /this month's 50 explanations/.test(await out(p))), await out(p));
@@ -94,7 +94,7 @@ const out = p => p.evaluate(() => document.getElementById('aiNarrative').textCon
   const { ctx, p, errors, calls } = await open('free', () => ({ json: { text: 'should not be called' } }));
   await sleep(1500);
   const g = await gate(p);
-  check('free: BYOK or upgrade choice, real plan names', /Bring your own key/.test(g) && /Pro and Founding Member plans/.test(g) && !/Elite/.test(g), g);
+  check('free: Pro upsell with real plan names, no webhook or key box', /Pro and Founding Member/.test(g) && !/Elite|key|webhook/i.test(g) && !(await p.$('#aiNarrativeGate input')), g);
   check('free: tier is not subscription', await p.evaluate(() => getAccountTier() !== 'subscription'));
   check('free: no explain call', calls.length === 0);
   check('free: no page errors', errors.length === 0, errors);
@@ -103,24 +103,25 @@ const out = p => p.evaluate(() => document.getElementById('aiNarrative').textCon
 {
   const { ctx, p, errors } = await open(null);
   await sleep(1000);
-  check('signed out: sign-in prompt', /Sign in to unlock this/.test(await gate(p)), await gate(p));
+  check('signed out: sign-in prompt', /Sign in to see your roadmap/.test(await gate(p)), await gate(p));
   check('signed out: no page errors', errors.length === 0, errors);
   await ctx.close();
 }
 
-// ── Free with their own key (BYOK): unchanged path ───────────────────────
+// ── A webhook saved by the old "bring your own key" box is cleared, never called ──
 {
   const { ctx, p, errors, calls } = await open('free', () => ({ json: { text: 'should not be called' } }));
   const hook = [];
-  await ctx.route('https://byok.example.invalid/**', async r => { hook.push(JSON.parse(r.request().postData() || '{}')); await r.fulfill({ status: 200, contentType: 'application/json', headers: { 'access-control-allow-origin': '*' }, body: JSON.stringify({ narrative: 'Synthetic BYOK narrative.' }) }); });
-  await until(async () => /Bring your own key/.test(await gate(p)));
+  await ctx.route('https://byok.example.invalid/**', async r => { hook.push(1); await r.fulfill({ status: 200, body: '{}' }); });
+  await p.evaluate(() => localStorage.setItem('ap_retirement_ai_key', 'https://byok.example.invalid/hook'));
+  await p.reload({ waitUntil: 'load' });
+  await sleep(1500);
   await buildRoadmap(p);
-  await p.fill('#byokWebhookInput', 'https://byok.example.invalid/hook');
-  await p.click('#saveByokBtn');
-  check('BYOK: key saved, button uses it', await until(async () => /using your key/.test(await gate(p))), await gate(p));
-  await p.click('#aiNarrativeBtn');
-  check('BYOK: posts the projection to their endpoint, shows the narrative', await until(async () => (await out(p)) === 'Synthetic BYOK narrative.') && hook.length === 1 && !!hook[0].proj && calls.length === 0, { out: await out(p), hook: hook.length, calls: calls.length });
-  check('BYOK: no page errors', errors.length === 0, errors);
+  const g = await gate(p);
+  check('old BYOK webhook: removed from storage, member sees the Pro upsell', await p.evaluate(() => localStorage.getItem('ap_retirement_ai_key') === null) &&
+    /Pro and Founding Member/.test(g) && !(await p.$('#aiNarrativeBtn')), g);
+  check('old BYOK webhook: never called', hook.length === 0 && calls.length === 0, { hook: hook.length, calls: calls.length });
+  check('old BYOK webhook: no page errors', errors.length === 0, errors);
   await ctx.close();
 }
 

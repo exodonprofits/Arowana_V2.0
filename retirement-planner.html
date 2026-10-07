@@ -427,8 +427,8 @@
     </div>
 
     <div class="panel">
-      <h2>AI narrative summary <span class="estimate-tag">optional · BYOK or subscription</span></h2>
-      <p class="hint">Turns your computed roadmap into a plain-English write-up. This is the one feature on this page with a real cost per use, so it follows Arowana's usual BYOK-or-subscription pattern rather than being free like the calculators.</p>
+      <h2>AI narrative summary <span class="estimate-tag">Pro</span></h2>
+      <p class="hint">Turns your computed roadmap into a plain-English write-up. It uses only the numbers above. Included on Pro and Founding Member; the calculators stay free.</p>
       <div id="aiNarrativeGate"></div>
       <div id="aiNarrative" style="margin-top:14px;"></div>
     </div>
@@ -1877,18 +1877,19 @@ function getAuthUser(){
   }catch(_){ return null; }
 }
 
-// Three account types per Arowana's model: free / BYOK / subscription.
-// 'free' here means "signed in, no BYOK key, no paid plan" — still unlocks
+// Account types: anonymous / free / subscription.
+// 'free' here means "signed in, no paid plan" — still unlocks
 // all 7 calculator panels (they're zero marginal cost); only the AI
-// narrative distinguishes byok vs subscription vs neither.
+// narrative is subscription-only.
 function getAccountTier(){
   const user = getAuthUser();
   if (!user) return 'anonymous';
   // Plan from js/plan.js when the page has it. ap_is_pro_v1 was never set by
   // anything, so it only let anyone claim the managed tier from the console.
   if (window.AP_PLAN && AP_PLAN.atLeast('pro')) return 'subscription';
-  const byokKey = localStorage.getItem('ap_retirement_ai_key');
-  if (byokKey) return 'byok';
+  // ATD-109: the old "paste your own webhook" option is gone; a URL saved by
+  // it is cleared so the write-up never calls a member-supplied endpoint.
+  try { localStorage.removeItem('ap_retirement_ai_key'); } catch (e) {}
   return 'free';
 }
 
@@ -1924,11 +1925,9 @@ function applyLockState(){
 }
 
 /* =========================================================================
-   AI NARRATIVE — the one feature with a real per-use cost, so it follows
-   the BYOK-or-subscription pattern instead of the free-once-signed-in
-   pattern the other 7 panels use.
-     - anonymous / free (signed in, no key, no plan): upsell choice
-     - byok: calls the user's own webhook (ap_retirement_ai_key)
+   AI NARRATIVE — the one feature with a real per-use cost, so it is
+   Pro-only instead of free once signed in like the other 7 panels.
+     - anonymous / free (signed in, no paid plan): upsell
      - subscription: the arowana-explain edge function (js/explain.js), kind
        'retirement', with the projection as label/value facts. It writes
        only from those numbers and is metered with the other explanations.
@@ -1968,39 +1967,19 @@ function renderAINarrativeGate(){
   box.innerHTML = '';
 
   if (tier === 'anonymous'){
-    gate.innerHTML = `<div class="lock-sub" style="margin-bottom:10px; max-width:none; text-align:left;">Sign in to unlock this — BYOK is free, or use Arowana's managed AI on any paid plan.</div>
+    gate.innerHTML = `<div class="lock-sub" style="margin-bottom:10px; max-width:none; text-align:left;">Sign in to see your roadmap. The written plan is included on Pro and Founding Member.</div>
       <button type="button" class="ghost" onclick="goToSignIn()">Sign in to continue</button>`;
     return;
   }
 
   if (tier === 'free'){
-    gate.innerHTML = `
-      <div class="ai-tier-choice">
-        <div class="choice-card">
-          <h4>Bring your own key</h4>
-          <p>Free forever. Paste your own n8n webhook (or Anthropic-backed endpoint) — you control the cost.</p>
-          <input type="text" id="byokWebhookInput" placeholder="https://your-n8n.app.n8n.cloud/webhook/...">
-          <button type="button" id="saveByokBtn">Save &amp; use my key</button>
-        </div>
-        <div class="choice-card">
-          <h4>Use Arowana's managed AI</h4>
-          <p>No key to manage — included on Pro and Founding Member plans.</p>
-          <button type="button" class="secondary" onclick="location.href='pricing.html'">Upgrade plan</button>
-        </div>
-      </div>`;
-    document.getElementById('saveByokBtn').addEventListener('click', () => {
-      const val = document.getElementById('byokWebhookInput').value.trim();
-      if (!val){ return; }
-      localStorage.setItem('ap_retirement_ai_key', val);
-      applyLockState(); // re-render gate now that tier is 'byok'
-    });
+    gate.innerHTML = `<div class="lock-sub" style="margin-bottom:10px; max-width:none; text-align:left;">The written plan is included on Pro and Founding Member. Your roadmap numbers above stay free.</div>
+      <button type="button" class="secondary" onclick="location.href='pricing.html'">See plans</button>`;
     return;
   }
 
-  // byok or subscription — show the generate button.
-  const label = tier === 'byok' ? 'Generate narrative (using your key)' : 'Generate narrative (managed)';
-  gate.innerHTML = `<button type="button" class="ghost" id="aiNarrativeBtn">${label}</button>
-    ${tier === 'byok' ? '<button type="button" class="link-btn" id="clearByokBtn" style="margin-left:12px;">Remove my key</button>' : ''}`;
+  // Pro / Founding Member: the managed write-up.
+  gate.innerHTML = '<button type="button" class="ghost" id="aiNarrativeBtn">Write my plan</button>';
   box.innerHTML = '<span class="placeholder">Not generated yet.</span>';
 
   document.getElementById('aiNarrativeBtn').addEventListener('click', async () => {
@@ -2008,53 +1987,24 @@ function renderAINarrativeGate(){
       box.innerHTML = '<span class="placeholder">Build your roadmap first.</span>';
       return;
     }
-    if (tier === 'subscription'){
-      if (!window.AP_EXPLAIN){
-        box.innerHTML = '<span class="placeholder">The write-up could not load. Reload the page and try again.</span>';
-        return;
-      }
-      box.innerHTML = '<span class="placeholder">Generating…</span>';
-      try{
-        const p = window.__lastProjection;
-        const out = await AP_EXPLAIN.request('retirement', retirementFacts(p.inputs, p.proj));
-        box.textContent = out.text || 'No write-up returned.';
-      }catch(err){
-        // An arowana-explain deployment without the 'retirement' kind
-        // answers "Nothing to explain."
-        const msg = err && err.message ? err.message : '';
-        box.textContent = msg === 'Nothing to explain.'
-          ? "The managed write-up isn't switched on yet. Every number above is already calculated; this only adds the plain-English summary."
-          : (msg || 'The write-up could not be written right now.');
-      }
-      return;
-    }
-
-    const webhookUrl = localStorage.getItem('ap_retirement_ai_key');
-    if (!webhookUrl){
-      box.innerHTML = '<span class="placeholder">No key saved.</span>';
+    if (!window.AP_EXPLAIN){
+      box.innerHTML = '<span class="placeholder">The write-up could not load. Reload the page and try again.</span>';
       return;
     }
     box.innerHTML = '<span class="placeholder">Generating…</span>';
     try{
-      const res = await fetch(webhookUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(window.__lastProjection)
-      });
-      const data = await res.json();
-      box.textContent = data.narrative || 'No narrative returned.';
+      const p = window.__lastProjection;
+      const out = await AP_EXPLAIN.request('retirement', retirementFacts(p.inputs, p.proj));
+      box.textContent = out.text || 'No write-up returned.';
     }catch(err){
-      box.innerHTML = '<span class="placeholder">Could not reach the narrative webhook.</span>';
+      // An arowana-explain deployment without the 'retirement' kind
+      // answers "Nothing to explain."
+      const msg = err && err.message ? err.message : '';
+      box.textContent = msg === 'Nothing to explain.'
+        ? "The managed write-up isn't switched on yet. Every number above is already calculated; this only adds the plain-English summary."
+        : (msg || 'The write-up could not be written right now.');
     }
   });
-
-  const clearBtn = document.getElementById('clearByokBtn');
-  if (clearBtn){
-    clearBtn.addEventListener('click', () => {
-      localStorage.removeItem('ap_retirement_ai_key');
-      applyLockState();
-    });
-  }
 }
 
 applyLockState(); // initial paint on page load
