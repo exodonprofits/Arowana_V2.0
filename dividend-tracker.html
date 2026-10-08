@@ -4612,7 +4612,8 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
   .title .sub{color:var(--muted);font-size:.95rem}
 
   /* Layout */
-  .grid{display:grid;gap:1rem;grid-template-columns:1fr}
+  .grid{display:grid;gap:1rem;grid-template-columns:minmax(0,1fr)}
+  .grid > *{min-width:0}
   .card{background:var(--card);border-radius:var(--radius-lg);box-shadow:var(--shadow);padding:1.25rem}
   .card h2{margin:0 0 .75rem;font-size:1.05rem;letter-spacing:.2px}
   .sep{height:1px;background:var(--ring);opacity:.5;margin:.75rem 0 1rem}
@@ -4662,7 +4663,8 @@ select{
   input[type="number"]{ -moz-appearance:textfield }
 
   /* Grids */
-  .row{display:grid;grid-template-columns:1fr;gap:.85rem}
+  .row{display:grid;grid-template-columns:minmax(0,1fr);gap:.85rem}
+  .row > *{min-width:0}
   @media (min-width:720px){.row.two{grid-template-columns:1fr 1fr}}
   @media (min-width:960px){.row.three{grid-template-columns:1fr 1fr 1fr}}
   @media (min-width:1200px){.row.four{grid-template-columns:1fr 1fr 1fr 1fr}}
@@ -4858,7 +4860,7 @@ select{
       <!-- Controls -->
       <section class="card" aria-labelledby="controlsTitle">
         <h2 id="controlsTitle">⚙️ Add / Import Holdings</h2>
-        <p class="hint">Track forward dividend income, yield on cost, and a 12-month payout calendar. Use Mock Mode for demo data or connect an n8n webhook for live prices/dividends.</p>
+        <p class="hint">Track forward dividend income, yield on cost, and a 12-month payout calendar. <b>Refresh</b> fills in current prices, and the yearly dividend for any holding that doesn't have one yet. Enter ex-dividend dates from your broker.</p>
 
         <form id="form" novalidate>
           <div class="row four">
@@ -4877,7 +4879,7 @@ select{
             <div>
               <label for="price">💲 Current Price (opt)</label>
               <input id="price" type="number" inputmode="decimal" step="0.0001" placeholder="(fetch or enter)" />
-              <div class="hint">Left blank → will use webhook (or mock)</div>
+              <div class="hint">Leave blank and press Refresh</div>
             </div>
           </div>
 
@@ -4885,7 +4887,7 @@ select{
             <div>
               <label for="divps">🏦 Annual Dividend / share</label>
               <input id="divps" type="number" inputmode="decimal" step="0.0001" placeholder="e.g. 1.00" />
-              <div class="hint">If blank, can be filled via webhook</div>
+              <div class="hint">Leave blank and Refresh looks it up</div>
             </div>
             <div>
               <label for="freq">🔁 Frequency</label>
@@ -4911,15 +4913,8 @@ select{
               <label for="taxrate">🧾 Tax Rate % (opt)</label>
               <input id="taxrate" type="number" inputmode="decimal" step="0.01" placeholder="15" />
             </div>
-            <div>
-              <label for="webhook">🔗 n8n Webhook URL (opt)</label>
-              <input id="webhook" type="url" inputmode="url" placeholder="https://YOUR-N8N/webhook/dividends/prices" />
-            </div>
-            <div style="align-self:center;display:flex;gap:.6rem;flex-wrap:wrap">
-              <label style="display:flex;align-items:center;gap:.5rem">
-                <input type="checkbox" id="mock" /> 🧪 Mock Mode
-              </label>
-              <span id="status" class="hint">Ready</span>
+            <div style="align-self:center;grid-column:span 2;min-width:0">
+              <span id="status" class="hint" role="status" aria-live="polite">Ready</span>
             </div>
           </div>
 
@@ -5024,13 +5019,13 @@ select{
 /* ============================================================================
    Dividend data from Finnhub — price and dividend per share
    ============================================================================
-   Two endpoints, both free-tier and both already proven elsewhere on this
-   platform:
-     /quote                   current price
-     /stock/metric?metric=all dividendPerShareAnnual
+   Two endpoints, through arowana-research (js/market-data.js):
+     /quote                   current price (not counted against lookups)
+     /stock/metric?metric=all dividendPerShareAnnual (one ticker lookup;
+                              only asked for holdings without a dividend)
 
-   WHAT IT DOES NOT RETURN: ex-dividend dates. Finnhub keeps those behind a
-   paid plan. The tracker's estNextPayDate() already returns nothing without
+   WHAT IT DOES NOT RETURN: ex-dividend dates. Our data plan doesn't
+   carry them. The tracker's estNextPayDate() already returns nothing without
    one, which is the right behaviour — deriving a date from the payment
    frequency would print a specific day on screen that no calendar has
    confirmed, and people plan around those dates.
@@ -5039,22 +5034,22 @@ select{
    defaulted to zero: zero means "pays nothing", which is a claim, and a
    failed request is not evidence of one.
    ============================================================================ */
-window.fetchFromFinnhub = async function (tickers) {
+window.fetchFromFinnhub = async function (tickers, needDividend) {
   var k = {};
   try { k = JSON.parse(localStorage.getItem('ap_user_api_keys') || '{}'); } catch (_) {}
   if (!k.finnhub) {
     throw new Error('Market data is not available right now. Sign in, or try again in a minute.');
   }
 
-  var prices = {}, dividends = {}, failed = [];
+  var prices = {}, dividends = {}, failed = [], limitHit = false;
+  var wantDiv = Array.isArray(needDividend) ? needDividend : null;   // null = every ticker
 
   function num(v) {
     if (v === null || v === undefined || v === '') return null;
     var n = Number(v); return Number.isFinite(n) ? n : null;
   }
 
-  /* Sequential with a gap — the free tier allows 60 calls a minute and each
-     holding costs two. */
+  /* Sequential with a gap, to stay under the provider's per-minute limit. */
   for (var i = 0; i < tickers.length; i++) {
     var t = String(tickers[i] || '').trim().toUpperCase();
     if (!t) continue;
@@ -5067,9 +5062,14 @@ window.fetchFromFinnhub = async function (tickers) {
         if (c !== null && c > 0) prices[t] = c;
       }
 
-      var m = await fetch('https://finnhub.io/api/v1/stock/metric?symbol=' +
+      var m = null;
+      if (!limitHit && (!wantDiv || wantDiv.indexOf(t) !== -1)) {
+        m = await fetch('https://finnhub.io/api/v1/stock/metric?symbol=' +
               encodeURIComponent(t) + '&metric=all&token=' + encodeURIComponent(k.finnhub));
-      if (m.ok) {
+        // Out of lookups for today: stop asking (the page shows the notice).
+        if (m.status === 429 || m.status === 402) limitHit = true;
+      }
+      if (m && m.ok) {
         var mj = await m.json();
         var mm = (mj && mj.metric) || {};
         var dps = num(mm.dividendPerShareAnnual);
@@ -5077,20 +5077,18 @@ window.fetchFromFinnhub = async function (tickers) {
         if (dps !== null) dividends[t] = dps;
       }
 
-      if (prices[t] === undefined && dividends[t] === undefined) failed.push(t);
+      if (prices[t] === undefined) failed.push(t);
     } catch (_) { failed.push(t); }
 
     if (i < tickers.length - 1) await new Promise(function (r) { setTimeout(r, 140); });
   }
 
-  if (failed.length) {
-    var el = document.getElementById('status');
-    if (el) el.textContent = 'No data for ' + failed.join(', ') +
-      ' \u2014 those rows are left as they were rather than zeroed.';
-  }
+  var notes = [];
+  if (failed.length) notes.push('No price for ' + failed.join(', ') + '; those rows are left as they were.');
+  if (limitHit) notes.push('Today\u2019s ticker lookups are used up, so some dividends were not looked up. Enter them yourself or refresh tomorrow.');
 
   /* exdates deliberately empty: see the note above. */
-  return { prices: prices, dividends: dividends, exdates: {} };
+  return { prices: prices, dividends: dividends, exdates: {}, note: notes.join(' ') };
 };
 
 /* Offer the user's own dividend-paying positions rather than hand-typing. */
@@ -5127,7 +5125,7 @@ window.holdingsFromJournal = function () {
        per share) and cost (per-share basis), not div/costBasis. Getting these
        wrong silently produced zero income on every row. */
     return { ticker: sym, shares: h.shares, cost: h.shares ? h.cost / h.shares : 0,
-             divps: 0, price: 0, freq: 'Q', drip: false, paylag: 30, exdate: '' };
+             divps: null, price: null, freq: 'Q', drip: false, paylag: 30, exdate: '' };
   });
 };
 </script>
@@ -5144,21 +5142,19 @@ const MONTHS = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov
 
 const DEFAULTS = {
   holdings: [],
-  webhook: "",
   taxDefault: 0
 };
 let state = { ...DEFAULTS };
-let MOCK = false;
 
 /* ===================== Storage ===================== */
 function loadState(){
   const raw = localStorage.getItem("div_tracker");
   if(raw){ try{ state = JSON.parse(raw); }catch{ state = { ...DEFAULTS }; } }
-  $("webhook").value = state.webhook || "";
+  // ATD-109: the n8n webhook field is gone; drop a URL saved by it.
+  if (state.webhook !== undefined) { delete state.webhook; localStorage.setItem("div_tracker", JSON.stringify(state)); }
   renderAll();
 }
 function saveState(){
-  state.webhook = $("webhook").value.trim();
   localStorage.setItem("div_tracker", JSON.stringify(state));
 }
 
@@ -5186,38 +5182,24 @@ function removeHolding(idx){
   saveState(); renderAll();
 }
 
-/* ===================== Pricing/Div Fetch (Webhook or Mock) ===================== */
+/* ===================== Price / dividend refresh (arowana-research) ===================== */
 function setBusy(on){ $("busy").style.display = on ? "block" : "none"; }
 function setStatus(t){ $("status").textContent = t || ""; }
 
 async function refreshData(){
-  const webhook = $("webhook").value.trim();
-      setBusy(true); setStatus(MOCK? "Loading sample values..." : "Fetching live data...");
+      if(!state.holdings.length){ setStatus("Add a holding first."); return; }
+      setBusy(true); setStatus("Fetching prices...");
       try{
-        let result;
-        if(MOCK){
-          await new Promise(r=>setTimeout(r,300));
-          result = { prices:{AAPL:230.15, JNJ:158.20, O:54.10}, dividends:{AAPL:1.00, JNJ:4.96, O:3.07}, exdates:{} };
-        } else if (webhook) {
-          /* A webhook still works if someone has one wired. */
-          const tickers = state.holdings.map(h=>h.ticker).join(",");
-          const res = await fetch(`${webhook}?tickers=${encodeURIComponent(tickers)}`);
-          if(!res.ok) throw new Error("Webhook returned HTTP "+res.status);
-          result = await res.json();
-        } else {
-          /* ── Direct Finnhub, no webhook needed ────────────────────────
-             The original required an n8n endpoint that does not exist
-             (the field is a placeholder), so the tracker could only ever
-             run in Mock Mode. Both figures it needs are on the free tier:
-             /quote for price and /stock/metric for dividend per share.
+        /* Prices come from /quote (free, not counted). The yearly dividend
+           comes from /stock/metric, which counts as a ticker lookup, so it
+           is only asked for holdings that don't have one yet.
 
-             EX-DIVIDEND DATES ARE NOT FETCHED. Finnhub keeps those behind
-             a paid endpoint, and estNextPayDate() correctly returns nothing
-             without one. Inventing a date from the payment frequency would
-             put a specific day on screen that the calendar never promised —
-             worse than leaving the column blank. */
-          result = await fetchFromFinnhub(state.holdings.map(h=>h.ticker));
-        }
+           EX-DIVIDEND DATES ARE NOT FETCHED: our data plan doesn't carry
+           them, and estNextPayDate() correctly returns nothing without one.
+           Inventing a date from the payment frequency would put a specific
+           day on screen that no calendar promised. */
+        const need = state.holdings.filter(h=>h.divps==null || h.divps==="").map(h=>String(h.ticker||'').toUpperCase());
+        const result = await fetchFromFinnhub(state.holdings.map(h=>h.ticker), need);
 
         /* Apply what came back. A symbol missing from the response keeps its
            existing value rather than being zeroed — a failed request is not
@@ -5230,10 +5212,8 @@ async function refreshData(){
           if (result.exdates && result.exdates[t])             { h.exdate = result.exdates[t]; }
         });
         saveState(); renderAll();
-        if (applied) setStatus('Updated ' + applied + ' of ' + state.holdings.length + ' holdings.');
+        setStatus((applied ? 'Updated ' + applied + ' of ' + state.holdings.length + ' holdings.' : 'Nothing updated.') + (result.note ? ' ' + result.note : ''));
 }catch(e){
-    /* Surface the real reason. "Check webhook" was misleading once the page
-       stopped needing one. */
     setStatus((e && e.message) ? e.message : 'Fetch failed.');
   }finally{ setBusy(false); }
 }
@@ -5277,6 +5257,7 @@ function buildForecast(){
   const months = [];
   const monthTotals = {};
   const upcoming = [];
+  const undated = [];
 
   for(let i=0;i<12;i++){
     const d = addMonths(start,i);
@@ -5288,13 +5269,17 @@ function buildForecast(){
   state.holdings.forEach(h=>{
     const ppy = periodsPerYear(h.freq);
     if(ppy<=0 || !h.shares || !h.divps) return;
-    const ex = h.exdate ? new Date(h.exdate) : new Date(start);
-    let pay = addDays(ex, h.paylag||30);
+    /* No ex-dividend date: no dated payments. Anchoring on today would put
+       specific days on screen that no calendar confirmed. */
+    if(!h.exdate){ undated.push(h.ticker); return; }
+    const step = (h.freq==="M") ? 1 : (h.freq==="Q") ? 3 : (h.freq==="S") ? 6 : 12;
+    let pay = addDays(new Date(h.exdate), h.paylag||30);
+    // An ex-date in the past: roll forward on the cadence to this window.
+    const windowStart = new Date(months[0].key+"-01T12:00:00");
+    for(let g=0; pay < windowStart && g<600; g++) pay = addMonths(pay, step);
     const amt = perPayAmount(h);
     // Generate next 12 months worth of payments on a simple equal-interval cadence
     for(let k=0;k<12*2;k++){ // over-generate, then clip to window
-      // monthly step anchor
-      const step = (h.freq==="M") ? 1 : (h.freq==="Q") ? 3 : (h.freq==="S") ? 6 : 12;
       if(k>0) pay = addMonths(pay, step);
 
       const yearMonth = `${pay.getFullYear()}-${String(pay.getMonth()+1).padStart(2,'0')}`;
@@ -5317,7 +5302,9 @@ function buildForecast(){
 
   // Render calendar
   const cal = $("calendar"); cal.innerHTML = "";
-  months.forEach(m=>{
+  // Nothing dated at all: twelve $0.00 months would only be noise.
+  const anyDated = months.some(m=>m.items.length);
+  (anyDated ? months : []).forEach(m=>{
     const el = document.createElement("div"); el.className = "month";
     const total = monthTotals[m.key] || 0;
     el.innerHTML = `<h4>${m.label}</h4><div class="amt">${money(total)}</div>`;
@@ -5333,12 +5320,17 @@ function buildForecast(){
     }
     cal.appendChild(el);
   });
+  if(undated.length){
+    const n = document.createElement("div"); n.className = "note"; n.style.gridColumn = "1 / -1";
+    n.textContent = "Not on the calendar: " + undated.join(", ") + ". Add each one's next ex-dividend date (your broker shows it) to place its payments. Their yearly income is already in the summary.";
+    cal.appendChild(n);
+  }
 
   // Render upcoming list
   const up = $("upcoming");
   if(upcoming.length===0){
     up.className="note";
-    up.textContent = "No payments detected in the next ~60 days. Add Ex-Div dates and Pay Lags, then rebuild forecast.";
+    up.textContent = undated.length ? "No dated payments in the next ~60 days. Add ex-dividend dates, then rebuild the forecast." : "No payments in the next ~60 days.";
   }else{
     const sorted = upcoming.sort((a,b)=> a.date.localeCompare(b.date));
     up.className="";
@@ -5457,7 +5449,6 @@ $("saveBtn").addEventListener("click", ()=>{ saveState(); setStatus("Saved."); }
 $("clearBtn").addEventListener("click", ()=>{
   if(confirm("Clear all holdings?")){ state.holdings=[]; saveState(); renderAll(); $("calendar").innerHTML=""; $("upcoming").innerHTML="Cleared."; }
 });
-$("mock").addEventListener("change", ()=>{ MOCK = $("mock").checked; setStatus(MOCK?"Mock Mode ON":"Mock Mode OFF"); });
 
 /* CSV Import/Export */
 $("importBtn").addEventListener("click", ()=> $("csvFile").click());
@@ -5532,9 +5523,9 @@ loadState();
 
     if (!found.length) {
       host.innerHTML = 'No open positions in your journal yet \u2014 add holdings below by hand.' +
-        '<div class="dt-note">Dividend per share and price are fetched from Finnhub once you have a ' +
-        'key saved. Ex-dividend dates are not available on the free tier, so the next-payment column ' +
-        'stays blank rather than showing a guessed date.</div>';
+        '<div class="dt-note">Refresh fills in prices, and the yearly dividend where it is blank. ' +
+        'Ex-dividend dates are not in our data, so enter them from your broker; without one a holding ' +
+        'counts toward yearly income but is left off the dated calendar.</div>';
       return;
     }
 
@@ -5543,9 +5534,8 @@ loadState();
       '</strong> in your journal can be imported, with lots of the same symbol merged at ' +
       'weighted-average cost.' +
       '<br><button type="button" id="dtImportBtn">Import my positions</button>' +
-      '<div class="dt-note">Non-payers come in with a zero dividend \u2014 the tracker only knows what ' +
-      'a company pays after the fetch. Ex-dividend dates are not on the free tier, so the ' +
-      'next-payment column stays blank rather than showing a date no calendar confirmed.</div>';
+      '<div class="dt-note">Imported positions come in with a blank dividend; Refresh looks each one up. ' +
+      'Ex-dividend dates are not in our data, so enter them from your broker to place payments on the calendar.</div>';
 
     $('dtImportBtn').addEventListener('click', function () {
       /* Merge rather than replace: someone may already have holdings typed

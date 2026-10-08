@@ -167,7 +167,7 @@ const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-
   'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor',
   'arowana-trader': 'wheel-coach', 'watchlist': 'watchlists', 'scanner': null, 'position-sizer': 'portfolio-sizer',
   'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': null, 'trade-journal-pro': 'journal-trades', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
-  'strategy-backtesting': null, 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': null };  // null: hidden from the ATD-109 launch menu
+  'strategy-backtesting': null, 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': null, 'dividend-tracker': 'portfolio-dividends' };  // null: hidden from the ATD-109 launch menu
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
   await p.goto(BASE + '/' + name + '.html'); await p.waitForTimeout(900);

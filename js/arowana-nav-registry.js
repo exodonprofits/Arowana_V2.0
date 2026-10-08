@@ -36,7 +36,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-07.2",
+    "version": "2026-10-07.3",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -126,6 +126,8 @@
         "desc": "Shares from your risk budget", "status": "available", "route": { "path": "position-sizer.html" } },
       { "id": "portfolio-tax", "parent": "portfolio", "label": "Tax-Loss Harvester", "icon": "🧾",
         "desc": "Loss candidates and wash-sale flags", "status": "available", "route": { "path": "tax-loss-harvester.html" } },
+      { "id": "portfolio-dividends", "parent": "portfolio", "label": "Dividend Income", "icon": "💵",
+        "desc": "Yearly income and payout calendar", "status": "available", "route": { "path": "dividend-tracker.html" } },
       { "id": "portfolio-accounts", "parent": "portfolio", "label": "Accounts & Cash", "icon": "💵",
         "status": "planned", "note": "Planned; waits on account-ownership fixes" },
 
@@ -162,7 +164,6 @@
       { "path": "kelly-calculator.html", "entry": "portfolio" },
       { "path": "risk-comfort.html", "entry": "portfolio" },
       { "path": "volatility-guardrails.html", "entry": "portfolio" },
-      { "path": "dividend-tracker.html", "entry": "portfolio" },
       { "path": "discipline-scorecard.html", "entry": "journal" },
       { "path": "r-multiple.html", "entry": "journal" },
       { "path": "trading-journal-analysis.html", "entry": "journal" },
