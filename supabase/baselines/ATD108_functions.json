@@ -98,11 +98,15 @@
     },
     {
       "path": "supabase/functions/arowana-billing-portal/index.ts",
-      "sha256_lf": "73bee597cf55435f44fee0823c25d97bf4b797c9934ba773cc230d71063e4249"
+      "sha256_lf": "73bee597cf55435f44fee0823c25d97bf4b797c9934ba773cc230d71063e4249",
+      "repository_sha256_lf": "d2c3d8caee8b9bc2e2497eabc8f7c116f21c520e5be1851cf708317b21ba598f",
+      "repository_change": "ATD-109 CORS: allows the bare domain and www besides AROWANA_SITE_URL, and logs a refused origin. sha256_lf retains the original deployed capture. (pending deployment)."
     },
     {
       "path": "supabase/functions/arowana-checkout/index.ts",
-      "sha256_lf": "d2772edef988c546403fd570879cbef07b77a1bbcebcc4db45eeac26c2f746f2"
+      "sha256_lf": "d2772edef988c546403fd570879cbef07b77a1bbcebcc4db45eeac26c2f746f2",
+      "repository_sha256_lf": "d17ce0f4508cb3b4edb3289de4ccb43446e9b3c1d588f858d217180abf258056",
+      "repository_change": "ATD-109 CORS: allows the bare domain and www besides AROWANA_SITE_URL, and logs a refused origin. sha256_lf retains the original deployed capture. (pending deployment)."
     },
     {
       "path": "supabase/functions/arowana-checkout/price-guard.js",
@@ -112,7 +116,9 @@
     },
     {
       "path": "supabase/functions/arowana-coach/index.ts",
-      "sha256_lf": "4d959c6bf895f83901a54a3a543f6947cb0f02bc74a6bbd3c3407735ca3c0c50"
+      "sha256_lf": "4d959c6bf895f83901a54a3a543f6947cb0f02bc74a6bbd3c3407735ca3c0c50",
+      "repository_sha256_lf": "0d4cdabeb301cb946471599d76b3dffc39d66f6eadfb0b6f8ca6f44406281264",
+      "repository_change": "ATD-109 CORS: allows the bare domain and www besides AROWANA_SITE_URL, and logs a refused origin. sha256_lf retains the original deployed capture. (pending deployment)."
     },
     {
       "path": "supabase/functions/arowana-digest/digest.js",
@@ -134,7 +140,9 @@
     },
     {
       "path": "supabase/functions/arowana-research/index.ts",
-      "sha256_lf": "bc2f49ad796998aeab94bbcba5d10c48cb52126e54c646946f475884dad4c7ac"
+      "sha256_lf": "bc2f49ad796998aeab94bbcba5d10c48cb52126e54c646946f475884dad4c7ac",
+      "repository_sha256_lf": "23546789444edd51a00cabbfe54e047e364a04017f50a6307669cfcd094288a6",
+      "repository_change": "ATD-109 CORS: allows the bare domain and www besides AROWANA_SITE_URL, and logs a refused origin. sha256_lf retains the original deployed capture. (pending deployment)."
     },
     {
       "path": "supabase/functions/arowana-stripe-webhook/index.ts",

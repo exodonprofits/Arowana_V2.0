@@ -13,10 +13,15 @@
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const SITE = (Deno.env.get('AROWANA_SITE_URL') ?? '').replace(/\/$/, '');
+// The site is reached on the bare domain and on www (and /staging/ is the
+// same origin), so all of these count as ours alongside AROWANA_SITE_URL.
+const OURS = new Set([SITE, 'https://arowanaprofits.com', 'https://www.arowanaprofits.com'].filter(Boolean));
 function allowOrigin(origin: string | null): string {
   if (!origin) return SITE || '*';
-  if (SITE && origin === SITE) return origin;
+  if (OURS.has(origin)) return origin;
   if (/^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return origin;
+  // A refused origin used to fail silently in the browser; say which one.
+  console.warn('[cors] origin not allowed:', origin, '(AROWANA_SITE_URL is', JSON.stringify(SITE) + ')');
   return SITE || '*';
 }
 const corsFor = (req: Request) => ({
