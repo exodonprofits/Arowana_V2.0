@@ -66,8 +66,11 @@ const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch
   await desks.click();
   ok('B Strategy Desks expands', (await desks.getAttribute('aria-expanded')) === 'true');
   const deskLabels = await p.locator('#anv-sub-desks > .anv-subitem .rail-subitem-label').allInnerTexts();
-  ok('B five desks', deskLabels.map(s=>s.split('\n')[0].replace(/(PLANNED|LEGACY|Planned|Legacy)$/,'').trim()).join(',') === 'Swing,Wheel,Options,Growth,Long-Term', deskLabels.join(','));
-  ok('B Growth planned is not a link', await p.evaluate(() => { const n = document.querySelector('#railMount [data-nav-id="desk-growth"]'); return n.tagName === 'DIV' && !n.hasAttribute('href') && /planned/i.test(n.textContent); }));
+  // ATD-109 launch menu: planned and hidden desks are not rendered.
+  ok('B launch desks: Wheel and Options', deskLabels.map(s=>s.split('\n')[0].trim()).join(',') === 'Wheel,Options', deskLabels.join(','));
+  ok('B planned and hidden entries are not rendered, and no Legacy/Planned badges', await p.evaluate(() =>
+    ['desk-growth','desk-swing','desk-longterm','command-brief','command-whatchanged','command-queue','research-technical','research-scanners','research-backtesting','portfolio-accounts','journal-decisions']
+      .every(id => !document.querySelector('[data-nav-id="' + id + '"]')) && !document.querySelector('#railMount .anv-badge, #anvMoreSheet .anv-badge')));
   ok('B no hrefs outside registry-safe pattern', await p.evaluate(() => [...document.querySelectorAll('#railMount a[href], .anv-mobile-bar a[href], #anvMoreSheet a[href]')].every(a => /^[a-z0-9][a-z0-9_\-]*\.html(\?[a-z0-9_\-=&]+)?$/i.test(a.getAttribute('href')))));
   // collapse
   await p.click('#railCollapseBtn');
@@ -162,9 +165,9 @@ const MIGRATED = ['tools','ai-moat-finder','atr-stop-planner','credit-spread-pla
 const NO_RAIL_MOUNT = ['arowana-trader'];   // sidebar is the coach panel: mobile bar + More sheet only
 const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-positions', 'portfolio-command': 'portfolio-overview', 'options-hub': 'wheel-calls',
   'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor',
-  'arowana-trader': 'wheel-coach', 'watchlist': 'watchlists', 'scanner': 'research-scanners', 'position-sizer': 'portfolio-sizer',
-  'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': 'command-brief', 'trade-journal-pro': 'journal-trades', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
-  'strategy-backtesting': 'research-backtesting', 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': 'research-technical' };
+  'arowana-trader': 'wheel-coach', 'watchlist': 'watchlists', 'scanner': null, 'position-sizer': 'portfolio-sizer',
+  'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': null, 'trade-journal-pro': 'journal-trades', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
+  'strategy-backtesting': null, 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': null };  // null: hidden from the ATD-109 launch menu
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
   await p.goto(BASE + '/' + name + '.html'); await p.waitForTimeout(900);
@@ -363,7 +366,7 @@ for (const [name, [group, slot]] of Object.entries(HOMES)) {
   await p.context().close(); }
 
 // S. ATD-009 phase 1: pages without a sidebar get a renderer-built shell rail.
-const SHELL = { 'swing-trader': ['desk-swing', '.nav-links'], 'long-term-dashboard': ['desk-longterm', '#v1NavLinks'],
+const SHELL = { 'swing-trader': [null, '.nav-links'], 'long-term-dashboard': [null, '#v1NavLinks'],   // null: hidden from the launch menu
   'my-rules': ['portfolio-rules', 'nav#nav'], 'data-hygiene-audit': ['journal-quality', null] };
 for (const [name, [want, legacy]] of Object.entries(SHELL)) {
   const look = (p, sel) => p.evaluate(sel => {
@@ -380,7 +383,7 @@ for (const [name, [want, legacy]] of Object.entries(SHELL)) {
   await d.goto(BASE + '/' + name + '.html'); await d.waitForTimeout(1200);
   const r = await look(d, legacy);
   ok(`S ${name} desktop shell rail`, r.shell && r.shellVisible && r.primaries === 6 && r.pad >= 248, JSON.stringify(r));
-  ok(`S ${name} current = ${want}`, r.current.length === 1 && r.current[0] === want, JSON.stringify(r.current));
+  ok(`S ${name} current = ${want}`, want === null ? r.current.length === 0 : (r.current.length === 1 && r.current[0] === want), JSON.stringify(r.current));
   if (legacy) ok(`S ${name} legacy top links hidden`, !r.legacyShown);
   ok(`S ${name} desktop no overflow`, r.overflow <= 1, String(r.overflow));
   const dErr = d._errors.slice(); await d.context().close();
@@ -412,8 +415,17 @@ for (const [name, [want, legacy]] of Object.entries(SHELL)) {
   ok('S swing-trader shell account menu opens', await d.evaluate(() => { const m = document.querySelector('.anv-shell .user-menu'); return !!(m && m.classList.contains('open')); }));
   await d.context().close(); }
 
+// L2. ATD-109: the old Features page (and its two retired twins) land on the
+// home page's "What's inside", which describes what each plan includes.
+for (const from of ['features', 'feature_body', 'feature_new']) {
+  const p = await newPage(desktop, null);
+  await p.goto(BASE + '/' + from + '.html?x=1#screeners'); await p.waitForTimeout(900);
+  const u = new URL(p.url());
+  ok(`L2 ${from} -> index.html#inside`, u.pathname === '/index.html' && u.hash === '#inside', p.url());
+  await p.context().close();
+}
 // L. ATD-009 phase 1: retired catalogues redirect, keeping query and hash.
-for (const [from, to] of [['advanced-trading-tools', 'tools'], ['feature_body', 'features'], ['feature_new', 'features'], ['features-tools-directory', 'tools']]) {
+for (const [from, to] of [['advanced-trading-tools', 'tools'], ['features-tools-directory', 'tools']]) {
   const p = await newPage(desktop, null);
   await p.goto(BASE + '/' + from + '.html?x=1#screeners'); await p.waitForTimeout(800);
   const u = new URL(p.url());

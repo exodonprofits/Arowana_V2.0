@@ -5000,7 +5000,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
       ham.setAttribute("aria-expanded", open?"false":"true");
     });
     const mmq=window.matchMedia("(min-width: 641px)");
-    mmq.addEventListener?.("change", e=>{ if(e.matches){ mobileMenu.style.display="none"; ham.setAttribute("aria-expanded","false"); }});
+    mmq.addEventListener?.("change", e=>{ if(e.matches && mobileMenu && ham){ mobileMenu.style.display="none"; ham.setAttribute("aria-expanded","false"); }});
     (function(){
       const path=location.pathname.split("/").pop()||"index.html";
       document.querySelectorAll(".nav a").forEach(a=>{

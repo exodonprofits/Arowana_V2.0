@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <!-- ATD-109: market data is served by our own key; load first so key checks see it. -->
+  <script src="./js/market-data.js?v=20261007a"></script>
 <title>Options Analyzer — Arowana Profits</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5315,10 +5317,10 @@ async function fetchPrice(){
   if(!sym){toast('Enter a ticker first','warn');return;}
   var key=getFinnhubKey();
   $('priceBar').style.display='flex';
-  $('priceStatus').textContent=key?'Fetching…':'No Finnhub key';
+  $('priceStatus').textContent=key?'Fetching…':'Live price not available right now';
   $('priceLive').textContent='';
   if(!key){
-    $('priceStatus').innerHTML='No Finnhub key. <a href="account.html#apiKeysCard" style="color:#0369a1;font-weight:700">Add free key &#8594;</a>';
+    $('priceStatus').innerHTML='Live price not available right now. Type the price in.';
     return;
   }
   try{

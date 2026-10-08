@@ -464,3 +464,27 @@ Findings that changed the plan:
 - Founders checkout is refused between L1 and L3, so those steps run back to back.
 
 Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set and only ever said "not connected yet". It now calls the deployed `arowana-billing-portal` function, the one Account uses. Check: `topbar_billing_check.mjs` (48).
+
+**Launch-safe pass (PR A), branch `claude/ATD-109-prelaunch-cleanup`:** a signed-in functional audit of every menu destination and directory tool (type a ticker, press the main button, read the result) found three things: pages that block on a personal API key, pages that don't work, and the menu exposing planned and legacy items.
+
+- **API keys:**
+  - Account deletes stored keys, and `js/market-data.js` already answers every `finnhub.io` call through `arowana-research`. Yet about 20 pages still stopped at "No Finnhub key".
+  - The router now stores a placeholder (`finnhub: 'arowana-server'`) when no personal key exists. It never overwrites a real one, and the `token` it adds is dropped before the request leaves.
+  - It loads in `<head>` on the 18 pages that call Finnhub, and its version string is bumped.
+  - Every message that asked for a key, or blamed "your key" for a server error, now says market data isn't available and to sign in or retry. That covers Watchlist, Options Hub, Trading Command, Portfolio Advisor and Portfolio Command, DCF, Intrinsic Value, Credit Spread, Options Analyzer, Moat Finder, ATR Stops, Trade Plan Builder, Scanners and Tools.
+  - Ticker Research's Alpha Vantage-only "Trending topics" cards are removed.
+  - The Support FAQ and Security page no longer describe user API keys.
+- **Launch menu:**
+  - Registry entries can carry `"hidden": true`, and the renderer skips hidden and planned entries. The approved structure stays in the registry.
+  - Hidden for launch, because they don't work without data we don't carry: Morning Brief, Technical Analysis, Scanners, Backtesting, Swing, and the Long-Term desk (being rebuilt in PR B).
+  - Legacy and Planned badges and migration notes are no longer shown. Risk Rules and Wheel Strategy get real descriptions.
+- **Other fixes:**
+  - R-Multiple: old mobile-menu code threw on resize.
+  - Scanners opens on "Ready now".
+  - Tool Directory: dropped the Dividend Tracker card (PR C) and the dead Dividend Screener card, and rewrote the fundamentals blurb.
+  - Trading Command's level map says to import an intraday CSV, instead of asking for an FMP key.
+  - `features.html`, which described a day-trading platform, now redirects to the home page's "What's inside", as does its two retired twins.
+- **Checks:**
+  - `scripts/browser/launch_menu_check.mjs` (43; 8 fail on `main`): 34 launch-menu pages with no key wording, no page errors and nothing sent to finnhub.io directly; prices load with no key; the placeholder is not forwarded and never replaces a personal key; the Options Hub and Intrinsic Value lookups work.
+  - `scripts/browser/lib/fake_research.mjs`: a fake research function; candles return 403, as on the free plan.
+  - `nav_v2_check.mjs` updated for the launch menu (487).

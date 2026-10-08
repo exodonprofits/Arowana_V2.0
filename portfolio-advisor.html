@@ -699,7 +699,7 @@ body.rail-collapsed .app-shell{grid-template-columns:68px minmax(0,1fr)}
      for its account switcher, so the dot beside an account matches there. -->
 <script src="./js/account-registry.js?v=20260918c"></script>
 <!-- Market data runs on our licensed key; nobody brings their own. -->
-<script src="./js/market-data.js?v=20260918c"></script>
+<script src="./js/market-data.js?v=20261007a"></script>
   <!-- Home-screen app (ATD-109): installable from the browser's share menu; opens full screen, without the address bar. -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#071a2f">
@@ -1992,7 +1992,7 @@ async function loadFundamentals(sym){
   const key=(typeof getFinnhubKey==='function')?getFinnhubKey():'';
   if(!key){
     setAll('—');
-    if(src)src.innerHTML='No market-data key, so no figures are shown. <a href="account.html#apiKeysCard">Add a free Finnhub key</a> to fill these in. Nothing here is estimated.';
+    if(src)src.innerHTML='Market data is not available right now, so no figures are shown. Sign in, or try again in a minute. Nothing here is estimated.';
     return;
   }
   try{

@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <!-- ATD-109: market data is served by our own key; load first so key checks see it. -->
+  <script src="./js/market-data.js?v=20261007a"></script>
 <title>Strategy Backtesting — Arowana Profits</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -5670,7 +5672,7 @@ async function runBacktest() {
 async function callFinnhubBacktest(config) {
   const apiKey = apiKeys.finnhub;
   if (!apiKey) {
-    throw new Error('Finnhub API key required for historical backtesting');
+    throw new Error('Daily price history is not available on the current data plan yet.');
   }
   
   try {
@@ -6150,8 +6152,7 @@ function showBacktestError(error) {
       '</p>' +
       (!apiKeys.finnhub
         ? '<p style="margin:0 0 14px;color:var(--text-muted,#526571);font-size:.84rem;line-height:1.55">' +
-          'No Finnhub key is saved on this device. Add one under ' +
-          '<a href="account.html" style="color:var(--brand,#175f8f);font-weight:700">Account &rarr; API Keys</a>.' +
+          'Market data is not available right now. Sign in, or try again in a minute.' +
           '</p>'
         : '') +
       (needsPaidPlan

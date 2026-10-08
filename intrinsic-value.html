@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <!-- ATD-109: market data is served by our own key; load first so key checks see it. -->
+  <script src="./js/market-data.js?v=20261007a"></script>
 <title>Intrinsic Value Calculator — Arowana Profits</title>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -7116,7 +7118,7 @@ window.addEventListener('ap:config:ready', updateFinnhubBar);
 async function fetchFinnhubFundamentals(sym){
   var key = getFinnhubKey();
   if(!key){
-    throw new Error('No Finnhub key found. Add it in Account → API Keys (free, 60 seconds).');
+    throw new Error('Market data is not available right now. Sign in, or try again in a minute.');
   }
 
   var base = 'https://finnhub.io/api/v1';
@@ -7479,7 +7481,7 @@ updateKeyBar();
 <script src="./js/supabase_min.js?v=20260918c"></script>
 <script src="./js/sb.js?v=20261004a"></script>
 <!-- Market data runs on our licensed key; nobody brings their own. -->
-<script src="./js/market-data.js?v=20260918c"></script>
+<script src="./js/market-data.js?v=20261007a"></script>
 <script>window.GS_CONFIG_URL="./js/config.json";</script>
 <script>
 /* ── Sign out ─────────────────────────────────────────────────────────────

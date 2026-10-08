@@ -1379,7 +1379,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
         <span class="sr-only">Filter scans by category</span>
         <select id="categoryFilter">
           <option value="__all__">All scans</option>
-          <option value="__ready__">Ready now</option>
+          <option value="__ready__" selected>Ready now</option>
         </select>
       </label>
 
@@ -1451,7 +1451,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
 
 </div><!-- /main-container -->
 
-<script src="./js/scanners.js"></script>
+<script src="./js/scanners.js?v=20261007a"></script>
 <script src="./js/scanner-defs.js"></script>
 <!-- Supabase SDK. app-config.js builds window.supabaseClient from this; without
      it you get "[shared-client] Supabase SDK never loaded" and every page
@@ -1510,7 +1510,8 @@ html,body{font-size:13px!important;line-height:1.45!important}
   function renderCategories(items) {
     var sel = $('categoryFilter');
     if (!sel) return;
-    var keep = sel.value || '__all__';
+    // Opens on what can run today; most scans wait on data we don't carry yet.
+    var keep = sel.value || '__ready__';
 
     var cats = {};
     items.forEach(function (it) { cats[it.scanner.category] = (cats[it.scanner.category] || 0) + 1; });

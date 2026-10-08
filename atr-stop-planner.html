@@ -5303,7 +5303,7 @@ $('resetBtn').addEventListener('click',function(){
   async function lookupATR(sym) {
     var k = keys();
     if (!k.fmp && !k.finnhub) {
-      setSrc('manual', 'No price-data key saved — enter ATR manually, or add a key under Account.');
+      setSrc('manual', 'Enter the 14-day ATR from your broker\'s chart; it is not filled in automatically yet.');
       return;
     }
     setSrc('', 'Fetching daily bars for ' + sym + '\u2026');

@@ -48,7 +48,7 @@
   <script src="./js/sb.js?v=20261004a"></script>
   <script src="./js/plan.js?v=20261004e"></script>
   <!-- Market data runs on our licensed key; nobody brings their own. -->
-  <script src="./js/market-data.js?v=20260918c"></script>
+  <script src="./js/market-data.js?v=20261007a"></script>
 
   <script src="./js/auth-header.js?v=20260918c"></script>
   
@@ -5949,7 +5949,7 @@ html,body{font-size:13px!important;line-height:1.45!important}
           <div id="sentimentIdle" class="idle-hint">
             <div class="idle-icon">💭</div>
             <div class="idle-title">Ready to analyze</div>
-            <div class="idle-text">Enter any ticker above and click Analyze to pull news + social sentiment from Finnhub (and Alpha Vantage if configured). You'll see overall sentiment score, social media gauge, news media gauge, and trending topics around the ticker.</div>
+            <div class="idle-text">Enter any ticker above and click Analyze to see its news and social sentiment: an overall score plus separate social and news gauges.</div>
             <div class="idle-text" style="margin-top:8px;font-size:0.85rem;color:var(--text-muted)">Included in your plan &mdash; no key needed. <a href="account.html" style="color:var(--brand)">Account Settings</a>.</div>
 
             <div class="idle-quick-tickers" role="group" aria-label="Quick ticker shortcuts">
@@ -5984,11 +5984,6 @@ html,body{font-size:13px!important;line-height:1.45!important}
                 <div class="idle-preview-icon">⚖️</div>
                 <div class="idle-preview-title">Bullish/Bearish Split</div>
                 <div class="idle-preview-desc">Real news sentiment breakdown, when available</div>
-              </div>
-              <div class="idle-preview-card">
-                <div class="idle-preview-icon">🔥</div>
-                <div class="idle-preview-title">Trending Topics</div>
-                <div class="idle-preview-desc">Real discussion themes (requires Alpha Vantage key)</div>
               </div>
               <div class="idle-preview-card">
                 <div class="idle-preview-icon">📈</div>
@@ -6213,14 +6208,6 @@ html,body{font-size:13px!important;line-height:1.45!important}
                   <div class="insight-title">Run an analysis to see momentum</div>
                   <div class="insight-description">
                     Momentum is calculated from live overall/social/news sentiment scores once you analyze a ticker.
-                  </div>
-                </div>
-                
-                <div class="insight-card">
-                  <div class="insight-type">💡 Discussion Themes</div>
-                  <div class="insight-title">Run an analysis to see themes</div>
-                  <div class="insight-description">
-                    Requires an Alpha Vantage API key in Account Settings to surface real discussion topics.
                   </div>
                 </div>
               </div>

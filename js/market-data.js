@@ -75,6 +75,22 @@
 
   window.AP_MARKET_USAGE = function () { return lastUsage; };
 
+  /* Pages still ask "is there a Finnhub key?" before they fetch, from when
+     users pasted their own (Account now clears those). Every finnhub.io call
+     is answered server-side below, so give those checks a placeholder: the
+     token is dropped before the request leaves (see `if (k !== 'token')`). */
+  var SERVER_KEY = 'arowana-server';
+  window.AP_SERVER_MARKET_DATA = true;
+  try {
+    var stored = JSON.parse(window.localStorage.getItem('ap_user_api_keys') || '{}') || {};
+    if (!stored.finnhub) {
+      stored.finnhub = SERVER_KEY;
+      window.localStorage.setItem('ap_user_api_keys', JSON.stringify(stored));
+    }
+  } catch (e) { /* storage blocked: pages fall back to their own messages */ }
+  window.AP_USER_KEYS = window.AP_USER_KEYS || {};
+  if (!window.AP_USER_KEYS.finnhub) window.AP_USER_KEYS.finnhub = SERVER_KEY;
+
   window.fetch = async function (input, init) {
     var url = typeof input === 'string' ? input : (input && input.url) || '';
     if (url.indexOf('finnhub.io/api/v1') === -1) return nativeFetch(input, init);

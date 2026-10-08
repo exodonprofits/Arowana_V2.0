@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <!-- ATD-109: market data is served by our own key; load first so key checks see it. -->
+  <script src="./js/market-data.js?v=20261007a"></script>
 <title>Trade Plan Builder &mdash; Arowana Profits</title>
 <link rel="icon" type="image/png" href="./images/arowanalogo.png?v=20260501">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@500;600&display=swap" rel="stylesheet">
@@ -662,7 +664,7 @@ function aiShowProposal(p){
   if(p.quote){
     src.textContent='Based on a live quote: '+quoteLine(p.quote)+'.';
   }else{
-    var why={'no-key':'no Finnhub key is set','rate-limited':'Finnhub is rate limited right now',
+    var why={'no-key':'live prices are not available right now','rate-limited':'Finnhub is rate limited right now',
              'empty':'no quote came back for this symbol','blocked':'the quote request failed'}[p.quoteReason]
              ||'live price data was unavailable';
     src.textContent='No price data \u2014 '+why+'. Levels are left blank on purpose; add them yourself from a chart.';

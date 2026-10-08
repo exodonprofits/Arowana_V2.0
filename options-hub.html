@@ -8,6 +8,8 @@
 
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+  <!-- ATD-109: market data is served by our own key; load first so key checks see it. -->
+  <script src="./js/market-data.js?v=20261007a"></script>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='8' fill='%230b4f8a'/><text y='24' x='4' font-size='22'>📈</text></svg>">
   <title>📈 Options Hub — Arowana Profits</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3954,11 +3956,11 @@ const OH_STRATEGIES = [
               recApplyTickerData(symbol, data);
               recSetTickerStatus('success', '✓ LIVE');
             } else if (!finnhubKey) {
-              recSetTickerStatus('notfound', 'Add your Finnhub key to look up tickers');
+              recSetTickerStatus('notfound', 'Sign in to look up tickers');
               document.getElementById('rec-ticker-info-card').classList.remove('visible');
             } else {
               const msg = {
-                'invalid-key': 'Finnhub key rejected — check it in Account settings',
+                'invalid-key': 'Market data refused the request. Try again in a minute.',
                 'rate-limited': 'Finnhub rate limit hit — try again shortly',
                 'network': 'Network error — check your connection',
                 'not-found': 'Not found',
@@ -8665,7 +8667,7 @@ const OH_STRATEGIES = [
             // Get API key — uses Recommender's exposed function
             const apiKey = (typeof window.recGetFinnhubKey === 'function') ? window.recGetFinnhubKey() : null;
             if (!apiKey) {
-              resultZone.innerHTML = '<div class="qual-error">Finnhub API key not set. Add it under Account → API Keys to enable scans.</div>';
+              resultZone.innerHTML = '<div class="qual-error">Market data is not available right now. Sign in, or try again in a minute.</div>';
               return;
             }
 
@@ -9452,7 +9454,7 @@ const OH_STRATEGIES = [
   <script src="./js/supabase_min.js?v=20260918c"></script>
   <script src="./js/sb.js?v=20261004a"></script>
   <!-- Market data runs on our licensed key; nobody brings their own. -->
-  <script src="./js/market-data.js?v=20260918c"></script>
+  <script src="./js/market-data.js?v=20261007a"></script>
   <script src="./js/plan.js?v=20260918c"></script>
   <script src="./js/risk.js?v=20261004c"></script>
   <script src="./js/auth-header.js?v=20260918c"></script>

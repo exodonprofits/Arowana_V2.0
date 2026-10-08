@@ -82,7 +82,7 @@
           return !!(k.finnhub || (window.AP_USER_KEYS && window.AP_USER_KEYS.finnhub));
         } catch (_) { return false; }
       },
-      missing: 'Add a Finnhub API key in Account Settings.'
+      missing: 'Sign in to load live quotes.'
     },
 
     candles: {

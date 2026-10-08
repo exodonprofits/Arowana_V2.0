@@ -78,6 +78,10 @@
   }
 
   REG.entries.forEach(function (e) {
+    // Launch menu (ATD-109): customers see only what works. Planned entries
+    // and pages marked "hidden" stay in the registry (the approved structure)
+    // but are not rendered; remove "hidden" to bring a page back.
+    if (e.hidden || e.status === 'planned') return;
     if (e.route && !validRoute(e.route)) {
       console.error('[arowana-nav] entry "' + e.id + '" has an unsafe route and was skipped.');
       return;
@@ -201,11 +205,9 @@
   function subItem(e, extraClass) {
     var cls = 'rail-subitem anv-subitem' + (extraClass ? ' ' + extraClass : '');
     var labelBox = el('div', null, [
-      el('div', { className: 'rail-subitem-label', text: e.label }, [
-        e.status === 'planned' ? badge('Planned') : null,
-        e.status === 'legacy' ? badge('Legacy') : null
-      ]),
-      (e.desc || e.note) ? el('div', { className: 'rail-subitem-desc', text: e.status === 'available' ? e.desc : (e.note || e.desc) }) : null
+      el('div', { className: 'rail-subitem-label', text: e.label }),
+      // "Legacy" and the migration notes are for us, not for customers.
+      e.desc ? el('div', { className: 'rail-subitem-desc', text: e.desc }) : null
     ]);
     var icon = el('span', { className: 'rail-subitem-icon', 'aria-hidden': 'true', text: e.icon || '' });
     if (e.status === 'planned' || !e.route) {
