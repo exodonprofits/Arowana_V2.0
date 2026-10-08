@@ -141,8 +141,8 @@
     {
       "path": "supabase/functions/arowana-research/index.ts",
       "sha256_lf": "bc2f49ad796998aeab94bbcba5d10c48cb52126e54c646946f475884dad4c7ac",
-      "repository_sha256_lf": "23546789444edd51a00cabbfe54e047e364a04017f50a6307669cfcd094288a6",
-      "repository_change": "ATD-109 CORS: allows the bare domain and www besides AROWANA_SITE_URL, and logs a refused origin. sha256_lf retains the original deployed capture. (pending deployment)."
+      "repository_sha256_lf": "d761b3e59c8bcb8d43567970f9ab174e64fffa6936f5073deb3212cae2fd2989",
+      "repository_change": "Live v8 (deployed outside this repo) added a response cache, shared in-flight requests and provider retries; ATD-109 added the CORS change (bare domain and www allowed, refused origins logged). This file is the deployed v9 source, deployed 2026-10-08. sha256_lf retains the original ATD-108 capture."
     },
     {
       "path": "supabase/functions/arowana-stripe-webhook/index.ts",
