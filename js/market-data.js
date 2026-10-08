@@ -17,6 +17,7 @@
   var FN = 'https://pbojacnagutipfhcxltj.supabase.co/functions/v1/arowana-research';
   var nativeFetch = window.fetch.bind(window);
   var lastUsage = null;
+  var signInNoticeShown = false;
 
   // Token comes from the shared helper in app-config.js, which waits for
   // the shared client and refreshes once before calling anyone signed out.
@@ -49,7 +50,7 @@
     });
   }
 
-  function notice(message) {
+  function notice(message, link) {
     var el = document.getElementById('apDataNotice');
     if (!el) {
       el = document.createElement('div');
@@ -61,6 +62,12 @@
       document.body.appendChild(el);
     }
     el.textContent = message;
+    if (link) {
+      var a = document.createElement('a');
+      a.href = link.href; a.textContent = link.text;
+      a.style.cssText = 'margin-left:8px;color:#174e71;font-weight:800;text-decoration:underline';
+      el.appendChild(a);
+    }
     el.style.display = 'block';
     clearTimeout(el._t);
     el._t = setTimeout(function () { el.style.display = 'none'; }, 8000);
@@ -104,6 +111,13 @@
 
     var token = await accessToken();
     if (!token) {
+      // The menu can still show a saved name after the session has expired;
+      // say so once, with a way back here after signing in.
+      if (!signInNoticeShown) {
+        signInNoticeShown = true;
+        var here = location.pathname.split('/').pop() + location.search;
+        notice('Your sign-in has expired.', { text: 'Sign in again', href: 'login.html?next=' + encodeURIComponent(here || 'trading-command.html') });
+      }
       return new Response(JSON.stringify({ error: 'Sign in to load market data' }),
         { status: 401, headers: { 'content-type': 'application/json' } });
     }

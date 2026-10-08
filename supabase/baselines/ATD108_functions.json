@@ -132,7 +132,7 @@
       "path": "supabase/functions/arowana-explain/index.ts",
       "sha256_lf": "8a810175acfc6cd34e6edd1aafefd2bc40c9f20e3d7d8009641c55f950c64dd9",
       "repository_sha256_lf": "4291ecc95864f77302bc44d5a96b99b742a8029e60e8fa2cdf1523eeda6f8208",
-      "repository_change": "ATD-009 'retirement' kind (deployed 2026-10-06 as v3), then ATD-109 'thesis' kind for the Thesis Builder (additive; 'trade-case' and text kinds unchanged); 'thesis' pending deployment. sha256_lf retains the original deployed capture."
+      "repository_change": "ATD-009 'retirement' kind (deployed 2026-10-06 as v3), then ATD-109 'thesis' kind for the Thesis Builder (additive; 'trade-case' and text kinds unchanged); 'thesis' deployed 2026-10-08 as v4. sha256_lf retains the original deployed capture."
     },
     {
       "path": "supabase/functions/arowana-founders-count/index.ts",
