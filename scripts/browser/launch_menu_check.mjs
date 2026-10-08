@@ -38,7 +38,7 @@ const MENU = ['trading-command.html', 'analysis-central.html', 'intrinsic-value.
   'long-term-dashboard.html', 'retirement-planner.html', 'retirement-calculator.html', 'withdrawal-planner.html', 'tax-advantaged-guide.html',
   'pick-my-mix.html', 'asset-allocation-builder.html', 'etf-core-screener.html', 'fee-analyzer.html', 'factor-tilt-planner.html',
   'dca-planner.html', 'college-savings.html', 'education-529-planner.html', 'buy-a-home.html', 'risk-quiz.html', 'ips-builder.html',
-  'my-rules.html?tab=longterm', 'real-estate-analyzer.html', 'learn-investing.html', 'dividend-tracker.html'];
+  'my-rules.html?tab=longterm', 'real-estate-analyzer.html', 'learn-investing.html', 'dividend-tracker.html', 'thesis-builder.html', 'thesis-builder.html?view=history'];
 const KEY_TALK = /api key|finnhub key|add one free|add your[^.]{0,20}key|key rejected|alpha vantage key|twelve data key|fmp key/i;
 
 const browser = await chromium.launch();

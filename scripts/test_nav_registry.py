@@ -144,7 +144,7 @@ class NavRegistryTests(unittest.TestCase):
                          "trade-plan-builder.html", "wheel-strategy.html", "ai-morning-brief.html",
                          "trade-journal-pro.html"):
             self.assertIn(required, migrated)
-        self.assertEqual(len(migrated), 56, migrated)
+        self.assertEqual(len(migrated), 57, migrated)
         # arowana-trader.html's sidebar is the coach panel: the nav renders only
         # the mobile bar and More sheet there, by design.
         no_rail_mount = {"arowana-trader.html"}
@@ -159,7 +159,7 @@ class NavRegistryTests(unittest.TestCase):
                         "asset-allocation-builder.html", "etf-core-screener.html", "fee-analyzer.html",
                         "ips-builder.html", "dca-planner.html", "factor-tilt-planner.html", "pick-my-mix.html",
                         "risk-quiz.html", "buy-a-home.html", "college-savings.html", "education-529-planner.html",
-                        "real-estate-analyzer.html"}
+                        "real-estate-analyzer.html", "thesis-builder.html"}
         shell_pages |= member_pages
         direct = re.compile(r'<script[^>]+src="[^"]*(nav-rail|arowana-nav[a-z-]*)\.js')
         for name in migrated:

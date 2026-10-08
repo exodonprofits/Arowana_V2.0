@@ -36,7 +36,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-07.3",
+    "version": "2026-10-07.4",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -69,6 +69,9 @@
         "desc": "Every scan in one place", "status": "available", "route": { "path": "scanner.html" } },
       { "id": "research-backtesting", "hidden": true, "parent": "research", "label": "Backtesting", "icon": "🔬",
         "desc": "Test your strategies", "status": "available", "route": { "path": "strategy-backtesting.html" } },
+      { "id": "research-thesis", "parent": "research", "label": "Thesis Builder", "icon": "🧭",
+        "desc": "Bear case first, then your decision", "status": "available", "route": { "path": "thesis-builder.html" },
+        "activeWhen": [ { "path": "thesis-builder.html", "query": { "view": [null] } } ] },
       { "id": "research-tools", "parent": "research", "label": "Tool Directory", "icon": "🧩",
         "desc": "Every calculator and tool", "status": "available", "route": { "path": "tools.html" } },
 
@@ -147,7 +150,8 @@
       { "id": "journal-quality", "parent": "journal", "label": "Data Quality", "icon": "🩺",
         "desc": "Check journal data quality", "status": "available", "route": { "path": "data-hygiene-audit.html" } },
       { "id": "journal-decisions", "parent": "journal", "label": "Decision history", "icon": "🗃️",
-        "status": "planned", "note": "Planned" }
+        "desc": "Your saved theses and what changed", "status": "available",
+        "route": { "path": "thesis-builder.html", "query": { "view": "history" } } }
     ],
     "utilities": [
       { "id": "util-account", "label": "Account Settings", "icon": "⚙️", "route": { "path": "account.html" } },

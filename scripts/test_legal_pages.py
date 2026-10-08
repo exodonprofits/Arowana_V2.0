@@ -22,7 +22,7 @@ class LegalPagesTests(unittest.TestCase):
 
     def test_disclosures_list_the_ai_features(self):
         src = read("disclosures.html")
-        for feature in ("AI Coach", "Explain in plain English", "Argue both sides", "Retirement Planner write-up", "AI Morning Brief", "AI scorecard"):
+        for feature in ("AI Coach", "Explain in plain English", "Argue both sides", "Retirement Planner write-up", "Thesis Builder", "AI Morning Brief", "AI scorecard"):
             self.assertIn(feature, src, feature)
 
     def test_terms_billing_and_closure(self):
