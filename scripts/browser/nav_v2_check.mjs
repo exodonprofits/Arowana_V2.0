@@ -318,7 +318,9 @@ for (const name of ['position-sizer', 'trade-plan-builder']) {
   await p.goto(BASE + '/' + name + '.html'); await p.waitForTimeout(1500);
   await p.click('#userToggle'); await p.waitForTimeout(150);
   ok(`W5 ${name} account menu opens (page code + nav)`, await p.evaluate(() => document.getElementById('userMenu').classList.contains('open')));
-  ok(`W5 ${name} page account code painted the name`, await p.evaluate(() => /synthetic/.test(document.getElementById('menuUserEmail').textContent || '') || /synthetic/.test(document.getElementById('userName').textContent || '')));
+  // This page has a saved name but no Supabase session, which the nav now
+  // reports as an expired sign-in (stale_signin_check.mjs covers both cases).
+  ok(`W5 ${name} account area painted (name, or "Sign in again" with no session)`, await p.evaluate(() => /synthetic|Sign in again/.test(document.getElementById('userName').textContent || '') && /synthetic|expired/.test(document.getElementById('menuUserEmail').textContent || '')));
   ok(`W5 ${name} no nav errors`, p._errors.length === 0, p._errors.join('; '));
   await p.context().close();
 }

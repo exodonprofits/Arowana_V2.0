@@ -441,6 +441,13 @@
     if (email) email.textContent = (user && user.email) || '';
   }
 
+  function paintExpired() {
+    var label = document.getElementById('userName');
+    var email = document.getElementById('menuUserEmail');
+    if (label) { label.textContent = 'Sign in again'; label.title = 'Your sign-in has expired'; }
+    if (email) email.textContent = 'Your sign-in has expired';
+  }
+
   // Display-only identity refresh, unchanged from js/nav-rail.js (spec §11).
   function syncUser() {
     paintUser(cachedUser());
@@ -449,8 +456,14 @@
       if (!client || !client.auth || !client.auth.getUser) return;
       client.auth.getUser().then(function (res) {
         var u = res && res.data && res.data.user;
-        if (u) paintUser(u);
-      }).catch(function () { /* offline or signed out: keep cached name */ });
+        if (u) { paintUser(u); return; }
+        // The server says no one is signed in, yet a saved name is on this
+        // device: the session expired. Don't show the old name as signed in.
+        // Only for "no session" (not for being offline, which also errors).
+        var err = res && res.error;
+        var noSession = err && (err.name === 'AuthSessionMissingError' || err.status === 401 || err.status === 403);
+        if (noSession && cachedUser()) paintExpired();
+      }).catch(function () { /* offline: keep cached name */ });
     }
     confirm();
     setTimeout(confirm, 900);
