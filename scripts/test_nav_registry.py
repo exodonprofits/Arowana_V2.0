@@ -141,10 +141,10 @@ class NavRegistryTests(unittest.TestCase):
         for required in ("tools.html", "trading-command.html", "portfolio-command.html", "options-hub.html",
                          "analysis-central.html", "intrinsic-value.html", "portfolio-advisor.html",
                          "arowana-trader.html", "watchlist.html", "scanner.html", "position-sizer.html",
-                         "trade-plan-builder.html", "wheel-strategy.html", "ai-morning-brief.html",
+                         "trade-plan-builder.html", "wheel-strategy.html",
                          "trade-journal-pro.html"):
             self.assertIn(required, migrated)
-        self.assertEqual(len(migrated), 57, migrated)
+        self.assertEqual(len(migrated), 56, migrated)
         # arowana-trader.html's sidebar is the coach panel: the nav renders only
         # the mobile bar and More sheet there, by design.
         no_rail_mount = {"arowana-trader.html"}
@@ -249,11 +249,13 @@ class NavRegistryTests(unittest.TestCase):
                    "quality-screener.html": "scanner.html?scan=quality_compounders", "buy-sell-signal.html": "trade-plan-builder.html",
                    # ATD-009 phase 3
                    "daytrade.html": "trading-command.html", "ai-trading-agent.html": "arowana-trader.html",
-                   "earning-watcher.html": "trading-command.html", "sector-sentiment.html": "ai-morning-brief.html",
-                   "sector-sentiment-gauge.html": "ai-morning-brief.html", "option-recommender.html": "options-hub.html?tab=calls",
+                   "earning-watcher.html": "trading-command.html", "sector-sentiment.html": "trading-command.html?view=brief",
+                   "sector-sentiment-gauge.html": "trading-command.html?view=brief", "option-recommender.html": "options-hub.html?tab=calls",
                    "option-trader.html": "options-hub.html?tab=analyzer", "wheel_strategy_web_tool.html": "wheel-strategy.html?tab=import",
                    "short-term-dashboard.html": "trading-command.html", "daily-bias.html": "trade-plan-builder.html",
-                   "daily-summary.html": "ai-morning-brief.html", "option-roll-analyzer.html": "options-hub.html?tab=roll"}
+                   "daily-summary.html": "trading-command.html?view=brief", "option-roll-analyzer.html": "options-hub.html?tab=roll",
+                   # ATD-109: the Morning Brief is in Trading Command
+                   "ai-morning-brief.html": "trading-command.html?view=brief"}
         for name, target in targets.items():
             html = (ROOT / name).read_text(encoding="utf-8")
             self.assertIn("var target = '%s';" % target, html, name)

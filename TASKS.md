@@ -566,3 +566,23 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
   - `tests/explain-thesis.test.js` (8): runs the function with the SDK and Supabase faked. It covers the fields, the schema order, the guard retry and drop, the missing-fields retry, the Free refusal, and that trade-case and text kinds are unchanged.
   - `scripts/browser/thesis_builder_check.mjs` (32).
   - Updated: `nav_v2_check.mjs` (488), `launch_menu_check.mjs` (65), `long_term_desk_check.mjs` (32), `test_nav_registry.py`, `test_legal_pages.py`.
+
+**Morning Brief folded into Trading Command (PR D), branch `claude/ATD-109-morning-brief`:**
+
+- **What already worked:**
+  - A rules-based brief is written for each member before the open every weekday, at 12:30 UTC (8:30 ET), into `ai_briefs`. It's built from the member's own positions.
+  - Its sections are needs attention, expiring, ready to close, your limits, earnings, put candidates and this month.
+  - Trading Command already shows it at the top of Positions, gated to Pro. Production has briefs through 2026-10-07 for 2 members (checked read-only).
+  - The generator is server-side and isn't in this repo.
+- **What changed:**
+  - `ai-morning-brief.html` (2,400 lines) ran a member-configured n8n webhook and sent the session token to it (ATD-002 CK-05, P0). It's now a redirect to `trading-command.html?view=brief`, keeping query and hash.
+  - The three old pages that pointed at it now point at Trading Command directly: `sector-sentiment`, `sector-sentiment-gauge` and `daily-summary`.
+  - `?view=brief` opens Positions even if Coach was the last tab, scrolls to the brief, and keeps Command → Morning Brief marked current. Trading Command's tab code used to force "Positions".
+  - The brief panel gets `scroll-margin-top`, so its title isn't hidden under the phone top bar.
+  - Registry: Command → Morning Brief is back in the menu (`2026-10-08.1`, nav loader `20261008a`).
+- **Checks:**
+  - `nav_v2_check.mjs` (482): the redirect keeps the query; `?view=brief` lands on Positions with the brief on screen and the menu on Morning Brief; the old redirect pages land on Trading Command.
+  - `test_nav_registry.py`: redirect targets, 56 migrated pages.
+  - `mode_setting_check.mjs` (94) and `mobile_controls_check.mjs` (46) drop the retired page.
+  - `launch_menu_check.mjs` (65), node tests (53) and Python (117) pass.
+  - Phone screenshots of the brief, as Pro and as Free (gate shown).

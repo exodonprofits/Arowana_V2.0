@@ -69,7 +69,7 @@ const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch
   // ATD-109 launch menu: planned and hidden desks are not rendered.
   ok('B launch desks: Wheel, Options and Long-Term', deskLabels.map(s=>s.split('\n')[0].trim()).join(',') === 'Wheel,Options,Long-Term', deskLabels.join(','));
   ok('B planned and hidden entries are not rendered, and no Legacy/Planned badges', await p.evaluate(() =>
-    ['desk-growth','desk-swing','command-brief','command-whatchanged','command-queue','research-technical','research-scanners','research-backtesting','portfolio-accounts']
+    ['desk-growth','desk-swing','command-whatchanged','command-queue','research-technical','research-scanners','research-backtesting','portfolio-accounts']
       .every(id => !document.querySelector('[data-nav-id="' + id + '"]')) && !document.querySelector('#railMount .anv-badge, #anvMoreSheet .anv-badge')));
   ok('B Thesis Builder and Decision history are in the menu', await p.evaluate(() =>
     document.querySelector('#railMount a[data-nav-id="research-thesis"]')?.getAttribute('href') === 'thesis-builder.html' &&
@@ -164,12 +164,12 @@ const MIGRATED = ['tools','ai-moat-finder','atr-stop-planner','credit-spread-pla
   'dividend-tracker','expectancy-matrix','kelly-calculator','money-flow-alert','options-analyzer','r-multiple','risk-comfort',
   'strategy-backtesting','tax-loss-harvester','technical-analysis','tool-audit','volatility-guardrails','trading-journal-analysis','trading-command',
   'portfolio-command','options-hub','analysis-central','intrinsic-value','portfolio-advisor',
-  'arowana-trader','watchlist','scanner','position-sizer','trade-plan-builder','wheel-strategy','ai-morning-brief','trade-journal-pro'];
+  'arowana-trader','watchlist','scanner','position-sizer','trade-plan-builder','wheel-strategy','trade-journal-pro'];
 const NO_RAIL_MOUNT = ['arowana-trader'];   // sidebar is the coach panel: mobile bar + More sheet only
 const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-positions', 'portfolio-command': 'portfolio-overview', 'options-hub': 'wheel-calls',
   'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor',
   'arowana-trader': 'wheel-coach', 'watchlist': 'watchlists', 'scanner': null, 'position-sizer': 'portfolio-sizer',
-  'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': null, 'trade-journal-pro': 'journal-trades', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
+  'wheel-strategy': 'wheel-strategy', 'trade-journal-pro': 'journal-trades', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
   'strategy-backtesting': null, 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': null, 'dividend-tracker': 'portfolio-dividends' };  // null: hidden from the ATD-109 launch menu
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
@@ -322,9 +322,14 @@ for (const name of ['position-sizer', 'trade-plan-builder']) {
   ok(`W5 ${name} no nav errors`, p._errors.length === 0, p._errors.join('; '));
   await p.context().close();
 }
-{ const p = await newPage(mobile, null);
-  await p.goto(BASE + '/ai-morning-brief.html'); await p.waitForTimeout(1500);
-  ok('W5 ai-morning-brief own hamburger hidden on mobile', await p.evaluate(() => { const b = document.getElementById('mobileRailButton'); return !!b && !b.offsetParent; }));
+{ const p = await newPage(desktop, null);
+  await p.context().addInitScript(() => { try { localStorage.setItem('tc_active_tab_v1', 'coach'); } catch (e) {} });
+  await p.goto(BASE + '/ai-morning-brief.html?x=1'); await p.waitForTimeout(1800);
+  const u = new URL(p.url());
+  ok('W5 ai-morning-brief -> trading-command?view=brief, query kept', u.pathname === '/trading-command.html' && u.searchParams.get('view') === 'brief' && u.searchParams.get('x') === '1', p.url());
+  const r = await p.evaluate(() => ({ cur: [...new Set([...document.querySelectorAll('[aria-current="page"][data-nav-id]')].map(n => n.getAttribute('data-nav-id')))].join(),
+    tab: (document.querySelector('.trading-tab.active') || {}).dataset?.tab, brief: !!document.getElementById('dbRoot') && document.getElementById('dbRoot').getBoundingClientRect().top < innerHeight }));
+  ok('W5 ?view=brief: Positions tab (even after Coach was last), brief on screen, menu marks Morning Brief', r.cur === 'command-brief' && r.tab === 'positions' && r.brief, JSON.stringify(r));
   await p.context().close(); }
 
 // W6. Wave 6: trade-journal-pro.html.
@@ -662,7 +667,7 @@ for (const from of ['ai-valuation', 'intrinsic-value-rsi', 'long-term-intrinsic-
 
 // P3. ATD-009 phase 3: retired dashboard and options pages.
 for (const [from, path, q] of [['daytrade', '/trading-command.html', ''], ['ai-trading-agent', '/arowana-trader.html', ''], ['earning-watcher', '/trading-command.html', ''],
-  ['sector-sentiment', '/ai-morning-brief.html', ''], ['sector-sentiment-gauge', '/ai-morning-brief.html', ''], ['option-recommender', '/options-hub.html', 'calls'],
+  ['sector-sentiment', '/trading-command.html', ''], ['sector-sentiment-gauge', '/trading-command.html', ''], ['option-recommender', '/options-hub.html', 'calls'],
   ['option-trader', '/options-hub.html', 'analyzer'], ['wheel_strategy_web_tool', '/wheel-strategy.html', 'import']]) {
   const p = await newPage(desktop, null);
   await p.goto(BASE + '/' + from + '.html?x=1#h'); await p.waitForTimeout(1200);
@@ -695,7 +700,7 @@ for (const [from, path, q] of [['daytrade', '/trading-command.html', ''], ['ai-t
   ok('P3b saved signals untouched', await p.evaluate(() => JSON.parse(localStorage.getItem('arowana_journal_v1')).length === 2));
   ok('P3b no page errors', p._errors.length === 0, p._errors.join('; '));
   await p.context().close(); }
-for (const [from, path, q] of [['daily-bias', '/trade-plan-builder.html', ''], ['daily-summary', '/ai-morning-brief.html', ''], ['option-roll-analyzer', '/options-hub.html', 'roll']]) {
+for (const [from, path, q] of [['daily-bias', '/trade-plan-builder.html', ''], ['daily-summary', '/trading-command.html', ''], ['option-roll-analyzer', '/options-hub.html', 'roll']]) {
   const p = await newPage(desktop, null);
   await p.goto(BASE + '/' + from + '.html?x=1#h'); await p.waitForTimeout(1000);
   const u = new URL(p.url());

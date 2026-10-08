@@ -18,7 +18,7 @@ function check(name, ok, detail) {
 }
 
 // Every page the audit found with a cut-off dropdown on a phone.
-const PAGES = ['tools.html', 'ai-moat-finder.html', 'ai-morning-brief.html', 'atr-stop-planner.html', 'credit-spread-planner.html',
+const PAGES = ['tools.html', 'ai-moat-finder.html', 'atr-stop-planner.html', 'credit-spread-planner.html',
   'dcf-analyzer.html', 'discipline-scorecard.html', 'dividend-tracker.html', 'expectancy-matrix.html', 'kelly-calculator.html',
   'money-flow-alert.html', 'options-analyzer.html', 'portfolio-advisor.html', 'r-multiple.html', 'risk-comfort.html',
   'scanner.html', 'strategy-backtesting.html', 'tax-loss-harvester.html', 'technical-analysis.html', 'trading-command.html',
