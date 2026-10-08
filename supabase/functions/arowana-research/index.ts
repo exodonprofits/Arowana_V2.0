@@ -8,8 +8,18 @@
 //   • a platform-wide daily ceiling (ap_provider_calls), so a runaway page or
 //     a scripted client cannot run the account past a rate limit overnight.
 //
+// And three that keep a page load from tripping the provider's per-second
+// limit (one Portfolio Command load used to send ~170 quotes in 20 seconds,
+// and a third came back 429 → 502):
+//   • a short in-memory cache per path+query (30 s for quotes, longer for
+//     company data), shared by every user on this instance,
+//   • identical requests already in flight wait for that one answer, and
+//   • a 429 or 5xx from the provider is retried twice with jittered backoff;
+//     if it still fails, the last good answer is served (x-data-stale: 1).
+//
 // POST { path: '/stock/profile2', query: { symbol: 'AAPL' } }
 // Secrets: FINNHUB_API_KEY, AROWANA_SITE_URL, optional AROWANA_DAILY_CALL_CAP
+// (RESEARCH_PROVIDER_URL points at a fake provider in local tests; never set it in production)
 import { createClient } from 'jsr:@supabase/supabase-js@2';
 
 const SITE = (Deno.env.get('AROWANA_SITE_URL') ?? '').replace(/\/$/, '');
@@ -49,6 +59,62 @@ const FREE_PATHS = new Set(['/quote', '/calendar/earnings', '/stock/candle']);
 const LIMITS: Record<string, number> = { free: 5, pro: 25, elite: 25, founders: 50 };
 const ALIVE = new Set(['active', 'trialing', 'past_due']);
 const DAILY_CAP = Number(Deno.env.get('AROWANA_DAILY_CALL_CAP') ?? '20000');
+
+// How long an answer is fresh, and how long it may still be served when the
+// provider is refusing calls.
+const MIN = 60_000, HOUR = 3_600_000;
+const FRESH: Record<string, number> = {
+  '/quote': 30_000, '/stock/candle': 10 * MIN, '/company-news': 15 * MIN, '/news-sentiment': 15 * MIN,
+  '/stock/social-sentiment': 15 * MIN,
+};
+const freshFor = (path: string) => FRESH[path] ?? 6 * HOUR;
+const staleFor = (path: string) => (path === '/quote' ? 15 * MIN : 24 * HOUR);
+const CACHE_BYTES = 32 * 1024 * 1024;   // well inside the function's memory; oldest answers go first
+const ENTRY_MAX = 512 * 1024;           // a bigger single answer is passed through, not cached
+let cacheBytes = 0;
+
+type Got = { ok: true; data: unknown; size: number } | { ok: false; status: number; body: Record<string, unknown> };
+const cache = new Map<string, { at: number; data: unknown; size: number }>();
+const inflight = new Map<string, Promise<Got>>();
+
+function forget(ck: string) {
+  const old = cache.get(ck);
+  if (old) { cacheBytes -= old.size; cache.delete(ck); }
+}
+function remember(ck: string, data: unknown, size: number) {
+  forget(ck);
+  if (size > ENTRY_MAX) return;
+  cache.set(ck, { at: Date.now(), data, size });
+  cacheBytes += size;
+  while (cacheBytes > CACHE_BYTES && cache.size) forget(cache.keys().next().value as string);
+}
+
+const PROVIDER = Deno.env.get('RESEARCH_PROVIDER_URL') || 'https://finnhub.io/api/v1';   // override only for local tests
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+// One provider call with up to two retries on 429/5xx. Never throws.
+async function askProvider(path: string, query: URLSearchParams, key: string): Promise<Got> {
+  let last = 0;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt) {
+      const wait = Math.min(3000, (attempt * 500) + Math.random() * 500 + (last === 429 ? 250 : 0));
+      await sleep(wait);
+    }
+    try {
+      const res = await fetch(`${PROVIDER}${path}?${query.toString()}`, {
+        headers: { 'X-Finnhub-Token': key },
+        signal: AbortSignal.timeout(8000),
+      });
+      if (res.ok) { const text = await res.text(); return { ok: true, data: JSON.parse(text), size: text.length }; }
+      last = res.status;
+      if (res.status !== 429 && res.status < 500) break;   // a 4xx other than 429 will not get better
+    } catch (_e) {
+      last = 0;                                            // network error or timeout: retry
+    }
+  }
+  console.error('[research] provider', path, last || 'network');
+  return { ok: false, status: 502, body: { error: 'Data provider did not answer. Try again shortly.' } };
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsFor(req) });
@@ -116,41 +182,56 @@ Deno.serve(async (req) => {
     const key = Deno.env.get('FINNHUB_API_KEY');
     if (!key) return json(req, { error: 'Market data is not configured yet' }, 503);
 
-    // Count the call and read the platform total for today. Recording happens
-    // before the fetch so a provider timeout still counts — an overnight loop
-    // that times out is exactly the case this is meant to stop.
-    let todayTotal = 0;
-    const { data: total, error: recErr } = await supabase.rpc('ap_record_provider_call', {
-      p_day: today, p_provider: 'finnhub', p_path: path, p_user: user.id, p_error: false,
-    });
-    if (recErr) console.warn('[research] call not recorded', recErr.message);
-    else todayTotal = Number(total) || 0;
-
-    if (DAILY_CAP > 0 && todayTotal > DAILY_CAP) {
-      console.error('[research] daily cap reached', todayTotal, '>', DAILY_CAP);
-      return json(req, {
-        error: 'paused',
-        message: 'Market data is paused for today while we check unusual traffic. Your data is safe and this will clear shortly.',
-      }, 503);
-    }
-
-    const res = await fetch(`https://finnhub.io/api/v1${path}?${query.toString()}`, {
-      headers: { 'X-Finnhub-Token': key },
-    });
-    if (!res.ok) {
-      console.error('[research] provider', path, res.status);
-      supabase.rpc('ap_record_provider_call', {
-        p_day: today, p_provider: 'finnhub', p_path: path, p_user: user.id, p_error: true,
-      }).then(() => {}, () => {});
-      return json(req, { error: 'Data provider did not answer. Try again shortly.' }, 502);
-    }
-    const data = await res.json();
-
-    return json(req, data, 200, {
+    const headers = {
       'x-usage-used': String(usage.used),
       'x-usage-remaining': String(usage.remaining),
       'x-usage-limit': String(usage.limit),
-    });
+    };
+    query.sort();
+    const ck = path + '?' + query.toString();
+    const hit = cache.get(ck);
+    if (hit && Date.now() - hit.at < freshFor(path)) return json(req, hit.data, 200, headers);
+
+    let pending = inflight.get(ck);
+    if (!pending) {
+      pending = (async (): Promise<Got> => {
+        // Count the call and read the platform total for today. Recording happens
+        // before the fetch so a provider timeout still counts — an overnight loop
+        // that times out is exactly the case this is meant to stop. Answers from
+        // the cache or a shared in-flight request never reach the provider and
+        // are not counted.
+        let todayTotal = 0;
+        const { data: total, error: recErr } = await supabase.rpc('ap_record_provider_call', {
+          p_day: today, p_provider: 'finnhub', p_path: path, p_user: user.id, p_error: false,
+        });
+        if (recErr) console.warn('[research] call not recorded', recErr.message);
+        else todayTotal = Number(total) || 0;
+
+        if (DAILY_CAP > 0 && todayTotal > DAILY_CAP) {
+          console.error('[research] daily cap reached', todayTotal, '>', DAILY_CAP);
+          return { ok: false, status: 503, body: {
+            error: 'paused',
+            message: 'Market data is paused for today while we check unusual traffic. Your data is safe and this will clear shortly.',
+          } };
+        }
+
+        const got = await askProvider(path, query, key);
+        if (got.ok) remember(ck, got.data, got.size);
+        else supabase.rpc('ap_record_provider_call', {
+          p_day: today, p_provider: 'finnhub', p_path: path, p_user: user.id, p_error: true,
+        }).then(() => {}, () => {});
+        return got;
+      })();
+      inflight.set(ck, pending);
+      pending.finally(() => inflight.delete(ck)).catch(() => {});
+    }
+
+    const got = await pending;
+    if (got.ok) return json(req, got.data, 200, headers);
+    if (got.status === 502 && hit && Date.now() - hit.at < staleFor(path)) {
+      return json(req, hit.data, 200, { ...headers, 'x-data-stale': '1' });
+    }
+    return json(req, got.body, got.status, got.status === 502 ? { 'Retry-After': '5' } : {});
   } catch (err) {
     console.error('[arowana-research]', err);
     return json(req, { error: 'Could not fetch data' }, 500);
