@@ -36,7 +36,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-07.4",
+    "version": "2026-10-08.1",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -44,9 +44,10 @@
         "desc": "Open positions and today's scan", "status": "available",
         "route": { "path": "trading-command.html", "query": { "tab": "positions" } },
         "activeWhen": [ { "path": "trading-command.html", "query": { "tab": [null] }, "hash": [null, "positions"] } ] },
-      { "id": "command-brief", "hidden": true, "parent": "command", "label": "Morning Brief", "icon": "🌅",
-        "desc": "Before-the-open summary", "status": "legacy", "route": { "path": "ai-morning-brief.html" },
-        "note": "Existing page; migrating into Trading Command" },
+      { "id": "command-brief", "parent": "command", "label": "Morning Brief", "icon": "🌅",
+        "desc": "Before-the-open summary of your positions", "status": "available",
+        "route": { "path": "trading-command.html", "query": { "view": "brief" } },
+        "activeWhen": [ { "path": "trading-command.html", "query": { "view": ["brief"], "tab": [null] }, "hash": [null] } ] },
       { "id": "command-coach", "parent": "command", "label": "Coach", "icon": "🧭",
         "desc": "Ask about your positions and plan", "status": "available",
         "route": { "path": "trading-command.html", "query": { "tab": "coach" } },

@@ -4867,7 +4867,7 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
              own positions, generated before the open. -->
         <section class="db-root" id="dbRoot" aria-label="Your daily brief">
           <style>
-          .db-root{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:var(--radius,14px);padding:18px 20px;margin-bottom:18px}
+          .db-root{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:var(--radius,14px);padding:18px 20px;margin-bottom:18px;scroll-margin-top:84px}
           .db-root.attention{border-left:4px solid var(--warning,#e8a33d)}
           .db-root .db-top{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap;margin-bottom:6px}
           .db-root h2{font-size:1.15rem;font-weight:700;color:var(--text-primary,#0d1b2a);margin:0}
@@ -7356,7 +7356,8 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
       // of whether the user was on Journal or Watchlist.
       try {
         const params = new URLSearchParams(location.search);
-        const requestedTab = params.get('tab') || (location.hash || '').replace('#', '');
+        // ?view=brief (the menu's Morning Brief) opens Positions, where the brief is.
+        const requestedTab = params.get('tab') || (params.get('view') === 'brief' ? 'positions' : '') || (location.hash || '').replace('#', '');
         const validTabs = ['positions', 'coach'];
         let tabToOpen = null;
         if (requestedTab && TC_MOVED_TABS[requestedTab] && !params.get('add')) {
@@ -7469,7 +7470,9 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
         // The visible tab is restored from storage without changing the URL,
         // so tell the navigation which entry is current (ATD-008). The preset
         // covers the case where js/arowana-nav.js has not loaded yet.
-        const navId = tabName === 'coach' ? 'command-coach' : 'command-positions';
+        // Opened from the menu's Morning Brief (?view=brief): keep that entry current.
+        const fromBrief = new URLSearchParams(location.search).get('view') === 'brief';
+        const navId = tabName === 'coach' ? 'command-coach' : (fromBrief ? 'command-brief' : 'command-positions');
         window.ArowanaNavPreset = navId;
         if (window.ArowanaNav && typeof window.ArowanaNav.setActive === 'function') window.ArowanaNav.setActive(navId);
       }
@@ -9750,6 +9753,14 @@ body.guided-mode #railMount .rail-group-toggle{opacity:.75}@media(max-width:768p
       }
     }
     document.addEventListener('DOMContentLoaded', load);
+    // ATD-109: the menu's Morning Brief (?view=brief) lands here.
+    document.addEventListener('DOMContentLoaded', function () {
+      if (new URLSearchParams(location.search).get('view') !== 'brief') return;
+      setTimeout(function () {
+        var r = document.getElementById('dbRoot');
+        if (r && r.scrollIntoView) { r.setAttribute('tabindex', '-1'); r.scrollIntoView({ block: 'start' }); try { r.focus({ preventScroll: true }); } catch (e) {} }
+      }, 400);
+    });
   })();
   </script>
 
