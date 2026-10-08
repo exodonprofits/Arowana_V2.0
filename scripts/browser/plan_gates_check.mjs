@@ -53,11 +53,6 @@ const PAGES = [
     free: r => !r.pro, pro: r => r.pro && !r.banner },   // banner only appears after a scan
   { path: 'analysis-central.html', probe: () => ({ pro: !!(window.AP_PLAN && AP_PLAN.atLeast('pro')), planLoaded: !!window.AP_PLAN }),
     free: r => r.planLoaded && !r.pro, pro: r => r.planLoaded && r.pro },
-  // Its lock blocks target sections and tool tiers this page does not have
-  // (same on main), so the page is judged by the plan it reads; the blocks
-  // now run after the plan is known, and must not throw.
-  { path: 'long-term-dashboard.html', probe: () => ({ plan: !!window.AP_PLAN, pro: !!(window.AP_PLAN && AP_PLAN.atLeast('pro')) }),
-    free: r => r.plan && !r.pro, pro: r => r.plan && r.pro },
   // Loads plan.js since the managed write-up was wired up: Pro comes from
   // the server, and the old ap_is_pro_v1 flag still unlocks nothing.
   { path: 'retirement-planner.html', probe: () => ({ tier: getAccountTier() }), free: r => r.tier !== 'subscription', pro: r => r.tier === 'subscription' }

@@ -488,3 +488,34 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
   - `scripts/browser/launch_menu_check.mjs` (43; 8 fail on `main`): 34 launch-menu pages with no key wording, no page errors and nothing sent to finnhub.io directly; prices load with no key; the placeholder is not forwarded and never replaces a personal key; the Options Hub and Intrinsic Value lookups work.
   - `scripts/browser/lib/fake_research.mjs`: a fake research function; candles return 403, as on the free plan.
   - `nav_v2_check.mjs` updated for the launch menu (487).
+
+**Long-Term desk rebuilt (PR B), branch `claude/ATD-109-long-term-desk`:** the old `long-term-dashboard.html` (5,000 lines) ran on n8n webhooks, showed "Soon" cards and asked members to set up a webhook. It's replaced by a hub of the working long-term tools, and the desk is back in the menu.
+
+- **Hub:**
+  - Six steps in order: risk, retirement roadmap, mix, funds, policy, rules. Each step shows what its tool has saved in this browser, for example "✓ Stocks 60 · bonds 35 · cash 5", or "Not started".
+  - Then 19 tools in five groups (Plan, Build, Goals, Risk & rules, Analyze & learn). No webhook, key or live-price bars.
+  - The registry entry `desk-longterm` is visible again (available, with a description). The registry is `2026-10-07.2` and the nav loader is `20261007c`.
+- **ETF Core Screener:** it shipped with no script at all (`// existing JS unchanged...`). It now has:
+  - a curated list of 29 broad, low-cost ETFs in 9 sleeves (ticker, name, issuer, index and expense ratio only, no figures that change daily);
+  - filters for sleeve, expense ratio, issuer and search;
+  - select and copy, CSV export, and CSV import (needs Ticker, Sleeve and ExpenseRatio; unknown sleeves are skipped and counted).
+  - **Build ETF Plan** turns the Allocation Builder's saved v2 mix into one cheapest fund per sleeve (ties go to the first-listed fund). Weights add up exactly, and the weighted expense ratio is shown. The plan is saved as `etf_core_plan_v1` and exports as JSON or CSV.
+- **IPS Builder:**
+  - Imports the Allocation Builder's v2 save. It read `_v1`, which nothing writes any more.
+  - Its preview lists the screener plan's funds and weights. It expected another shape, so the lineup was always empty.
+- **Retirement Planner:**
+  - Free members were asked to paste an n8n webhook. That option is removed, and a saved one is cleared and never called.
+  - Free sees what Pro includes. Pro gets "Write my plan" (arowana-explain, unchanged).
+- **Pick My Mix:**
+  - It ignored age and scaled the horizon over 60 years. It now uses a standard glide path, capped at 120 minus age, and moved up to ±12 points by risk comfort.
+- **Privacy:** the sentence about sending roadmap figures to "your own endpoint" is removed (the option is gone), and the button is named "Write my plan". Nothing else in the approved wording changed.
+- **Learn Investing:**
+  - It loaded `./js/supabase.min.js`, which doesn't exist. It now loads `supabase_min.js` and `sb.js`.
+- **Checks:**
+  - New: `scripts/browser/long_term_desk_check.mjs` (32 checks).
+  - Updated:
+    - `launch_menu_check.mjs` (62) adds 19 Long-Term pages.
+    - `nav_v2_check.mjs` (487) expects the Wheel, Options and Long-Term desks.
+    - `retirement_ai_check.mjs` (21) covers no BYOK.
+    - `topbar_billing_check.mjs` (48) and `plan_gates_check.mjs` (24).
+    - `test_plan_gates.py`.

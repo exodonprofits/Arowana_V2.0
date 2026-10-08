@@ -197,15 +197,27 @@
     const fmt$ = n => Number(n||0).toLocaleString(undefined,{style:'currency',currency:'USD',maximumFractionDigits:0});
 
     // Map quick answers to a sensible equity target + band
-    function equityFrom(horizon, comfort){
-      // horizon: 1..60 yrs; comfort: 1..5
-      const hScore = Math.max(0, Math.min(60, Number(horizon||0)));
-      const cScore = Math.max(1, Math.min(5, Number(comfort||3)));
-      // Base equity from horizon (longer => more equity), ~20% to 90%
-      const base = 20 + (hScore/60)*70; // 20..90
-      // Adjust by comfort (±12%)
-      const adj = (cScore-3) * 6; // -12..+12
-      return Math.max(10, Math.min(95, Math.round(base + adj)));
+    // Stocks share from the years until you need the money, a standard glide
+    // path: short horizons hold mostly bonds, 20+ years mostly stocks. It is
+    // capped at "120 minus age" when an age is given, then moved up to 12
+    // points either way by risk comfort.
+    var GLIDE = [[0, 20], [3, 30], [5, 40], [10, 60], [15, 75], [20, 85], [30, 90]];
+    function glide(years){
+      var y = Math.max(0, Number(years) || 0);
+      for (var i = 1; i < GLIDE.length; i++) {
+        if (y <= GLIDE[i][0]) {
+          var a = GLIDE[i - 1], b = GLIDE[i];
+          return a[1] + (b[1] - a[1]) * (y - a[0]) / (b[0] - a[0]);
+        }
+      }
+      return GLIDE[GLIDE.length - 1][1];
+    }
+    function equityFrom(horizon, comfort, age){
+      var c = Math.max(1, Math.min(5, Number(comfort || 3)));
+      var base = glide(horizon);
+      var a = Number(age) || 0;
+      if (a > 0) base = Math.min(base, 120 - a);
+      return Math.max(10, Math.min(95, Math.round(base + (c - 3) * 6)));
     }
     function bandFrom(equity){
       // wider band for higher equity
@@ -223,7 +235,7 @@
       const monthly = Number($('#monthly').value||0);
       const intlBias = Number($('#intlBias').value||30); // of equity
 
-      const equity = equityFrom(horizon, comfort);
+      const equity = equityFrom(horizon, comfort, age);
       const bonds = 100 - equity;
       const intl = Math.round(equity * Math.max(0, Math.min(60,intlBias))/100);
       const us   = equity - intl;

@@ -36,7 +36,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-07.1",
+    "version": "2026-10-07.2",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -106,8 +106,8 @@
         "status": "available", "route": { "path": "credit-spread-planner.html" } },
       { "id": "desk-growth", "parent": "desks", "label": "Growth", "icon": "🌱",
         "status": "planned", "note": "Planned; AI will be a theme filter here" },
-      { "id": "desk-longterm", "hidden": true, "parent": "desks", "label": "Long-Term", "icon": "🏛️",
-        "status": "legacy", "route": { "path": "long-term-dashboard.html" }, "note": "Existing page; desk not yet migrated" },
+      { "id": "desk-longterm", "parent": "desks", "label": "Long-Term", "icon": "🏛️",
+        "desc": "Retirement, your mix, funds and policy", "status": "available", "route": { "path": "long-term-dashboard.html" } },
 
       { "id": "portfolio", "label": "Portfolio & Risk", "shortLabel": "Portfolio", "icon": "🏦",
         "status": "available", "route": { "path": "portfolio-command.html" }, "mobile": "portfolio" },
