@@ -3583,6 +3583,8 @@ body.drawer-open {
   text-align: right;
 }
 
+.thesis-link{display:inline-block;margin-top:10px;font-size:14px;font-weight:700;color:var(--brand,#174e71);text-decoration:none}
+.thesis-link:hover{text-decoration:underline}
 .price-targets-card {
   background: var(--bg);
   border: 1px solid var(--border-light);
@@ -5322,6 +5324,9 @@ html,body{font-size:13px!important;line-height:1.45!important}
                   <span>Analyze</span>
                 </button>
               </div>
+              <!-- ATD-109: carry the ticker into the Thesis Builder. -->
+              <a id="thesisLink" class="thesis-link" href="thesis-builder.html"
+                 onclick="var v=(document.getElementById('fundamentalSymbolInput').value||'').trim().toUpperCase().replace(/[^A-Z0-9.\-]/g,'');if(v)this.href='thesis-builder.html?symbol='+encodeURIComponent(v);">🧭 Build a thesis: bear case first, then your decision &rarr;</a>
             </div>
           </div>
 

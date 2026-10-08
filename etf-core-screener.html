@@ -91,16 +91,8 @@
           <label>Max Expense Ratio (%)</label>
           <input type="number" id="erMax" step="0.01" value="0.20"/>
         </div>
-        <div>
-          <label>Min AUM (USD $B)</label>
-          <input type="number" id="aumMin" step="0.1" value="1"/>
-        </div>
       </div>
       <div class="grid2 row">
-        <div>
-          <label>Min Distribution Yield (%)</label>
-          <input type="number" id="yieldMin" step="0.1" value="0"/>
-        </div>
         <div>
           <label>Issuer</label>
           <select id="issuer">
@@ -127,18 +119,19 @@
       <div class="row" style="margin-top:.85rem">
         <label>Import Your Own List (CSV)</label>
         <input type="file" id="csvFile" accept=".csv" onchange="importCSV(event)"/>
-        <p class="sub">Columns supported: Ticker,Name,Sleeve,ExpenseRatio,AUM_Billions,Yield,FiveYrReturn,FiveYrVol,Issuer,Index</p>
+        <p class="sub">Columns: Ticker, Name, Sleeve, ExpenseRatio, Issuer, Index. Sleeve must match one of the sleeves above.</p>
       </div>
     </section>
 
     <!-- Results section below -->
     <section class="panel" aria-label="Results">
       <h2>Results</h2>
+      <p class="sub" id="resultNote">Expense ratios as published by each issuer, mid-2026. Check the fund page before you buy; fees change.</p>
       <div class="table-wrap">
         <table id="tbl">
           <thead>
             <tr>
-              <th>Ticker</th><th>Name</th><th>Sleeve</th><th class="right">ER %</th><th class="right">AUM ($B)</th><th class="right">Yield %</th><th class="right">5y Return %</th><th class="right">5y Vol %</th><th>Issuer</th><th>Index</th>
+              <th></th><th>Ticker</th><th>Name</th><th>Sleeve</th><th class="right">ER %</th><th>Issuer</th><th>Index</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -170,7 +163,233 @@
   </div>
 
   <script>
-    // existing JS unchanged...
+    /* ETF Core Screener (ATD-109). A short list of broad, low-cost funds per
+       sleeve, filtered on the page; your own list can be imported as CSV.
+       Only facts that rarely change are shipped (ticker, name, sleeve, issuer,
+       index, expense ratio); assets, yields and returns move daily, so they
+       are not hardcoded. "Build ETF Plan" turns the Asset Allocation
+       Builder's saved targets into one fund per sleeve, saved for the IPS
+       Builder (etf_core_plan_v1). */
+    var BUILTIN = [
+      ['VTI','Vanguard Total Stock Market ETF','US Core',0.03,'Vanguard','CRSP US Total Market'],
+      ['ITOT','iShares Core S&P Total U.S. Stock Market ETF','US Core',0.03,'iShares','S&P Total Market'],
+      ['SCHB','Schwab U.S. Broad Market ETF','US Core',0.03,'Schwab','Dow Jones U.S. Broad Stock Market'],
+      ['VOO','Vanguard S&P 500 ETF','US Core',0.03,'Vanguard','S&P 500'],
+      ['IVV','iShares Core S&P 500 ETF','US Core',0.03,'iShares','S&P 500'],
+      ['VEA','Vanguard FTSE Developed Markets ETF','International Dev',0.05,'Vanguard','FTSE Developed All Cap ex US'],
+      ['IEFA','iShares Core MSCI EAFE ETF','International Dev',0.07,'iShares','MSCI EAFE IMI'],
+      ['SCHF','Schwab International Equity ETF','International Dev',0.06,'Schwab','FTSE Developed ex US'],
+      ['VWO','Vanguard FTSE Emerging Markets ETF','Emerging',0.07,'Vanguard','FTSE Emerging Markets All Cap'],
+      ['IEMG','iShares Core MSCI Emerging Markets ETF','Emerging',0.09,'iShares','MSCI Emerging Markets IMI'],
+      ['SCHE','Schwab Emerging Markets Equity ETF','Emerging',0.11,'Schwab','FTSE Emerging'],
+      ['VBR','Vanguard Small-Cap Value ETF','Small Value',0.07,'Vanguard','CRSP US Small Cap Value'],
+      ['AVUV','Avantis U.S. Small Cap Value ETF','Small Value',0.25,'Avantis','Active'],
+      ['IJS','iShares S&P Small-Cap 600 Value ETF','Small Value',0.18,'iShares','S&P SmallCap 600 Value'],
+      ['QUAL','iShares MSCI USA Quality Factor ETF','Quality',0.15,'iShares','MSCI USA Sector Neutral Quality'],
+      ['JQUA','JPMorgan U.S. Quality Factor ETF','Quality',0.12,'JPMorgan','JP Morgan US Quality Factor'],
+      ['SPHQ','Invesco S&P 500 Quality ETF','Quality',0.15,'Invesco','S&P 500 Quality'],
+      ['VNQ','Vanguard Real Estate ETF','REIT',0.13,'Vanguard','MSCI US IMI Real Estate 25/50'],
+      ['SCHH','Schwab U.S. REIT ETF','REIT',0.07,'Schwab','Dow Jones Equity All REIT Capped'],
+      ['USRT','iShares Core U.S. REIT ETF','REIT',0.08,'iShares','FTSE Nareit Equity REITs'],
+      ['BND','Vanguard Total Bond Market ETF','US Aggregate',0.03,'Vanguard','Bloomberg US Aggregate Float Adjusted'],
+      ['AGG','iShares Core U.S. Aggregate Bond ETF','US Aggregate',0.03,'iShares','Bloomberg US Aggregate'],
+      ['SCHZ','Schwab U.S. Aggregate Bond ETF','US Aggregate',0.03,'Schwab','Bloomberg US Aggregate'],
+      ['SCHP','Schwab U.S. TIPS ETF','TIPS',0.03,'Schwab','Bloomberg US TIPS'],
+      ['VTIP','Vanguard Short-Term Inflation-Protected Securities ETF','TIPS',0.04,'Vanguard','Bloomberg US TIPS 0-5 Year'],
+      ['TIP','iShares TIPS Bond ETF','TIPS',0.18,'iShares','ICE US Treasury Inflation Linked'],
+      ['BNDX','Vanguard Total International Bond ETF','Intl Bond',0.07,'Vanguard','Bloomberg Global Agg ex-USD (USD hedged)'],
+      ['IAGG','iShares Core International Aggregate Bond ETF','Intl Bond',0.07,'iShares','Bloomberg Global Agg ex-USD 10% Issuer Capped (USD hedged)'],
+      ['BWX','SPDR Bloomberg International Treasury Bond ETF','Intl Bond',0.35,'State Street','Bloomberg Global Treasury ex-US Capped']
+    ].map(function (r) { return { ticker: r[0], name: r[1], sleeve: r[2], er: r[3], issuer: r[4], index: r[5] }; });
+    var SLEEVES = ['US Core','International Dev','Emerging','Small Value','Quality','REIT','US Aggregate','TIPS','Intl Bond'];
+    var LIST_KEY = 'etf_core_list_v1', PLAN_KEY = 'etf_core_plan_v1', ALLOC_KEY = 'asset_allocation_builder_v2';
+    var funds = BUILTIN.slice(), shown = [], picked = {};
+
+    function $(id) { return document.getElementById(id); }
+    function el(tag, text, cls) { var n = document.createElement(tag); if (text != null) n.textContent = text; if (cls) n.className = cls; return n; }
+    function store(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+    function read(k) { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+    function note(msg) { var n = $('resultNote'); if (n) n.textContent = msg; }
+
+    function render() {
+      var body = document.querySelector('#tbl tbody');
+      while (body.firstChild) body.removeChild(body.firstChild);
+      if (!shown.length) {
+        var tr = el('tr'), td = el('td', 'No funds match these filters.'); td.colSpan = 7; tr.appendChild(td); body.appendChild(tr); return;
+      }
+      shown.forEach(function (f) {
+        var tr = el('tr');
+        var cb = document.createElement('input'); cb.type = 'checkbox'; cb.checked = !!picked[f.ticker];
+        cb.setAttribute('aria-label', 'Select ' + f.ticker);
+        cb.addEventListener('change', function () { picked[f.ticker] = cb.checked; });
+        var c0 = el('td'); c0.appendChild(cb); tr.appendChild(c0);
+        tr.appendChild(el('td', f.ticker));
+        tr.appendChild(el('td', f.name));
+        tr.appendChild(el('td', f.sleeve));
+        tr.appendChild(el('td', f.er.toFixed(2), 'right'));
+        tr.appendChild(el('td', f.issuer));
+        tr.appendChild(el('td', f.index));
+        body.appendChild(tr);
+      });
+    }
+
+    function applyFilters() {
+      var sleeves = [].slice.call(document.querySelectorAll('.acl:checked')).map(function (c) { return c.value; });
+      var erMax = parseFloat($('erMax').value); if (isNaN(erMax)) erMax = Infinity;
+      var issuer = $('issuer').value;
+      var q = ($('searchBox').value || '').trim().toLowerCase();
+      shown = funds.filter(function (f) {
+        return sleeves.indexOf(f.sleeve) !== -1 && f.er <= erMax && (!issuer || f.issuer === issuer) &&
+          (!q || (f.ticker + ' ' + f.name + ' ' + f.index).toLowerCase().indexOf(q) !== -1);
+      }).sort(function (a, b) { return SLEEVES.indexOf(a.sleeve) - SLEEVES.indexOf(b.sleeve) || a.er - b.er || a.ticker.localeCompare(b.ticker); });
+      render();
+    }
+    function resetFilters() {
+      document.querySelectorAll('.acl').forEach(function (c) { c.checked = true; });
+      $('erMax').value = '0.20'; $('issuer').value = ''; $('searchBox').value = '';
+      applyFilters();
+    }
+    function selectAllRows() { shown.forEach(function (f) { picked[f.ticker] = true; }); render(); }
+    function clearSelection() { picked = {}; render(); }
+    function copyTickers() {
+      var list = shown.filter(function (f) { return picked[f.ticker]; }).map(function (f) { return f.ticker; });
+      if (!list.length) list = shown.map(function (f) { return f.ticker; });
+      var text = list.join(', ');
+      function done() { note('Copied: ' + text); }
+      try { navigator.clipboard.writeText(text).then(done, function () { note('Tickers: ' + text); }); } catch (e) { note('Tickers: ' + text); }
+    }
+
+    function csvCell(v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; }
+    function download(name, text, type) {
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([text], { type: type }));
+      a.download = name; document.body.appendChild(a); a.click(); a.remove();
+    }
+    function downloadCSV() {
+      var rows = [['Ticker','Name','Sleeve','ExpenseRatio','Issuer','Index']].concat(shown.map(function (f) { return [f.ticker, f.name, f.sleeve, f.er, f.issuer, f.index]; }));
+      download('etf-screener.csv', rows.map(function (r) { return r.map(csvCell).join(','); }).join('\n'), 'text/csv');
+    }
+    function parseCSV(text) {
+      var rows = [], row = [], cell = '', q = false;
+      for (var i = 0; i < text.length; i++) {
+        var ch = text[i];
+        if (q) { if (ch === '"' && text[i + 1] === '"') { cell += '"'; i++; } else if (ch === '"') q = false; else cell += ch; }
+        else if (ch === '"') q = true;
+        else if (ch === ',') { row.push(cell); cell = ''; }
+        else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cell); rows.push(row); row = []; cell = ''; }
+        else cell += ch;
+      }
+      if (cell || row.length) { row.push(cell); rows.push(row); }
+      return rows.filter(function (r) { return r.some(function (c) { return c.trim(); }); });
+    }
+    function importCSV(ev) {
+      var file = ev.target.files && ev.target.files[0];
+      if (!file) return;
+      var reader = new FileReader();
+      reader.onload = function () {
+        var rows = parseCSV(String(reader.result || ''));
+        if (rows.length < 2) { note('That file has no rows to import.'); return; }
+        var head = rows[0].map(function (h) { return h.trim().toLowerCase(); });
+        function col(name) { return head.indexOf(name); }
+        var iT = col('ticker'), iN = col('name'), iS = col('sleeve'), iE = col('expenseratio'), iI = col('issuer'), iX = col('index');
+        if (iT < 0 || iS < 0 || iE < 0) { note('The file needs at least Ticker, Sleeve and ExpenseRatio columns.'); return; }
+        var added = 0, skipped = 0;
+        rows.slice(1).forEach(function (r) {
+          var t = (r[iT] || '').trim().toUpperCase(), sl = (r[iS] || '').trim(), er = parseFloat(r[iE]);
+          if (!t || SLEEVES.indexOf(sl) === -1 || isNaN(er)) { skipped++; return; }
+          funds = funds.filter(function (f) { return f.ticker !== t; });
+          funds.push({ ticker: t, name: (r[iN] || '').trim() || t, sleeve: sl, er: er, issuer: (r[iI] || '').trim(), index: (r[iX] || '').trim() });
+          added++;
+        });
+        store(LIST_KEY, funds.filter(function (f) { return !BUILTIN.some(function (b) { return b.ticker === f.ticker && b.er === f.er && b.sleeve === f.sleeve; }); }));
+        applyFilters();
+        note('Imported ' + added + ' fund' + (added === 1 ? '' : 's') + (skipped ? ', skipped ' + skipped + ' (unknown sleeve or missing expense ratio)' : '') + '.');
+      };
+      reader.readAsText(file);
+      ev.target.value = '';
+    }
+
+    // Allocation Builder targets → one lowest-cost fund per sleeve.
+    var SLEEVE_OF = { usCore: 'US Core', intlDev: 'International Dev', em: 'Emerging', sv: 'Small Value', quality: 'Quality',
+                      agg: 'US Aggregate', tips: 'TIPS', intlBond: 'Intl Bond' };
+    function cheapest(sleeve) {
+      var pool = (shown.length ? shown : funds).filter(function (f) { return f.sleeve === sleeve; });
+      if (!pool.length) pool = funds.filter(function (f) { return f.sleeve === sleeve; });
+      // Ties go to the fund listed first (the broadest, best-known one).
+      function rank(f) { var i = BUILTIN.findIndex(function (b) { return b.ticker === f.ticker; }); return i < 0 ? 999 : i; }
+      return pool.sort(function (a, b) { return a.er - b.er || rank(a) - rank(b); })[0] || null;
+    }
+    function buildPlanFromAllocation() {
+      var box = $('planBox');
+      while (box.firstChild) box.removeChild(box.firstChild);
+      var a = read(ALLOC_KEY);
+      if (!a || !a.targets) {
+        box.appendChild(document.createTextNode('No saved allocation yet. Open the '));
+        var link = el('a', 'Asset Allocation Builder'); link.href = 'asset-allocation-builder.html'; box.appendChild(link);
+        box.appendChild(document.createTextNode(', set your mix and press Save, then come back.'));
+        return;
+      }
+      var stocks = +a.targets.stocks || 0, bonds = +a.targets.bonds || 0, cash = +a.targets.cash || 0;
+      var tilts = a.stock_tilts || {}, mix = a.bond_mix || {};
+      var lines = [];
+      Object.keys(SLEEVE_OF).forEach(function (k) {
+        var part = k in tilts ? stocks * (+tilts[k] || 0) / 100 : bonds * (+mix[k] || 0) / 100;
+        if (part <= 0) return;
+        var f = cheapest(SLEEVE_OF[k]);
+        lines.push({ sleeve: SLEEVE_OF[k], weight: Math.round(part * 10) / 10, ticker: f ? f.ticker : null, name: f ? f.name : null, er: f ? f.er : null });
+      });
+      // Rounded to 0.1; the largest line absorbs the rounding so the lines
+      // add up to stocks + bonds exactly.
+      var drift = Math.round((stocks + bonds - lines.reduce(function (s, l) { return s + l.weight; }, 0)) * 10) / 10;
+      if (drift && lines.length) {
+        var big = lines.reduce(function (m, l) { return l.weight > m.weight ? l : m; }, lines[0]);
+        big.weight = Math.round((big.weight + drift) * 10) / 10;
+      }
+      var plan = { ts: new Date().toISOString(), targets: { stocks: stocks, bonds: bonds, cash: cash }, lines: lines, cash: cash };
+      var wer = lines.reduce(function (s, l) { return s + (l.er || 0) * l.weight; }, 0) / 100;
+      plan.weighted_er = Math.round(wer * 1000) / 1000;
+      store(PLAN_KEY, plan);
+
+      var table = el('table'); var head = el('tr');
+      ['Sleeve','Weight %','Fund','ER %'].forEach(function (h, i) { var th = el('th', h); if (i === 1 || i === 3) th.className = 'right'; head.appendChild(th); });
+      var thead = el('thead'); thead.appendChild(head); table.appendChild(thead);
+      var tb = el('tbody');
+      lines.forEach(function (l) {
+        var tr = el('tr');
+        tr.appendChild(el('td', l.sleeve)); tr.appendChild(el('td', l.weight.toFixed(1), 'right'));
+        tr.appendChild(el('td', l.ticker ? l.ticker + ' · ' + l.name : 'No fund in this sleeve')); tr.appendChild(el('td', l.er != null ? l.er.toFixed(2) : '—', 'right'));
+        tb.appendChild(tr);
+      });
+      if (cash > 0) { var tc = el('tr'); tc.appendChild(el('td', 'Cash')); tc.appendChild(el('td', cash.toFixed(1), 'right')); tc.appendChild(el('td', 'Money market or savings')); tc.appendChild(el('td', '—', 'right')); tb.appendChild(tc); }
+      table.appendChild(tb);
+      box.appendChild(table);
+      box.appendChild(el('p', 'Weighted expense ratio: ' + plan.weighted_er.toFixed(3) + '% a year (about $' + Math.round(plan.weighted_er * 100) + ' per $100,000). Saved for the IPS Builder.', 'sub'));
+    }
+    function exportPlanJSON() {
+      var plan = read(PLAN_KEY);
+      if (!plan) { buildPlanFromAllocation(); plan = read(PLAN_KEY); }
+      if (plan) download('etf-plan.json', JSON.stringify(plan, null, 2), 'application/json');
+    }
+    function exportPlanCSV() {
+      var plan = read(PLAN_KEY);
+      if (!plan) { buildPlanFromAllocation(); plan = read(PLAN_KEY); }
+      if (!plan) return;
+      var rows = [['Sleeve','WeightPct','Ticker','Name','ExpenseRatio']].concat(plan.lines.map(function (l) { return [l.sleeve, l.weight, l.ticker || '', l.name || '', l.er == null ? '' : l.er]; }));
+      if (plan.cash) rows.push(['Cash', plan.cash, '', '', '']);
+      download('etf-plan.csv', rows.map(function (r) { return r.map(csvCell).join(','); }).join('\n'), 'text/csv');
+    }
+
+    (function init() {
+      var extra = read(LIST_KEY);
+      if (Array.isArray(extra)) extra.forEach(function (f) {
+        if (f && f.ticker && SLEEVES.indexOf(f.sleeve) !== -1 && typeof f.er === 'number') {
+          funds = funds.filter(function (x) { return x.ticker !== f.ticker; }); funds.push(f);
+        }
+      });
+      ['erMax','issuer','searchBox'].forEach(function (id) { var n = $(id); if (n) n.addEventListener(id === 'searchBox' ? 'input' : 'change', applyFilters); });
+      document.querySelectorAll('.acl').forEach(function (c) { c.addEventListener('change', applyFilters); });
+      applyFilters();
+    })();
   </script>
 
 <!-- ATD-109: registry navigation in shell mode for signed-in members (data-nav-shell="member");

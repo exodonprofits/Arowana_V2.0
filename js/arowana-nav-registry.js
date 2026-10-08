@@ -36,7 +36,7 @@
 
   /* REGISTRY-JSON-START */
   var REGISTRY = {
-    "version": "2026-10-07.1",
+    "version": "2026-10-07.4",
     "entries": [
       { "id": "command", "label": "Trading Command", "shortLabel": "Command", "icon": "⚡",
         "status": "available", "route": { "path": "trading-command.html" }, "mobile": "command" },
@@ -69,6 +69,9 @@
         "desc": "Every scan in one place", "status": "available", "route": { "path": "scanner.html" } },
       { "id": "research-backtesting", "hidden": true, "parent": "research", "label": "Backtesting", "icon": "🔬",
         "desc": "Test your strategies", "status": "available", "route": { "path": "strategy-backtesting.html" } },
+      { "id": "research-thesis", "parent": "research", "label": "Thesis Builder", "icon": "🧭",
+        "desc": "Bear case first, then your decision", "status": "available", "route": { "path": "thesis-builder.html" },
+        "activeWhen": [ { "path": "thesis-builder.html", "query": { "view": [null] } } ] },
       { "id": "research-tools", "parent": "research", "label": "Tool Directory", "icon": "🧩",
         "desc": "Every calculator and tool", "status": "available", "route": { "path": "tools.html" } },
 
@@ -106,8 +109,8 @@
         "status": "available", "route": { "path": "credit-spread-planner.html" } },
       { "id": "desk-growth", "parent": "desks", "label": "Growth", "icon": "🌱",
         "status": "planned", "note": "Planned; AI will be a theme filter here" },
-      { "id": "desk-longterm", "hidden": true, "parent": "desks", "label": "Long-Term", "icon": "🏛️",
-        "status": "legacy", "route": { "path": "long-term-dashboard.html" }, "note": "Existing page; desk not yet migrated" },
+      { "id": "desk-longterm", "parent": "desks", "label": "Long-Term", "icon": "🏛️",
+        "desc": "Retirement, your mix, funds and policy", "status": "available", "route": { "path": "long-term-dashboard.html" } },
 
       { "id": "portfolio", "label": "Portfolio & Risk", "shortLabel": "Portfolio", "icon": "🏦",
         "status": "available", "route": { "path": "portfolio-command.html" }, "mobile": "portfolio" },
@@ -126,6 +129,8 @@
         "desc": "Shares from your risk budget", "status": "available", "route": { "path": "position-sizer.html" } },
       { "id": "portfolio-tax", "parent": "portfolio", "label": "Tax-Loss Harvester", "icon": "🧾",
         "desc": "Loss candidates and wash-sale flags", "status": "available", "route": { "path": "tax-loss-harvester.html" } },
+      { "id": "portfolio-dividends", "parent": "portfolio", "label": "Dividend Income", "icon": "💵",
+        "desc": "Yearly income and payout calendar", "status": "available", "route": { "path": "dividend-tracker.html" } },
       { "id": "portfolio-accounts", "parent": "portfolio", "label": "Accounts & Cash", "icon": "💵",
         "status": "planned", "note": "Planned; waits on account-ownership fixes" },
 
@@ -145,7 +150,8 @@
       { "id": "journal-quality", "parent": "journal", "label": "Data Quality", "icon": "🩺",
         "desc": "Check journal data quality", "status": "available", "route": { "path": "data-hygiene-audit.html" } },
       { "id": "journal-decisions", "parent": "journal", "label": "Decision history", "icon": "🗃️",
-        "status": "planned", "note": "Planned" }
+        "desc": "Your saved theses and what changed", "status": "available",
+        "route": { "path": "thesis-builder.html", "query": { "view": "history" } } }
     ],
     "utilities": [
       { "id": "util-account", "label": "Account Settings", "icon": "⚙️", "route": { "path": "account.html" } },
@@ -162,7 +168,6 @@
       { "path": "kelly-calculator.html", "entry": "portfolio" },
       { "path": "risk-comfort.html", "entry": "portfolio" },
       { "path": "volatility-guardrails.html", "entry": "portfolio" },
-      { "path": "dividend-tracker.html", "entry": "portfolio" },
       { "path": "discipline-scorecard.html", "entry": "journal" },
       { "path": "r-multiple.html", "entry": "journal" },
       { "path": "trading-journal-analysis.html", "entry": "journal" },

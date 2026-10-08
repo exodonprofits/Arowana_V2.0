@@ -67,10 +67,13 @@ const mobile = { viewport: { width: 375, height: 760 }, isMobile: true, hasTouch
   ok('B Strategy Desks expands', (await desks.getAttribute('aria-expanded')) === 'true');
   const deskLabels = await p.locator('#anv-sub-desks > .anv-subitem .rail-subitem-label').allInnerTexts();
   // ATD-109 launch menu: planned and hidden desks are not rendered.
-  ok('B launch desks: Wheel and Options', deskLabels.map(s=>s.split('\n')[0].trim()).join(',') === 'Wheel,Options', deskLabels.join(','));
+  ok('B launch desks: Wheel, Options and Long-Term', deskLabels.map(s=>s.split('\n')[0].trim()).join(',') === 'Wheel,Options,Long-Term', deskLabels.join(','));
   ok('B planned and hidden entries are not rendered, and no Legacy/Planned badges', await p.evaluate(() =>
-    ['desk-growth','desk-swing','desk-longterm','command-brief','command-whatchanged','command-queue','research-technical','research-scanners','research-backtesting','portfolio-accounts','journal-decisions']
+    ['desk-growth','desk-swing','command-brief','command-whatchanged','command-queue','research-technical','research-scanners','research-backtesting','portfolio-accounts']
       .every(id => !document.querySelector('[data-nav-id="' + id + '"]')) && !document.querySelector('#railMount .anv-badge, #anvMoreSheet .anv-badge')));
+  ok('B Thesis Builder and Decision history are in the menu', await p.evaluate(() =>
+    document.querySelector('#railMount a[data-nav-id="research-thesis"]')?.getAttribute('href') === 'thesis-builder.html' &&
+    document.querySelector('#railMount a[data-nav-id="journal-decisions"]')?.getAttribute('href') === 'thesis-builder.html?view=history'));
   ok('B no hrefs outside registry-safe pattern', await p.evaluate(() => [...document.querySelectorAll('#railMount a[href], .anv-mobile-bar a[href], #anvMoreSheet a[href]')].every(a => /^[a-z0-9][a-z0-9_\-]*\.html(\?[a-z0-9_\-=&]+)?$/i.test(a.getAttribute('href')))));
   // collapse
   await p.click('#railCollapseBtn');
@@ -167,7 +170,7 @@ const EXPECT_CURRENT = { 'tools': 'research-tools', 'trading-command': 'command-
   'analysis-central': 'research-instrument', 'intrinsic-value': 'research-valuation', 'portfolio-advisor': 'portfolio-advisor',
   'arowana-trader': 'wheel-coach', 'watchlist': 'watchlists', 'scanner': null, 'position-sizer': 'portfolio-sizer',
   'wheel-strategy': 'wheel-strategy', 'ai-morning-brief': null, 'trade-journal-pro': 'journal-trades', 'credit-spread-planner': 'options-spreads', 'expectancy-matrix': 'journal-expectancy',
-  'strategy-backtesting': null, 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': null };  // null: hidden from the ATD-109 launch menu
+  'strategy-backtesting': null, 'tax-loss-harvester': 'portfolio-tax', 'technical-analysis': null, 'dividend-tracker': 'portfolio-dividends' };  // null: hidden from the ATD-109 launch menu
 async function survey(name, opts, flag) {
   const p = await newPage(opts, flag);
   await p.goto(BASE + '/' + name + '.html'); await p.waitForTimeout(900);
@@ -366,7 +369,7 @@ for (const [name, [group, slot]] of Object.entries(HOMES)) {
   await p.context().close(); }
 
 // S. ATD-009 phase 1: pages without a sidebar get a renderer-built shell rail.
-const SHELL = { 'swing-trader': [null, '.nav-links'], 'long-term-dashboard': [null, '#v1NavLinks'],   // null: hidden from the launch menu
+const SHELL = { 'swing-trader': [null, '.nav-links'], 'long-term-dashboard': ['desk-longterm', '.topbar nav'],   // null: hidden from the launch menu
   'my-rules': ['portfolio-rules', 'nav#nav'], 'data-hygiene-audit': ['journal-quality', null] };
 for (const [name, [want, legacy]] of Object.entries(SHELL)) {
   const look = (p, sel) => p.evaluate(sel => {

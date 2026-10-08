@@ -488,3 +488,81 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
   - `scripts/browser/launch_menu_check.mjs` (43; 8 fail on `main`): 34 launch-menu pages with no key wording, no page errors and nothing sent to finnhub.io directly; prices load with no key; the placeholder is not forwarded and never replaces a personal key; the Options Hub and Intrinsic Value lookups work.
   - `scripts/browser/lib/fake_research.mjs`: a fake research function; candles return 403, as on the free plan.
   - `nav_v2_check.mjs` updated for the launch menu (487).
+
+**Long-Term desk rebuilt (PR B), branch `claude/ATD-109-long-term-desk`:** the old `long-term-dashboard.html` (5,000 lines) ran on n8n webhooks, showed "Soon" cards and asked members to set up a webhook. It's replaced by a hub of the working long-term tools, and the desk is back in the menu.
+
+- **Hub:**
+  - Six steps in order: risk, retirement roadmap, mix, funds, policy, rules. Each step shows what its tool has saved in this browser, for example "✓ Stocks 60 · bonds 35 · cash 5", or "Not started".
+  - Then 19 tools in five groups (Plan, Build, Goals, Risk & rules, Analyze & learn). No webhook, key or live-price bars.
+  - The registry entry `desk-longterm` is visible again (available, with a description). The registry is `2026-10-07.2` and the nav loader is `20261007c`.
+- **ETF Core Screener:** it shipped with no script at all (`// existing JS unchanged...`). It now has:
+  - a curated list of 29 broad, low-cost ETFs in 9 sleeves (ticker, name, issuer, index and expense ratio only, no figures that change daily);
+  - filters for sleeve, expense ratio, issuer and search;
+  - select and copy, CSV export, and CSV import (needs Ticker, Sleeve and ExpenseRatio; unknown sleeves are skipped and counted).
+  - **Build ETF Plan** turns the Allocation Builder's saved v2 mix into one cheapest fund per sleeve (ties go to the first-listed fund). Weights add up exactly, and the weighted expense ratio is shown. The plan is saved as `etf_core_plan_v1` and exports as JSON or CSV.
+- **IPS Builder:**
+  - Imports the Allocation Builder's v2 save. It read `_v1`, which nothing writes any more.
+  - Its preview lists the screener plan's funds and weights. It expected another shape, so the lineup was always empty.
+- **Retirement Planner:**
+  - Free members were asked to paste an n8n webhook. That option is removed, and a saved one is cleared and never called.
+  - Free sees what Pro includes. Pro gets "Write my plan" (arowana-explain, unchanged).
+- **Pick My Mix:**
+  - It ignored age and scaled the horizon over 60 years. It now uses a standard glide path, capped at 120 minus age, and moved up to ±12 points by risk comfort.
+- **Privacy:** the sentence about sending roadmap figures to "your own endpoint" is removed (the option is gone), and the button is named "Write my plan". Nothing else in the approved wording changed.
+- **Learn Investing:**
+  - It loaded `./js/supabase.min.js`, which doesn't exist. It now loads `supabase_min.js` and `sb.js`.
+- **Checks:**
+  - New: `scripts/browser/long_term_desk_check.mjs` (32 checks).
+  - Updated:
+    - `launch_menu_check.mjs` (62) adds 19 Long-Term pages.
+    - `nav_v2_check.mjs` (487) expects the Wheel, Options and Long-Term desks.
+    - `retirement_ai_check.mjs` (21) covers no BYOK.
+    - `topbar_billing_check.mjs` (48) and `plan_gates_check.mjs` (24).
+    - `test_plan_gates.py`.
+
+**Dividend Tracker without developer controls (PR C), branch `claude/ATD-109-dividend-tracker`:** the tracker asked for an "n8n Webhook URL" and offered "Mock Mode", and its card on a phone was about 1,160px wide, cut off on both sides. It's back in the menu as Portfolio → Dividend Income, and back in the Tool Directory.
+
+- **Developer controls removed:** the webhook field and Mock Mode are gone. A webhook URL saved by the old field is deleted from storage and never called.
+- **Refresh:**
+  - Prices come through arowana-research `/quote`, which doesn't count against lookups.
+  - The yearly dividend comes from `/stock/metric`, which counts as one ticker lookup (Free 5/day). It's only asked for holdings without a dividend, so a second Refresh costs nothing.
+  - On a 429 it stops asking and says the lookups are used up. Prices still update, and missing dividends stay blank, never zero.
+- **Journal import:** positions imported from the journal came in with a dividend of 0, so nothing would ever fill them. They now come in blank, and Refresh looks them up.
+- **Calendar:**
+  - The 12-month forecast anchored holdings without an ex-dividend date on today, which printed exact pay dates nobody confirmed. Those holdings now stay off the dated calendar, with a note to add the date from a broker; their yearly income still counts in the summary.
+  - An old ex-date rolls forward on its cadence.
+  - With nothing dated, it shows the note instead of twelve $0.00 months.
+- **Phone layout:** grid and row children get `min-width:0`, so the form and cards fit the screen. The holdings table scrolls in its own box.
+- **Copy:** the intro and import notes no longer mention Finnhub keys or "the free tier".
+- **Tool Directory:** the Research blurb is rewritten.
+- **Versions:** registry `2026-10-07.3`, nav loader `20261007d`.
+- **Checks:**
+  - New: `scripts/browser/dividend_tracker_check.mjs` (24). Its phone check also fails on clipped elements, not just page scroll.
+  - Updated: `launch_menu_check.mjs` (63) and `nav_v2_check.mjs` (487).
+
+**Thesis Builder and Decision history (owner-approved, next after PR C), branch `claude/ATD-109-thesis-builder`:** `thesis-builder.html` is a research workflow for long-term buyers, built on the rule "AI analyzes, you check, you decide".
+
+- **Steps:**
+  1. **The numbers.** A company's reported figures through arowana-research: `/quote` (free), plus `/stock/profile2`, `/stock/metric` and `/stock/recommendation`, which use up to 3 lookups. Figures are grouped into growth, profitability, valuation, balance sheet, dividend, price and risk, and analysts.
+  2. **The member's own note** (optional, 200 characters).
+  3. **Bear case first, then base and bull** (Pro). Each scenario says what would have to happen. It's one arowana-explain call (new kind `thesis`, structured fields) under the number guard: no number of its own, no fair value or price target, no recommendation.
+  4. **The member's decision:** buy or add / wait / pass, why, what would change their mind, and a review date (default 90 days). It's saved in this browser (`ap_thesis_log_v1`) with a snapshot of the figures and the scenarios.
+- **Decision history** (also Journal → Decision history, `?view=history`):
+  - "Review due" flags.
+  - **What changed** reloads price and metrics and sets them beside the saved snapshot, with arrows (lower P/E and debt shown as good). It uses no AI.
+  - Saved scenarios reopen.
+  - Export and import as JSON, plus delete.
+- **Data plan:** price targets are not loaded, on purpose. They cost a lookup and pull toward price prediction.
+- **Menu and links:**
+  - Registry: Research → Thesis Builder, and the planned Journal → Decision history is now live. Registry `2026-10-07.4`, nav loader `20261007e`.
+  - Links from Ticker Research ("Build a thesis", carrying the ticker), the Long-Term desk and the Tool Directory.
+- **`arowana-explain`:**
+  - Adds the `thesis` kind. `trade-case` and `thesis` now share one structured-output path; text kinds are unchanged.
+  - `supabase/baselines/ATD108_functions.json` records the new repository checksum, marked pending deployment.
+  - **Needs a deploy of `arowana-explain`.** Until then the page says the scenarios are not switched on, and everything else works.
+- **Legal pages:** Privacy and Disclosures name the Thesis Builder, and Privacy says the member's note is sent to Anthropic. Disclosures' "figures come from your market-data key" now says "our market-data provider".
+- **Not done (owner decision):** decisions sync across devices only with a new table (e.g. `ap_theses`, user-owned with RLS). This change adds no schema.
+- **Checks:**
+  - `tests/explain-thesis.test.js` (8): runs the function with the SDK and Supabase faked. It covers the fields, the schema order, the guard retry and drop, the missing-fields retry, the Free refusal, and that trade-case and text kinds are unchanged.
+  - `scripts/browser/thesis_builder_check.mjs` (32).
+  - Updated: `nav_v2_check.mjs` (488), `launch_menu_check.mjs` (65), `long_term_desk_check.mjs` (32), `test_nav_registry.py`, `test_legal_pages.py`.

@@ -170,18 +170,19 @@
   <script>
     function importAllocation(){
       try{
-        const s = JSON.parse(localStorage.getItem('asset_allocation_builder_v1')||'null');
+        // The Allocation Builder saves v2 (stock_tilts / bond_mix); older saves were v1.
+        const s = JSON.parse(localStorage.getItem('asset_allocation_builder_v2')||localStorage.getItem('asset_allocation_builder_v1')||'null');
         if(!s || !s.targets){ alert('No saved allocation found. Open the Allocation Builder and save.'); return; }
         document.getElementById('st').value = s.targets.stocks||0;
         document.getElementById('bd').value = s.targets.bonds||0;
         document.getElementById('cs').value = s.targets.cash||0;
-        const t = s.stock_tilts_pct_of_equity||{};
+        const t = s.stock_tilts||s.stock_tilts_pct_of_equity||{};
         document.getElementById('usCore').value = t.usCore||0;
         document.getElementById('intlDev').value = t.intlDev||0;
         document.getElementById('em').value = t.em||0;
         document.getElementById('sv').value = t.sv||0;
         document.getElementById('quality').value = t.quality||0;
-        const b = s.bond_breakdown_pct_of_bonds||{};
+        const b = s.bond_mix||s.bond_breakdown_pct_of_bonds||{};
         document.getElementById('bondMix').value = `${b.agg??'-'} / ${b.tips??'-'} / ${b.intlBond??'-'}`;
       }catch(e){ alert('Import failed.'); }
     }
@@ -229,7 +230,7 @@
       const d = collect();
       const name = d.name||'Investor';
       const date = d.date||new Date().toISOString().slice(0,10);
-      const etf = window._etfPlan?`\n\n**ETF Lineup (Targets)**\n\nTicker | Sleeve | Target %\n---|---|---\n${window._etfPlan.map(p=>`${p.ticker}|${p.sleeve}|${p.target_pct}`).join('\n')}`:'';
+      const etf = window._etfPlan?`\n\n**ETF Lineup (Targets)**\n\nTicker | Sleeve | Target %\n---|---|---\n${(Array.isArray(window._etfPlan)?window._etfPlan:(window._etfPlan.lines||[]).map(l=>({ticker:l.ticker||'—',sleeve:l.sleeve,target_pct:l.weight})).concat(window._etfPlan.cash?[{ticker:'Cash',sleeve:'Cash',target_pct:window._etfPlan.cash}]:[])).map(p=>`${p.ticker}|${p.sleeve}|${p.target_pct}`).join('\n')}`:'';
 
       const md = `# Investment Policy Statement\n\n**Name:** ${name}   \n**Date:** ${date}   \n**Horizon:** ${d.horizon} years   \n**Risk Tolerance:** ${d.risk}\n\n---\n\n## Goals\n${d.goals||'—'}\n\n## Target Allocation\n- Stocks: ${d.st}%\n  - US Core: ${d.usCore}% of stocks\n  - International Developed: ${d.intlDev}% of stocks\n  - Emerging Markets: ${d.em}% of stocks\n  - Small Value: ${d.sv}% of stocks\n  - Quality/Profitability: ${d.quality}% of stocks\n- Bonds: ${d.bd}% (Mix: ${d.bondMix||'—'})\n- Cash: ${d.cs}%\n\n## Contribution Plan\n${d.contribPlan||'—'}\n\n## Rebalancing Policy\n${d.rebalPlan||'—'}\n\n## Tax Location\n${d.taxLoc||'—'}\n\n## Withdrawal / Drawdown\n${d.withdrawal||'—'}\n\n## Behavioral Guardrails\n${d.guardrails||'—'}${etf}\n\n---\n\n*This IPS is an educational template and not financial advice.*`;
 
