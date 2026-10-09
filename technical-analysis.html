@@ -5306,7 +5306,8 @@ function checkUrlParameters() {
   const ticker = urlParams.get('ticker');
   const source = urlParams.get('from');
   
-  if (ticker) {
+  // Only a real ticker is taken from the link; anything else is ignored.
+  if (ticker && /^[A-Z][A-Z0-9.\-]{0,9}$/.test(ticker.toUpperCase())) {
     const tickerInput = $('tickerSymbol');
     if (tickerInput) {
       tickerInput.value = ticker.toUpperCase();
@@ -5332,18 +5333,25 @@ function showIntegrationNotice(source) {
     'trade-journal': 'Trade Journal',
     'analysis-central': 'Analysis Central'
   };
-  
-  const sourceName = sourceNames[source] || source;
-  
+  // The link's text never reaches the page: only a known source gets a name,
+  // and everything is set as text (a crafted ?from= used to run as HTML).
+  if (!Object.prototype.hasOwnProperty.call(sourceNames, source)) return;
+
   const notice = document.createElement('div');
   notice.className = 'alert alert-success';
-  notice.innerHTML = `
-    <strong>🔗 Connected from ${sourceName}</strong> - 
-    Analyzing ${currentTicker} based on your selection. 
-    <button onclick="this.parentElement.remove()" style="float: right; background: none; border: none; color: inherit;">✕</button>
-  `;
-  
-  const container = document.querySelector('main.container');
+  const strong = document.createElement('strong');
+  strong.textContent = '🔗 Connected from ' + sourceNames[source];
+  notice.appendChild(strong);
+  notice.appendChild(document.createTextNode(' - Analyzing ' + currentTicker + ' based on your selection. '));
+  const close = document.createElement('button');
+  close.type = 'button';
+  close.textContent = '✕';
+  close.setAttribute('aria-label', 'Dismiss');
+  close.style.cssText = 'float: right; background: none; border: none; color: inherit;';
+  close.addEventListener('click', () => notice.remove());
+  notice.appendChild(close);
+
+  const container = document.querySelector('main.main-content, main.container');
   if (container) {
     container.insertBefore(notice, container.firstChild);
   }

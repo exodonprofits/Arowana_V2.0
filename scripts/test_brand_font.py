@@ -8,6 +8,10 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 OTHER = {"inter", "inter tight", "manrope", "dm sans", "segoe ui"}
+# An OAuth return URL can carry a code, so that page requests nothing but
+# itself (scripts/browser/schwab_coming_soon_check.mjs); it names the site
+# font but does not load it.
+NO_WEB_FONTS = {"schwab-callback.html"}
 DECL = re.compile(r"(?<![\w-])(font-family|--font|--font-sans|--sans)\s*:\s*([^;{}<>]*)")
 SHORTHAND = re.compile(r"(?<![\w-])font\s*:\s*[^;{}<>]*?\d[\w.%/]*\s+([^;{}<>]*)")
 
@@ -27,6 +31,8 @@ def live_pages():
 class BrandFontTests(unittest.TestCase):
     def test_every_page_loads_the_site_font(self):
         for page, src in live_pages():
+            if page.name in NO_WEB_FONTS:
+                continue
             head = src[: src.index("</head>")]
             self.assertIn("fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800", head, page.name)
             self.assertNotRegex(head, r"family=(Inter|Inter\+Tight|Manrope|DM\+Sans)[:&]", page.name)

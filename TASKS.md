@@ -606,3 +606,18 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
   - Node: 61/61.
   - Browser checks: 35, of which 34 are green and 1 red.
   - The sweep: 442 page loads.
+
+**Pre-launch quick fixes (owner-approved), branch `claude/ATD-109-prelaunch-quickfixes`:** roadmap items R-1, R-3, R-4, R-7 and R-8 from `docs/pre-launch-audit/IMPROVEMENT-ROADMAP.md`.
+
+- **R-1:** `technical-analysis.html` builds the "Connected from" notice as text.
+  - It only takes a `?from=` value that is a known source.
+  - It ignores a `?ticker=` that isn't a ticker.
+  - The notice now actually shows: it used to target a `main.container` that doesn't exist.
+- **R-3:** the 12 public pages collapse their header links into the menu below 1181px, instead of below 701px.
+  - Tablets keep Sign in and Start Free.
+- **R-4:** `scanner.html` loads `js/market-data.js`.
+  - My Movers and Gap Scan now quote through `arowana-research`.
+- **R-7:** phone form fields are 16px on login, sign-up, reset password, the two free calculators and the home waitlist.
+- **R-8:** `schwab-callback.html` no longer loads web fonts, so the OAuth return page requests nothing but itself.
+  - `test_brand_font.py` names it as the one page exempt from loading the font.
+- **Checks:** `scripts/browser/prelaunch_quickfix_check.mjs` has 29 checks. They all pass on the branch; on `main`, 4 pass and 25 fail. `schwab_coming_soon_check` passes 11/0.

@@ -559,6 +559,9 @@
     @media(max-width:900px){.auth-layout{grid-template-columns:1fr;max-width:540px}.auth-aside{min-height:auto;padding:34px}.auth-aside h2{font-size:36px}.aside-copy{font-size:14px}.workspace-list{margin-top:24px}.aside-bottom{margin-top:28px}.auth-card{padding:38px 34px}}
     @media(max-width:600px){.auth-main{padding:20px 14px}.auth-layout{border-radius:15px}.auth-aside{padding:28px 22px}.auth-aside h2{font-size:31px}.workspace-list{grid-template-columns:1fr 1fr}.workspace-item{padding:9px;font-size:10px}.auth-card{padding:31px 22px}.auth-card{margin:0}.nav-brand:after{display:none}.site-footer{padding:20px 0}.trust-strip{align-items:stretch}.trust-pill{justify-content:center}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* iOS zooms into any field under 16px when it is focused; keep phone fields at 16px. */
+@media(max-width:700px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px}}
   </style>
 <!-- Quarantines the previous account's local data when a different user
      signs in. Loaded here because this is where the change happens. -->
