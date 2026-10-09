@@ -586,3 +586,23 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
   - `mode_setting_check.mjs` (94) and `mobile_controls_check.mjs` (46) drop the retired page.
   - `launch_menu_check.mjs` (65), node tests (53) and Python (117) pass.
   - Phone screenshots of the brief, as Pro and as Free (gate shown).
+
+**Pre-launch inspection (audit only), branch `claude/ATD-109-prelaunch-audit`:**
+
+- **Result:** [docs/pre-launch-audit/](docs/pre-launch-audit/LAUNCH-READINESS.md) contains the inventory, functional, UI/UX, feature, roadmap and launch-readiness documents.
+- **Verdict:** NO-GO today, then CONDITIONAL GO once gates G-1, G-2, G-4, G-5, G-7 and G-10 close and G-3 is answered. Health score 62/100, with the rubric in the readiness document.
+- **Top items:**
+  - Reflected XSS via `?from=` on `technical-analysis.html` (P0). Reproduced locally with a harmless flag.
+  - `arowana.webhooks` readable with the anon key. Verified from config, read-only.
+  - The public header overflows between 701 and 1160px on 12 pages.
+  - My Movers and Gap Scan can't load quotes (`scanner.html` doesn't load `market-data.js`).
+  - Stale `tradingcommand.html` and `whale-tracker.html` are still published.
+  - `schwab_coming_soon_check` is red on `main`, caused by the font link added in `a356ebb`.
+- **Not changed:** no product code, database objects, functions or production data.
+- **New:**
+  - `scripts/browser/prelaunch_sweep.mjs` opens every real page signed in, or signed out with `SIGNED_OUT=1`, at the chosen widths. It writes JSON (errors, missing files, overflow, tap targets, input sizes, fonts) and asserts nothing.
+- **Checks run on `main` @ `8fd53f3`:**
+  - Python: 117 OK.
+  - Node: 61/61.
+  - Browser checks: 35, of which 34 are green and 1 red.
+  - The sweep: 442 page loads.
