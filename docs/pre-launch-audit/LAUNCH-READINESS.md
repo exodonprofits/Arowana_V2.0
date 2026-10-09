@@ -33,7 +33,7 @@ The rubric is fixed in advance. Each category has a maximum, and each deduction 
 | G-3 | n8n workflows behind public URLs verify the caller; n8n token rotated | ❓ unknown | Owner |
 | G-4 | Public header usable at 768/1024 (R-3) | ✅ fixed (quick-fix PR) | Claude |
 | G-5 | My Movers / Gap Scan return quotes (R-4) | ✅ fixed (quick-fix PR) | Claude |
-| G-6 | `tradingcommand.html`, `whale-tracker.html` retired (R-5) | ❌ open | Owner approval |
+| G-6 | `tradingcommand.html`, `whale-tracker.html` retired (R-5) | ✅ retired to redirect stubs (owner-approved) | Claude |
 | G-7 | Stripe test purchase + cancel on the deployed checkout; $299 price switched in the same window; live v14 compared with repo before deploy (R-6) | ❓ not run | Owner (L3) |
 | G-8 | Supabase Auth redirect URLs include apex, www and `/staging/` | ❓ owner item | Owner |
 | G-9 | `.htaccess` rules + `MANAGE_HTACCESS=true` | ❓ owner item | Owner |

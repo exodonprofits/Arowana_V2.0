@@ -12,7 +12,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parent.parent
 GETTER = re.compile(r"""getItem\(\s*['"]ap_is_pro_v1['"]\s*\)""")
 PAGES = ["arowana-trader.html", "portfolio-advisor.html", "analysis-central.html",
-         "options-analyzer.html", "whale-tracker.html"]
+         "options-analyzer.html"]  # whale-tracker.html retired to a redirect (ATD-109 R-5)
 
 
 class PlanGateTests(unittest.TestCase):

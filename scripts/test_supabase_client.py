@@ -16,8 +16,6 @@ CDN_SDK = re.compile(r'<script[^>]+src="https?://[^"]*(?:@supabase|supabase-js)[
 # Pages that keep their own client on purpose, or are parked by the owner.
 EXEMPT = {
     "reset-password.html": "recovery flow needs detectSessionInUrl:false",
-    "tradingcommand.html": "owner-parked (ATD-008 D5)",
-    "whale-tracker.html": "owner-parked pending the ATD-003 coaching merge",
 }
 
 

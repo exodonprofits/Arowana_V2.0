@@ -23,7 +23,7 @@ const pages = readdirSync(ROOT).filter(f => f.endsWith('.html')).filter(f => {
 }).sort();
 
 // Owner-parked pages that are deliberately not migrated yet (ATD-008 D5).
-const KNOWN = new Set(['tradingcommand.html']);
+const KNOWN = new Set();   // tradingcommand.html was the one; retired to a redirect (ATD-109 R-5)
 
 const browser = await chromium.launch();
 const results = []; let failed = 0;

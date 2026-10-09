@@ -621,3 +621,17 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
 - **R-8:** `schwab-callback.html` no longer loads web fonts, so the OAuth return page requests nothing but itself.
   - `test_brand_font.py` names it as the one page exempt from loading the font.
 - **Checks:** `scripts/browser/prelaunch_quickfix_check.mjs` has 29 checks. They all pass on the branch; on `main`, 4 pass and 25 fail. `schwab_coming_soon_check` passes 11/0.
+
+**Retire the stale duplicates and fix the roll-tracker check (owner-approved), branch `claude/ATD-109-retire-stale-pages`:** pre-launch roadmap item R-5.
+
+- **Redirects:** `tradingcommand.html` now redirects to `trading-command.html`, and `whale-tracker.html` to `arowana-trader.html`. Both keep the query and hash, using the same stub pattern as the other retired pages.
+  - `/lab/whale-tracker.html` now points straight at the Wheel Coach.
+  - Both old pages remain in git history at `df9fd91`, for the ATD-003 coaching merge inventory.
+- **Tests and exemptions:**
+  - Dropped the retired pages from the plan-gate and mode-setting page lists.
+  - Removed their two "owner-parked" exemptions in `test_supabase_client.py`.
+  - `auth_client_check` no longer has a known exception.
+- **`roll_tracker_check`:** "nothing written" now counts only the writes made before the tab leaves `option-roll-tracker.html`.
+  - After the redirect, the only writes allowed are the journal's own account sync (`entities`, `financial_accounts`). The check was red on `main` whenever the journal loaded quickly.
+  - A temporary write added to the retirement page still fails the check.
+- **Checks:** `roll_tracker_check` 20/0 (three runs); `prelaunch_quickfix_check` 31/0.

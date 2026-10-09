@@ -6,7 +6,9 @@
 //    from 701 to ~1160px, with Sign in / Sign up off-screen);
 //  - My Movers and Gap Scan get quotes through arowana-research for a
 //    signed-in member (they said "Sign in to load live quotes.");
-//  - phone form fields are 16px, so iOS does not zoom when one is focused.
+//  - phone form fields are 16px, so iOS does not zoom when one is focused;
+//  - (R-5) the retired tradingcommand.html and whale-tracker.html land on
+//    trading-command.html and arowana-trader.html, query and hash kept.
 //
 //   BASE=http://127.0.0.1:8765 node scripts/browser/prelaunch_quickfix_check.mjs
 //
@@ -133,6 +135,16 @@ for (const page of ['login', 'signup', 'reset-password', 'wheel-calculator', 'as
   check('scanner: Gap Scan runs for a signed-in member', !gaps.error && gaps.universeSize === 2, gaps);
   check('scanner: quotes go through arowana-research, never to finnhub.io', calls.filter(c => c === '/quote').length >= 2 && direct.length === 0, { calls, direct });
   check('scanner: no page errors', errors.length === 0, errors);
+  await ctx.close();
+}
+
+// ── R-5: retired duplicates land on the live pages ──
+for (const [from, to] of [['/tradingcommand.html?tab=coach#x', '/trading-command.html?tab=coach#x'], ['/whale-tracker.html?symbol=KO', '/arowana-trader.html?symbol=KO']]) {
+  const ctx = await stranger({ width: 1280, height: 900 });
+  const p = await ctx.newPage();
+  await p.goto(BASE + from, { waitUntil: 'load' }); await sleep(1200);
+  const u = new URL(p.url());
+  check(`${from.split('?')[0]} redirects to ${to.split('?')[0]}, keeping query and hash`, u.pathname + u.search + u.hash === to || (u.pathname === '/login.html' && decodeURIComponent(u.search).includes(to.split('#')[0])), p.url());
   await ctx.close();
 }
 

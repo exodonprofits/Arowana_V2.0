@@ -22,7 +22,7 @@ const PAGES = ['ai-moat-finder.html', 'atr-stop-planner.html', 'credit-spread-pl
   'dcf-analyzer.html', 'discipline-scorecard.html', 'dividend-tracker.html', 'expectancy-matrix.html', 'kelly-calculator.html',
   'money-flow-alert.html', 'options-analyzer.html', 'position-sizer.html', 'r-multiple.html', 'risk-comfort.html',
   'scanner.html', 'strategy-backtesting.html', 'tax-loss-harvester.html', 'technical-analysis.html', 'tools.html',
-  'trade-plan-builder.html', 'volatility-guardrails.html', 'watchlist.html', 'whale-tracker.html'];
+  'trade-plan-builder.html', 'volatility-guardrails.html', 'watchlist.html'];   // whale-tracker.html retired to a redirect (ATD-109 R-5)
 const CLASS = { beginner: 'mode-beginner', guided: 'mode-guided', advanced: 'mode-full' };
 
 const browser = await chromium.launch();
