@@ -28,16 +28,16 @@ The rubric is fixed in advance. Each category has a maximum, and each deduction 
 
 | # | Gate | Status | Owner |
 |---|---|---|---|
-| G-1 | XSS on `technical-analysis.html` fixed + browser check added (R-1) | ❌ open | Claude (needs approval) |
+| G-1 | XSS on `technical-analysis.html` fixed + browser check added (R-1) | ✅ fixed (quick-fix PR; `prelaunch_quickfix_check.mjs`) | Claude |
 | G-2 | `arowana.webhooks` no longer anon-readable (R-2) | ❌ open | Claude migration + owner approval |
 | G-3 | n8n workflows behind public URLs verify the caller; n8n token rotated | ❓ unknown | Owner |
-| G-4 | Public header usable at 768/1024 (R-3) | ❌ open | Claude |
-| G-5 | My Movers / Gap Scan return quotes (R-4) | ❌ open | Claude |
+| G-4 | Public header usable at 768/1024 (R-3) | ✅ fixed (quick-fix PR) | Claude |
+| G-5 | My Movers / Gap Scan return quotes (R-4) | ✅ fixed (quick-fix PR) | Claude |
 | G-6 | `tradingcommand.html`, `whale-tracker.html` retired (R-5) | ❌ open | Owner approval |
 | G-7 | Stripe test purchase + cancel on the deployed checkout; $299 price switched in the same window; live v14 compared with repo before deploy (R-6) | ❓ not run | Owner (L3) |
 | G-8 | Supabase Auth redirect URLs include apex, www and `/staging/` | ❓ owner item | Owner |
 | G-9 | `.htaccess` rules + `MANAGE_HTACCESS=true` | ❓ owner item | Owner |
-| G-10 | All automated suites green on the release commit (fix D-9) | ⚠️ 1 red | Claude |
+| G-10 | All automated suites green on the release commit (fix D-9) | ✅ D-9 fixed (quick-fix PR); re-run on the release commit | Claude |
 | G-11 | Owner smoke test on staging on a phone (iOS Safari) and a tablet | ❓ not run | Owner |
 | G-12 | Morning brief generator still writing daily (production had briefs through 2026-10-07 per `TASKS.md:575`; not re-checked today) | ⚠️ re-check | Owner |
 | ✅ | Market data through `arowana-research` v9 (owner confirmed NVDA, AMD on staging) | done | — |

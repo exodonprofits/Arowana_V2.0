@@ -124,7 +124,7 @@
     .wd-form .wd-form-sub{color:var(--muted);font-size:14px;margin:0 0 18px}
     .wd-field{margin-bottom:14px}
     .wd-field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
-    .wd-field input,.wd-field select{width:100%;min-height:46px;border:1px solid #c8d5de;border-radius:10px;padding:0 12px;font:inherit;font-size:15px;color:var(--text);background:#fff}
+    .wd-field input,.wd-field select{width:100%;min-height:46px;border:1px solid #c8d5de;border-radius:10px;padding:0 12px;font:inherit;font-size:16px;color:var(--text);background:#fff}
     .wd-field input:focus,.wd-field select:focus{outline:none;border-color:var(--brand);box-shadow:0 0 0 3px rgba(11,108,174,.18)}
     .wd-hp{position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden}
     .wd-form .wd-btn{width:100%;background:var(--navy-900);color:#fff}
@@ -163,6 +163,9 @@
       .wd-station{transition:none}
       html{scroll-behavior:auto}
     }
+
+/* iOS zooms into any field under 16px when it is focused; keep phone fields at 16px. */
+@media(max-width:700px){input:not([type=checkbox]):not([type=radio]):not([type=range]),select,textarea{font-size:16px}}
   </style>
   <!-- Home-screen app (ATD-109): installable from the browser's share menu; opens full screen, without the address bar. -->
   <link rel="manifest" href="manifest.json">
