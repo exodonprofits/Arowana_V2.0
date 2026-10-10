@@ -621,3 +621,18 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
 - **R-8:** `schwab-callback.html` no longer loads web fonts, so the OAuth return page requests nothing but itself.
   - `test_brand_font.py` names it as the one page exempt from loading the font.
 - **Checks:** `scripts/browser/prelaunch_quickfix_check.mjs` has 29 checks. They all pass on the branch; on `main`, 4 pass and 25 fail. `schwab_coming_soon_check` passes 11/0.
+
+### ATD-110 — Rules Replay and honest sample sizes
+
+**Status:** spec written 2026-10-10, not built. Scheduled after the ATD-109 launch gate. **Spec:** [docs/ATD-110_RULES_REPLAY_SPEC.md](docs/ATD-110_RULES_REPLAY_SPEC.md).
+
+- **Part A:** every win rate on a member's own trades goes through one helper.
+  - Below 8 closed trades, show wins and losses only.
+  - 8–19 trades: "early read".
+  - The trade count always sits beside the rate.
+- **Part B:** a Rules Replay page under Journal & Review.
+  - It filters the member's real trades by entry rules (DTE, earnings, max open, minimum credit, weekday, Want-to-Own) and shows what the rules would have kept and skipped.
+  - It adds a descriptive "how you exit" section.
+  - It doesn't do exit-rule what-ifs ("close at 50%"), because the journal has no daily option prices. Those are a later data decision.
+- **Side finding:** the Options Hub earnings note filters journal trades on a field that no code ever writes.
+- **Open owner decisions:** listed in §4 of the spec.
