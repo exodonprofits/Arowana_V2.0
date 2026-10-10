@@ -635,3 +635,17 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
   - After the redirect, the only writes allowed are the journal's own account sync (`entities`, `financial_accounts`). The check was red on `main` whenever the journal loaded quickly.
   - A temporary write added to the retirement page still fails the check.
 - **Checks:** `roll_tracker_check` 20/0 (three runs); `prelaunch_quickfix_check` 31/0.
+### ATD-110 — Rules Replay and honest sample sizes
+
+**Status:** spec written 2026-10-10, not built. Scheduled after the ATD-109 launch gate. **Spec:** [docs/ATD-110_RULES_REPLAY_SPEC.md](docs/ATD-110_RULES_REPLAY_SPEC.md).
+
+- **Part A:** every win rate on a member's own trades goes through one helper.
+  - Below 8 closed trades, show wins and losses only.
+  - 8–19 trades: "early read".
+  - The trade count always sits beside the rate.
+- **Part B:** a Rules Replay page under Journal & Review.
+  - It filters the member's real trades by entry rules (DTE, earnings, max open, minimum credit, weekday, Want-to-Own) and shows what the rules would have kept and skipped.
+  - It adds a descriptive "how you exit" section.
+  - It doesn't do exit-rule what-ifs ("close at 50%"), because the journal has no daily option prices. Those are a later data decision.
+- **Side finding:** the Options Hub earnings note filters journal trades on a field that no code ever writes.
+- **Open owner decisions:** listed in §4 of the spec.
