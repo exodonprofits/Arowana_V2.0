@@ -649,3 +649,15 @@ Fixed on the way: Billing's "Open billing portal" read an endpoint nothing set a
   - It doesn't do exit-rule what-ifs ("close at 50%"), because the journal has no daily option prices. Those are a later data decision.
 - **Side finding:** the Options Hub earnings note filters journal trades on a field that no code ever writes.
 - **Open owner decisions:** listed in §4 of the spec.
+
+**Webhook URLs admin-only (owner-approved), branch `claude/ATD-109-webhooks-admin-only`:** pre-launch roadmap item R-2.
+
+- **Migration:** `supabase/migrations/20261010130000_atd109_webhooks_admin_only.sql` drops `arowana.webhooks`'s "public read webhooks" policy and revokes anon SELECT on the table and on the `public.arowana_webhooks` view.
+  - These are the same idempotent statements as the Wheel repo's `20261009_ap_admin_hardening.sql`.
+- **Readers checked (2026-10-10):**
+  - Only the two admin consoles read the table, as admins, through "admin write webhooks" (`FOR ALL`), which the migration keeps.
+  - Neither site's `app-config.js` loads webhooks from the database any more.
+  - No API request reached the table in the previous 24 hours.
+  - The anon reads in `pg_stat_statements` came from an old `AP_WEBHOOKS` loader that has since been removed.
+- **Baseline before applying (read-only, inside transactions):** anon, a signed-in non-admin and an admin could each read all 10 rows.
+- **Not yet applied to production.** The connector's write calls timed out waiting for confirmation; read-only queries worked.

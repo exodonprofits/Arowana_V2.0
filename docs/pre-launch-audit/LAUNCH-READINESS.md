@@ -29,7 +29,7 @@ The rubric is fixed in advance. Each category has a maximum, and each deduction 
 | # | Gate | Status | Owner |
 |---|---|---|---|
 | G-1 | XSS on `technical-analysis.html` fixed + browser check added (R-1) | ✅ fixed (quick-fix PR; `prelaunch_quickfix_check.mjs`) | Claude |
-| G-2 | `arowana.webhooks` no longer anon-readable (R-2) | ❌ open | Claude migration + owner approval |
+| G-2 | `arowana.webhooks` no longer anon-readable (R-2) | ⏳ migration written (owner-approved), not yet applied to production | Owner applies |
 | G-3 | n8n workflows behind public URLs verify the caller; n8n token rotated | ❓ unknown | Owner |
 | G-4 | Public header usable at 768/1024 (R-3) | ✅ fixed (quick-fix PR) | Claude |
 | G-5 | My Movers / Gap Scan return quotes (R-4) | ✅ fixed (quick-fix PR) | Claude |
