@@ -55,12 +55,19 @@ const chainRows = p => p.evaluate(() => [...document.querySelectorAll('#chainLis
 // ── No saved chains: straight to the journal's Options tab ───────────────
 {
   const { ctx, p, fake } = await open({ signedIn: true, db: { option_roll_chains: [] } });
+  // Writes made before the tab leaves this page are this page's; after the
+  // redirect the journal may sync its default account (arowana entities /
+  // financial_accounts), which is the journal's business, not this page's.
+  let leftAt = null;
+  p.on('framenavigated', f => { if (f === p.mainFrame() && leftAt === null && !/option-roll-tracker\.html/.test(f.url())) leftAt = fake.writes.length; });
   check('signed in, no chains: redirects to trade-journal-pro.html?tab=option', await onJournal(p), p.url());
   check('journal opens on Option Trades, with Find Rolls', await until(() => p.evaluate(() => {
     const t = document.getElementById('tab-option'), b = document.querySelector('.tab-btn[data-tab="option"]');
     return !!t && t.style.display !== 'none' && !!b && b.getAttribute('aria-selected') === 'true' && /Find Rolls/.test(t.textContent);
   }).catch(() => false)));
-  check('nothing written', fake.writes.length === 0, fake.writes);
+  check('nothing written by this page', leftAt === 0, fake.writes.slice(0, leftAt || 0));
+  const after = fake.writes.slice(leftAt || 0).filter(w => !['entities', 'financial_accounts'].includes(w.table));
+  check("after the redirect, nothing written but the journal's own account sync", after.length === 0, after);
   await ctx.close();
 }
 {

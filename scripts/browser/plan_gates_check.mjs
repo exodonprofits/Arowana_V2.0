@@ -49,8 +49,6 @@ const PAGES = [
     free: r => !r.pro && r.banner, pro: r => r.pro && !r.banner },
   { path: 'options-analyzer.html', probe: () => ({ pro: !!(window.AP_PLAN && AP_PLAN.atLeast('pro')), gate: getComputedStyle(document.getElementById('proGate')).display !== 'none', tool: getComputedStyle(document.getElementById('toolContent')).display !== 'none' }),
     free: r => !r.pro && r.gate && !r.tool, pro: r => r.pro && !r.gate && r.tool },
-  { path: 'whale-tracker.html', probe: () => ({ pro: !!(window.AP_PLAN && AP_PLAN.atLeast('pro')), banner: getComputedStyle(document.getElementById('upgradeBanner')).display !== 'none' }),
-    free: r => !r.pro, pro: r => r.pro && !r.banner },   // banner only appears after a scan
   { path: 'analysis-central.html', probe: () => ({ pro: !!(window.AP_PLAN && AP_PLAN.atLeast('pro')), planLoaded: !!window.AP_PLAN }),
     free: r => r.planLoaded && !r.pro, pro: r => r.planLoaded && r.pro },
   // Loads plan.js since the managed write-up was wired up: Pro comes from
